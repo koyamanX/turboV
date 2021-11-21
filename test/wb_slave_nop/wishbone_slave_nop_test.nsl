@@ -16,40 +16,7 @@ module wishbone_slave_nop_test {
 	func_self tst();
 	func_self nop();
 
-	wb_master0.CLK_I = wb_syscon.CLK_O;
-	wb_master0.RST_I = wb_syscon.RST_O;
-	wb_slave_nop0.CLK_I = wb_syscon.CLK_O;
-	wb_slave_nop0.RST_I = wb_syscon.RST_O;
-	wb_slave_nop0.ADR_I = wb_master0.ADR_O;
-	wb_slave_nop0.SEL_I = wb_master0.SEL_O;
-	wb_slave_nop0.DAT_I = wb_master0.DAT_O;
-	wb_master0.DAT_I = wb_slave_nop0.DAT_O;
-
-	func wb_master0.CYC_O {
-		wb_slave_nop0.CYC_I();
-	}
-	func wb_master0.STB_O {
-		wb_slave_nop0.STB_I();
-	}
-	func wb_master0.WE_O {
-		wb_slave_nop0.WE_I();
-	}
-	func wb_master0.LOCK_O {
-		wb_slave_nop0.LOCK_I();
-	}
-	func wb_slave_nop0.ACK_O {
-		wb_master0.ACK_I();
-	}
-	func wb_slave_nop0.STALL_O {
-		wb_master0.STALL_I();
-	}
-	func wb_slave_nop0.ERR_O {
-		wb_master0.ERR_I();
-	}
-	func wb_slave_nop0.RTY_O {
-		wb_master0.RTY_I();
-	}
-
+	WISHBONE_P2P(wb_master0, wb_slave_nop0, wb_syscon);
 	if(!r) {
 		r := ~r;
 		tst();

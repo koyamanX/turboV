@@ -1,40 +1,12 @@
 #include "wishbone_slave.h"
 #include "wishbone_slave_reg.h"
+#include "wishbone_common.h"
 
 module wishbone_slave_reg {
 	wishbone_slave wb_slave_if;
 	reg data[64];
 
-	wb_slave_if.CLK_I = CLK_I;
-	wb_slave_if.RST_I = RST_I;
-	wb_slave_if.ADR_I = ADR_I;
-	wb_slave_if.SEL_I = SEL_I;
-	wb_slave_if.DAT_I = DAT_I;
-	DAT_O = wb_slave_if.DAT_O;
-	func WE_I {
-		wb_slave_if.WE_I();
-	}
-	func CYC_I {
-		wb_slave_if.CYC_I();
-	}
-	func STB_I {
-		wb_slave_if.STB_I();
-	}
-	func LOCK_I {
-		wb_slave_if.LOCK_I();
-	}
-	func wb_slave_if.ACK_O {
-		ACK_O();
-	}
-	func wb_slave_if.STALL_O {
-		STALL_O();
-	}
-	func wb_slave_if.ERR_O {
-		ERR_O();
-	}
-	func wb_slave_if.RTY_O {
-		RTY_O();
-	}
+	WISHBONE_SLAVE_IF(wb_slave_if);
 	func wb_slave_if.req_read {
 		wb_slave_if.rsp_valid(data);
 	}
