@@ -1,0 +1,8 @@
+#include "wishbone_syscon.h"
+
+module wishbone_syscon {
+	/* Clock must be posedge */
+	CLK_O = m_clock;
+	/* Active high */
+	RST_O = p_reset;
+}

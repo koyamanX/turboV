@@ -1,0 +1,36 @@
+[*]
+[*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
+[*] Sat Nov 20 17:46:14 2021
+[*]
+[dumpfile] "/home/koyaman/devel/storm/test/wb_slave_nop/wishbone_slave_nop_test.vcd"
+[dumpfile_mtime] "Sat Nov 20 17:42:50 2021"
+[dumpfile_size] 5470
+[savefile] "/home/koyaman/devel/storm/test/wb_slave_nop/wishbone_slave_nop_test.gtkw"
+[timestart] 0
+[size] 1920 2091
+[pos] -51 -51
+*-2.321928 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
+[treeopen] tb.wishbone_slave_nop_test_instance.
+[sst_width] 298
+[signals_width] 487
+[sst_expanded] 1
+[sst_vpaned_height] 660
+@28
+tb.wishbone_slave_nop_test_instance._wb_master0_CLK_I
+tb.wishbone_slave_nop_test_instance._wb_master0_RST_I
+@22
+tb.wishbone_slave_nop_test_instance._wb_master0_ADR_O[31:0]
+tb.wishbone_slave_nop_test_instance._wb_master0_DAT_I[63:0]
+tb.wishbone_slave_nop_test_instance._wb_master0_DAT_O[63:0]
+@28
+tb.wishbone_slave_nop_test_instance._wb_master0_WE_O
+@22
+tb.wishbone_slave_nop_test_instance._wb_master0_SEL_O[7:0]
+@28
+tb.wishbone_slave_nop_test_instance._wb_master0_STB_O
+tb.wishbone_slave_nop_test_instance._wb_master0_ACK_I
+tb.wishbone_slave_nop_test_instance._wb_master0_CYC_O
+tb.wishbone_slave_nop_test_instance._wb_master0_STALL_I
+[pattern_trace] 1
+[pattern_trace] 0
