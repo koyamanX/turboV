@@ -1,11 +1,11 @@
---- /home/koyaman/Downloads/linux/x86_64/nsl2vl	2021-03-01 16:54:35.000000000 +0900
-+++ nsl2vl	2021-11-21 17:11:17.875645145 +0900
+--- nsl2vl.orig	2021-03-01 16:54:35.000000000 +0900
++++ nsl2vl	2021-11-25 00:49:10.965894029 +0900
 @@ -1,6 +1,7 @@
  #!/bin/bash
  NSLCORE=nslc.exe
  NSLPP=nslpp.exe
 +NSLPP=cpp
- sname=`basename $0`
+ sname=`basename $0` 
  if [ $# -lt 1 ]; then
  ${NSLCORE} -v
 @@ -91,8 +92,8 @@
