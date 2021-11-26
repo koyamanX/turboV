@@ -1,7 +1,0 @@
-#include "wishbone_slave_nop.h"
-
-module wishbone_slave_nop {
-	func STB_I {
-		ACK_O();
-	}
-}
