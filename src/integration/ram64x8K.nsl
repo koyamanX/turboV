@@ -1,0 +1,47 @@
+#include "wishbone_slave.h"
+#include "wishbone_common.h"
+#include "ram64x8K.h"
+
+module ram64x8K {
+	wishbone_slave wb_slave_if;
+	mem ram0[8192][8];
+	mem ram1[8192][8];
+	mem ram2[8192][8];
+	mem ram3[8192][8];
+	mem ram4[8192][8];
+	mem ram5[8192][8];
+	mem ram6[8192][8];
+	mem ram7[8192][8];
+
+	func reset {
+		wb_slave_if.reset();
+	}
+	func wb_slave_if.req_read {
+		/* Ignore SEL for read */
+		/* TODO: Implement SEL_I */
+		wb_slave_if.rsp_valid ({
+			ram7[wb_slave_if.req_addr[15:3]],
+			ram6[wb_slave_if.req_addr[15:3]],
+			ram5[wb_slave_if.req_addr[15:3]],
+			ram4[wb_slave_if.req_addr[15:3]],
+			ram3[wb_slave_if.req_addr[15:3]],
+			ram2[wb_slave_if.req_addr[15:3]],
+			ram1[wb_slave_if.req_addr[15:3]],
+			ram0[wb_slave_if.req_addr[15:3]]
+		});
+	}
+	func wb_slave_if.req_write {
+		any {
+			wb_slave_if.req_sel[7]: ram7[wb_slave_if.req_addr[15:3]] := wb_slave_if.req_data[63:56];
+			wb_slave_if.req_sel[6]: ram6[wb_slave_if.req_addr[15:3]] := wb_slave_if.req_data[55:48];
+			wb_slave_if.req_sel[5]: ram5[wb_slave_if.req_addr[15:3]] := wb_slave_if.req_data[47:40];
+			wb_slave_if.req_sel[4]: ram4[wb_slave_if.req_addr[15:3]] := wb_slave_if.req_data[39:32];
+			wb_slave_if.req_sel[3]: ram3[wb_slave_if.req_addr[15:3]] := wb_slave_if.req_data[31:24];
+			wb_slave_if.req_sel[2]: ram2[wb_slave_if.req_addr[15:3]] := wb_slave_if.req_data[23:16];
+			wb_slave_if.req_sel[1]: ram1[wb_slave_if.req_addr[15:3]] := wb_slave_if.req_data[15:8];
+			wb_slave_if.req_sel[0]: ram0[wb_slave_if.req_addr[15:3]] := wb_slave_if.req_data[7:0];
+		}
+		wb_slave_if.rsp_valid(0);
+	}
+	WISHBONE_SLAVE_IF(wb_slave_if);
+}
