@@ -26,6 +26,8 @@ CXXFLAGS=
 LDFLAGS=
 VERILATOR_FLAGS=
 
+CLEAN_FILES=
+
 .PHONY: all out clean
 
 $(OUTDIR):
@@ -65,4 +67,4 @@ $(OUTDIR)/%.v: $(INTEGRATION_DIR)/%.nsl $(OUTDIR)
 $(OUTDIR)/%.v: $(CORE_DIR)/%.nsl $(OUTDIR)
 	$(NSL2VL) $(NSLFLAGS) $< -o $@
 clean:
-	rm -rf $(OUTDIR)
+	rm -rf $(OUTDIR) $(CLEAN_FILES) *.vcd
