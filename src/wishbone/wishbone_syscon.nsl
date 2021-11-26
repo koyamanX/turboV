@@ -2,7 +2,7 @@
 
 module wishbone_syscon {
 	/* Clock must be posedge */
-	CLK_O = m_clock;
+	CLK_O = CLK_I;
 	/* Active high */
-	RST_O = p_reset;
+	RST_O = RST_I;
 }
