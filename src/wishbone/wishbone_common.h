@@ -31,5 +31,16 @@
 	func slave.ACK_O ACK_O(); func slave.STALL_O STALL_O(); \
 	func slave.ERR_O ERR_O(); func slave.RTY_O RTY_O(); }
 
+#define WISHBONE_GEN_SLAVE_IF(AWIDTH, DWIDTH, SWIDTH) \
+	input CLK_I; input RST_I; \
+	input ADR_I[AWIDTH]; input SEL_I[SWIDTH]; \
+	input DAT_I[DWIDTH]; output DAT_O[DWIDTH]; \
+	func_in WE_I(); func_in CYC_I(); \
+	func_in STB_I(); func_in LOCK_I(); \
+	func_out ACK_O(); func_out STALL_O(); \
+	func_out ERR_O(); func_out RTY_O();
+
+#define WISHBONE_GEN_SLAVE_TAG_IF()
+
 #endif
 
