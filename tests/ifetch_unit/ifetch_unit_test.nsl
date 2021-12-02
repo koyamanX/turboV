@@ -1,0 +1,14 @@
+#include "ifetch_unit.h"
+
+declare ifetch_unit_test simulation {
+	input newpc[32];
+	func_in redirect(newpc);
+}
+
+module ifetch_unit_test {
+	ifetch_unit ifu;
+
+	func redirect {
+		ifu.redirect(newpc);
+	}
+}

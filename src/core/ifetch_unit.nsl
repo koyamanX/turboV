@@ -1,0 +1,51 @@
+#include "ifetch_unit.h"
+
+module ifetch_unit {
+	reg vpc[32];
+	proc_name st0(vpc);
+	func_self tlb_hit;
+	wire va[32];
+	wire pa[32];
+	func_self v2p(va) : pa;
+	proc_name st1();
+	func_self cache_hit();
+	func_self compare_tag();
+	proc_name st2();
+	func_self predict();
+	func_self predict_taken();
+	func_self predict_not_taken();
+
+	func redirect {
+		st0(newpc);
+	}
+
+	proc st0 {
+		v2p(vpc);
+		if(tlb_hit) {
+			st1();
+		}
+	}
+	func v2p {
+		tlb_hit();
+		return va;
+	}
+	proc st1 {
+		compare_tag();
+		if(cache_hit) {
+			st2();
+		}
+	}
+	func compare_tag {
+		cache_hit();
+	}
+	proc st2 {
+		predict();
+		if(predict_not_taken) {
+			st0(vpc+8);
+		}
+		push2();
+	}
+	func predict {
+		predict_not_taken();
+	}
+}
