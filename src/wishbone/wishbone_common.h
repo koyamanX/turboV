@@ -42,5 +42,27 @@
 
 #define WISHBONE_GEN_SLAVE_TAG_IF()
 
+#define WISHBONE_MASTER_IF(master) { \
+	master.CLK_I = CLK_I; master.RST_I = RST_I; \
+	ADR_O = master.ADR_O; SEL_O = master.SEL_O; \
+	master.DAT_I = DAT_I; DAT_O = master.DAT_O; \
+	func master.CYC_O CYC_O(); func master.STB_O STB_O(); \
+	func master.WE_O WE_O(); func master.LOCK_O LOCK_O(); \
+	func ACK_I master.ACK_I(); func ERR_I master.ERR_I(); \
+	func RTY_I master.RTY_I(); func STALL_I master.STALL_I(); }
+	
+
+#define WISHBONE_GEN_MASTER_IF(AWIDTH, DWIDTH, SWIDTH) \
+	input CLK_I; input RST_I; \
+	output ADR_O[AWIDTH]; input DAT_I[DWIDTH]; \
+	output DAT_O[DWIDTH]; output SEL_O[SWIDTH]; \
+	func_out CYC_O(); func_out STB_O(); \
+	func_out WE_O(); func_out LOCK_O(); \
+	func_in ACK_I(); func_in ERR_I(); \
+	func_in RTY_I(); func_in STALL_I();
+
+
+#define WISHBONE_GEN_MASTER_TAG_IF()
+
 #endif
 
