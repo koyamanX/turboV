@@ -61,8 +61,22 @@
 	func_in ACK_I(); func_in ERR_I(); \
 	func_in RTY_I(); func_in STALL_I();
 
-
 #define WISHBONE_GEN_MASTER_TAG_IF()
+
+#define WISHBONE_MASTER_ACCESS_PORT(AWIDTH, DWIDTH, SWIDTH) \
+	input req_addr[AWIDTH]; \
+	input req_data[DWIDTH]; \
+	input req_sel[SWIDTH]; \
+	func_in req_read(req_addr, req_sel); \
+	func_in req_write(req_addr, req_sel, req_data); \
+	func_in req_read_modify_write(req_addr, req_sel, req_data); \
+	func_out req_stall(); \
+	output rsp_data[DWIDTH]; \
+	func_out rsp_valid(rsp_data); \
+	func_out rsp_error(); \
+	func_out rsp_retry(); \
+	func_out rsp_stall();
+
 
 #endif
 

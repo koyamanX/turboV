@@ -1,6 +1,8 @@
 #ifndef WISHBONE_MASTER_H
 #define WISHBONE_MASTER_H
 
+#include "wishbone_common.h"
+
 declare wishbone_master interface {
 	input CLK_I;
 	input RST_I;
@@ -23,18 +25,7 @@ declare wishbone_master interface {
 	func_in RTY_I();
 	func_in STALL_I();
 
-	input req_addr[32];
-	input req_data[64];
-	input req_sel[8];
-	func_in req_read(req_addr, req_sel);
-	func_in req_write(req_addr, req_sel, req_data);
-	func_in req_read_modify_write(req_addr, req_sel, req_data);
-	func_out req_stall();
-	output rsp_data[64];
-	func_out rsp_valid(rsp_data);
-	func_out rsp_error();
-	func_out rsp_retry();
-	func_out rsp_stall();
+	WISHBONE_MASTER_ACCESS_PORT(32, 64, 8)
 }
 
 #endif
