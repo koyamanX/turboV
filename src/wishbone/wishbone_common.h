@@ -77,5 +77,19 @@
 	func_out rsp_retry(); \
 	func_out rsp_stall();
 
+#define WISHBONE_MASTER_ACCESS_OUT_PORTS(AWIDTH, DWIDTH, SWIDTH) \
+	output req_addr[AWIDTH]; \
+	output req_data[DWIDTH]; \
+	output req_sel[SWIDTH]; \
+	func_out req_read(req_addr, req_sel); \
+	func_out req_write(req_addr, req_sel, req_data); \
+	func_out req_read_modify_write(req_addr, req_sel, req_data); \
+	func_in req_stall(); \
+	input rsp_data[DWIDTH]; \
+	func_in rsp_valid(rsp_data); \
+	func_in rsp_error(); \
+	func_in rsp_retry(); \
+	func_in rsp_stall();
+
 #endif
 

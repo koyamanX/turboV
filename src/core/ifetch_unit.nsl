@@ -1,5 +1,7 @@
 #include "ifetch_unit.h"
 #include "icache.h"
+#include "wishbone_master.h"
+#include "wishbone_common.h"
 
 module ifetch_unit {
 	reg vpc[32];
@@ -17,6 +19,7 @@ module ifetch_unit {
 	func_self predict_taken();
 	func_self predict_not_taken();
 	icache ic;
+	wishbone_master wb_master_if;
 
 	func reset {
 		ic.reset();
@@ -55,5 +58,30 @@ module ifetch_unit {
 		predict_not_taken();
 	}
 
-	WISHBONE_MASTER_IF(ic);
+	func ic.req_read {
+		wb_master_if.req_read(ic.req_addr, ic.req_sel);
+	}
+	func ic.req_write {
+		wb_master_if.req_write(ic.req_addr, ic.req_sel, ic.req_data);
+	}
+	func ic.req_read_modify_write {
+		wb_master_if.req_read_modify_write(ic.req_addr, ic.req_sel, ic.req_data);
+	}
+	func wb_master_if.req_stall {
+		ic.req_stall();
+	}
+	func wb_master_if.rsp_valid {
+		ic.rsp_valid(wb_master_if.rsp_data);
+	}
+	func wb_master_if.rsp_error {
+		ic.rsp_error();
+	}
+	func wb_master_if.rsp_retry {
+		ic.rsp_retry();
+	}
+	func wb_master_if.rsp_stall {
+		ic.rsp_stall();
+	}
+
+	WISHBONE_MASTER_IF(wb_master_if);
 }

@@ -14,6 +14,7 @@ declare icache {
 	func_out rsp_cache_miss();
 
 	WISHBONE_GEN_MASTER_IF(32, 64, 8)
+	WISHBONE_MASTER_ACCESS_OUT_PORTS(32, 64, 8)
 }
 
 #endif

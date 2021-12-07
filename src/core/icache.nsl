@@ -23,7 +23,6 @@ module icache {
 	reg allocate_paddr[32];
 	reg allocate_way_sel;
 	proc_name allocate(allocate_paddr, allocate_way_sel);
-	wishbone_master wb_master_if;
 
 	func reset {
 		idle();
@@ -71,9 +70,9 @@ module icache {
 			allocate_paddr2refill := allocate_paddr;
 		}
 		state bus_req {
-			wb_master_if.req_read(allocate_paddr, 0xff);
-			if(wb_master_if.rsp_valid) {
-				allocate_buf[allocate_bwoff] := wb_master_if.rsp_data;
+			req_read(allocate_paddr, 0xff);
+			if(rsp_valid) {
+				allocate_buf[allocate_bwoff] := rsp_data;
 				allocate_paddr := allocate_paddr + 8;
 				if(allocate_bwoff == 3) {
 					refill(allocate_paddr2refill, {allocate_buf[3], allocate_buf[2], allocate_buf[1], allocate_buf[0]}, allocate_way_sel);
@@ -88,8 +87,8 @@ module icache {
 			}
 		}
 		state bus_wait {
-			if(wb_master_if.rsp_valid) {
-				allocate_buf[allocate_bwoff] := wb_master_if.rsp_data;
+			if(rsp_valid) {
+				allocate_buf[allocate_bwoff] := rsp_data;
 				allocate_paddr := allocate_paddr + 8;
 				if(allocate_bwoff == 3) {
 					refill(allocate_paddr2refill, {allocate_buf[3], allocate_buf[2], allocate_buf[1], allocate_buf[0]}, allocate_way_sel);
@@ -121,6 +120,4 @@ module icache {
 			}
 		}
 	}
-
-	WISHBONE_MASTER_IF(wb_master_if);
 }
