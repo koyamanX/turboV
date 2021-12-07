@@ -25,7 +25,7 @@ declare wishbone_master interface {
 	func_in RTY_I();
 	func_in STALL_I();
 
-	WISHBONE_MASTER_ACCESS_PORT(32, 64, 8)
+	WISHBONE_MASTER_ACCESS_IN_PORTS(32, 64, 8)
 }
 
 #endif

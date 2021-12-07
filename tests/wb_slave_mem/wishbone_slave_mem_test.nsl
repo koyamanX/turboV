@@ -5,7 +5,7 @@
 
 
 declare wishbone_slave_mem_test simulation {
-	WISHBONE_MASTER_ACCESS_PORT(32, 64, 8)
+	WISHBONE_MASTER_ACCESS_IN_PORTS(32, 64, 8)
 }
 
 module wishbone_slave_mem_test {

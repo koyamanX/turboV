@@ -63,7 +63,7 @@
 
 #define WISHBONE_GEN_MASTER_TAG_IF()
 
-#define WISHBONE_MASTER_ACCESS_PORT(AWIDTH, DWIDTH, SWIDTH) \
+#define WISHBONE_MASTER_ACCESS_IN_PORTS(AWIDTH, DWIDTH, SWIDTH) \
 	input req_addr[AWIDTH]; \
 	input req_data[DWIDTH]; \
 	input req_sel[SWIDTH]; \
@@ -76,7 +76,6 @@
 	func_out rsp_error(); \
 	func_out rsp_retry(); \
 	func_out rsp_stall();
-
 
 #endif
 
