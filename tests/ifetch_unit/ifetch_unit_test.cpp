@@ -2,6 +2,8 @@
 #include <verilated.h>
 #include <stdint.h>
 #include <string.h>
+#include "Vifetch_unit_test.h"
+#include "Vifetch_unit_test___024root.h"
 #include "verilated_vcd_c.h"
 #include "Vifetch_unit_test.h"
 #include <gtest/gtest.h>
@@ -33,12 +35,14 @@ protected:
 		sim->redirect = false;
 	}
 	void push2(void) {
-		fetch_packet_t buf;	
+		auto rootp = sim->rootp;
 
-		memcpy(&buf, sim->fetch_packet, sizeof(fetch_packet_t));
-		ASSERT_EQ(buf.pc, pc);
-		ASSERT_EQ(buf.inst0, 0x00000000);
-		ASSERT_EQ(buf.inst1, 0x00000000);
+		ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_pc0, pc);
+		ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_pc1, pc+4);
+		ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_inst0, 0x00000000);
+		ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_inst1, 0x00000000);
+		ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_valid0, true);
+		ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_valid1, true);
 
 		pc+=8;
 	}

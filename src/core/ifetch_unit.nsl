@@ -54,7 +54,7 @@ module ifetch_unit {
 		if(predict_not_taken) {
 			st0(st2_vpc+8);
 		}
-		push2({st2_ppc, st2_fetch_packet});
+		push2({(st2_vpc)[31:0], (st2_vpc+4)[31:0], 64'(st2_fetch_packet), 2'b00, 2'b11});
 	}
 	func predict {
 		predict_not_taken();
