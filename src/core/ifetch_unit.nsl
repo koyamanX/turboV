@@ -3,6 +3,8 @@
 #include "wishbone_master.h"
 #include "wishbone_common.h"
 
+#define ALIGN8(s32) {s32[31:3], 3'b000}
+
 module ifetch_unit {
 	reg st0_vpc[32];
 	proc_name st0(st0_vpc);
@@ -31,8 +33,8 @@ module ifetch_unit {
 	}
 
 	proc st0 {
-		v2p(st0_vpc);
-		ic.req_cache_read(st0_vpc);
+		v2p(ALIGN8(st0_vpc));
+		ic.req_cache_read(ALIGN8(st0_vpc));
 		if(tlb_hit) {
 			st1(st0_vpc, pa);
 		}
@@ -42,7 +44,7 @@ module ifetch_unit {
 		return va;
 	}
 	proc st1 {
-		ic.req_cache_pa_valid(st1_ppc);
+		ic.req_cache_pa_valid(ALIGN8(st1_ppc));
 		if(ic.rsp_cache_hit) {
 			st2(st1_vpc, st1_ppc, ic.rsp_cache_data);
 		} else {
@@ -50,11 +52,14 @@ module ifetch_unit {
 		}
 	}
 	proc st2 {
+		wire vmask[2];
+
 		predict();
 		if(predict_not_taken) {
 			st0(st2_vpc+8);
 		}
-		push2({(st2_vpc)[31:0], (st2_vpc+4)[31:0], 64'(st2_fetch_packet), 2'b00, 2'b11});
+		vmask = if(st2_vpc[2]) 2'b10 else 2'b11;
+		push2({(st2_vpc)[31:0], (st2_vpc+4)[31:0], 64'(st2_fetch_packet), 2'b00, vmask});
 	}
 	func predict {
 		predict_not_taken();
