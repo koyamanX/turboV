@@ -5,7 +5,7 @@
 declare ifetch_unit_test simulation {
 	input newpc[32];
 	func_in redirect(newpc);
-	output fetch_packet[96];
+	output fetch_packet[SIZEOF_FETCH_PACKET_T];
 	func_out push2(fetch_packet);
 }
 
@@ -14,6 +14,7 @@ module ifetch_unit_test {
 	wishbone_syscon wb_syscon;
 	ram64x8K ram;
 	reg r = 0;
+	fetch_packet_t reg packet;
 
 	wb_syscon.CLK_I = m_clock;
 	wb_syscon.RST_I = p_reset;
@@ -26,8 +27,9 @@ module ifetch_unit_test {
 	func redirect {
 		ifu.redirect(newpc);
 	}
-	func ifu.push2 {
-		push2(ifu.fetch_packet);
+	func ifu.push2 seq {
+		packet := ifu.fetch_packet;
+		push2(packet);
 	}
 	WISHBONE_P2P(ifu, ram, wb_syscon);
 }
