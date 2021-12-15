@@ -2,12 +2,12 @@
 #include <verilated.h>
 #include <stdint.h>
 #include <string.h>
+#include "Vifetch_unit_test.h"
+#include "Vifetch_unit_test___024root.h"
 #include "verilated_vcd_c.h"
 #include "Vifetch_unit_test.h"
 #include <gtest/gtest.h>
 #include "simulator.h"
-
-#define WATCH(s, v, f) do {if(s == v) {f();}} while(0)
 
 typedef struct {
 	uint32_t inst1;
@@ -26,21 +26,12 @@ protected:
 	void DummyClock(uint64_t i) {
 		Autorun(i);
 	}
-	void Redirect(uint32_t pc) {
+	void Redirect(uint32_t newpc) {
 		sim->redirect = true;
-		sim->newpc = pc;
+		sim->newpc = newpc;
+		pc = newpc;
 		Tick();
 		sim->redirect = false;
-	}
-	void push2(void) {
-		fetch_packet_t buf;	
-
-		memcpy(&buf, sim->fetch_packet, sizeof(fetch_packet_t));
-		ASSERT_EQ(buf.pc, pc);
-		ASSERT_EQ(buf.inst0, 0x00000000);
-		ASSERT_EQ(buf.inst1, 0x00000000);
-
-		pc+=8;
 	}
 	uint32_t pc = 0;
 };
@@ -50,7 +41,38 @@ TEST_F(IFetchUnitTest, Fetch) {
 	Redirect(0x0);
 
 	for(int i = 0; i < 128; i++) {
-		WATCH(sim->push2, true, push2);
+		auto rootp = sim->rootp;
+
+		if(sim->push2) {
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_pc0, pc);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_pc1, pc+4);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_inst0, 0x00000000);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_inst1, 0x00000000);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_valid0, true);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_valid1, true);
+			pc+=8;
+		}
+
+		DummyClock(1);
+	}
+}
+TEST_F(IFetchUnitTest, FetchAt4) {
+	SetUp("fetchAt4.vcd");
+	Redirect(0x4);
+
+	for(int i = 0; i < 128; i++) {
+		auto rootp = sim->rootp;
+
+		if(sim->push2) {
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_pc0, pc);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_pc1, pc+4);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_inst0, 0x00000000);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_inst1, 0x00000000);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_valid0, true);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_valid1, false);
+			pc+=8;
+		}
+
 		DummyClock(1);
 	}
 }
