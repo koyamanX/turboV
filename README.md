@@ -1,5 +1,7 @@
 # Implementaion of RISC-V Out-of-Order superscalar pipeline.
 
+[![CircleCI](https://circleci.com/gh/koyamanX/storm/tree/develop.svg?style=svg)](https://circleci.com/gh/koyamanX/storm/tree/develop)
+
 ## Prerequisite
 - Installation of Docker
 - Development container image for strom
