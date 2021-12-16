@@ -9,4 +9,5 @@ docker run -it --rm \
 	-v $(pwd)/src:/root/src \
 	-v $(pwd)/tests:/root/tests \
 	-v $(pwd)/storm.mk:/root/storm.mk \
+	-v $(pwd)/run_tests.sh:/root/run_tests.sh \
 	storm_dev:v1.0 $1
