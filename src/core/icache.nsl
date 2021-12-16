@@ -45,14 +45,15 @@ module icache {
 		.{ptag, pidx, pwoff, pboff} = req_cache_pa;
 
 		any {
-			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 0: {rsp_cache_hit(icache_data_way0[63:0]); idle();}
-			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 1: {rsp_cache_hit(icache_data_way0[127:64]); idle();}
-			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 2: {rsp_cache_hit(icache_data_way0[191:128]); idle();}
-			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 3: {rsp_cache_hit(icache_data_way0[255:192]); idle();}
-			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 0: {rsp_cache_hit(icache_data_way1[63:0]); idle();}
-			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 1: {rsp_cache_hit(icache_data_way1[127:64]); idle();}
-			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 2: {rsp_cache_hit(icache_data_way1[191:128]); idle();}
-			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 3: {rsp_cache_hit(icache_data_way1[255:192]); idle();}
+			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 0 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way0[63:0]); idle();}
+			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 1 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way0[127:64]); idle();}
+			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 2 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way0[191:128]); idle();}
+			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 3 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way0[255:192]); idle();}
+			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 0 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way1[63:0]); idle();}
+			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 1 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way1[127:64]); idle();}
+			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 2 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way1[191:128]); idle();}
+			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 3 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way1[255:192]); idle();}
+			~req_cache_pa_valid: idle();
 			else: {rsp_cache_miss(); allocate(req_cache_pa, icache_lru); icache_lru_array[pidx] := ~icache_lru;}
 		}
 	}

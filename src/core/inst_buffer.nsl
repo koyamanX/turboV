@@ -1,0 +1,44 @@
+#include "inst_buffer.h"
+
+module inst_buffer {
+	mem ibuf[8][SIZEOF_FETCH_PACKET_T];
+	reg rptr[4] = 0;
+	reg wptr[4] = 0;
+	wire next_rptr[4];
+	wire next_wptr[4];
+	func_self internal_full();
+	func_self internal_empty();
+
+	func push {
+		if(~internal_full) {
+			ibuf[wptr] := idata;
+			wptr := next_wptr;
+		}
+	}
+	func pop {
+		if(~internal_empty) {
+			rptr := next_rptr;
+			return ibuf[rptr];
+		}
+	}
+	func flush {
+		rptr := 0;
+		wptr := 0;
+	}
+	next_rptr = rptr + 1'b1;
+	next_wptr = wptr + 1'b1;
+
+	if(next_wptr[2:0] == rptr) {
+		internal_full();
+	}
+	if(rptr == wptr) {
+		internal_empty();
+	}
+	func internal_full {
+		full();
+	}
+	func internal_empty {
+		empty();
+	}
+
+}
