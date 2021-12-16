@@ -25,17 +25,34 @@ module ifetch_unit {
 	icache ic;
 	wishbone_master wb_master_if;
 
+	func_self stall();
+	func_self stall_st0();
+	func_self stall_st1();
+	func_self stall_st2();
+	func_self flush();
+
 	func reset {
 		ic.reset();
 	}
 	func redirect {
+		stall();
 		st0(newpc);
+	}
+	func stall {
+		stall_st0();
+		stall_st1();
+		stall_st2();
+	}
+	func flush {
+		st0.finish();
+		st1.finish();
+		st2.finish();
 	}
 
 	proc st0 {
 		v2p(ALIGN8(st0_vpc));
 		ic.req_cache_read(ALIGN8(st0_vpc));
-		if(tlb_hit) {
+		if(tlb_hit && !stall_st0) {
 			st1(st0_vpc, pa);
 		}
 	}
@@ -45,7 +62,7 @@ module ifetch_unit {
 	}
 	proc st1 {
 		ic.req_cache_pa_valid(ALIGN8(st1_ppc));
-		if(ic.rsp_cache_hit) {
+		if(ic.rsp_cache_hit && !stall_st1) {
 			st2(st1_vpc, st1_ppc, ic.rsp_cache_data);
 		} else {
 			st0(st1_vpc);
@@ -55,7 +72,7 @@ module ifetch_unit {
 		wire st2_newpc[32];
 
 		predict();
-		if(predict_not_taken) {
+		if(predict_not_taken && !stall_st2) {
 			st0(st2_newpc);
 		}
 
