@@ -52,14 +52,23 @@ module ifetch_unit {
 		}
 	}
 	proc st2 {
-		wire vmask[2];
+		wire st2_newpc[32];
 
 		predict();
 		if(predict_not_taken) {
-			st0(st2_vpc+8);
+			st0(st2_newpc);
 		}
-		vmask = if(st2_vpc[2]) 2'b10 else 2'b11;
-		push2({(st2_vpc)[31:0], (st2_vpc+4)[31:0], 64'(st2_fetch_packet), 2'b00, vmask});
+
+		any {
+			st2_vpc[2]: {
+				st2_newpc = st2_vpc + 4;
+				push2({(st2_vpc)[31:0], (st2_vpc+4)[31:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b10});
+			}
+			~st2_vpc[2]: {
+				st2_newpc = st2_vpc + 8;
+				push2({(st2_vpc)[31:0], (st2_vpc+4)[31:0], st2_fetch_packet[63:0], 2'b00, 2'b11});
+			}
+		}
 	}
 	func predict {
 		predict_not_taken();
