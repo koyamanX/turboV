@@ -37,7 +37,6 @@ TEST_F(InstBufferTest, push1) {
 	ASSERT_EQ(sim->empty, false);
 }
 
-
 TEST_F(InstBufferTest, pushUntilFull) {
 	SetUp("pushUntilFull.vcd");
 	
@@ -57,6 +56,91 @@ TEST_F(InstBufferTest, pushUntilFull) {
 	ASSERT_EQ(push_cnt, 8);
 	ASSERT_EQ(sim->full, true);
 	ASSERT_EQ(sim->empty, false);
+}
+
+TEST_F(InstBufferTest, push1ThenPop1) {
+	SetUp("push1ThenPop1.vcd");
+
+	UpdatePorts();
+	ASSERT_EQ(sim->full, false);
+	ASSERT_EQ(sim->empty, true);
+	
+	sim->push = true;	
+	DummyClock(1);
+	sim->push = false;
+
+	DummyClock(1);	/* feed one clock to update internal register */
+	ASSERT_EQ(sim->full, false);
+	ASSERT_EQ(sim->empty, false);
+
+	sim->pop = true;
+	DummyClock(1);
+	sim->pop = false;
+
+	DummyClock(1);	/* feed one clock to update internal register */
+	ASSERT_EQ(sim->full, false);
+	ASSERT_EQ(sim->empty, true);
+}
+TEST_F(InstBufferTest, pushUntilFullThenPopUntilEmpty) {
+	SetUp("pushUntilFullThenPopUntilEmpty.vcd");
+	
+	UpdatePorts();
+	ASSERT_EQ(sim->full, false);
+	ASSERT_EQ(sim->empty, true);
+
+	int push_cnt = 0;
+	while(push_cnt < 8) {
+		sim->push = true;	
+		push_cnt++;
+		DummyClock(1);
+	}
+	sim->push = false;
+
+	DummyClock(1);	/* feed one clock to update internal register */
+	ASSERT_EQ(push_cnt, 8);
+	ASSERT_EQ(sim->full, true);
+	ASSERT_EQ(sim->empty, false);
+
+	int pop_cnt = 0;
+	while(pop_cnt < 8) {
+		sim->pop = true;
+		pop_cnt++;
+		DummyClock(1);
+	}
+	sim->pop = false;
+
+	DummyClock(1);	/* feed one clock to update internal register */
+	ASSERT_EQ(push_cnt, pop_cnt);
+	ASSERT_EQ(sim->full, false);
+	ASSERT_EQ(sim->empty, true);
+}
+TEST_F(InstBufferTest, flush) {
+	SetUp("flush.vcd");
+
+	UpdatePorts();
+	ASSERT_EQ(sim->full, false);
+	ASSERT_EQ(sim->empty, true);
+
+	int push_cnt = 0;
+	while(push_cnt < 8) {
+		sim->push = true;	
+		push_cnt++;
+		DummyClock(1);
+	}
+	sim->push = false;
+
+	DummyClock(1);	/* feed one clock to update internal register */
+	ASSERT_EQ(push_cnt, 8);
+	ASSERT_EQ(sim->full, true);
+	ASSERT_EQ(sim->empty, false);
+
+	sim->flush = true;
+	DummyClock(1);
+	sim->flush = false;
+
+	DummyClock(1);	/* feed one clock to update internal register */
+	ASSERT_EQ(sim->full, false);
+	ASSERT_EQ(sim->empty, true);
 }
 
 int main(int argc, char **argv) {
