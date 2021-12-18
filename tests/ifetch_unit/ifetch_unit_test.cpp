@@ -114,6 +114,42 @@ TEST_F(IFetchUnitTest, Redirect) {
 		DummyClock(1);
 	}
 }
+TEST_F(IFetchUnitTest, FetchCacheHit) {
+	SetUp("fetchCacheHit.vcd");
+	Redirect(0x0);
+
+	for(int i = 0; i < 128; i++) {
+		auto rootp = sim->rootp;
+
+		if(sim->push2) {
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_pc0, pc);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_pc1, pc+4);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_inst0, 0x00000000);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_inst1, 0x00000000);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_valid0, true);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_valid1, true);
+			pc+=8;
+		}
+
+		DummyClock(1);
+	}
+	Redirect(0x0);
+	for(int i = 0; i < 128; i++) {
+		auto rootp = sim->rootp;
+
+		if(sim->push2) {
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_pc0, pc);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_pc1, pc+4);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_inst0, 0x00000000);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_inst1, 0x00000000);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_valid0, true);
+			ASSERT_EQ(rootp->ifetch_unit_test__DOT___packet_valid1, true);
+			pc+=8;
+		}
+
+		DummyClock(1);
+	}
+}
 
 
 
