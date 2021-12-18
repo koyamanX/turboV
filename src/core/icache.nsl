@@ -120,5 +120,6 @@ module icache {
 				icache_valid_array_way1[refill_pidx] := 1;
 			}
 		}
+		rsp_cache_hit(refill_data);
 	}
 }
