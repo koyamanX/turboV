@@ -40,13 +40,19 @@ module ifetch_unit {
 		flush();
 		st0(newpc);
 	}
+	func flush_st0 {
+		st0.finish();
+	}
+	func flush_st1 {
+		st1.finish();
+	}
+	func flush_st2 {
+		st2.finish();
+	}
 	func flush {
 		flush_st0();
 		flush_st1();
 		flush_st2();
-		st0.finish();
-		st1.finish();
-		st2.finish();
 	}
 	func stall {
 		stall_st1();
@@ -70,7 +76,6 @@ module ifetch_unit {
 			st2(st1_vpc, st1_ppc, ic.rsp_cache_data);
 		} else {
 			flush_st0();
-			st0.finish();
 			st0(st1_vpc);
 		}
 	}
