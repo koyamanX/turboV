@@ -74,9 +74,6 @@ module ifetch_unit {
 		ic.req_cache_pa_valid(ALIGN8(st1_ppc));
 		if(ic.rsp_cache_hit && !flush_st1 && !stall_st2) {
 			st2(st1_vpc, st1_ppc, ic.rsp_cache_data);
-		} else {
-			flush_st0();
-			st0(st1_vpc);
 		}
 	}
 	proc st2 {
