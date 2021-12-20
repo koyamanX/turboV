@@ -45,7 +45,7 @@ TEST_F(InstBufferTest, pushUntilFull) {
 	ASSERT_EQ(sim->empty, true);
 
 	int push_cnt = 0;
-	while(push_cnt < 8) {
+	while(push_cnt <= 8) {
 		sim->push = true;	
 		push_cnt++;
 		DummyClock(1);
@@ -53,7 +53,7 @@ TEST_F(InstBufferTest, pushUntilFull) {
 	sim->push = false;
 
 	DummyClock(1);	/* feed one clock to update internal register */
-	ASSERT_EQ(push_cnt, 8);
+	ASSERT_EQ(push_cnt, 9);
 	ASSERT_EQ(sim->full, true);
 	ASSERT_EQ(sim->empty, false);
 }
@@ -89,7 +89,7 @@ TEST_F(InstBufferTest, pushUntilFullThenPopUntilEmpty) {
 	ASSERT_EQ(sim->empty, true);
 
 	int push_cnt = 0;
-	while(push_cnt < 8) {
+	while(push_cnt <= 8) {
 		sim->push = true;	
 		push_cnt++;
 		DummyClock(1);
@@ -97,12 +97,12 @@ TEST_F(InstBufferTest, pushUntilFullThenPopUntilEmpty) {
 	sim->push = false;
 
 	DummyClock(1);	/* feed one clock to update internal register */
-	ASSERT_EQ(push_cnt, 8);
+	ASSERT_EQ(push_cnt, 9);
 	ASSERT_EQ(sim->full, true);
 	ASSERT_EQ(sim->empty, false);
 
 	int pop_cnt = 0;
-	while(pop_cnt < 8) {
+	while(pop_cnt <= 8) {
 		sim->pop = true;
 		pop_cnt++;
 		DummyClock(1);
@@ -122,7 +122,7 @@ TEST_F(InstBufferTest, flush) {
 	ASSERT_EQ(sim->empty, true);
 
 	int push_cnt = 0;
-	while(push_cnt < 8) {
+	while(push_cnt <= 8) {
 		sim->push = true;	
 		push_cnt++;
 		DummyClock(1);
@@ -130,7 +130,7 @@ TEST_F(InstBufferTest, flush) {
 	sim->push = false;
 
 	DummyClock(1);	/* feed one clock to update internal register */
-	ASSERT_EQ(push_cnt, 8);
+	ASSERT_EQ(push_cnt, 9);
 	ASSERT_EQ(sim->full, true);
 	ASSERT_EQ(sim->empty, false);
 
