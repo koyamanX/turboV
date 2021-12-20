@@ -1,10 +1,3 @@
-TOP_MODULE=ifetch_unit_test
-OUTDIR=out
-PROJECT_ROOT=../../
-CPP_SOURCE_FILES:=$(TOP_MODULE)_sim.cpp
-
--include $(PROJECT_ROOT)/storm.mk
-
 VERILATOR_FLAGS+=-cc -Wno-lint --trace --trace-underscore -Wno-TIMESCALEMOD -O3 --autoflush -flatten
 LDFLAGS+=-lgtest
 CFLAGS+=-I/usr/src/googletest/googletest/include -I../../common -O3
