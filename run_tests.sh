@@ -8,7 +8,7 @@ ret=0
 for i in *; do 
 	pushd $i &> /dev/null
 		make all
-		make run
+		./$i
 		ret=$((ret+$?))
 	popd &> /dev/null
 done
