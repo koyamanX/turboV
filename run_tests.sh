@@ -6,6 +6,9 @@ pushd tests &> /dev/null
 
 ret=0
 for i in *; do 
+	if [ $i = common ]; then
+		continue
+	fi
 	pushd $i &> /dev/null
 		make all
 		./$i
