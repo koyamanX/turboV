@@ -4,7 +4,6 @@ source image/scripts/env.sh
 
 pushd tests &> /dev/null
 
-ret=0
 for i in *; do 
 	if [ $i = common ]; then
 		continue
@@ -17,4 +16,3 @@ for i in *; do
 done
 		
 popd &> /dev/null
-exit $ret
