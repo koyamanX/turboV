@@ -7,7 +7,8 @@ pushd tests &> /dev/null
 ret=0
 for i in *; do 
 	pushd $i &> /dev/null
-		make
+		make all
+		make run
 		ret=$((ret+$?))
 	popd &> /dev/null
 done
