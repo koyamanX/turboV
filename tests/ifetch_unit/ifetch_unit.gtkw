@@ -1,0 +1,62 @@
+[*]
+[*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
+[*] Mon Dec 20 14:09:56 2021
+[*]
+[dumpfile] "/home/koyaman/devel/storm/tests/ifetch_unit/fetch.vcd"
+[dumpfile_mtime] "Mon Dec 20 14:07:47 2021"
+[dumpfile_size] 102149
+[savefile] "/home/koyaman/devel/storm/tests/ifetch_unit/ifetch_unit.gtkw"
+[timestart] 0
+[size] 1920 2091
+[pos] 1869 -51
+*-6.344296 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.ifetch_unit_test.
+[treeopen] TOP.ifetch_unit_test.ifu.
+[sst_width] 301
+[signals_width] 206
+[sst_expanded] 1
+[sst_vpaned_height] 660
+@28
+TOP.ifetch_unit_test.ifu.m_clock
+TOP.ifetch_unit_test.ifu.reset
+TOP.ifetch_unit_test.ifu.redirect
+TOP.ifetch_unit_test.ifu.st0
+@22
+TOP.ifetch_unit_test.ifu.st0_vpc[31:0]
+@28
+TOP.ifetch_unit_test.ifu.st1
+@22
+TOP.ifetch_unit_test.ifu.st1_vpc[31:0]
+TOP.ifetch_unit_test.ifu.st1_ppc[31:0]
+@28
+TOP.ifetch_unit_test.ifu.st2
+@22
+TOP.ifetch_unit_test.ifu.st2_vpc[31:0]
+TOP.ifetch_unit_test.ifu.st2_ppc[31:0]
+TOP.ifetch_unit_test.ifu.st2_fetch_packet[63:0]
+@28
+TOP.ifetch_unit_test.ifu.stall
+TOP.ifetch_unit_test.ifu.stall_st0
+TOP.ifetch_unit_test.ifu.stall_st1
+TOP.ifetch_unit_test.ifu.stall_st2
+TOP.ifetch_unit_test.ifu.flush
+TOP.ifetch_unit_test.ifu.flush_st0
+TOP.ifetch_unit_test.ifu.flush_st1
+TOP.ifetch_unit_test.ifu.flush_st2
+TOP.ifetch_unit_test.ifu.stall_ifetch
+@22
+TOP.ifetch_unit_test.ifu.stall_ifetch_vpc[31:0]
+@28
+TOP.ifetch_unit_test.ifu._ibuf_empty
+TOP.ifetch_unit_test.ifu._ibuf_full
+TOP.ifetch_unit_test.ifu._ibuf_flush
+TOP.ifetch_unit_test.ifu._ibuf_push
+@22
+TOP.ifetch_unit_test.ifu._ibuf_idata[131:0]
+@28
+TOP.ifetch_unit_test.ifu._ibuf_pop
+@22
+TOP.ifetch_unit_test.ifu._ibuf_odata[131:0]
+[pattern_trace] 1
+[pattern_trace] 0
