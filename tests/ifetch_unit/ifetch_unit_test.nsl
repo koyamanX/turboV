@@ -28,13 +28,15 @@ module ifetch_unit_test {
 	func redirect {
 		ifu.redirect(newpc);
 	}
-	if(!ifu.ibuf_empty) {
+	if(!ifu.ibuf_empty && !redirect) {
 		ifu.ibuf_pop();
 		pop();
 	}
 	func pop seq {
 		packet := ifu.ibuf_fetch_packet;
-		push2(packet);
+		if(!ifu.ibuf_empty && !redirect) {
+			push2(packet);
+		}
 	}
 	WISHBONE_P2P(ifu, ram, wb_syscon);
 }
