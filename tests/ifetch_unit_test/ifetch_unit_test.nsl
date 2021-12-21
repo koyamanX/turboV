@@ -15,6 +15,7 @@ module ifetch_unit_test {
 	ram64x8K ram;
 	reg r = 0;
 	fetch_packet_t reg packet;
+	func_self pop();
 
 	wb_syscon.CLK_I = m_clock;
 	wb_syscon.RST_I = p_reset;
@@ -27,9 +28,15 @@ module ifetch_unit_test {
 	func redirect {
 		ifu.redirect(newpc);
 	}
-	func ifu.push2 seq {
-		packet := ifu.fetch_packet;
-		push2(packet);
+	if(!ifu.ibuf_empty && !redirect) {
+		ifu.ibuf_pop();
+		pop();
+	}
+	func pop seq {
+		packet := ifu.ibuf_fetch_packet;
+		if(!ifu.ibuf_empty && !redirect) {
+			push2(packet);
+		}
 	}
 	WISHBONE_P2P(ifu, ram, wb_syscon);
 }
