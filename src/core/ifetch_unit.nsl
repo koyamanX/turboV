@@ -90,7 +90,7 @@ module ifetch_unit {
 			st0: stall_ifetch(st0_vpc);
 		}
 	}
-	if(stall_ifetch && !ibuf.full) {
+	if(stall_ifetch && !ibuf.full && !redirect) {
 		stall_ifetch.finish();
 		st0(stall_ifetch_vpc);
 	}
