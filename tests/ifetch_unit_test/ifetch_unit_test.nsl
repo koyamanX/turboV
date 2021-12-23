@@ -34,7 +34,7 @@ module ifetch_unit_test {
 	}
 	func pop seq {
 		packet := ifu.ibuf_fetch_packet;
-		if(!ifu.ibuf_empty && !redirect) {
+		if(!redirect) {
 			push2(packet);
 		}
 	}
