@@ -10,25 +10,25 @@ module inst_buffer {
 	func_self internal_empty();
 
 	func push {
-		if(~internal_full) {
-			ibuf[wptr] := idata;
+		if(~internal_full && ~flush) {
+			ibuf[wptr[2:0]] := idata;
 			wptr := next_wptr;
 		}
 	}
 	func pop {
-		if(~internal_empty) {
+		if(~internal_empty && ~flush) {
 			rptr := next_rptr;
-			return ibuf[rptr];
+			return ibuf[rptr[2:0]];
 		}
 	}
 	func flush {
-		rptr := 0;
-		wptr := 0;
+		rptr := 4'b0000;
+		wptr := 4'b0000;
 	}
 	next_rptr = rptr + 1'b1;
 	next_wptr = wptr + 1'b1;
 
-	if(next_wptr[2:0] == rptr) {
+	if(next_wptr[2:0] == rptr[2:0]) {
 		internal_full();
 	}
 	if(rptr == wptr) {

@@ -24,6 +24,8 @@ protected:
 
 	}
 	void DummyClock(uint64_t i) {
+		sim->redirect = false;
+		UpdatePorts();
 		Autorun(i);
 	}
 	void Redirect(uint32_t newpc) {
