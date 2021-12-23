@@ -24,16 +24,19 @@ protected:
 
 	}
 	void DummyClock(uint64_t i) {
+		sim->redirect = redirect;
+		UpdatePorts();
 		Autorun(i);
 	}
 	void Redirect(uint32_t newpc) {
-		sim->redirect = true;
+		redirect = true;
 		sim->newpc = newpc;
 		pc = newpc;
-		Tick();
-		sim->redirect = false;
+		DummyClock(1);
+		redirect = false;
 	}
 	uint32_t pc = 0;
+	bool redirect = false;
 };
 
 TEST_F(IFetchUnitTest, Fetch) {
