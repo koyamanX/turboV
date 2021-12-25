@@ -12,5 +12,11 @@ $ popd
 $ ./run.sh # Now, you can enter development container 
 ```
 
+## Specification
+- The RISC-V Instruction Set Mannual Volume I: Unprivileged ISA
+  - Document Version 20191213
+- The RISC-V Instruction Set Mannual Volume II: Privileged ISA
+  - Document Version 20211203
+
 ## Important Notes
 - This project is still work in progress
