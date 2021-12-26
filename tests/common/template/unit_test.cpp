@@ -9,15 +9,23 @@
 #include <gtest/gtest.h>
 #include "simulator.h"
 
-class _TEMPLATE_UNIT_TEST_NAME_UnitTest : public Simulator<V_TEMPLATE_UNIT_TEST_NAME_, VerilatedVcdC> {
+class _TEMPLATE_UNIT_TEST_NAME_ : public Simulator<V_TEMPLATE_UNIT_TEST_NAME_, VerilatedVcdC> {
 protected:
-	_TEMPLATE_UNIT_TEST_NAME_Test(void) {
+	_TEMPLATE_UNIT_TEST_NAME_(void) {
 
 	}
-	~_TEMPLATE_UNIT_TEST_NAME_Test(void) {
+	~_TEMPLATE_UNIT_TEST_NAME_(void) {
 
 	}
 	void DummyClock(uint64_t i) {
 		Autorun(i);
 	}
 };
+
+int main(int argc, char **argv) {
+	::testing::InitGoogleTest(&argc, argv);
+	Verilated::commandArgs(argc, argv);
+	Verilated::traceEverOn(true);
+
+	return RUN_ALL_TESTS();
+}
