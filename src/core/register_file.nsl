@@ -1,0 +1,147 @@
+#include "register_file.h"
+
+module register_file {
+	// reg x0[32];
+	reg x1[32];
+	reg x2[32];
+	reg x3[32];
+	reg x4[32];
+	reg x5[32];
+	reg x6[32];
+	reg x7[32];
+	reg x8[32];
+	reg x9[32];
+	reg x10[32];
+	reg x11[32];
+	reg x12[32];
+	reg x13[32];
+	reg x14[32];
+	reg x15[32];
+	reg x16[32];
+	reg x17[32];
+	reg x18[32];
+	reg x19[32];
+	reg x20[32];
+	reg x21[32];
+	reg x22[32];
+	reg x23[32];
+	reg x24[32];
+	reg x25[32];
+	reg x26[32];
+	reg x27[32];
+	reg x28[32];
+	reg x29[32];
+	reg x30[32];
+	reg x31[32];
+
+	func reada {
+		any {
+			(rnuma == wnuma && rnuma != 5'b0000 && writea): return wdataa;
+			(rnuma == 5'b00000): return 32'b0;
+			(rnuma == 5'b00001): return x1;
+			(rnuma == 5'b00010): return x2;
+			(rnuma == 5'b00011): return x3;
+			(rnuma == 5'b00100): return x4;
+			(rnuma == 5'b00101): return x5;
+			(rnuma == 5'b00110): return x6;
+			(rnuma == 5'b00111): return x7;
+			(rnuma == 5'b01000): return x8;
+			(rnuma == 5'b01001): return x9;
+			(rnuma == 5'b01010): return x10;
+			(rnuma == 5'b01011): return x11;
+			(rnuma == 5'b01100): return x12;
+			(rnuma == 5'b01101): return x13;
+			(rnuma == 5'b01110): return x14;
+			(rnuma == 5'b01111): return x15;
+			(rnuma == 5'b10000): return x16;
+			(rnuma == 5'b10001): return x17;
+			(rnuma == 5'b10010): return x18;
+			(rnuma == 5'b10011): return x19;
+			(rnuma == 5'b10100): return x20;
+			(rnuma == 5'b10101): return x21;
+			(rnuma == 5'b10110): return x22;
+			(rnuma == 5'b10111): return x23;
+			(rnuma == 5'b11000): return x24;
+			(rnuma == 5'b11001): return x25;
+			(rnuma == 5'b11010): return x26;
+			(rnuma == 5'b11011): return x27;
+			(rnuma == 5'b11100): return x28;
+			(rnuma == 5'b11101): return x29;
+			(rnuma == 5'b11110): return x30;
+			(rnuma == 5'b11111): return x31;
+		}
+	}
+	func readb {
+		any {
+			(rnumb == wnuma && rnumb != 5'b0000 && writea): return wdataa;
+			(rnumb == 5'b00000): return 32'b0;
+			(rnumb == 5'b00001): return x1;
+			(rnumb == 5'b00010): return x2;
+			(rnumb == 5'b00011): return x3;
+			(rnumb == 5'b00100): return x4;
+			(rnumb == 5'b00101): return x5;
+			(rnumb == 5'b00110): return x6;
+			(rnumb == 5'b00111): return x7;
+			(rnumb == 5'b01000): return x8;
+			(rnumb == 5'b01001): return x9;
+			(rnumb == 5'b01010): return x10;
+			(rnumb == 5'b01011): return x11;
+			(rnumb == 5'b01100): return x12;
+			(rnumb == 5'b01101): return x13;
+			(rnumb == 5'b01110): return x14;
+			(rnumb == 5'b01111): return x15;
+			(rnumb == 5'b10000): return x16;
+			(rnumb == 5'b10001): return x17;
+			(rnumb == 5'b10010): return x18;
+			(rnumb == 5'b10011): return x19;
+			(rnumb == 5'b10100): return x20;
+			(rnumb == 5'b10101): return x21;
+			(rnumb == 5'b10110): return x22;
+			(rnumb == 5'b10111): return x23;
+			(rnumb == 5'b11000): return x24;
+			(rnumb == 5'b11001): return x25;
+			(rnumb == 5'b11010): return x26;
+			(rnumb == 5'b11011): return x27;
+			(rnumb == 5'b11100): return x28;
+			(rnumb == 5'b11101): return x29;
+			(rnumb == 5'b11110): return x30;
+			(rnumb == 5'b11111): return x31;
+		}
+	}
+	func writea {
+		any {
+			(wnuma == 5'b00000): ; 
+			(wnuma == 5'b00001): x1 := wdataa;
+			(wnuma == 5'b00010): x2 := wdataa;
+			(wnuma == 5'b00011): x3 := wdataa;
+			(wnuma == 5'b00100): x4 := wdataa;
+			(wnuma == 5'b00101): x5 := wdataa;
+			(wnuma == 5'b00110): x6 := wdataa;
+			(wnuma == 5'b00111): x7 := wdataa;
+			(wnuma == 5'b01000): x8 := wdataa;
+			(wnuma == 5'b01001): x9 := wdataa;
+			(wnuma == 5'b01010): x10 := wdataa;
+			(wnuma == 5'b01011): x11 := wdataa;
+			(wnuma == 5'b01100): x12 := wdataa;
+			(wnuma == 5'b01101): x13 := wdataa;
+			(wnuma == 5'b01110): x14 := wdataa;
+			(wnuma == 5'b01111): x15 := wdataa;
+			(wnuma == 5'b10000): x16 := wdataa;
+			(wnuma == 5'b10001): x17 := wdataa;
+			(wnuma == 5'b10010): x18 := wdataa;
+			(wnuma == 5'b10011): x19 := wdataa;
+			(wnuma == 5'b10100): x20 := wdataa;
+			(wnuma == 5'b10101): x21 := wdataa;
+			(wnuma == 5'b10110): x22 := wdataa;
+			(wnuma == 5'b10111): x23 := wdataa;
+			(wnuma == 5'b11000): x24 := wdataa;
+			(wnuma == 5'b11001): x25 := wdataa;
+			(wnuma == 5'b11010): x26 := wdataa;
+			(wnuma == 5'b11011): x27 := wdataa;
+			(wnuma == 5'b11100): x28 := wdataa;
+			(wnuma == 5'b11101): x29 := wdataa;
+			(wnuma == 5'b11110): x30 := wdataa;
+			(wnuma == 5'b11111): x31 := wdataa;
+		}
+	}
+}
