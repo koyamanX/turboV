@@ -1,0 +1,27 @@
+#include "register_file.h"
+
+declare register_file_unit_test simulation {
+	input rnuma[5];
+	output rdataa[32];
+	func_in reada(rnuma): rdataa;
+	input rnumb[5];
+	output rdatab[32];
+	func_in readb(rnumb): rdatab;
+	input wnuma[5];
+	input wdataa[32];
+	func_in writea(wnuma, wdataa);
+}
+
+module register_file_unit_test {
+	register_file gpr;
+
+	func reada {
+		return gpr.reada(rnuma);
+	}
+	func readb {
+		return gpr.readb(rnumb);
+	}
+	func writea {
+		gpr.writea(wnuma, wdataa);
+	}
+}
