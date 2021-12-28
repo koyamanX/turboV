@@ -1,38 +1,39 @@
 #include "register_file.h"
+#include "riscv.h"
 
 module register_file {
-	// reg x0[32];
-	reg x1[32];
-	reg x2[32];
-	reg x3[32];
-	reg x4[32];
-	reg x5[32];
-	reg x6[32];
-	reg x7[32];
-	reg x8[32];
-	reg x9[32];
-	reg x10[32];
-	reg x11[32];
-	reg x12[32];
-	reg x13[32];
-	reg x14[32];
-	reg x15[32];
-	reg x16[32];
-	reg x17[32];
-	reg x18[32];
-	reg x19[32];
-	reg x20[32];
-	reg x21[32];
-	reg x22[32];
-	reg x23[32];
-	reg x24[32];
-	reg x25[32];
-	reg x26[32];
-	reg x27[32];
-	reg x28[32];
-	reg x29[32];
-	reg x30[32];
-	reg x31[32];
+	// reg x0[XLEN];
+	reg x1[XLEN];
+	reg x2[XLEN];
+	reg x3[XLEN];
+	reg x4[XLEN];
+	reg x5[XLEN];
+	reg x6[XLEN];
+	reg x7[XLEN];
+	reg x8[XLEN];
+	reg x9[XLEN];
+	reg x10[XLEN];
+	reg x11[XLEN];
+	reg x12[XLEN];
+	reg x13[XLEN];
+	reg x14[XLEN];
+	reg x15[XLEN];
+	reg x16[XLEN];
+	reg x17[XLEN];
+	reg x18[XLEN];
+	reg x19[XLEN];
+	reg x20[XLEN];
+	reg x21[XLEN];
+	reg x22[XLEN];
+	reg x23[XLEN];
+	reg x24[XLEN];
+	reg x25[XLEN];
+	reg x26[XLEN];
+	reg x27[XLEN];
+	reg x28[XLEN];
+	reg x29[XLEN];
+	reg x30[XLEN];
+	reg x31[XLEN];
 
 	func reada {
 		any {

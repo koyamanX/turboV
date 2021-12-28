@@ -3,21 +3,22 @@
 #include "icache.h"
 #include "wishbone_master.h"
 #include "wishbone_common.h"
+#include "riscv.h"
 
 #define ALIGN8(s32) {s32[31:3], 3'b000}
 
 module ifetch_unit {
-	reg st0_vpc[32];
+	reg st0_vpc[XLEN];
 	proc_name st0(st0_vpc);
 	func_self tlb_hit;
-	wire va[32];
-	wire pa[32];
+	wire va[XLEN];
+	wire pa[XLEN];
 	func_self v2p(va) : pa;
-	reg st1_vpc[32];
-	reg st1_ppc[32];
+	reg st1_vpc[XLEN];
+	reg st1_ppc[XLEN];
 	proc_name st1(st1_vpc, st1_ppc);
-	reg st2_vpc[32];
-	reg st2_ppc[32];
+	reg st2_vpc[XLEN];
+	reg st2_ppc[XLEN];
 	reg st2_fetch_packet[64];
 	proc_name st2(st2_vpc, st2_ppc, st2_fetch_packet);
 	func_self predict();
@@ -35,7 +36,7 @@ module ifetch_unit {
 	func_self stall_st1();
 	func_self stall_st2();
 	func_self stall();
-	reg stall_ifetch_vpc[32];
+	reg stall_ifetch_vpc[XLEN];
 	proc_name stall_ifetch(stall_ifetch_vpc);
 
 	func reset {
@@ -96,7 +97,7 @@ module ifetch_unit {
 	}
 
 	proc st0 {
-		wire st0_new_pc[32];
+		wire st0_new_pc[XLEN];
 
 		v2p(ALIGN8(st0_vpc));
 		ic.req_cache_read(ALIGN8(st0_vpc));
@@ -130,10 +131,10 @@ module ifetch_unit {
 
 		any {
 			st2_vpc[2]: {
-				ibuf.push({(st2_vpc)[31:0], (st2_vpc+4)[31:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b10});
+				ibuf.push({(st2_vpc)[XLEN-1:0], (st2_vpc+4)[XLEN-1:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b10});
 			}
 			~st2_vpc[2]: {
-				ibuf.push({(st2_vpc)[31:0], (st2_vpc+4)[31:0], st2_fetch_packet[63:0], 2'b00, 2'b11});
+				ibuf.push({(st2_vpc)[XLEN-1:0], (st2_vpc+4)[XLEN-1:0], st2_fetch_packet[63:0], 2'b00, 2'b11});
 			}
 		}
 	}
