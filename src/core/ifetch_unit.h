@@ -2,12 +2,13 @@
 #define IFETCH_UNIT_H
 
 #include "wishbone_common.h"
+#include "riscv.h"
 
 struct fetch_packet_t {
-	pc0[32];
-	pc1[32];
-	inst0[32];
-	inst1[32];
+	pc0[XLEN];
+	pc1[XLEN];
+	inst0[ILEN];
+	inst1[ILEN];
 	pred0[1];
 	pred1[1];
 	valid0[1];
@@ -19,7 +20,7 @@ struct fetch_packet_t {
 
 declare ifetch_unit {
 	func_in reset();
-	input newpc[32];
+	input newpc[XLEN];
 	func_in redirect(newpc);
 	output ibuf_fetch_packet[SIZEOF_FETCH_PACKET_T];
 	func_in ibuf_pop(): ibuf_fetch_packet;
