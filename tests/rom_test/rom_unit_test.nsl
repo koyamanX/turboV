@@ -1,0 +1,15 @@
+#include "bootrom/rom64x2K.h"
+
+declare rom_unit_test simulation {
+
+}
+
+module rom_unit_test {
+	reg r = 0;
+	rom64x2K rom;
+
+	if(!r) {
+		r := !r;
+		rom.reset();
+	}
+}
