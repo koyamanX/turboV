@@ -30,7 +30,7 @@ def gen_rom_loader(mem_cnt):
 
 	with open(rom_loader_filename, "w") as f:
 		for i in range(mem_cnt):
-			f.write("_readmemh(rom{}, {}/rom{}.hex);\n".format(str(i), os.getcwd(), str(i)))
+			f.write("_readmemh(\"{}/rom{}.hex\", rom{});\n".format(str(i), os.getcwd(), str(i)))
 
 def help(argc, argv):
 	print("Usage: {} <hex_file_name> <memory_file_count>".format(argv[0][2:]))
