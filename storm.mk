@@ -11,7 +11,8 @@ CORE_DIR:=$(PROJECT_ROOT)/src/core
 NSL_INCLUDE_DIRS:= \
 	-I$(WISHBONE_DIR) \
 	-I$(INTEGRATION_DIR) \
-	-I$(CORE_DIR)
+	-I$(CORE_DIR) \
+	-I./
 NSL_SOURCE_FILES:= \
 	$(wildcard *.nsl) \
 	$(wildcard $(WISHBONE_DIR)/*.nsl) \
