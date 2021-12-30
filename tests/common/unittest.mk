@@ -7,8 +7,13 @@ CLEAN_FILES+=obj_dir $(TOP_MODULE)
 
 $(OUTDIR)/$(TOP_MODULE).v: $(TOP_MODULE).nsl $(OUTDIR)
 	$(NSL2VL) $(NSLFLAGS) -O0 -verisim2 -target $(TOP_MODULE) $< -o $@
+ifeq ($(REQUIRE_BOOTROM), 1)
 $(OUTDIR)/obj_dir: $(VERILOG_SOURCE_FILES) out/bootrom
 	$(VERILATOR) $(VERILATOR_FLAGS) $(OUTDIR)/*.v --top-module $(TOP_MODULE) --exe $(TOP_MODULE).cpp -LDFLAGS "$(LDFLAGS)" -CFLAGS "$(CFLAGS)"
+else
+$(OUTDIR)/obj_dir: $(VERILOG_SOURCE_FILES)
+	$(VERILATOR) $(VERILATOR_FLAGS) $(OUTDIR)/*.v --top-module $(TOP_MODULE) --exe $(TOP_MODULE).cpp -LDFLAGS "$(LDFLAGS)" -CFLAGS "$(CFLAGS)"
+endif
 $(TOP_MODULE): $(OUTDIR)/obj_dir
 	cd obj_dir && make -f V$(TOP_MODULE).mk V$(TOP_MODULE)
 	cp obj_dir/V$(TOP_MODULE) $(TOP_MODULE)
