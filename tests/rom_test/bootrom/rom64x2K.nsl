@@ -26,17 +26,28 @@ module rom64x2K {
 		wb_slave_if.reset();
 	}
 	func wb_slave_if.req_read {
-		/* Ignore SEL for read */
-		/* TODO: Implement SEL_I */
+		wire b7[8];
+		wire b6[8];
+		wire b5[8];
+		wire b4[8];
+		wire b3[8];
+		wire b2[8];
+		wire b1[8];
+		wire b0[8];
+
+		any {
+			wb_slave_if.req_sel[7]: b7 = rom7[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[6]: b6 = rom6[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[5]: b5 = rom5[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[4]: b4 = rom4[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[3]: b3 = rom3[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[2]: b2 = rom2[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[1]: b1 = rom1[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[0]: b0 = rom0[wb_slave_if.req_addr[13:3]];
+		}
+
 		wb_slave_if.rsp_valid ({
-			rom7[wb_slave_if.req_addr[13:3]],
-			rom6[wb_slave_if.req_addr[13:3]],
-			rom5[wb_slave_if.req_addr[13:3]],
-			rom4[wb_slave_if.req_addr[13:3]],
-			rom3[wb_slave_if.req_addr[13:3]],
-			rom2[wb_slave_if.req_addr[13:3]],
-			rom1[wb_slave_if.req_addr[13:3]],
-			rom0[wb_slave_if.req_addr[13:3]]
+			b7, b6, b5, b4, b3, b2, b1, b0
 		});
 	}
 	func wb_slave_if.req_write {

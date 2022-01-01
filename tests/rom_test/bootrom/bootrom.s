@@ -1,4 +1,2 @@
-ecall
-ecall
-ecall
-ecall
+_boot:
+	.word 0xffaabbcc
