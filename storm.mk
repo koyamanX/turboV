@@ -70,7 +70,9 @@ $(OUTDIR)/%.v: $(CORE_DIR)/%.nsl $(OUTDIR)
 	$(NSL2VL) $(NSLFLAGS) $< -o $@
 $(OUTDIR)/bootrom:
 	make -C $(BOOTROM_DIR)
-	cp $(BOOTROM_DIR)/*.hex $(BOOTROM_DIR)/*.v $(OUTDIR)
+	cp $(BOOTROM_DIR)/*.v $(OUTDIR)
+	cp $(BOOTROM_DIR)/*.hex ./
 clean:
 	rm -rf $(OUTDIR) $(CLEAN_FILES) *.vcd
 	make -C $(BOOTROM_DIR) clean
+	rm -rf *.hex
