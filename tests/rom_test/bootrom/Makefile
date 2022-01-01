@@ -14,4 +14,4 @@ bootrom: bootrom.s
 rom64x2K.v: bootrom rom64x2K.nsl rom64x2K.h
 	$(NSL2VL) rom64x2K.nsl -o rom64x2K.v -I./ -I../../../src/wishbone -O2
 clean:
-	rm -rf *.hex bootrom bootrom.o
+	rm -rf *.hex bootrom bootrom.o rom64x2K.v
