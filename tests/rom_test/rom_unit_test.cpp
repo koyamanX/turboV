@@ -56,6 +56,20 @@ TEST_F(rom_unit_test, ReadTest) {
 	ASSERT_FALSE(sim->rsp_error);
 	ASSERT_FALSE(sim->rsp_retry);
 	ASSERT_FALSE(sim->rsp_stall);
+
+	Tick();
+	Tick();
+
+	ReadReq(0x0, 0x0f);
+	Tick();
+	UpdatePorts();
+	ASSERT_TRUE(sim->rsp_valid);
+	EXPECT_EQ(sim->rsp_data&0xffffffff, 0xffaabbcc);
+	ASSERT_TRUE(sim->req_stall);
+	ASSERT_FALSE(sim->rsp_error);
+	ASSERT_FALSE(sim->rsp_retry);
+	ASSERT_FALSE(sim->rsp_stall);
+
 }
 
 int main(int argc, char **argv) {
