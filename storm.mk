@@ -11,7 +11,8 @@ CORE_DIR:=$(PROJECT_ROOT)/src/core
 NSL_INCLUDE_DIRS:= \
 	-I$(WISHBONE_DIR) \
 	-I$(INTEGRATION_DIR) \
-	-I$(CORE_DIR)
+	-I$(CORE_DIR) \
+	-I./
 NSL_SOURCE_FILES:= \
 	$(wildcard *.nsl) \
 	$(wildcard $(WISHBONE_DIR)/*.nsl) \
@@ -27,6 +28,7 @@ LDFLAGS=-lpthread
 VERILATOR_FLAGS=
 
 CLEAN_FILES=
+BOOTROM_DIR=
 
 .PHONY: all out clean
 
@@ -66,5 +68,11 @@ $(OUTDIR)/%.v: $(INTEGRATION_DIR)/%.nsl $(OUTDIR)
 	$(NSL2VL) $(NSLFLAGS) $< -o $@
 $(OUTDIR)/%.v: $(CORE_DIR)/%.nsl $(OUTDIR)
 	$(NSL2VL) $(NSLFLAGS) $< -o $@
+$(OUTDIR)/bootrom:
+	make -C $(BOOTROM_DIR)
+	cp $(BOOTROM_DIR)/*.v $(OUTDIR)
+	cp $(BOOTROM_DIR)/*.hex ./
 clean:
 	rm -rf $(OUTDIR) $(CLEAN_FILES) *.vcd
+	make -C $(BOOTROM_DIR) clean
+	rm -rf *.hex

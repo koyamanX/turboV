@@ -1,0 +1,57 @@
+#include "wishbone_slave.h"
+#include "wishbone_common.h"
+#include "rom64x2K.h"
+
+module rom64x2K {
+	wishbone_slave wb_slave_if;
+	mem rom0[2048][8];
+	mem rom1[2048][8];
+	mem rom2[2048][8];
+	mem rom3[2048][8];
+	mem rom4[2048][8];
+	mem rom5[2048][8];
+	mem rom6[2048][8];
+	mem rom7[2048][8];
+
+	_readmemh("./rom0.hex", rom0);
+	_readmemh("./rom1.hex", rom1);
+	_readmemh("./rom2.hex", rom2);
+	_readmemh("./rom3.hex", rom3);
+	_readmemh("./rom4.hex", rom4);
+	_readmemh("./rom5.hex", rom5);
+	_readmemh("./rom6.hex", rom6);
+	_readmemh("./rom7.hex", rom7);
+
+	func reset {
+		wb_slave_if.reset();
+	}
+	func wb_slave_if.req_read {
+		wire b7[8];
+		wire b6[8];
+		wire b5[8];
+		wire b4[8];
+		wire b3[8];
+		wire b2[8];
+		wire b1[8];
+		wire b0[8];
+
+		any {
+			wb_slave_if.req_sel[7]: b7 = rom7[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[6]: b6 = rom6[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[5]: b5 = rom5[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[4]: b4 = rom4[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[3]: b3 = rom3[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[2]: b2 = rom2[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[1]: b1 = rom1[wb_slave_if.req_addr[13:3]];
+			wb_slave_if.req_sel[0]: b0 = rom0[wb_slave_if.req_addr[13:3]];
+		}
+
+		wb_slave_if.rsp_valid ({
+			b7, b6, b5, b4, b3, b2, b1, b0
+		});
+	}
+	func wb_slave_if.req_write {
+		wb_slave_if.rsp_valid(0);
+	}
+	WISHBONE_SLAVE_IF(wb_slave_if);
+}
