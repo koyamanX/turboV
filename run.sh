@@ -11,4 +11,5 @@ docker run -it --rm \
 	-v $(pwd)/tests:/root/tests \
 	-v $(pwd)/storm.mk:/root/storm.mk \
 	-v $(pwd)/run_tests.sh:/root/run_tests.sh \
+	-v $(pwd)/CMakeLists.txt:/root/CMakeLists.txt \
 	storm_dev:v1.0 $1
