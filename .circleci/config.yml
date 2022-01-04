@@ -15,6 +15,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: "Set ENV"
+          command: echo ". $(pwd)/image/scripts/env.sh" >> $BASH_ENV
+      - run:
           name: "Create Build Directory"
           command: "mkdir build"
       - run:
