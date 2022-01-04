@@ -40,4 +40,15 @@ list(APPEND CXX_FLAGS
 list(APPEND LDFLAGS
 	"-lgtest"
 )
+
+function(add_verilator module_name)
+	add_custom_target(V${module_name}
+		COMMAND verilator ${verilator_flags} ${verilator_include} *.v --top-module ${module_name} --exe ${CMAKE_CURRENT_SOURCE_DIR}/${module_name}.cpp -CFLAGS ${CXX_FLAGS} -LDFLAGS ${LDFLAGS}
+		COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}/obj_dir && make -f V${module_name}.mk V${module_name} -j$(nproc)
+		DEPENDS
+			${CMAKE_CURRENT_BINARY_DIR}/${module_name}.v
+			${ARGN}
+	)
+endfunction()
+
 add_subdirectory(register_file_test)
