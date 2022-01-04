@@ -53,3 +53,4 @@ endfunction()
 
 add_subdirectory(register_file_test)
 add_subdirectory(ifetch_unit_test)
+add_subdirectory(inst_buffer_test)
