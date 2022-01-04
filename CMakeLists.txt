@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.18)
 
 project(storm)
+enable_testing()
+include(CTest)
 
 set(NSL2VL nsl2vl)
 set(IVERILOG iverilog)
