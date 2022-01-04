@@ -19,20 +19,20 @@ jobs:
           command: "mkdir build"
       - run:
           name: "cmake"
-          command: "cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=./"
           working_directory: ~/build
+          command: "cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=./"
       - run:
           name: "Build"
-          command: "make"
           working_directory: ~/build
+          command: "make"
       - run:
           name: "Install Test"
-          command: "make install"
           working_directory: ~/build
+          command: "make install"
       - run:
           name: "Unit Test"
-          command: "make test"
           working_directory: ~/build
+          command: "make test"
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
