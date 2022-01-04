@@ -15,9 +15,23 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "Run unit tests"
-          command: "./run_tests.sh"
-
+          name: "Create Build Directory"
+          command: "mkdir build"
+      - run:
+          name: "Change directory"
+          command: "cd build"
+      - run:
+          name: "cmake"
+          command: "cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=./"
+      - run:
+          name: "Build"
+          command: "make"
+      - run:
+          name: "Install Test"
+          command: "make install"
+      - run:
+          name: "Unit Test"
+          command: "make test"
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
