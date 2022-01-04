@@ -37,9 +37,7 @@ list(APPEND CXX_FLAGS
 	"-I/usr/src/googletest/googletest/include"
 	"-O3"
 )
-list(APPEND LDFLAGS
-	"-lgtest"
-)
+set(LDFLAGS "-lgtest -lpthread")
 
 function(add_verilator module_name)
 	add_custom_target(V${module_name} ALL
