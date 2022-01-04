@@ -17,7 +17,7 @@ jobs:
       - run:
           name: "Create Build Directory"
           command: "mkdir build"
-      - working_directory: build
+      - working_directory: ~/build
       - run:
           name: "cmake"
           command: "cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=./"
