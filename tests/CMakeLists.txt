@@ -52,3 +52,4 @@ function(add_verilator module_name)
 endfunction()
 
 add_subdirectory(register_file_test)
+add_subdirectory(ifetch_unit_test)
