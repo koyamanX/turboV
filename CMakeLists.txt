@@ -50,3 +50,4 @@ function(add_nsl_target input output)
 endfunction()
 
 add_subdirectory(src)
+add_subdirectory(tests)
