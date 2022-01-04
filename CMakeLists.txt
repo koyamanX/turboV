@@ -14,11 +14,8 @@ list(APPEND NSL_INCLUDE
 	"-I${CMAKE_SOURCE_DIR}/src/integration"
 	"-I${CMAKE_SOURCE_DIR}/src/wishbone"
 )
-list(APPEND NSLOPTS
-	"-O2"
-)
 list(APPEND NSL_FLAGS
-	""
+	"-O2"
 )
 list(APPEND IVERILOG_FLAGS
 	""
@@ -47,7 +44,7 @@ function(add_nsl_target input output)
 	list(APPEND nsl_depends_list ${ARGN})
 	add_custom_command(
 		OUTPUT ${output}
-		COMMAND nsl2vl ${NSLOPTS} ${NSL_INCLUDE} ${input} -o ${output}
+		COMMAND nsl2vl ${NSL_FLAGS} ${NSL_INCLUDE} ${input} -o ${output}
 		DEPENDS ${nsl_depends_list}
 	)
 endfunction()

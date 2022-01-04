@@ -1,4 +1,4 @@
-list(APPEND NSLOPTS
+list(APPEND NSL_FLAGS
 	"-clock_name CLK_I"
 	"-reset_name RST_I"
 )
