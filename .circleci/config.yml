@@ -15,12 +15,32 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "Run unit tests"
-          command: "./run_tests.sh"
-
+          name: "Set ENV"
+          command: echo ". $(pwd)/image/scripts/env.sh" >> $BASH_ENV
+      - run:
+          name: "Create Build Directory"
+          command: "mkdir build"
+      - run:
+          name: "cmake"
+          working_directory: build
+          command: "cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=./"
+      - run:
+          name: "Build"
+          working_directory: build
+          command: "make"
+      - run:
+          name: "Install Test"
+          working_directory: build
+          command: "make install"
+      - run:
+          name: "Unit Test"
+          working_directory: build
+          command: "make test"
+      - store_test_results:
+          path: test-results
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  say-hello-workflow:
+  unit-test-workflow:
     jobs:
       - unit-tests
