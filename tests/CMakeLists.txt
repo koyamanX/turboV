@@ -10,7 +10,7 @@ function(add_nsl_test target input output)
 	add_custom_command(
 		OUTPUT ${output}
 		COMMAND nsl2vl ${NSL_FLAGS} ${NSL_INCLUDE} -verisim2 -target ${target} ${input} -o ${output}
-		DEPENDS ${nsl_depends_list}
+		#DEPENDS ${nsl_depends_list}
 	)
 endfunction()
 
