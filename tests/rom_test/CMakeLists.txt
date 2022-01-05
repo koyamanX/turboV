@@ -1,4 +1,4 @@
-set(test_name rom_test)
+set(test_name rom_unit_test)
 
 add_nsl_test(${test_name} ${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.nsl ${CMAKE_CURRENT_BINARY_DIR}/${test_name}.v)
 add_verilator(${test_name} core wishbone integration)
