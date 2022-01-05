@@ -1,7 +1,7 @@
 #include "wishbone_master.h"
 #include "wishbone_common.h"
 #include "wishbone_syscon.h"
-#include "bootrom/rom64x2K.h"
+#include "rom64x2K.h"
 
 declare rom_unit_test simulation {
 	WISHBONE_MASTER_ACCESS_IN_PORTS(32, 64, 8)

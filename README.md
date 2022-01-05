@@ -12,6 +12,17 @@ $ popd
 $ ./run.sh # Now, you can enter development container 
 ```
 
+## Unit Test
+```bash
+./run.sh
+mkdir build
+cd build
+cmake ../ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=./
+make
+make install
+make test
+```
+
 ## Specification
 - The RISC-V Instruction Set Mannual Volume I: Unprivileged ISA
   - Document Version 20191213
