@@ -14,3 +14,5 @@ Table of Contents
    :maxdepth: 2
 
    introduction.rst
+   overview.rst
+   instruction_fetch_unit.rst
