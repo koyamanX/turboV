@@ -7,53 +7,21 @@
 Class Diagram
 -------------
 
-.. uml::
+.. uml:: _static/plantuml/class_diagram_instruction_decoder.puml
 
-	class instruction_decoder {
-		input inst[32]
-		func_in decode(inst)
-		output rd[5]
-		output rs1[5]
-		output rs2[5]
-		output funct3[3]
-		output funct7[7]
-		output funct12[12]
-		output beq
-		output bne
-		output blt
-		output bltu
-		output bge
-		output bgeu
-		output imm[32]
-		output fn[4]
+Opcode map
+----------
 
-		func_out load()
-		func_out store()
-		func_out branch()
-		func_out jalr()
-		func_out misc_mem()
-		func_out amo()
-		func_out jal()
-		func_out op_imm()
-		func_out op()
-		func_out system()
-		func_out auipc()
-		func_out lui()
-	}
-
-	class imm_gen {
-
-	}
-
-	instruction_decoder *- imm_gen
-
-Sequence Diagram
-----------------
-
-State Machine Diagram
----------------------
-
-Activity Diagram
-----------------
-
-
+	+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+
+	| inst[4:2] | 000       | 001       | 010       | 011       | 100       | 101       | 110       | 111       |
+	+-----------+           |           |           |           |           |           |           |           |
+	| inst[6:5] |           |           |           |           |           |           |           | (> 32b)   |
+	+===========+===========+===========+===========+===========+===========+===========+===========+===========+
+	|        00 | LOAD      |           |           | MISC-MEM  | OP-IMM    | AUIPC     |           | 48b       |
+	+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+
+	|        01 | STORE     |           |           | AMO       | OP        | LUI       |           | 64b       |
+	+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+
+	|        10 |           |           |           |           |           |           |           | 48b       |
+	+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+
+	|        11 | BRANCH    | JALR      |           | JAL       | SYSTEM    |           |           | >= 80b    |
+	+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+
