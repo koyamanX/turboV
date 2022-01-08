@@ -1,0 +1,30 @@
+#include "instruction_decoder.h"
+#include "inst.h"
+#include "opcode_map.h"
+
+module instruction_decoder {
+	r_type_t wire r_type_inst;
+	i_type_t wire i_type_inst;
+	s_type_t wire s_type_inst;
+	b_type_t wire b_type_inst;
+	u_type_t wire u_type_inst;
+	j_type_t wire j_type_inst;
+	
+	func decode {
+		wire opcode[7];
+
+		r_type_inst = inst;
+		i_type_inst = inst;
+		s_type_inst = inst;
+		b_type_inst = inst;
+		u_type_inst = inst;
+		j_type_inst = inst;
+
+		opcode = r_type_inst.opcode;
+
+		any {
+			opcode == OP: op(r_type_inst.rd, r_type_inst.rs1, r_type_inst.rs2, 0);	
+			else: illegal_instruction();
+		}
+	}
+}

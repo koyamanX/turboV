@@ -16,3 +16,4 @@ Table of Contents
    introduction.rst
    overview.rst
    instruction_fetch_unit.rst
+   instruction_decoder.rst

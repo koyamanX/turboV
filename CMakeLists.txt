@@ -42,7 +42,7 @@ function(add_nsl_target input output)
 		COMMAND sed "s/ //"
 		OUTPUT_VARIABLE nsl_depends
 	)
-	string(REPLACE " \\\n" ";" nsl_depends_list ${nsl_depends})
+#string(REPLACE " \\\n" ";" nsl_depends_list ${nsl_depends})
 	list(APPEND nsl_depends_list ${ARGN})
 	add_custom_command(
 		OUTPUT ${output}
