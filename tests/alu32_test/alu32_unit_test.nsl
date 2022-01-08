@@ -1,0 +1,17 @@
+#include "alu32.h"
+
+declare alu32_unit_test simulation {
+	input a[32];
+	input b[32];
+	input fn[4];
+	output q[32];
+	func_in exe(a, b, fn): q;
+}
+
+module alu32_unit_test {
+	alu32 alu;
+
+	func exe {
+		return alu.exe(a, b, fn);	
+	}
+}
