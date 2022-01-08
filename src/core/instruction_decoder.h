@@ -27,7 +27,7 @@ declare instruction_decoder {
 	func_out amo();
 	func_out jal();
 	func_out op_imm();
-	func_out op();
+	func_out op(rd, rs1, rs2, fn);
 	func_out system();
 	func_out auipc();
 	func_out lui();
