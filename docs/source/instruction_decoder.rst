@@ -45,3 +45,13 @@ Instruction Types
 
 Imm_gen
 -------
+
+.. literalinclude:: ../../src/core/imm_gen.h
+	:linenos:
+	:lines: 4-13
+	:caption: src/core/imm_gen.h
+	:name: imm_gen.h
+
+Usage:
+	Assert one of `i_type`, `s_type`, `b_type`, `u_type` or `j_type` with `inst` to fetch `imm` value.
+	In the same cycle, it returns `imm` value extracted from `inst`.
