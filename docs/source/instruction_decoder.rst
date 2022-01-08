@@ -31,3 +31,8 @@ Opcode map
 	:lines: 4-15
 	:caption: opcode_map.h
 	:name: opcode_map.h
+
+Imm_gen
+-------
+
+.. image:: _static/images/Type_of_instructions.png
