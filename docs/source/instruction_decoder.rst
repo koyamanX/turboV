@@ -35,4 +35,4 @@ Opcode map
 Imm_gen
 -------
 
-.. image:: _static/images/Type_of_instructions.png
+.. image:: tex2image/Type_of_instructions.png
