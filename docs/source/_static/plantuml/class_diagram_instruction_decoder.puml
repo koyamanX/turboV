@@ -29,6 +29,7 @@
 		func_out system()
 		func_out auipc()
 		func_out lui()
+		func_out illegal_instruction()
 	}
 
 	class imm_gen {

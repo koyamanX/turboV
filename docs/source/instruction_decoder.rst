@@ -9,6 +9,20 @@ Class Diagram
 
 .. uml:: _static/plantuml/class_diagram_instruction_decoder.puml
 
+instruction_decoder
+-------------------
+
+.. literalinclude:: ../../src/core/instruction_decoder.h
+	:linenos:
+	:lines: 4-35
+	:caption: src/core/instruction_decoder.h
+	:name: instrcution_decoder.h
+
+Usage:
+	Assert `decode` with `inst` to be decoded.
+	This module asserts types of instruction with instruction fields.
+	On failure, it asserts `illegal_instruction`.
+
 Opcode map
 ----------
 
