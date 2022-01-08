@@ -29,10 +29,19 @@ Opcode map
 .. literalinclude:: ../../src/core/opcode_map.h
 	:linenos:
 	:lines: 4-15
-	:caption: opcode_map.h
+	:caption: src/core/opcode_map.h
 	:name: opcode_map.h
+
+Instruction Types
+-----------------
+
+.. image:: tex2image/Type_of_instructions.png
+
+.. literalinclude:: ../../src/core/inst.h
+	:linenos:
+	:lines: 4-49
+	:caption: src/core/inst.h
+	:name: inst.h
 
 Imm_gen
 -------
-
-.. image:: tex2image/Type_of_instructions.png
