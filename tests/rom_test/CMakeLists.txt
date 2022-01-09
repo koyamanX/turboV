@@ -13,15 +13,15 @@ set(CMAKE_ASM_COMPILER /opt/riscv/bin/riscv32-unknown-elf-as)
 set(CMAKE_LINKER /opt/riscv/bin/riscv32-unknown-elf-ld)
 set(CMAKE_C_FLAGS "-march=rv32i -nostartfiles")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${CMAKE_CURRENT_SOURCE_DIR}/bootrom.ldS")
-add_executable(bootrom.elf
+add_executable(rom_test_bootrom.elf
 	${CMAKE_CURRENT_SOURCE_DIR}/bootrom.S
 )
-set_target_properties(bootrom.elf PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(rom_test_bootrom.elf PROPERTIES LINKER_LANGUAGE C)
 
-add_custom_target(bootrom.hex
-	COMMAND /opt/riscv/bin/riscv32-unknown-elf-objcopy -O verilog bootrom.elf bootrom.hex
+add_custom_target(rom_test_bootrom.hex
+	COMMAND /opt/riscv/bin/riscv32-unknown-elf-objcopy -O verilog rom_test_bootrom.elf rom_test_bootrom.hex
 	COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../tools/gen_rom_data.py ${CMAKE_CURRENT_BINARY_DIR}/bootrom.hex 8
-	DEPENDS bootrom.elf
+	DEPENDS rom_test_bootrom.elf
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/obj_dir/V${test_name}
