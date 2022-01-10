@@ -1,0 +1,18 @@
+#include "storm.h"
+#include "ifetch_unit.h"
+#include "wishbone_common.h"
+
+module storm {
+	ifetch_unit ifu;
+	proc_name decode();
+	proc_name execute();
+	proc_name memory();
+	proc_name writeback();
+
+	func reset {
+		ifu.reset();
+		ifu.redirect(resetvector);
+	}
+
+	WISHBONE_MASTER_IF(ifu);
+}
