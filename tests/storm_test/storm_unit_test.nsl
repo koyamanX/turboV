@@ -1,0 +1,23 @@
+#include "storm.h"
+#include "wishbone_common.h"
+#include "wishbone_syscon.h"
+#include "rom64x2K.h"
+
+declare storm_unit_test simulation {
+	input resetvector[32];
+	func_in reset(resetvector);
+}
+
+module storm_unit_test {
+	storm core;
+	wishbone_syscon wb_syscon;
+	rom64x2K wb_rom;
+
+	func reset {
+		core.reset(resetvector);
+		wb_rom.reset();
+	}
+	wb_syscon.CLK_I = m_clock;
+	wb_syscon.RST_I = p_reset;
+	WISHBONE_P2P(core, wb_rom, wb_syscon);
+}
