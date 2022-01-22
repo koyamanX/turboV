@@ -1,0 +1,48 @@
+#include "reorder_buffer.h"
+
+module reorder_buffer {
+	mem rob[4][SIZEOF_REORDER_BUFFER_T] = {0};
+	reg tail[3] = 0;
+	reg head[3] = 0;
+	wire next_tail[3];
+	wire next_head[3];
+	reorder_buffer_t wire commit_entry;
+	integer i_;
+
+	next_tail = tail + 1;
+	next_head = head + 1;
+	func push {
+		reorder_buffer_t wire push_entry;
+
+		push_entry.Valid0 = valid0;
+		push_entry.Busy0 = 1;
+		push_entry.PC0 = pc0;
+		push_entry.Inst0 = inst0;
+		push_entry.Dest0 = dest0;
+		push_entry.Value0 = 0;
+		push_entry.Valid1 = valid1;
+		push_entry.Busy1 = 1;
+		push_entry.PC1 = pc1;
+		push_entry.Inst1 = inst1;
+		push_entry.Dest1 = dest1;
+		push_entry.Value1 = 0;
+		rob[tail] := push_entry;
+		tail := next_tail;
+
+		return tail;
+	}
+
+	func flush {
+		generate(i_ = 0; i_ < 2; i_++) {
+			rob[i_] := 0;
+		}
+	}
+	commit_entry = rob[head];
+	if(commit_entry.Valid0 && !commit_entry.Busy0 && commit_entry.Valid1 && !commit_entry.Busy1) {
+		head := next_head;
+		commit();
+	}
+	if(next_tail[1:0] == head) {
+		full();
+	}
+}
