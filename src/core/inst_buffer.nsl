@@ -28,7 +28,7 @@ module inst_buffer {
 	next_rptr = rptr + 1'b1;
 	next_wptr = wptr + 1'b1;
 
-	if(next_wptr[2:0] == rptr) {
+	if((wptr[2:0] == rptr[2:0]) && (wptr[3] != rptr[3])) {
 		internal_full();
 	}
 	if(rptr == wptr) {
