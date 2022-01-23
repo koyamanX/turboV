@@ -12,37 +12,43 @@ module reorder_buffer {
 	next_tail = tail + 1;
 	next_head = head + 1;
 	func push {
-		reorder_buffer_t wire push_entry;
+		if(!flush) {
+			reorder_buffer_t wire push_entry;
 
-		push_entry.Valid0 = valid0;
-		push_entry.Busy0 = 1;
-		push_entry.PC0 = pc0;
-		push_entry.Inst0 = inst0;
-		push_entry.Dest0 = dest0;
-		push_entry.Value0 = 0;
-		push_entry.Valid1 = valid1;
-		push_entry.Busy1 = 1;
-		push_entry.PC1 = pc1;
-		push_entry.Inst1 = inst1;
-		push_entry.Dest1 = dest1;
-		push_entry.Value1 = 0;
-		rob[tail] := push_entry;
-		tail := next_tail;
+			push_entry.Valid0 = valid0;
+			push_entry.Busy0 = 1;
+			push_entry.PC0 = pc0;
+			push_entry.Inst0 = inst0;
+			push_entry.Dest0 = dest0;
+			push_entry.Value0 = 0;
+			push_entry.Valid1 = valid1;
+			push_entry.Busy1 = 1;
+			push_entry.PC1 = pc1;
+			push_entry.Inst1 = inst1;
+			push_entry.Dest1 = dest1;
+			push_entry.Value1 = 0;
+			rob[tail] := push_entry;
+			tail := next_tail;
 
-		return tail;
+			return tail;
+		}
 	}
 
 	func flush {
-		generate(i_ = 0; i_ < 2; i_++) {
+		generate(i_ = 0; i_ < 4; i_++) {
 			rob[i_] := 0;
 		}
+		head := 0;
+		tail := 0;
 	}
 	commit_entry = rob[head];
 	if(commit_entry.Valid0 && !commit_entry.Busy0 && commit_entry.Valid1 && !commit_entry.Busy1) {
-		head := next_head;
-		commit();
+		if(!flush) {
+			head := next_head;
+			commit();
+		}
 	}
-	if(next_tail[1:0] == head) {
+	if((tail[1:0] == head[1:0]) && (tail[2] != head[2])) {
 		full();
 	}
 }

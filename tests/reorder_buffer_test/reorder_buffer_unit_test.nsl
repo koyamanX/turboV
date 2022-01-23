@@ -1,0 +1,34 @@
+#include "reorder_buffer.h"
+
+declare reorder_buffer_unit_test simulation {
+	input valid0;
+	input pc0[32];
+	input inst0[32];
+	input dest0[4];
+	input valid1;
+	input pc1[32];
+	input inst1[32];
+	input dest1[4];
+	output tag[2];
+	func_in push(valid0, pc0, inst0, dest0, valid1, pc1, inst1, dest1): tag;
+	func_in flush();
+	func_out full();
+	func_out commit();
+}
+
+module reorder_buffer_unit_test {
+	reorder_buffer rob;
+
+	func push {
+		return rob.push(valid0, pc0, inst0, dest0, valid1, pc1, inst1, dest1);
+	}
+	func flush {
+		rob.flush();
+	}
+	func rob.full {
+		full();
+	}
+	func rob.commit {
+		commit();
+	}
+}
