@@ -1,0 +1,201 @@
+#include "reservation_station.h"
+
+module reservation_station {
+	reservation_station_t reg rs0 = 0;
+	reservation_station_t reg rs1 = 0;
+	reservation_station_t reg rs2 = 0;
+	reservation_station_t reg rs3 = 0;
+	reservation_station_t reg rs4 = 0;
+	reservation_station_t reg rs5 = 0;
+	reservation_station_t reg rs6 = 0;
+	reservation_station_t reg rs7 = 0;
+	func_self free_rs0;
+	func_self free_rs1;
+	func_self free_rs2;
+	func_self free_rs3;
+	func_self free_rs4;
+	func_self free_rs5;
+	func_self free_rs6;
+	func_self free_rs7;
+	reg tag[4] = 0;
+
+	func issue {
+		if(!flush) {
+			rs0.Busy1 := Valid1;
+			rs0.Busy0 := Valid0;
+			rs0.Tag1 := tag + 1;
+			rs0.Tag0 := tag;
+			rs0.Op1 := Op1;
+			rs0.Op0 := Op0;
+			rs0.Vj1 := Vj1;
+			rs0.Vj0 := Vj0;
+			rs0.Vk1 := Vk1;
+			rs0.Vk0 := Vk0;
+			rs0.Qj1 := Qj1;
+			rs0.Qj0 := Qj0;
+			rs0.Qk1 := Qk1;
+			rs0.Qk0 := Qk0;
+			rs0.Dest1 := Dest1;
+			rs0.Dest0 := Dest0;
+			rs0.A1 := A1;
+			rs0.A0 := A0;
+			tag := tag + 2;
+			any {
+				((!rs1.Busy1 && !rs1.Busy0) || free_rs1): rs1 := rs0;
+				((!rs2.Busy1 && !rs2.Busy0) || free_rs2): rs2 := rs1;
+				((!rs3.Busy1 && !rs3.Busy0) || free_rs3): rs3 := rs2;
+				((!rs4.Busy1 && !rs4.Busy0) || free_rs4): rs4 := rs3;
+				((!rs5.Busy1 && !rs5.Busy0) || free_rs5): rs5 := rs4;
+				((!rs6.Busy1 && !rs6.Busy0) || free_rs6): rs6 := rs5;
+				((!rs7.Busy1 && !rs7.Busy0) || free_rs7): rs7 := rs6;
+			}
+			return tag;
+		}
+	}
+	func wakeup {
+		if(!flush) {
+			alt {
+				rs7.Busy1 && rs7.Qj1 == 5'b00000 && rs7.Qk1 == 5'b00000: {
+					rs7.Busy1 := 0;
+					dispatch();
+					if(rs7.Busy0) free_rs7();
+				}
+				rs7.Busy0 && rs7.Qj0 == 5'b00000 && rs7.Qk0 == 5'b00000: {
+					rs7.Busy0 := 0;
+					dispatch();
+					if(rs7.Busy1) free_rs7();
+				}
+				rs6.Busy1 && rs6.Qj1 == 5'b00000 && rs6.Qk1 == 5'b00000: {
+					rs6.Busy1 := 0;
+					dispatch();
+					if(rs6.Busy0) free_rs6();
+				}
+				rs6.Busy0 && rs6.Qj0 == 5'b00000 && rs6.Qk0 == 5'b00000: {
+					rs6.Busy0 := 0;
+					dispatch();
+					if(rs6.Busy1) free_rs6();
+				}
+				rs5.Busy1 && rs5.Qj1 == 5'b00000 && rs5.Qk1 == 5'b00000: {
+					rs5.Busy1 := 0;
+					dispatch();
+					if(rs5.Busy0) free_rs5();
+				}
+				rs5.Busy0 && rs5.Qj0 == 5'b00000 && rs5.Qk0 == 5'b00000: {
+					rs5.Busy0 := 0;
+					dispatch();
+					if(rs5.Busy1) free_rs5();
+				}
+				rs4.Busy1 && rs4.Qj1 == 5'b00000 && rs4.Qk1 == 5'b00000: {
+					rs4.Busy1 := 0;
+					dispatch();
+					if(rs4.Busy0) free_rs4();
+				}
+				rs4.Busy0 && rs4.Qj0 == 5'b00000 && rs4.Qk0 == 5'b00000: {
+					rs4.Busy0 := 0;
+					dispatch();
+					if(rs4.Busy1) free_rs4();
+				}
+				rs3.Busy1 && rs3.Qj1 == 5'b00000 && rs3.Qk1 == 5'b00000: {
+					rs3.Busy1 := 0;
+					dispatch();
+					if(rs3.Busy0) free_rs3();
+				}
+				rs3.Busy0 && rs3.Qj0 == 5'b00000 && rs3.Qk0 == 5'b00000: {
+					rs3.Busy0 := 0;
+					dispatch();
+					if(rs3.Busy1) free_rs3();
+				}
+				rs2.Busy1 && rs2.Qj1 == 5'b00000 && rs2.Qk1 == 5'b00000: {
+					rs2.Busy1 := 0;
+					dispatch();
+					if(rs2.Busy0) free_rs2();
+				}
+				rs2.Busy0 && rs2.Qj0 == 5'b00000 && rs2.Qk0 == 5'b00000: {
+					rs2.Busy0 := 0;
+					dispatch();
+					if(rs2.Busy1) free_rs2();
+				}
+				rs1.Busy1 && rs1.Qj1 == 5'b00000 && rs1.Qk1 == 5'b00000: {
+					rs1.Busy1 := 0;
+					dispatch();
+					if(rs1.Busy0) free_rs1();
+				}
+				rs1.Busy0 && rs1.Qj0 == 5'b00000 && rs1.Qk0 == 5'b00000: {
+					rs1.Busy0 := 0;
+					dispatch();
+					if(rs1.Busy1) free_rs1();
+				}
+				rs0.Busy1 && rs0.Qj1 == 5'b00000 && rs0.Qk1 == 5'b00000: {
+					rs0.Busy1 := 0;
+					dispatch();
+					if(rs0.Busy0) free_rs0();
+				}
+				rs0.Busy0 && rs0.Qj0 == 5'b00000 && rs0.Qk0 == 5'b00000: {
+					rs0.Busy0 := 0;
+					dispatch();
+					if(rs0.Busy1) free_rs0();
+				}
+			}
+		}
+	}
+	func CDB0 {
+		if(!flush) {
+			any {
+				rs7.Qj1 == CDB0Id && rs7.Busy1: rs7.Vj1 := CDB0Val;
+				rs7.Qj0 == CDB0Id && rs7.Busy0: rs7.Vj0 := CDB0Val;
+				rs7.Qk1 == CDB0Id && rs7.Busy1: rs7.Vk1 := CDB0Val;
+				rs7.Qk0 == CDB0Id && rs7.Busy0: rs7.Vk0 := CDB0Val;
+				rs6.Qj1 == CDB0Id && rs6.Busy1: rs6.Vj1 := CDB0Val;
+				rs6.Qj0 == CDB0Id && rs6.Busy0: rs6.Vj0 := CDB0Val;
+				rs6.Qk1 == CDB0Id && rs6.Busy1: rs6.Vk1 := CDB0Val;
+				rs6.Qk0 == CDB0Id && rs6.Busy0: rs6.Vk0 := CDB0Val;
+				rs5.Qj1 == CDB0Id && rs5.Busy1: rs5.Vj1 := CDB0Val;
+				rs5.Qj0 == CDB0Id && rs5.Busy0: rs5.Vj0 := CDB0Val;
+				rs5.Qk1 == CDB0Id && rs5.Busy1: rs5.Vk1 := CDB0Val;
+				rs5.Qk0 == CDB0Id && rs5.Busy0: rs5.Vk0 := CDB0Val;
+				rs4.Qj1 == CDB0Id && rs4.Busy1: rs4.Vj1 := CDB0Val;
+				rs4.Qj0 == CDB0Id && rs4.Busy0: rs4.Vj0 := CDB0Val;
+				rs4.Qk1 == CDB0Id && rs4.Busy1: rs4.Vk1 := CDB0Val;
+				rs4.Qk0 == CDB0Id && rs4.Busy0: rs4.Vk0 := CDB0Val;
+				rs3.Qj1 == CDB0Id && rs3.Busy1: rs3.Vj1 := CDB0Val;
+				rs3.Qj0 == CDB0Id && rs3.Busy0: rs3.Vj0 := CDB0Val;
+				rs3.Qk1 == CDB0Id && rs3.Busy1: rs3.Vk1 := CDB0Val;
+				rs3.Qk0 == CDB0Id && rs3.Busy0: rs3.Vk0 := CDB0Val;
+				rs2.Qj1 == CDB0Id && rs2.Busy1: rs2.Vj1 := CDB0Val;
+				rs2.Qj0 == CDB0Id && rs2.Busy0: rs2.Vj0 := CDB0Val;
+				rs2.Qk1 == CDB0Id && rs2.Busy1: rs2.Vk1 := CDB0Val;
+				rs2.Qk0 == CDB0Id && rs2.Busy0: rs2.Vk0 := CDB0Val;
+				rs1.Qj1 == CDB0Id && rs1.Busy1: rs1.Vj1 := CDB0Val;
+				rs1.Qj0 == CDB0Id && rs1.Busy0: rs1.Vj0 := CDB0Val;
+				rs1.Qk1 == CDB0Id && rs1.Busy1: rs1.Vk1 := CDB0Val;
+				rs1.Qk0 == CDB0Id && rs1.Busy0: rs1.Vk0 := CDB0Val;
+				rs0.Qj1 == CDB0Id && rs0.Busy1: rs0.Vj1 := CDB0Val;
+				rs0.Qj0 == CDB0Id && rs0.Busy0: rs0.Vj0 := CDB0Val;
+				rs0.Qk1 == CDB0Id && rs0.Busy1: rs0.Vk1 := CDB0Val;
+				rs0.Qk0 == CDB0Id && rs0.Busy0: rs0.Vk0 := CDB0Val;
+			}
+		}
+	}
+	func flush {
+		rs7 := 0;
+		rs6 := 0;
+		rs5 := 0;
+		rs4 := 0;
+		rs3 := 0;
+		rs2 := 0;
+		rs1 := 0;
+		rs0 := 0;
+		tag := 0;
+	}
+	if(!flush
+		&& ((rs7.Busy0 || rs7.Busy1) && !free_rs7)
+		&& ((rs6.Busy0 || rs6.Busy1) && !free_rs6)
+		&& ((rs5.Busy0 || rs5.Busy1) && !free_rs5)
+		&& ((rs4.Busy0 || rs4.Busy1) && !free_rs4)
+		&& ((rs3.Busy0 || rs3.Busy1) && !free_rs3)
+		&& ((rs2.Busy0 || rs2.Busy1) && !free_rs2)
+		&& ((rs1.Busy0 || rs1.Busy1) && !free_rs1)
+		&& ((rs0.Busy0 || rs0.Busy1) && !free_rs0)) {
+		full();
+	}
+}
