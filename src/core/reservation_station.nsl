@@ -52,89 +52,89 @@ module reservation_station {
 			return tag;
 		}
 	}
-	func wakeup {
-		if(!flush) {
-			alt {
-				rs7.Busy1 && rs7.Qj1 == 5'b00000 && rs7.Qk1 == 5'b00000: {
-					rs7.Busy1 := 0;
-					dispatch();
-					if(rs7.Busy0) free_rs7();
-				}
-				rs7.Busy0 && rs7.Qj0 == 5'b00000 && rs7.Qk0 == 5'b00000: {
-					rs7.Busy0 := 0;
-					dispatch();
-					if(rs7.Busy1) free_rs7();
-				}
-				rs6.Busy1 && rs6.Qj1 == 5'b00000 && rs6.Qk1 == 5'b00000: {
-					rs6.Busy1 := 0;
-					dispatch();
-					if(rs6.Busy0) free_rs6();
-				}
-				rs6.Busy0 && rs6.Qj0 == 5'b00000 && rs6.Qk0 == 5'b00000: {
-					rs6.Busy0 := 0;
-					dispatch();
-					if(rs6.Busy1) free_rs6();
-				}
-				rs5.Busy1 && rs5.Qj1 == 5'b00000 && rs5.Qk1 == 5'b00000: {
-					rs5.Busy1 := 0;
-					dispatch();
-					if(rs5.Busy0) free_rs5();
-				}
-				rs5.Busy0 && rs5.Qj0 == 5'b00000 && rs5.Qk0 == 5'b00000: {
-					rs5.Busy0 := 0;
-					dispatch();
-					if(rs5.Busy1) free_rs5();
-				}
-				rs4.Busy1 && rs4.Qj1 == 5'b00000 && rs4.Qk1 == 5'b00000: {
-					rs4.Busy1 := 0;
-					dispatch();
-					if(rs4.Busy0) free_rs4();
-				}
-				rs4.Busy0 && rs4.Qj0 == 5'b00000 && rs4.Qk0 == 5'b00000: {
-					rs4.Busy0 := 0;
-					dispatch();
-					if(rs4.Busy1) free_rs4();
-				}
-				rs3.Busy1 && rs3.Qj1 == 5'b00000 && rs3.Qk1 == 5'b00000: {
-					rs3.Busy1 := 0;
-					dispatch();
-					if(rs3.Busy0) free_rs3();
-				}
-				rs3.Busy0 && rs3.Qj0 == 5'b00000 && rs3.Qk0 == 5'b00000: {
-					rs3.Busy0 := 0;
-					dispatch();
-					if(rs3.Busy1) free_rs3();
-				}
-				rs2.Busy1 && rs2.Qj1 == 5'b00000 && rs2.Qk1 == 5'b00000: {
-					rs2.Busy1 := 0;
-					dispatch();
-					if(rs2.Busy0) free_rs2();
-				}
-				rs2.Busy0 && rs2.Qj0 == 5'b00000 && rs2.Qk0 == 5'b00000: {
-					rs2.Busy0 := 0;
-					dispatch();
-					if(rs2.Busy1) free_rs2();
-				}
-				rs1.Busy1 && rs1.Qj1 == 5'b00000 && rs1.Qk1 == 5'b00000: {
-					rs1.Busy1 := 0;
-					dispatch();
-					if(rs1.Busy0) free_rs1();
-				}
-				rs1.Busy0 && rs1.Qj0 == 5'b00000 && rs1.Qk0 == 5'b00000: {
-					rs1.Busy0 := 0;
-					dispatch();
-					if(rs1.Busy1) free_rs1();
-				}
-				rs0.Busy1 && rs0.Qj1 == 5'b00000 && rs0.Qk1 == 5'b00000: {
-					rs0.Busy1 := 0;
-					dispatch();
-					if(rs0.Busy0) free_rs0();
-				}
-				rs0.Busy0 && rs0.Qj0 == 5'b00000 && rs0.Qk0 == 5'b00000: {
-					rs0.Busy0 := 0;
-					dispatch();
-					if(rs0.Busy1) free_rs0();
-				}
+	if(!flush) {
+		alt {
+			rs7.Busy1 && rs7.Qj1 == 6'b000000 && rs7.Qk1 == 6'b000000: {
+				rs7.Busy1 := 0;
+				dispatch1();
+				if(rs7.Busy0) free_rs7();
+			}
+			rs6.Busy1 && rs6.Qj1 == 6'b000000 && rs6.Qk1 == 6'b000000: {
+				rs6.Busy1 := 0;
+				dispatch1();
+				if(rs6.Busy0) free_rs6();
+			}
+			rs5.Busy1 && rs5.Qj1 == 6'b000000 && rs5.Qk1 == 6'b000000: {
+				rs5.Busy1 := 0;
+				dispatch1();
+				if(rs5.Busy0) free_rs5();
+			}
+			rs4.Busy1 && rs4.Qj1 == 6'b000000 && rs4.Qk1 == 6'b000000: {
+				rs4.Busy1 := 0;
+				dispatch1();
+				if(rs4.Busy0) free_rs4();
+			}
+			rs3.Busy1 && rs3.Qj1 == 6'b000000 && rs3.Qk1 == 6'b000000: {
+				rs3.Busy1 := 0;
+				dispatch1();
+				if(rs3.Busy0) free_rs3();
+			}
+			rs2.Busy1 && rs2.Qj1 == 6'b000000 && rs2.Qk1 == 6'b000000: {
+				rs2.Busy1 := 0;
+				dispatch1();
+				if(rs2.Busy0) free_rs2();
+			}
+			rs1.Busy1 && rs1.Qj1 == 6'b000000 && rs1.Qk1 == 6'b000000: {
+				rs1.Busy1 := 0;
+				dispatch1();
+				if(rs1.Busy0) free_rs1();
+			}
+			rs0.Busy1 && rs0.Qj1 == 6'b000000 && rs0.Qk1 == 6'b000000: {
+				rs0.Busy1 := 0;
+				dispatch1();
+				if(rs0.Busy0) free_rs0();
+			}
+		}
+		alt {
+			rs7.Busy0 && rs7.Qj0 == 6'b000000 && rs7.Qk0 == 6'b000000: {
+				rs7.Busy0 := 0;
+				dispatch0();
+				if(rs7.Busy1) free_rs7();
+			}
+			rs6.Busy0 && rs6.Qj0 == 6'b000000 && rs6.Qk0 == 6'b000000: {
+				rs6.Busy0 := 0;
+				dispatch0();
+				if(rs6.Busy1) free_rs6();
+			}
+			rs5.Busy0 && rs5.Qj0 == 6'b000000 && rs5.Qk0 == 6'b000000: {
+				rs5.Busy0 := 0;
+				dispatch0();
+				if(rs5.Busy1) free_rs5();
+			}
+			rs4.Busy0 && rs4.Qj0 == 6'b000000 && rs4.Qk0 == 6'b000000: {
+				rs4.Busy0 := 0;
+				dispatch0();
+				if(rs4.Busy1) free_rs4();
+			}
+			rs3.Busy0 && rs3.Qj0 == 6'b000000 && rs3.Qk0 == 6'b000000: {
+				rs3.Busy0 := 0;
+				dispatch0();
+				if(rs3.Busy1) free_rs3();
+			}
+			rs2.Busy0 && rs2.Qj0 == 6'b000000 && rs2.Qk0 == 6'b000000: {
+				rs2.Busy0 := 0;
+				dispatch0();
+				if(rs2.Busy1) free_rs2();
+			}
+			rs1.Busy0 && rs1.Qj0 == 6'b000000 && rs1.Qk0 == 6'b000000: {
+				rs1.Busy0 := 0;
+				dispatch0();
+				if(rs1.Busy1) free_rs1();
+			}
+			rs0.Busy0 && rs0.Qj0 == 6'b000000 && rs0.Qk0 == 6'b000000: {
+				rs0.Busy0 := 0;
+				dispatch0();
+				if(rs0.Busy1) free_rs0();
 			}
 		}
 	}

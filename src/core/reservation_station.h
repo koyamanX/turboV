@@ -43,9 +43,9 @@ declare reservation_station {
 	output rs_tag[4];
 	func_in issue(Op1, Vj1, Vk1, Qj1, Qk1, Dest1, A1, Op0, Vj0, Vk0, Qj0, Qk0, Dest0, A0): rs_tag;
 	func_in flush();
-	func_in wakeup();
 	func_out full();
-	func_out dispatch();
+	func_out dispatch0();
+	func_out dispatch1();
 	input CDB0Id[6];
 	input CDB0Val[32];
 	func_in CDB0(CDB0Id, CDB0Val);
