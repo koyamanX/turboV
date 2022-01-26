@@ -1,6 +1,11 @@
 #include "reorder_buffer.h"
 
 module reorder_buffer {
+	/* TODO: increase number of entries, for ease of debugging
+		we currently use 4 entires, however, reservation station
+		has larger set of entires, so reorder buffer must also have
+		much larger size.
+	*/
 	mem rob[4][SIZEOF_REORDER_BUFFER_T] = {0};
 	reg tail[3] = 0;
 	reg head[3] = 0;
