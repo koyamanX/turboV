@@ -1,6 +1,7 @@
 #ifndef RESERVATION_STATION_H
 #define RESERVATION_STATION_H
 
+/* TODO: fix field size */
 struct reservation_station_t {
 	Busy0;
 	Tag0[4];
@@ -41,7 +42,7 @@ declare reservation_station {
 	input Dest1[6];
 	input A1[32];
 	output rs_tag[4];
-	func_in issue(Op1, Vj1, Vk1, Qj1, Qk1, Dest1, A1, Op0, Vj0, Vk0, Qj0, Qk0, Dest0, A0): rs_tag;
+	func_in issue(Valid1, Op1, Vj1, Vk1, Qj1, Qk1, Dest1, A1, Valid0, Op0, Vj0, Vk0, Qj0, Qk0, Dest0, A0): rs_tag;
 	func_in flush();
 	func_out full();
 	func_out dispatch0();
