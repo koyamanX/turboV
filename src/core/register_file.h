@@ -3,15 +3,24 @@
 #include "riscv.h"
 
 declare register_file {
-	input rnuma[5];
-	output rdataa[XLEN];
-	func_in reada(rnuma): rdataa;
-	input rnumb[5];
-	output rdatab[XLEN];
-	func_in readb(rnumb): rdatab;
-	input wnuma[5];
-	input wdataa[XLEN];
-	func_in writea(wnuma, wdataa);
+	input rnumA[5];
+	output rdataA[XLEN];
+	func_in readA(rnumA): rdataA;
+	input rnumB[5];
+	output rdataB[XLEN];
+	func_in readB(rnumB): rdataB;
+	input rnumC[5];
+	output rdataC[XLEN];
+	func_in readC(rnumC): rdataC;
+	input rnumD[5];
+	output rdataD[XLEN];
+	func_in readD(rnumD): rdataD;
+	input wnumA[5];
+	input wdataA[XLEN];
+	func_in writeA(wnumA, wdataA);
+	input wnumB[5];
+	input wdataB[XLEN];
+	func_in writeB(wnumB, wdataB);
 }
 
 #endif

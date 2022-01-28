@@ -1,17 +1,87 @@
 #include "storm.h"
 #include "ifetch_unit.h"
+#include "alu32.h"
 #include "wishbone_common.h"
+#include "reorder_buffer.h"
+#include "reservation_station.h"
 
 module storm {
 	ifetch_unit ifu;
+	reorder_buffer rob;
+	reservation_station alu_rs;
 	proc_name decode();
-	proc_name execute();
-	proc_name memory();
-	proc_name writeback();
+	func_self stall_issue();
+	mem register_map_table[32][6] = {0};
+	mem register_status_table[32][1] = {0};
+	proc_name issue();
+	reg execute_alu0_id[6];
+	reg execute_alu0_a[32];
+	reg execute_alu0_b[32];
+	reg execute_alu0_fn[4];
+	reg execute_alu1_id[6];
+	reg execute_alu1_a[32];
+	reg execute_alu1_b[32];
+	reg execute_alu1_fn[4];
+	proc_name execute_alu0(execute_alu0_id, execute_alu0_a, execute_alu0_b, execute_alu0_fn);
+	proc_name execute_alu1(execute_alu1_id, execute_alu1_a, execute_alu1_b, execute_alu1_fn);
+	reg writeresult_alu0_id[6];
+	reg writeresult_alu0_val[32];
+	reg writeresult_alu1_id[6];
+	reg writeresult_alu1_val[32];
+	proc_name writeresult_alu0(writeresult_alu0_id, writeresult_alu0_val);
+	proc_name writeresult_alu1(writeresult_alu1_id, writeresult_alu1_val);
 
 	func reset {
 		ifu.reset();
 		ifu.redirect(resetvector);
+		decode();
+	}
+	proc decode {
+		if(!ifu.ibuf_empty && !stall_issue) {
+			ifu.ibuf_pop();
+			decode();
+			issue();
+		}
+	}
+	proc issue {
+		if(!rob.full && !alu_rs.full) {
+			//rob.push();
+			//alu_rs.issue();
+			finish();
+		} else {
+			stall_issue();
+		}
+	}
+	func alu_rs.dispatch0 {
+		execute_alu0.invoke();
+	}
+	func alu_rs.dispatch1 {
+		execute_alu1.invoke();
+	}
+	proc execute_alu0 {
+		alu32 alu0;
+
+		alu0.exe(execute_alu0_a, execute_alu0_b, execute_alu0_fn);
+		writeresult_alu0(execute_alu0_id, alu0.q);
+	}
+	proc execute_alu1 {
+		alu32 alu1;
+
+		alu1.exe(execute_alu1_a, execute_alu1_b, execute_alu1_fn);
+		writeresult_alu1(execute_alu1_id, alu1.q);
+	}
+	proc writeresult_alu0 {
+		alu_rs.CDB0(writeresult_alu0_id, writeresult_alu0_val);
+		rob.CDB0(writeresult_alu0_id, writeresult_alu0_val);
+		finish();
+	}
+	proc writeresult_alu1 {
+		alu_rs.CDB1(writeresult_alu1_id, writeresult_alu1_val);
+		rob.CDB1(writeresult_alu1_id, writeresult_alu1_val);
+		finish();
+	}
+	func rob.commit {
+
 	}
 
 	WISHBONE_MASTER_IF(ifu);

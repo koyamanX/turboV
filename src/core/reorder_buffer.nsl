@@ -6,7 +6,10 @@ module reorder_buffer {
 		has larger set of entires, so reorder buffer must also have
 		much larger size.
 	*/
-	mem rob[4][SIZEOF_REORDER_BUFFER_T] = {0};
+	reorder_buffer_t reg rob0 = 0;
+	reorder_buffer_t reg rob1 = 0;
+	reorder_buffer_t reg rob2 = 0;
+	reorder_buffer_t reg rob3 = 0;
 	reg tail[3] = 0;
 	reg head[3] = 0;
 	wire next_tail[3];
@@ -32,7 +35,13 @@ module reorder_buffer {
 			push_entry.Inst1 = inst1;
 			push_entry.Dest1 = dest1;
 			push_entry.Value1 = 0;
-			rob[tail] := push_entry;
+
+			any {
+				tail[1:0] == 0: rob0 := push_entry;
+				tail[1:0] == 1: rob1 := push_entry;
+				tail[1:0] == 2: rob2 := push_entry;
+				tail[1:0] == 3: rob3 := push_entry;
+			}
 			tail := next_tail;
 
 			return tail;
@@ -40,13 +49,19 @@ module reorder_buffer {
 	}
 
 	func flush {
-		generate(i_ = 0; i_ < 4; i_++) {
-			rob[i_] := 0;
-		}
+		rob0 := 0;
+		rob1 := 0;
+		rob2 := 0;
+		rob3 := 0;
 		head := 0;
 		tail := 0;
 	}
-	commit_entry = rob[head];
+	any {
+		head[1:0] == 0: commit_entry = rob0;
+		head[1:0] == 1: commit_entry = rob1;
+		head[1:0] == 2: commit_entry = rob2;
+		head[1:0] == 3: commit_entry = rob3;
+	}
 	if(commit_entry.Valid0 && !commit_entry.Busy0 && commit_entry.Valid1 && !commit_entry.Busy1) {
 		if(!flush) {
 			head := next_head;

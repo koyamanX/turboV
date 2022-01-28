@@ -50,6 +50,9 @@ declare reservation_station {
 	input CDB0Id[6];
 	input CDB0Val[32];
 	func_in CDB0(CDB0Id, CDB0Val);
+	input CDB1Id[6];
+	input CDB1Val[32];
+	func_in CDB1(CDB1Id, CDB1Val);
 }
 
 #endif
