@@ -3,28 +3,35 @@
 #include "opcode_map.h"
 
 module instruction_decoder {
-	r_type_t wire r_type_inst;
-	i_type_t wire i_type_inst;
-	s_type_t wire s_type_inst;
-	b_type_t wire b_type_inst;
-	u_type_t wire u_type_inst;
-	j_type_t wire j_type_inst;
-	
+	func_self decode_inst0();
+	func_self decode_inst1();
+
 	func decode {
-		wire opcode[7];
+		decode_inst0();
+		decode_inst1();
+	}
+	func decode_inst0 {
+		wire inst0_opcode[7];
+		r_type_t wire inst0_rtype;
 
-		r_type_inst = inst;
-		i_type_inst = inst;
-		s_type_inst = inst;
-		b_type_inst = inst;
-		u_type_inst = inst;
-		j_type_inst = inst;
-
-		opcode = r_type_inst.opcode;
-
+		inst0_opcode = inst0[6:0];
+		inst0_rtype = inst0;
 		any {
-			opcode == OP: op(r_type_inst.rd, r_type_inst.rs1, r_type_inst.rs2, 0);	
-			else: illegal_instruction();
+			inst0_opcode == OP: {
+				uops0_alu({inst0_rtype.funct7[5], inst0_rtype.funct3}, inst0_rtype.rd, inst0_rtype.rs1, inst0_rtype.rs2, 0);
+			}
+		}
+	}
+	func decode_inst1 {
+		wire inst1_opcode[7];
+		r_type_t wire inst1_rtype;
+
+		inst1_opcode = inst1[6:0];
+		inst1_rtype = inst1;
+		any {
+			inst1_opcode == OP: {
+				uops1_alu({inst1_rtype.funct7[5], inst1_rtype.funct3}, inst1_rtype.rd, inst1_rtype.rs1, inst1_rtype.rs2, 0);
+			}
 		}
 	}
 }

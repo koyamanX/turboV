@@ -3,17 +3,33 @@
 #include "alu32.h"
 #include "wishbone_common.h"
 #include "reorder_buffer.h"
+#include "instruction_decoder.h"
 #include "reservation_station.h"
 
 module storm {
 	ifetch_unit ifu;
 	reorder_buffer rob;
 	reservation_station alu_rs;
+	instruction_decoder idec;
 	proc_name decode();
 	func_self stall_issue();
 	mem register_map_table[32][6] = {0};
 	mem register_status_table[32][1] = {0};
-	proc_name issue();
+	fetch_packet_t reg issue_fetch_packet;
+	reg issue_inst0_op[7];
+	reg issue_inst0_rd[5];
+	reg issue_inst0_rs1[5];
+	reg issue_inst0_rs2[5];
+	reg issue_inst0_imm[32];
+	reg issue_inst1_op[7];
+	reg issue_inst1_rd[5];
+	reg issue_inst1_rs1[5];
+	reg issue_inst1_rs2[5];
+	reg issue_inst1_imm[32];
+	proc_name issue(issue_fetch_packet,
+		issue_inst0_op, issue_inst0_rd, issue_inst0_rs1, issue_inst0_rs2, issue_inst0_imm,
+		issue_inst1_op, issue_inst1_rd, issue_inst1_rs1, issue_inst1_rs2, issue_inst1_imm
+	);
 	reg execute_alu0_id[6];
 	reg execute_alu0_a[32];
 	reg execute_alu0_b[32];
@@ -37,14 +53,27 @@ module storm {
 		decode();
 	}
 	proc decode {
+		fetch_packet_t wire decode_fetch_packet;
 		if(!ifu.ibuf_empty && !stall_issue) {
-			ifu.ibuf_pop();
+			decode_fetch_packet = ifu.ibuf_pop();
+			idec.decode(decode_fetch_packet.inst0, decode_fetch_packet.inst1);	
 			decode();
-			issue();
+			issue(decode_fetch_packet, idec.uops0, idec.uops0_rd, idec.uops0_rs1, idec.uops0_rs2, idec.uops0_imm,
+								idec.uops1, idec.uops1_rd, idec.uops1_rs1, idec.uops1_rs2, idec.uops1_imm);
 		}
 	}
 	proc issue {
 		if(!rob.full && !alu_rs.full) {
+			if(register_status_table[issue_inst0_rs1] == 1'b1) {
+
+				// search rob for ready or not
+				// index (register_map_table[issue_inst0_rs1]
+				// if ready, read value from rob, and Qi to 0
+				// otherwise write Qi field
+			} else {
+				// read from gpr
+				// set Qi to 0
+			}
 			//rob.push();
 			//alu_rs.issue();
 			finish();

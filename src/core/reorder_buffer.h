@@ -1,6 +1,9 @@
 #ifndef REORDER_BUFFER_H
 #define REORDER_BUFFER_H
 
+#define ROB_NUM_OF_ENTRIES 4.0
+#define LOG2_ROB_NUM_OF_ENTRIES _int(_log10(ROB_NUM_OF_ENTRIES)/_log10(2.0))
+
 struct reorder_buffer_t {
 	Valid0;
 	Busy0;
@@ -30,12 +33,11 @@ declare reorder_buffer {
 	func_in flush();
 	func_out full();
 	func_out commit();
-	input CDB0Id[6];
+	input CDB0Id[LOG2_ROB_NUM_OF_ENTRIES];
 	input CDB0Val[32];
 	func_in CDB0(CDB0Id, CDB0Val);
 	input CDB1Id[6];
 	input CDB1Val[32];
 	func_in CDB1(CDB1Id, CDB1Val);
 }
-
 #endif

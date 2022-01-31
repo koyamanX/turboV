@@ -10,10 +10,10 @@ module reorder_buffer {
 	reorder_buffer_t reg rob1 = 0;
 	reorder_buffer_t reg rob2 = 0;
 	reorder_buffer_t reg rob3 = 0;
-	reg tail[3] = 0;
-	reg head[3] = 0;
-	wire next_tail[3];
-	wire next_head[3];
+	reg tail[LOG2_ROB_NUM_OF_ENTRIES+1] = 0;
+	reg head[LOG2_ROB_NUM_OF_ENTRIES+1] = 0;
+	wire next_tail[LOG2_ROB_NUM_OF_ENTRIES+1];
+	wire next_head[LOG2_ROB_NUM_OF_ENTRIES+1];
 	reorder_buffer_t wire commit_entry;
 	integer i_;
 
@@ -37,10 +37,10 @@ module reorder_buffer {
 			push_entry.Value1 = 0;
 
 			any {
-				tail[1:0] == 0: rob0 := push_entry;
-				tail[1:0] == 1: rob1 := push_entry;
-				tail[1:0] == 2: rob2 := push_entry;
-				tail[1:0] == 3: rob3 := push_entry;
+				tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 0: rob0 := push_entry;
+				tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 1: rob1 := push_entry;
+				tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 2: rob2 := push_entry;
+				tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 3: rob3 := push_entry;
 			}
 			tail := next_tail;
 
@@ -57,10 +57,10 @@ module reorder_buffer {
 		tail := 0;
 	}
 	any {
-		head[1:0] == 0: commit_entry = rob0;
-		head[1:0] == 1: commit_entry = rob1;
-		head[1:0] == 2: commit_entry = rob2;
-		head[1:0] == 3: commit_entry = rob3;
+		head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 0: commit_entry = rob0;
+		head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 1: commit_entry = rob1;
+		head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 2: commit_entry = rob2;
+		head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 3: commit_entry = rob3;
 	}
 	if(commit_entry.Valid0 && !commit_entry.Busy0 && commit_entry.Valid1 && !commit_entry.Busy1) {
 		if(!flush) {
@@ -68,7 +68,7 @@ module reorder_buffer {
 			commit();
 		}
 	}
-	if((tail[1:0] == head[1:0]) && (tail[2] != head[2])) {
+	if((tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == head[LOG2_ROB_NUM_OF_ENTRIES-1:0]) && (tail[LOG2_ROB_NUM_OF_ENTRIES] != head[LOG2_ROB_NUM_OF_ENTRIES])) {
 		full();
 	}
 }

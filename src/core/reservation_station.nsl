@@ -17,15 +17,12 @@ module reservation_station {
 	func_self dispatch_rs2_1();
 	func_self dispatch_rs3_0();
 	func_self dispatch_rs3_1();
-	reg tag[3] = 0;
 
 	func issue {
 		reservation_station_t wire new_rs_entry;
 		if(!flush) {
 			new_rs_entry.Busy1 = Valid1;
 			new_rs_entry.Busy0 = Valid0;
-			new_rs_entry.Tag1 = 4'(tag + 1);
-			new_rs_entry.Tag0 = 4'(tag);
 			new_rs_entry.Op1 = Op1;
 			new_rs_entry.Op0 = Op0;
 			new_rs_entry.Vj1 = Vj1;
@@ -40,9 +37,6 @@ module reservation_station {
 			new_rs_entry.Dest0 = Dest0;
 			new_rs_entry.A1 = A1;
 			new_rs_entry.A0 = A0;
-			tag := tag + 2;
-			/* TODO: fix size */
-			return 4'(tag);
 		}
 		alt {
 			rs0_free: rs0 := new_rs_entry;
@@ -53,30 +47,30 @@ module reservation_station {
 	}
 	if(!flush) {
 		alt {
-			rs3.Busy1 && (rs3.Qj1 == 6'b000000) && (rs3.Qk1 == 6'b000000): {
+			rs3.Busy1 && (rs3.Qj1 == 0) && (rs3.Qk1 == 0): {
 				dispatch_rs3_1();
 			}
-			rs2.Busy1 && (rs2.Qj1 == 6'b000000) && (rs2.Qk1 == 6'b000000): {
+			rs2.Busy1 && (rs2.Qj1 == 0) && (rs2.Qk1 == 0): {
 				dispatch_rs2_1();
 			}
-			rs1.Busy1 && (rs1.Qj1 == 6'b000000) && (rs1.Qk1 == 6'b000000): {
+			rs1.Busy1 && (rs1.Qj1 == 0) && (rs1.Qk1 == 0): {
 				dispatch_rs1_1();
 			}
-			rs0.Busy1 && (rs0.Qj1 == 6'b000000) && (rs0.Qk1 == 6'b000000): {
+			rs0.Busy1 && (rs0.Qj1 == 0) && (rs0.Qk1 == 0): {
 				dispatch_rs0_1();
 			}
 		}
 		alt {
-			rs3.Busy0 && (rs3.Qj0 == 6'b000000) && (rs3.Qk0 == 6'b000000): {
+			rs3.Busy0 && (rs3.Qj0 == 0) && (rs3.Qk0 == 0): {
 				dispatch_rs3_0();
 			}
-			rs2.Busy0 && (rs2.Qj0 == 6'b000000) && (rs2.Qk0 == 6'b000000): {
+			rs2.Busy0 && (rs2.Qj0 == 0) && (rs2.Qk0 == 0): {
 				dispatch_rs2_0();
 			}
-			rs1.Busy0 && (rs1.Qj0 == 6'b000000) && (rs1.Qk0 == 6'b000000): {
+			rs1.Busy0 && (rs1.Qj0 == 0) && (rs1.Qk0 == 0): {
 				dispatch_rs1_0();
 			}
-			rs0.Busy0 && (rs0.Qj0 == 6'b000000) && (rs0.Qk0 == 6'b000000): {
+			rs0.Busy0 && (rs0.Qj0 == 0) && (rs0.Qk0 == 0): {
 				dispatch_rs0_0();
 			}
 		}
@@ -163,7 +157,6 @@ module reservation_station {
 		rs2 := 0;
 		rs1 := 0;
 		rs0 := 0;
-		tag := 0;
 	}
 	if(!flush && (!rs3_free && !rs2_free && !rs1_free && !rs0_free)) {
 		full();

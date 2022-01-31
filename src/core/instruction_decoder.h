@@ -2,36 +2,25 @@
 #define INSTRUCTION_DECODER_H
 
 declare instruction_decoder {
-	input inst[32];
-	func_in decode(inst);
-	output rd[5];
-	output rs1[5];
-	output rs2[5];
-	output funct3[3];
-	output funct7[7];
-	output funct12[12];
-	output beq;
-	output bne;
-	output blt;
-	output bltu;
-	output bge;
-	output bgeu;
-	output imm[32];
-	output fn[4];
+	input inst0[32];
+	input inst1[32];
+	func_in decode(inst0, inst1);
 
-	func_out load();
-	func_out store();
-	func_out branch();
-	func_out jalr();
-	func_out misc_mem();
-	func_out amo();
-	func_out jal();
-	func_out op_imm();
-	func_out op(rd, rs1, rs2, fn);
-	func_out system();
-	func_out auipc();
-	func_out lui();
-	func_out illegal_instruction();
+	output uops0[7];
+	output uops0_rd[5];
+	output uops0_rs1[5];
+	output uops0_rs2[5];
+	output uops0_imm[32];
+	func_out uops0_alu(uops0, uops0_rd, uops0_rs1, uops0_rs2, uops0_imm);
+	func_out uops0_illegal_instruction();
+
+	output uops1[7];
+	output uops1_rd[5];
+	output uops1_rs1[5];
+	output uops1_rs2[5];
+	output uops1_imm[32];
+	func_out uops1_alu(uops1, uops1_rd, uops1_rs1, uops1_rs2, uops1_imm);
+	func_out uops1_illegal_instruction();
 }
 
 #endif
