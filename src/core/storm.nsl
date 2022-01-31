@@ -197,10 +197,10 @@ module storm {
 		finish();
 	}
 	func rob.commit {
-		if(issue_inst0_rd != rob.commit_Dest0) {
+		if(issue && issue_inst0_rd != rob.commit_Dest0) {
 			register_status_table[rob.commit_Dest0] := READY;
 		}
-		if(issue_inst1_rd != rob.commit_Dest1) {
+		if(issue && issue_inst1_rd != rob.commit_Dest1) {
 			register_status_table[rob.commit_Dest1] := READY;
 		}
 		gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
