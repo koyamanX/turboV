@@ -106,34 +106,44 @@ module storm {
 				issue_inst0_Qk = 0;
 			}
 			/* inst1 rs1 read */
-			if(register_status_table[issue_inst1_rs1] == BUSY) {
-				if(rob.read_operandC(register_map_table[issue_inst1_rs1]) == BUSY) {
-					/* Wait for inst in ROB to produce value */
-					issue_inst1_Vj = 0;
-					issue_inst1_Qj = register_map_table[issue_inst1_rs1];
+			if(issue_inst0_rd == issue_inst1_rs1) {
+				issue_inst1_Vj = 0;
+				issue_inst1_Qj = rob.tag;
+			} else {
+				if(register_status_table[issue_inst1_rs1] == BUSY) {
+					if(rob.read_operandC(register_map_table[issue_inst1_rs1]) == BUSY) {
+						/* Wait for inst in ROB to produce value */
+						issue_inst1_Vj = 0;
+						issue_inst1_Qj = register_map_table[issue_inst1_rs1];
+					} else {
+						/* Use value inside ROB */
+						issue_inst1_Vj = rob.read_operandC_val;
+						issue_inst1_Qj = 0;
+					}
 				} else {
-					/* Use value inside ROB */
-					issue_inst1_Vj = rob.read_operandC_val;
+					issue_inst1_Vj = gpr.readC(issue_inst1_rs1);
 					issue_inst1_Qj = 0;
 				}
-			} else {
-				issue_inst1_Vj = gpr.readC(issue_inst1_rs1);
-				issue_inst1_Qj = 0;
 			}
 			/* inst1 rs2 read */
-			if(register_status_table[issue_inst1_rs2] == BUSY) {
-				if(rob.read_operandD(register_map_table[issue_inst1_rs2]) == BUSY) {
-					/* Wait for inst in ROB to produce value */
-					issue_inst1_Vk = 0;
-					issue_inst1_Qk = register_map_table[issue_inst1_rs2];
+			if(issue_inst0_rd == issue_inst1_rs2) {
+				issue_inst1_Vj = 0;
+				issue_inst1_Qj = rob.tag;
+			} else {
+				if(register_status_table[issue_inst1_rs2] == BUSY) {
+					if(rob.read_operandD(register_map_table[issue_inst1_rs2]) == BUSY) {
+						/* Wait for inst in ROB to produce value */
+						issue_inst1_Vk = 0;
+						issue_inst1_Qk = register_map_table[issue_inst1_rs2];
+					} else {
+						/* Use value inside ROB */
+						issue_inst1_Vk = rob.read_operandD_val;
+						issue_inst1_Qk = 0;
+					}
 				} else {
-					/* Use value inside ROB */
-					issue_inst1_Vk = rob.read_operandD_val;
+					issue_inst1_Vk = gpr.readD(issue_inst1_rs1);
 					issue_inst1_Qk = 0;
 				}
-			} else {
-				issue_inst1_Vk = gpr.readD(issue_inst1_rs1);
-				issue_inst1_Qk = 0;
 			}
 			rob.push(
 				issue_fetch_packet.valid0, issue_fetch_packet.pc0, issue_fetch_packet.inst0, issue_inst0_rd,
