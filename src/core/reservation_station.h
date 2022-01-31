@@ -46,8 +46,16 @@ declare reservation_station {
 	func_in issue(Valid1, Op1, Vj1, Vk1, Qj1, Qk1, Dest1, A1, Valid0, Op0, Vj0, Vk0, Qj0, Qk0, Dest0, A0);
 	func_in flush();
 	func_out full();
-	func_out dispatch0();
-	func_out dispatch1();
+	output dispatch0_Op[7];
+	output dispatch0_Dest[LOG2_ROB_NUM_OF_ENTRIES];
+	output dispatch0_Vj[32];
+	output dispatch0_Vk[32];
+	func_out dispatch0(dispatch0_Op, dispatch0_Dest, dispatch0_Vj, dispatch0_Vk);
+	output dispatch1_Op[7];
+	output dispatch1_Dest[LOG2_ROB_NUM_OF_ENTRIES];
+	output dispatch1_Vj[32];
+	output dispatch1_Vk[32];
+	func_out dispatch1(dispatch1_Op, dispatch1_Dest, dispatch1_Vj, dispatch1_Vk);
 	input CDB0Id[LOG2_ROB_NUM_OF_ENTRIES];
 	input CDB0Val[32];
 	func_in CDB0(CDB0Id, CDB0Val);

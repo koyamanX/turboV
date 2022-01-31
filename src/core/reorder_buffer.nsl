@@ -47,7 +47,6 @@ module reorder_buffer {
 			return tail;
 		}
 	}
-
 	func flush {
 		rob0 := 0;
 		rob1 := 0;
@@ -55,6 +54,78 @@ module reorder_buffer {
 		rob3 := 0;
 		head := 0;
 		tail := 0;
+	}
+	func read_operandA {
+		any {
+			read_operandA_id == 0 && !rob0.Busy0: {read_operandA_val = rob0.Value0; return rob0.Busy0;}
+			read_operandA_id == 1 && !rob0.Busy1: {read_operandA_val = rob0.Value1; return rob0.Busy1;}
+			read_operandA_id == 2 && !rob1.Busy0: {read_operandA_val = rob1.Value0; return rob1.Busy0;}
+			read_operandA_id == 3 && !rob1.Busy1: {read_operandA_val = rob1.Value1; return rob1.Busy1;}
+			read_operandA_id == 4 && !rob2.Busy0: {read_operandA_val = rob2.Value0; return rob2.Busy0;}
+			read_operandA_id == 5 && !rob2.Busy1: {read_operandA_val = rob2.Value1; return rob2.Busy1;}
+			read_operandA_id == 6 && !rob3.Busy0: {read_operandA_val = rob3.Value0; return rob3.Busy0;}
+			read_operandA_id == 7 && !rob3.Busy1: {read_operandA_val = rob3.Value1; return rob3.Busy1;}
+		}
+	}
+	func read_operandB {
+		any {
+			read_operandB_id == 0 && !rob0.Busy0: {read_operandB_val = rob0.Value0; return rob0.Busy0;}
+			read_operandB_id == 1 && !rob0.Busy1: {read_operandB_val = rob0.Value1; return rob0.Busy1;}
+			read_operandB_id == 2 && !rob1.Busy0: {read_operandB_val = rob1.Value0; return rob1.Busy0;}
+			read_operandB_id == 3 && !rob1.Busy1: {read_operandB_val = rob1.Value1; return rob1.Busy1;}
+			read_operandB_id == 4 && !rob2.Busy0: {read_operandB_val = rob2.Value0; return rob2.Busy0;}
+			read_operandB_id == 5 && !rob2.Busy1: {read_operandB_val = rob2.Value1; return rob2.Busy1;}
+			read_operandB_id == 6 && !rob3.Busy0: {read_operandB_val = rob3.Value0; return rob3.Busy0;}
+			read_operandB_id == 7 && !rob3.Busy1: {read_operandB_val = rob3.Value1; return rob3.Busy1;}
+		}
+	}
+	func read_operandC {
+		any {
+			read_operandC_id == 0 && !rob0.Busy0: {read_operandC_val = rob0.Value0; return rob0.Busy0;}
+			read_operandC_id == 1 && !rob0.Busy1: {read_operandC_val = rob0.Value1; return rob0.Busy1;}
+			read_operandC_id == 2 && !rob1.Busy0: {read_operandC_val = rob1.Value0; return rob1.Busy0;}
+			read_operandC_id == 3 && !rob1.Busy1: {read_operandC_val = rob1.Value1; return rob1.Busy1;}
+			read_operandC_id == 4 && !rob2.Busy0: {read_operandC_val = rob2.Value0; return rob2.Busy0;}
+			read_operandC_id == 5 && !rob2.Busy1: {read_operandC_val = rob2.Value1; return rob2.Busy1;}
+			read_operandC_id == 6 && !rob3.Busy0: {read_operandC_val = rob3.Value0; return rob3.Busy0;}
+			read_operandC_id == 7 && !rob3.Busy1: {read_operandC_val = rob3.Value1; return rob3.Busy1;}
+		}
+	}
+	func read_operandD {
+		any {
+			read_operandD_id == 0 && !rob0.Busy0: {read_operandD_val = rob0.Value0; return rob0.Busy0;}
+			read_operandD_id == 1 && !rob0.Busy1: {read_operandD_val = rob0.Value1; return rob0.Busy1;}
+			read_operandD_id == 2 && !rob1.Busy0: {read_operandD_val = rob1.Value0; return rob1.Busy0;}
+			read_operandD_id == 3 && !rob1.Busy1: {read_operandD_val = rob1.Value1; return rob1.Busy1;}
+			read_operandD_id == 4 && !rob2.Busy0: {read_operandD_val = rob2.Value0; return rob2.Busy0;}
+			read_operandD_id == 5 && !rob2.Busy1: {read_operandD_val = rob2.Value1; return rob2.Busy1;}
+			read_operandD_id == 6 && !rob3.Busy0: {read_operandD_val = rob3.Value0; return rob3.Busy0;}
+			read_operandD_id == 7 && !rob3.Busy1: {read_operandD_val = rob3.Value1; return rob3.Busy1;}
+		}
+	}
+	func CDB0 {
+		any {
+			CDB0Id == 0: {rob0.Value0 := CDB0Val; rob0.Busy0 := 0;}
+			CDB0Id == 1: {rob0.Value1 := CDB0Val; rob0.Busy1 := 0;}
+			CDB0Id == 2: {rob1.Value0 := CDB0Val; rob1.Busy0 := 0;}
+			CDB0Id == 3: {rob1.Value1 := CDB0Val; rob1.Busy1 := 0;}
+			CDB0Id == 4: {rob2.Value0 := CDB0Val; rob2.Busy0 := 0;}
+			CDB0Id == 5: {rob2.Value1 := CDB0Val; rob2.Busy1 := 0;}
+			CDB0Id == 6: {rob3.Value0 := CDB0Val; rob3.Busy0 := 0;}
+			CDB0Id == 7: {rob3.Value1 := CDB0Val; rob3.Busy1 := 0;}
+		}
+	}
+	func CDB1 {
+		any {
+			CDB1Id == 0: {rob0.Value0 := CDB1Val; rob0.Busy0 := 0;}
+			CDB1Id == 1: {rob0.Value1 := CDB1Val; rob0.Busy1 := 0;}
+			CDB1Id == 2: {rob1.Value0 := CDB1Val; rob1.Busy0 := 0;}
+			CDB1Id == 3: {rob1.Value1 := CDB1Val; rob1.Busy1 := 0;}
+			CDB1Id == 4: {rob2.Value0 := CDB1Val; rob2.Busy0 := 0;}
+			CDB1Id == 5: {rob2.Value1 := CDB1Val; rob2.Busy1 := 0;}
+			CDB1Id == 6: {rob3.Value0 := CDB1Val; rob3.Busy0 := 0;}
+			CDB1Id == 7: {rob3.Value1 := CDB1Val; rob3.Busy1 := 0;}
+		}
 	}
 	any {
 		head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 0: commit_entry = rob0;
@@ -65,7 +136,7 @@ module reorder_buffer {
 	if(commit_entry.Valid0 && !commit_entry.Busy0 && commit_entry.Valid1 && !commit_entry.Busy1) {
 		if(!flush) {
 			head := next_head;
-			commit();
+			commit(commit_entry.Dest0, commit_entry.Value0, commit_entry.Dest1, commit_entry.Value1);
 		}
 	}
 	if((tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == head[LOG2_ROB_NUM_OF_ENTRIES-1:0]) && (tail[LOG2_ROB_NUM_OF_ENTRIES] != head[LOG2_ROB_NUM_OF_ENTRIES])) {

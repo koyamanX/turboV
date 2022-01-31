@@ -77,35 +77,35 @@ module reservation_station {
 	}
 	func dispatch_rs0_0 {
 		rs0.Busy0 := 0;
-		dispatch0();
+		dispatch0(rs0.Op0, rs0.Dest0, rs0.Vj0, rs0.Vk0);
 	}
 	func dispatch_rs0_1 {
 		rs0.Busy1 := 0;
-		dispatch1();
+		dispatch1(rs0.Op1, rs0.Dest1, rs0.Vj1, rs0.Vk1);
 	}
 	func dispatch_rs1_0 {
 		rs1.Busy0 := 0;
-		dispatch0();
+		dispatch0(rs1.Op0, rs1.Dest0, rs1.Vj0, rs1.Vk0);
 	}
 	func dispatch_rs1_1 {
 		rs1.Busy1 := 0;
-		dispatch1();
+		dispatch1(rs1.Op1, rs1.Dest1, rs1.Vj1, rs1.Vk1);
 	}
 	func dispatch_rs2_0 {
 		rs2.Busy0 := 0;
-		dispatch0();
+		dispatch0(rs2.Op0, rs2.Dest0, rs2.Vj0, rs2.Vk0);
 	}
 	func dispatch_rs2_1 {
 		rs2.Busy1 := 0;
-		dispatch1();
+		dispatch1(rs2.Op1, rs2.Dest1, rs2.Vj1, rs2.Vk1);
 	}
 	func dispatch_rs3_0 {
 		rs3.Busy0 := 0;
-		dispatch0();
+		dispatch0(rs3.Op0, rs3.Dest0, rs3.Vj0, rs3.Vk0);
 	}
 	func dispatch_rs3_1 {
 		rs3.Busy1 := 0;
-		dispatch1();
+		dispatch1(rs3.Op1, rs3.Dest1, rs3.Vj1, rs3.Vk1);
 	}
 	func CDB0 {
 		if(!flush) {

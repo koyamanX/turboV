@@ -32,12 +32,32 @@ declare reorder_buffer {
 	func_in push(valid0, pc0, inst0, dest0, valid1, pc1, inst1, dest1): tag;
 	func_in flush();
 	func_out full();
-	func_out commit();
+	output commit_Dest0[5];
+	output commit_Value0[32];
+	output commit_Dest1[5];
+	output commit_Value1[32];
+	func_out commit(commit_Dest0, commit_Value0, commit_Dest1, commit_Value1);
 	input CDB0Id[LOG2_ROB_NUM_OF_ENTRIES];
 	input CDB0Val[32];
 	func_in CDB0(CDB0Id, CDB0Val);
 	input CDB1Id[6];
 	input CDB1Val[32];
 	func_in CDB1(CDB1Id, CDB1Val);
+	output read_operandA_val[32];
+	input read_operandA_id[LOG2_ROB_NUM_OF_ENTRIES];
+	output read_operandA_busy;
+	func_in read_operandA(read_operandA_id): read_operandA_busy;
+	output read_operandB_val[32];
+	input read_operandB_id[LOG2_ROB_NUM_OF_ENTRIES];
+	output read_operandB_busy;
+	func_in read_operandB(read_operandB_id): read_operandB_busy;
+	output read_operandC_val[32];
+	input read_operandC_id[LOG2_ROB_NUM_OF_ENTRIES];
+	output read_operandC_busy;
+	func_in read_operandC(read_operandC_id): read_operandC_busy;
+	output read_operandD_val[32];
+	input read_operandD_id[LOG2_ROB_NUM_OF_ENTRIES];
+	output read_operandD_busy;
+	func_in read_operandD(read_operandD_id): read_operandD_busy;
 }
 #endif

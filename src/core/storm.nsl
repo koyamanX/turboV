@@ -5,12 +5,14 @@
 #include "reorder_buffer.h"
 #include "instruction_decoder.h"
 #include "reservation_station.h"
+#include "register_file.h"
 
 module storm {
 	ifetch_unit ifu;
 	reorder_buffer rob;
 	reservation_station alu_rs;
 	instruction_decoder idec;
+	register_file gpr;
 	proc_name decode();
 	func_self stall_issue();
 	mem register_map_table[32][6] = {0};
@@ -30,22 +32,22 @@ module storm {
 		issue_inst0_op, issue_inst0_rd, issue_inst0_rs1, issue_inst0_rs2, issue_inst0_imm,
 		issue_inst1_op, issue_inst1_rd, issue_inst1_rs1, issue_inst1_rs2, issue_inst1_imm
 	);
-	reg execute_alu0_id[6];
+	reg execute_alu0_fn[4];
+	reg execute_alu0_dest[6];
 	reg execute_alu0_a[32];
 	reg execute_alu0_b[32];
-	reg execute_alu0_fn[4];
-	reg execute_alu1_id[6];
+	reg execute_alu1_fn[4];
+	reg execute_alu1_dest[6];
 	reg execute_alu1_a[32];
 	reg execute_alu1_b[32];
-	reg execute_alu1_fn[4];
-	proc_name execute_alu0(execute_alu0_id, execute_alu0_a, execute_alu0_b, execute_alu0_fn);
-	proc_name execute_alu1(execute_alu1_id, execute_alu1_a, execute_alu1_b, execute_alu1_fn);
-	reg writeresult_alu0_id[6];
+	proc_name execute_alu0(execute_alu0_fn, execute_alu0_dest, execute_alu0_a, execute_alu0_b);
+	proc_name execute_alu1(execute_alu1_fn, execute_alu1_dest, execute_alu1_a, execute_alu1_b);
+	reg writeresult_alu0_dest[6];
 	reg writeresult_alu0_val[32];
-	reg writeresult_alu1_id[6];
+	reg writeresult_alu1_dest[6];
 	reg writeresult_alu1_val[32];
-	proc_name writeresult_alu0(writeresult_alu0_id, writeresult_alu0_val);
-	proc_name writeresult_alu1(writeresult_alu1_id, writeresult_alu1_val);
+	proc_name writeresult_alu0(writeresult_alu0_dest, writeresult_alu0_val);
+	proc_name writeresult_alu1(writeresult_alu1_dest, writeresult_alu1_val);
 
 	func reset {
 		ifu.reset();
@@ -63,54 +65,136 @@ module storm {
 		}
 	}
 	proc issue {
-		if(!rob.full && !alu_rs.full) {
-			if(register_status_table[issue_inst0_rs1] == 1'b1) {
+		wire issue_inst0_Qj[LOG2_ROB_NUM_OF_ENTRIES];
+		wire issue_inst0_Qk[LOG2_ROB_NUM_OF_ENTRIES];
+		wire issue_inst0_Vj[32];
+		wire issue_inst0_Vk[32];
+		wire issue_inst1_Qj[LOG2_ROB_NUM_OF_ENTRIES];
+		wire issue_inst1_Qk[LOG2_ROB_NUM_OF_ENTRIES];
+		wire issue_inst1_Vj[32];
+		wire issue_inst1_Vk[32];
 
-				// search rob for ready or not
-				// index (register_map_table[issue_inst0_rs1]
-				// if ready, read value from rob, and Qi to 0
-				// otherwise write Qi field
+		if(!rob.full && !alu_rs.full) {
+			/* inst0 rs1 read */
+			if(register_status_table[issue_inst0_rs1] == BUSY) {
+				if(rob.read_operandA(register_map_table[issue_inst0_rs1]) == BUSY) {
+					/* Wait for inst in ROB to produce value */
+					issue_inst0_Vj = 0;
+					issue_inst0_Qj = register_map_table[issue_inst0_rs1];
+				} else {
+					/* Use value inside ROB */
+					issue_inst0_Vj = rob.read_operandA_val;
+					issue_inst0_Qj = 0;
+				}
 			} else {
-				// read from gpr
-				// set Qi to 0
+				issue_inst0_Vj = gpr.readA(issue_inst0_rs1);
+				issue_inst0_Qj = 0;
 			}
-			//rob.push();
-			//alu_rs.issue();
+			/* inst0 rs2 read */
+			if(register_status_table[issue_inst0_rs2] == BUSY) {
+				if(rob.read_operandB(register_map_table[issue_inst0_rs2]) == BUSY) {
+					/* Wait for inst in ROB to produce value */
+					issue_inst0_Vk = 0;
+					issue_inst0_Qk = register_map_table[issue_inst0_rs2];
+				} else {
+					/* Use value inside ROB */
+					issue_inst0_Vk = rob.read_operandB_val;
+					issue_inst0_Qk = 0;
+				}
+			} else {
+				issue_inst0_Vk = gpr.readB(issue_inst0_rs1);
+				issue_inst0_Qk = 0;
+			}
+			/* inst1 rs1 read */
+			if(register_status_table[issue_inst1_rs1] == BUSY) {
+				if(rob.read_operandC(register_map_table[issue_inst1_rs1]) == BUSY) {
+					/* Wait for inst in ROB to produce value */
+					issue_inst1_Vj = 0;
+					issue_inst1_Qj = register_map_table[issue_inst1_rs1];
+				} else {
+					/* Use value inside ROB */
+					issue_inst1_Vj = rob.read_operandC_val;
+					issue_inst1_Qj = 0;
+				}
+			} else {
+				issue_inst1_Vj = gpr.readC(issue_inst1_rs1);
+				issue_inst1_Qj = 0;
+			}
+			/* inst1 rs2 read */
+			if(register_status_table[issue_inst1_rs2] == BUSY) {
+				if(rob.read_operandD(register_map_table[issue_inst1_rs2]) == BUSY) {
+					/* Wait for inst in ROB to produce value */
+					issue_inst1_Vk = 0;
+					issue_inst1_Qk = register_map_table[issue_inst1_rs2];
+				} else {
+					/* Use value inside ROB */
+					issue_inst1_Vk = rob.read_operandD_val;
+					issue_inst1_Qk = 0;
+				}
+			} else {
+				issue_inst1_Vk = gpr.readD(issue_inst1_rs1);
+				issue_inst1_Qk = 0;
+			}
+			rob.push(
+				issue_fetch_packet.valid0, issue_fetch_packet.pc0, issue_fetch_packet.inst0, issue_inst0_rd,
+				issue_fetch_packet.valid1, issue_fetch_packet.pc1, issue_fetch_packet.inst1, issue_inst1_rd
+			);
+			alu_rs.issue(
+				issue_fetch_packet.valid0, issue_inst0_op, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0,
+				issue_fetch_packet.valid1, issue_inst1_op, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0
+			);
+			/* inst0 rd mapping */
+			if(issue_inst0_rd != 0) {
+				register_map_table[issue_inst0_rd] := rob.tag;
+				register_status_table[issue_inst0_rd] := BUSY;
+			}
+			/* inst1 rd mapping */
+			if(issue_inst1_rd != 0) {
+				register_map_table[issue_inst1_rd] := rob.tag;
+				register_status_table[issue_inst1_rd] := BUSY;
+			}
 			finish();
 		} else {
 			stall_issue();
 		}
 	}
 	func alu_rs.dispatch0 {
-		execute_alu0.invoke();
+		execute_alu0.invoke(alu_rs.dispatch0_Op, alu_rs.dispatch0_Dest, alu_rs.dispatch0_Vj, alu_rs.dispatch0_Vk);
 	}
 	func alu_rs.dispatch1 {
-		execute_alu1.invoke();
+		execute_alu1.invoke(alu_rs.dispatch1_Op, alu_rs.dispatch1_Dest, alu_rs.dispatch1_Vj, alu_rs.dispatch1_Vk);
 	}
 	proc execute_alu0 {
 		alu32 alu0;
 
 		alu0.exe(execute_alu0_a, execute_alu0_b, execute_alu0_fn);
-		writeresult_alu0(execute_alu0_id, alu0.q);
+		writeresult_alu0(execute_alu0_dest, alu0.q);
 	}
 	proc execute_alu1 {
 		alu32 alu1;
 
 		alu1.exe(execute_alu1_a, execute_alu1_b, execute_alu1_fn);
-		writeresult_alu1(execute_alu1_id, alu1.q);
+		writeresult_alu1(execute_alu1_dest, alu1.q);
 	}
 	proc writeresult_alu0 {
-		alu_rs.CDB0(writeresult_alu0_id, writeresult_alu0_val);
-		rob.CDB0(writeresult_alu0_id, writeresult_alu0_val);
+		alu_rs.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
+		rob.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
 		finish();
 	}
 	proc writeresult_alu1 {
-		alu_rs.CDB1(writeresult_alu1_id, writeresult_alu1_val);
-		rob.CDB1(writeresult_alu1_id, writeresult_alu1_val);
+		alu_rs.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
+		rob.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
 		finish();
 	}
 	func rob.commit {
-
+		if(issue_inst0_rd != rob.commit_Dest0) {
+			register_status_table[rob.commit_Dest0] := READY;
+		}
+		if(issue_inst1_rd != rob.commit_Dest1) {
+			register_status_table[rob.commit_Dest1] := READY;
+		}
+		gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
+		gpr.writeB(rob.commit_Dest1, rob.commit_Value1);
 	}
 
 	WISHBONE_MASTER_IF(ifu);
