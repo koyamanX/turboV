@@ -20,7 +20,7 @@ module instruction_decoder {
 		any {
 			inst0_opcode == OP: {
 				inst0_alu_fn = {inst0_rtype.funct7[5], inst0_rtype.funct3};
-				uops0_alu({inst0_alu_fn}, inst0_rtype.rd, inst0_rtype.rs1, inst0_rtype.rs2, 0);
+				uops0_alu({1'b0, inst0_alu_fn}, inst0_rtype.rd, inst0_rtype.rs1, inst0_rtype.rs2, 0);
 			}
 		}
 	}
@@ -34,7 +34,7 @@ module instruction_decoder {
 		any {
 			inst1_opcode == OP: {
 				inst1_alu_fn = {inst1_rtype.funct7[5], inst1_rtype.funct3};
-				uops1_alu({inst1_alu_fn}, inst1_rtype.rd, inst1_rtype.rs1, inst1_rtype.rs2, 0);
+				uops1_alu({1'b0, inst1_alu_fn}, inst1_rtype.rd, inst1_rtype.rs1, inst1_rtype.rs2, 0);
 			}
 		}
 	}
