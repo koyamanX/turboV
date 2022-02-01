@@ -134,7 +134,7 @@ module ifetch_unit {
 				ibuf.push({(st2_vpc)[XLEN-1:0], (st2_vpc+4)[XLEN-1:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b10});
 			}
 			~st2_vpc[2]: {
-				ibuf.push({(st2_vpc)[XLEN-1:0], (st2_vpc+4)[XLEN-1:0], st2_fetch_packet[63:0], 2'b00, 2'b11});
+				ibuf.push({(st2_vpc)[XLEN-1:0], (st2_vpc+4)[XLEN-1:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b11});
 			}
 		}
 	}

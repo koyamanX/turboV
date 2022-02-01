@@ -44,7 +44,7 @@ module reorder_buffer {
 			}
 			tail := next_tail;
 
-			return tail;
+			return tail+1;
 		}
 	}
 	func flush {

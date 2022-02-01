@@ -28,7 +28,8 @@ declare reorder_buffer {
 	input pc1[32];
 	input inst1[32];
 	input dest1[5];
-	output tag[LOG2_ROB_NUM_OF_ENTRIES];
+	/* tag start from 0 */
+	output tag[LOG2_ROB_NUM_OF_ENTRIES+1];
 	func_in push(valid0, pc0, inst0, dest0, valid1, pc1, inst1, dest1): tag;
 	func_in flush();
 	func_out full();
