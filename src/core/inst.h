@@ -13,7 +13,7 @@ struct r_type_t {
 struct i_type_t {
 	imm0[12];
 	rs1[5];
-	imm1[3];
+	funct3[3];
 	rd[5];
 	opcode[7];
 };
@@ -22,7 +22,7 @@ struct s_type_t {
 	imm0[7];
 	rs2[5];
 	rs1[5];
-	imm1[3];
+	funct3[3];
 	rd[5];
 	opcode[7];
 };
@@ -31,7 +31,7 @@ struct b_type_t {
 	imm0[7];
 	rs2[5];
 	rs1[5];
-	imm1[3];
+	funct3[3];
 	rd[5];
 	opcode[7];
 };
