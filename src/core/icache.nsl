@@ -63,7 +63,7 @@ module icache {
 		mem allocate_buf[4][64];
 		reg allocate_paddr2refill[32];
 		wire refill_paddr[32];
-		wire refill_data[64];
+		wire refill_data[256];
 		wire refill_way_sel;
 		func_self refill(refill_paddr, refill_data, refill_way_sel);
 
@@ -83,7 +83,6 @@ module icache {
 					allocate_bwoff++;
 				}
 			} else {
-				allocate_paddr := allocate_paddr + 8;
 				goto bus_wait;
 			}
 		}
@@ -92,7 +91,7 @@ module icache {
 				allocate_buf[allocate_bwoff] := rsp_data;
 				allocate_paddr := allocate_paddr + 8;
 				if(allocate_bwoff == 3) {
-					refill(allocate_paddr2refill, {allocate_buf[3], allocate_buf[2], allocate_buf[1], allocate_buf[0]}, allocate_way_sel);
+					refill(allocate_paddr2refill, {rsp_data, allocate_buf[2], allocate_buf[1], allocate_buf[0]}, allocate_way_sel);
 					allocate_bwoff := 0;
 					goto bus_req;
 					idle();
