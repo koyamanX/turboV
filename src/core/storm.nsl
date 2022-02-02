@@ -15,7 +15,7 @@ module storm {
 	register_file gpr;
 	proc_name decode();
 	func_self stall_issue();
-	mem register_map_table[32][6] = {0};
+	mem register_map_table[32][ROB_TAG_SIZE] = {0};
 	mem register_status_table[32][1] = {0};
 	fetch_packet_t reg issue_fetch_packet;
 	reg issue_inst0_op[7];
@@ -37,18 +37,18 @@ module storm {
 		issue_inst1_op, issue_inst1_rd, issue_inst1_rs1_valid, issue_inst1_rs1, issue_inst1_rs2_valid, issue_inst1_rs2, issue_inst1_imm
 	);
 	reg execute_alu0_fn[4];
-	reg execute_alu0_dest[6];
+	reg execute_alu0_dest[ROB_TAG_SIZE];
 	reg execute_alu0_a[32];
 	reg execute_alu0_b[32];
 	reg execute_alu1_fn[4];
-	reg execute_alu1_dest[6];
+	reg execute_alu1_dest[ROB_TAG_SIZE];
 	reg execute_alu1_a[32];
 	reg execute_alu1_b[32];
 	proc_name execute_alu0(execute_alu0_fn, execute_alu0_dest, execute_alu0_a, execute_alu0_b);
 	proc_name execute_alu1(execute_alu1_fn, execute_alu1_dest, execute_alu1_a, execute_alu1_b);
-	reg writeresult_alu0_dest[6];
+	reg writeresult_alu0_dest[ROB_TAG_SIZE];
 	reg writeresult_alu0_val[32];
-	reg writeresult_alu1_dest[6];
+	reg writeresult_alu1_dest[ROB_TAG_SIZE];
 	reg writeresult_alu1_val[32];
 	proc_name writeresult_alu0(writeresult_alu0_dest, writeresult_alu0_val);
 	proc_name writeresult_alu1(writeresult_alu1_dest, writeresult_alu1_val);
@@ -71,12 +71,12 @@ module storm {
 		}
 	}
 	proc issue {
-		wire issue_inst0_Qj[LOG2_ROB_NUM_OF_ENTRIES];
-		wire issue_inst0_Qk[LOG2_ROB_NUM_OF_ENTRIES];
+		wire issue_inst0_Qj[ROB_TAG_SIZE];
+		wire issue_inst0_Qk[ROB_TAG_SIZE];
 		wire issue_inst0_Vj[32];
 		wire issue_inst0_Vk[32];
-		wire issue_inst1_Qj[LOG2_ROB_NUM_OF_ENTRIES];
-		wire issue_inst1_Qk[LOG2_ROB_NUM_OF_ENTRIES];
+		wire issue_inst1_Qj[ROB_TAG_SIZE];
+		wire issue_inst1_Qk[ROB_TAG_SIZE];
 		wire issue_inst1_Vj[32];
 		wire issue_inst1_Vk[32];
 
@@ -119,7 +119,7 @@ module storm {
 			/* inst1 rs1 read */
 			if(issue_inst0_rd == issue_inst1_rs1) {
 				issue_inst1_Vj = 0;
-				issue_inst1_Qj = rob.tag;
+				issue_inst1_Qj = rob.tag+1;
 			} else {
 				if(register_status_table[issue_inst1_rs1] == BUSY) {
 					if(rob.read_operandC(register_map_table[issue_inst1_rs1]) == BUSY) {
@@ -140,7 +140,7 @@ module storm {
 			if(issue_inst1_rs2_valid) {
 				if(issue_inst0_rd == issue_inst1_rs2) {
 					issue_inst1_Vj = 0;
-					issue_inst1_Qj = rob.tag;
+					issue_inst1_Qj = rob.tag+1;
 				} else {
 					if(register_status_table[issue_inst1_rs2] == BUSY) {
 						if(rob.read_operandD(register_map_table[issue_inst1_rs2]) == BUSY) {
@@ -166,17 +166,17 @@ module storm {
 				issue_fetch_packet.valid1, issue_fetch_packet.pc1, issue_fetch_packet.inst1, issue_inst1_rd
 			);
 			alu_rs.issue(
-				issue_fetch_packet.valid1, issue_inst1_op, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0,
-				issue_fetch_packet.valid0, issue_inst0_op, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0
+				issue_fetch_packet.valid1, issue_inst1_op, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+2, 0,
+				issue_fetch_packet.valid0, issue_inst0_op, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag+1, 0
 			);
 			/* inst0 rd mapping */
 			if(issue_inst0_rd != 0) {
-				register_map_table[issue_inst0_rd] := rob.tag;
+				register_map_table[issue_inst0_rd] := rob.tag+1;
 				register_status_table[issue_inst0_rd] := BUSY;
 			}
 			/* inst1 rd mapping */
 			if(issue_inst1_rd != 0) {
-				register_map_table[issue_inst1_rd] := rob.tag+1;
+				register_map_table[issue_inst1_rd] := rob.tag+2;
 				register_status_table[issue_inst1_rd] := BUSY;
 			}
 			finish();
