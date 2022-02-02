@@ -23,6 +23,7 @@ module reorder_buffer {
 		if(!flush) {
 			reorder_buffer_t wire push_entry;
 
+			push_entry.Used = 1;
 			push_entry.Valid0 = valid0;
 			push_entry.Busy0 = 1;
 			push_entry.PC0 = pc0;
@@ -133,10 +134,17 @@ module reorder_buffer {
 		head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 2: commit_entry = rob2;
 		head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 3: commit_entry = rob3;
 	}
-	if(commit_entry.Valid0 && !commit_entry.Busy0 && commit_entry.Valid1 && !commit_entry.Busy1) {
+	if(commit_entry.Used && commit_entry.Valid0 && !commit_entry.Busy0 && commit_entry.Valid1 && !commit_entry.Busy1) {
 		if(!flush) {
 			head := next_head;
 			commit(commit_entry.Dest0, commit_entry.Value0, commit_entry.Dest1, commit_entry.Value1);
+		}
+		// TODO:
+		any {
+			head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 0: rob0 := 0;
+			head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 1: rob1 := 0;
+			head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 2: rob2 := 0;
+			head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 3: rob3 := 0;
 		}
 	}
 	if((tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == head[LOG2_ROB_NUM_OF_ENTRIES-1:0]) && (tail[LOG2_ROB_NUM_OF_ENTRIES] != head[LOG2_ROB_NUM_OF_ENTRIES])) {
