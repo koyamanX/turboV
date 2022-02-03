@@ -19,7 +19,7 @@ module instruction_decoder {
 		any {
 			inst_opcode == OP: {
 				inst_alu_fn = {inst_rtype.funct7[5], inst_rtype.funct3};
-				uops_alu(inst_alu_fn, inst_rtype.rd, 1'b1, inst_rtype.rs1, 1'b1, inst_rtype.rs2, 0);
+				uops_alu(inst_alu_fn, inst_rtype.rd, RS_SEL_REG, inst_rtype.rs1, RS_SEL_REG, inst_rtype.rs2, 0);
 			}
 			inst_opcode == OP_IMM: {
 				imm_gen0.i_type(inst);
@@ -29,7 +29,7 @@ module instruction_decoder {
 				} else {
 					inst_alu_fn = {1'b0, inst_itype.funct3};
 				}
-				uops_alu(inst_alu_fn, inst_itype.rd, 1'b1, inst_itype.rs1, 1'b0, 0, imm_gen0.imm);
+				uops_alu(inst_alu_fn, inst_itype.rd, RS_SEL_REG, inst_itype.rs1, RS_SEL_IMM, 0, imm_gen0.imm);
 			}
 		}
 	}

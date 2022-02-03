@@ -21,21 +21,21 @@ module storm {
 	fetch_packet_t reg issue_fetch_packet;
 	reg issue_inst0_op[7];
 	reg issue_inst0_rd[5];
-	reg issue_inst0_rs1_valid;
+	reg issue_inst0_rs1_sel[2];
 	reg issue_inst0_rs1[5];
-	reg issue_inst0_rs2_valid;
+	reg issue_inst0_rs2_sel[2];
 	reg issue_inst0_rs2[5];
 	reg issue_inst0_imm[32];
 	reg issue_inst1_op[7];
 	reg issue_inst1_rd[5];
-	reg issue_inst1_rs1_valid;
+	reg issue_inst1_rs1_sel[2];
 	reg issue_inst1_rs1[5];
-	reg issue_inst1_rs2_valid;
+	reg issue_inst1_rs2_sel[2];
 	reg issue_inst1_rs2[5];
 	reg issue_inst1_imm[32];
 	proc_name issue(issue_fetch_packet,
-		issue_inst0_op, issue_inst0_rd, issue_inst0_rs1_valid, issue_inst0_rs1, issue_inst0_rs2_valid, issue_inst0_rs2, issue_inst0_imm,
-		issue_inst1_op, issue_inst1_rd, issue_inst1_rs1_valid, issue_inst1_rs1, issue_inst1_rs2_valid, issue_inst1_rs2, issue_inst1_imm
+		issue_inst0_op, issue_inst0_rd, issue_inst0_rs1_sel, issue_inst0_rs1, issue_inst0_rs2_sel, issue_inst0_rs2, issue_inst0_imm,
+		issue_inst1_op, issue_inst1_rd, issue_inst1_rs1_sel, issue_inst1_rs1, issue_inst1_rs2_sel, issue_inst1_rs2, issue_inst1_imm
 	);
 	reg execute_alu0_fn[4];
 	reg execute_alu0_dest[ROB_TAG_SIZE];
@@ -67,8 +67,8 @@ module storm {
 			idec1.decode(decode_fetch_packet.inst1);
 			decode();
 			issue(decode_fetch_packet,
-					idec0.uops, idec0.uops_rd, idec0.uops_rs1_valid, idec0.uops_rs1, idec0.uops_rs2_valid, idec0.uops_rs2, idec0.uops_imm,
-					idec1.uops, idec1.uops_rd, idec1.uops_rs1_valid, idec1.uops_rs1, idec1.uops_rs2_valid, idec1.uops_rs2, idec1.uops_imm
+					idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm,
+					idec1.uops, idec1.uops_rd, idec1.uops_rs1_sel, idec1.uops_rs1, idec1.uops_rs2_sel, idec1.uops_rs2, idec1.uops_imm
 			);
 		}
 	}
@@ -102,7 +102,7 @@ module storm {
 				issue_inst0_Qj = 0;
 			}
 			/* inst0 rs2 read */
-			if(issue_inst0_rs2_valid) {
+			if(issue_inst0_rs2_sel == RS_SEL_REG) {
 				if(issue_inst0_rs2 == 5'b00000) {
 					issue_inst0_Vk = 0;
 					issue_inst0_Qk = 0;
@@ -120,7 +120,7 @@ module storm {
 					issue_inst0_Vk = gpr.readB(issue_inst0_rs1);
 					issue_inst0_Qk = 0;
 				}
-			} else {
+			} else if(issue_inst0_rs2_sel == RS_SEL_IMM) {
 				issue_inst0_Vk = issue_inst0_imm;
 				issue_inst0_Qk = 0;
 			}
@@ -148,7 +148,7 @@ module storm {
 				}
 			}
 			/* inst1 rs2 read */
-			if(issue_inst1_rs2_valid) {
+			if(issue_inst1_rs2_sel == RS_SEL_REG) {
 				if(issue_inst1_rs2 == 5'b00000) {
 					issue_inst1_Vk = 0;
 					issue_inst1_Qk = 0;
@@ -171,7 +171,7 @@ module storm {
 						issue_inst1_Qk = 0;
 					}
 				}
-			} else {
+			} else if(issue_inst1_rs2_sel == RS_SEL_IMM) {
 				issue_inst1_Vk = issue_inst1_imm;
 				issue_inst1_Qk = 0;
 			}
