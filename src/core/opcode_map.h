@@ -12,6 +12,6 @@
 #define OP          7'b0110011
 #define SYSTEM      7'b1110011
 #define AUIPC       7'b0010111
-#define LUI         7'b0110100
+#define LUI         7'b0110111
 
 #endif
