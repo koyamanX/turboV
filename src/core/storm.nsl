@@ -11,7 +11,8 @@ module storm {
 	ifetch_unit ifu;
 	reorder_buffer rob;
 	reservation_station alu_rs;
-	instruction_decoder idec;
+	instruction_decoder idec0;
+	instruction_decoder idec1;
 	register_file gpr;
 	proc_name decode();
 	func_self stall_issue();
@@ -62,11 +63,12 @@ module storm {
 		fetch_packet_t wire decode_fetch_packet;
 		if(!ifu.ibuf_empty && !stall_issue) {
 			decode_fetch_packet = ifu.ibuf_pop();
-			idec.decode(decode_fetch_packet.inst0, decode_fetch_packet.inst1);	
+			idec0.decode(decode_fetch_packet.inst0);
+			idec1.decode(decode_fetch_packet.inst1);
 			decode();
 			issue(decode_fetch_packet,
-					idec.uops0, idec.uops0_rd, idec.uops0_rs1_valid, idec.uops0_rs1, idec.uops0_rs2_valid, idec.uops0_rs2, idec.uops0_imm,
-					idec.uops1, idec.uops1_rd, idec.uops1_rs1_valid, idec.uops1_rs1, idec.uops1_rs2_valid, idec.uops1_rs2, idec.uops1_imm
+					idec0.uops, idec0.uops_rd, idec0.uops_rs1_valid, idec0.uops_rs1, idec0.uops_rs2_valid, idec0.uops_rs2, idec0.uops_imm,
+					idec1.uops, idec1.uops_rd, idec1.uops_rs1_valid, idec1.uops_rs1, idec1.uops_rs2_valid, idec1.uops_rs2, idec1.uops_imm
 			);
 		}
 	}

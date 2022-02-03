@@ -2,29 +2,18 @@
 #define INSTRUCTION_DECODER_H
 
 declare instruction_decoder {
-	input inst0[32];
-	input inst1[32];
-	func_in decode(inst0, inst1);
+	input inst[32];
+	func_in decode(inst);
 
-	output uops0[7];
-	output uops0_rd[5];
-	output uops0_rs1_valid;
-	output uops0_rs1[5];
-	output uops0_rs2_valid;
-	output uops0_rs2[5];
-	output uops0_imm[32];
-	func_out uops0_alu(uops0, uops0_rd, uops0_rs1_valid, uops0_rs1, uops0_rs2_valid, uops0_rs2, uops0_imm);
-	func_out uops0_illegal_instruction();
-
-	output uops1[7];
-	output uops1_rd[5];
-	output uops1_rs1_valid;
-	output uops1_rs1[5];
-	output uops1_rs2_valid;
-	output uops1_rs2[5];
-	output uops1_imm[32];
-	func_out uops1_alu(uops1, uops1_rd, uops1_rs1_valid, uops1_rs1, uops1_rs2_valid, uops1_rs2, uops1_imm);
-	func_out uops1_illegal_instruction();
+	output uops[7];
+	output uops_rd[5];
+	output uops_rs1_valid;
+	output uops_rs1[5];
+	output uops_rs2_valid;
+	output uops_rs2[5];
+	output uops_imm[32];
+	func_out uops_alu(uops, uops_rd, uops_rs1_valid, uops_rs1, uops_rs2_valid, uops_rs2, uops_imm);
+	func_out uops_illegal_instruction();
 }
 
 #endif

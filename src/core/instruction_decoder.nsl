@@ -5,64 +5,31 @@
 #include "alu32.h"
 
 module instruction_decoder {
-	func_self decode_inst0();
-	func_self decode_inst1();
 	imm_gen imm_gen0;
-	imm_gen imm_gen1;
 
 	func decode {
-		decode_inst0();
-		decode_inst1();
-	}
-	func decode_inst0 {
-		wire inst0_opcode[7];
-		wire inst0_alu_fn[4];
-		r_type_t wire inst0_rtype;
-		i_type_t wire inst0_itype;
+		wire inst_opcode[7];
+		wire inst_alu_fn[4];
+		r_type_t wire inst_rtype;
+		i_type_t wire inst_itype;
 
-		inst0_opcode = inst0[6:0];
-		inst0_rtype = inst0;
-		inst0_itype = inst0;
+		inst_opcode = inst[6:0];
+		inst_rtype = inst;
+		inst_itype = inst;
 		any {
-			inst0_opcode == OP: {
-				inst0_alu_fn = {inst0_rtype.funct7[5], inst0_rtype.funct3};
-				uops0_alu(inst0_alu_fn, inst0_rtype.rd, 1'b1, inst0_rtype.rs1, 1'b1, inst0_rtype.rs2, 0);
+			inst_opcode == OP: {
+				inst_alu_fn = {inst_rtype.funct7[5], inst_rtype.funct3};
+				uops_alu(inst_alu_fn, inst_rtype.rd, 1'b1, inst_rtype.rs1, 1'b1, inst_rtype.rs2, 0);
 			}
-			inst0_opcode == OP_IMM: {
-				imm_gen0.i_type(inst0);
-				if((inst0_itype.funct3 == ALU_SLL) || (inst0_itype.funct3 == ALU_SRA) || (inst0_itype.funct3 == ALU_SRL)) {
+			inst_opcode == OP_IMM: {
+				imm_gen0.i_type(inst);
+				if((inst_itype.funct3 == ALU_SLL) || (inst_itype.funct3 == ALU_SRA) || (inst_itype.funct3 == ALU_SRL)) {
 					/* use rtype field for funct7 */
-					inst0_alu_fn = {inst0_rtype.funct7[5], inst0_itype.funct3};
+					inst_alu_fn = {inst_rtype.funct7[5], inst_itype.funct3};
 				} else {
-					inst0_alu_fn = {1'b0, inst0_itype.funct3};
+					inst_alu_fn = {1'b0, inst_itype.funct3};
 				}
-				uops0_alu(inst0_alu_fn, inst0_itype.rd, 1'b1, inst0_itype.rs1, 1'b0, 0, imm_gen0.imm);
-			}
-		}
-	}
-	func decode_inst1 {
-		wire inst1_opcode[7];
-		wire inst1_alu_fn[4];
-		r_type_t wire inst1_rtype;
-		i_type_t wire inst1_itype;
-
-		inst1_opcode = inst1[6:0];
-		inst1_rtype = inst1;
-		inst1_itype = inst1;
-		any {
-			inst1_opcode == OP: {
-				inst1_alu_fn = {inst1_rtype.funct7[5], inst1_rtype.funct3};
-				uops1_alu(inst1_alu_fn, inst1_rtype.rd, 1'b1, inst1_rtype.rs1, 1'b1, inst1_rtype.rs2, 0);
-			}
-			inst1_opcode == OP_IMM: {
-				imm_gen1.i_type(inst1);
-				if((inst1_itype.funct3 == ALU_SLL) || (inst1_itype.funct3 == ALU_SRA) || (inst1_itype.funct3 == ALU_SRL)) {
-					/* use rtype field for funct7 */
-					inst1_alu_fn = {inst1_rtype.funct7[5], inst1_itype.funct3};
-				} else {
-					inst1_alu_fn = {1'b0, inst1_itype.funct3};
-				}
-				uops1_alu(inst1_alu_fn, inst1_itype.rd, 1'b1, inst1_itype.rs1, 1'b0, 0, imm_gen1.imm);
+				uops_alu(inst_alu_fn, inst_itype.rd, 1'b1, inst_itype.rs1, 1'b0, 0, imm_gen0.imm);
 			}
 		}
 	}
