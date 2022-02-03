@@ -82,7 +82,10 @@ module storm {
 
 		if(!rob.full && !alu_rs.full) {
 			/* inst0 rs1 read */
-			if(register_status_table[issue_inst0_rs1] == BUSY) {
+			if(issue_inst0_rs1 == 5'b00000) {
+				issue_inst0_Vj = 0;
+				issue_inst0_Qj = 0;
+			} else if(register_status_table[issue_inst0_rs1] == BUSY) {
 				if(rob.read_operandA(register_map_table[issue_inst0_rs1]) == BUSY) {
 					/* Wait for inst in ROB to produce value */
 					issue_inst0_Vj = 0;
@@ -98,7 +101,10 @@ module storm {
 			}
 			/* inst0 rs2 read */
 			if(issue_inst0_rs2_valid) {
-				if(register_status_table[issue_inst0_rs2] == BUSY) {
+				if(issue_inst0_rs2 == 5'b00000) {
+					issue_inst0_Vk = 0;
+					issue_inst0_Qk = 0;
+				} else if(register_status_table[issue_inst0_rs2] == BUSY) {
 					if(rob.read_operandB(register_map_table[issue_inst0_rs2]) == BUSY) {
 						/* Wait for inst in ROB to produce value */
 						issue_inst0_Vk = 0;
@@ -117,7 +123,10 @@ module storm {
 				issue_inst0_Qk = 0;
 			}
 			/* inst1 rs1 read */
-			if(issue_inst0_rd == issue_inst1_rs1) {
+			if(issue_inst1_rs1 == 5'b00000) {
+				issue_inst1_Vj = 0;
+				issue_inst1_Qj = 0;
+			} else if(issue_inst0_rd == issue_inst1_rs1) {
 				issue_inst1_Vj = 0;
 				issue_inst1_Qj = rob.tag+1;
 			} else {
@@ -138,7 +147,10 @@ module storm {
 			}
 			/* inst1 rs2 read */
 			if(issue_inst1_rs2_valid) {
-				if(issue_inst0_rd == issue_inst1_rs2) {
+				if(issue_inst1_rs2 == 5'b00000) {
+					issue_inst1_Vk = 0;
+					issue_inst1_Qk = 0;
+				} else if(issue_inst0_rd == issue_inst1_rs2) {
 					issue_inst1_Vj = 0;
 					issue_inst1_Qj = rob.tag+1;
 				} else {
