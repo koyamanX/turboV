@@ -87,6 +87,9 @@ module storm {
 			if(issue_inst0_rs1_sel == RS_SEL_ZERO) {
 				issue_inst0_Vj = 0;
 				issue_inst0_Qj = 0;
+			} else if(issue_inst0_rs1_sel == RS_SEL_PC) {
+				issue_inst0_Vj = issue_fetch_packet.pc0;
+				issue_inst0_Qj = 0;
 			} else {
 				if(issue_inst0_rs1 == 5'b00000) {
 					issue_inst0_Vj = 0;
@@ -132,6 +135,9 @@ module storm {
 			/* inst1 rs1 read */
 			if(issue_inst1_rs1_sel == RS_SEL_ZERO) {
 				issue_inst1_Vj = 0;
+				issue_inst1_Qj = 0;
+			} else if(issue_inst1_rs1_sel == RS_SEL_PC) {
+				issue_inst1_Vj = issue_fetch_packet.pc1;
 				issue_inst1_Qj = 0;
 			} else {
 				if(issue_inst1_rs1 == 5'b00000) {

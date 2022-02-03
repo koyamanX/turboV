@@ -38,6 +38,11 @@ module instruction_decoder {
 				inst_alu_fn = ALU_OR;
 				uops_alu(inst_alu_fn, inst_utype.rd, RS_SEL_ZERO, 0, RS_SEL_IMM, 0, imm_gen0.imm);
 			}
+			inst_opcode == AUIPC: {
+				imm_gen0.u_type(inst);
+				inst_alu_fn = ALU_ADD;
+				uops_alu(inst_alu_fn, inst_utype.rd, RS_SEL_PC, 0, RS_SEL_IMM, 0, imm_gen0.imm);
+			}
 		}
 	}
 }
