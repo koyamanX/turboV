@@ -45,7 +45,12 @@ module reorder_buffer {
 			}
 			tail := next_tail;
 
-			return ROB_TAG_SIZE'(tail)<<1;
+			any {
+				tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 0: return 1;
+				tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 1: return 3;
+				tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 2: return 5;
+				tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 3: return 7;
+			}
 		}
 	}
 	func flush {

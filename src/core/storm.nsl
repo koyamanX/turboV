@@ -130,7 +130,7 @@ module storm {
 				issue_inst1_Qj = 0;
 			} else if(issue_inst0_rd == issue_inst1_rs1) {
 				issue_inst1_Vj = 0;
-				issue_inst1_Qj = rob.tag+1;
+				issue_inst1_Qj = rob.tag;
 			} else {
 				if(register_status_table[issue_inst1_rs1] == BUSY) {
 					if(rob.read_operandC(register_map_table[issue_inst1_rs1]) == BUSY) {
@@ -154,7 +154,7 @@ module storm {
 					issue_inst1_Qk = 0;
 				} else if(issue_inst0_rd == issue_inst1_rs2) {
 					issue_inst1_Vj = 0;
-					issue_inst1_Qj = rob.tag+1;
+					issue_inst1_Qj = rob.tag;
 				} else {
 					if(register_status_table[issue_inst1_rs2] == BUSY) {
 						if(rob.read_operandD(register_map_table[issue_inst1_rs2]) == BUSY) {
@@ -180,17 +180,17 @@ module storm {
 				issue_fetch_packet.valid1, issue_fetch_packet.pc1, issue_fetch_packet.inst1, issue_inst1_rd
 			);
 			alu_rs.issue(
-				issue_fetch_packet.valid1, issue_inst1_op, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+2, 0,
-				issue_fetch_packet.valid0, issue_inst0_op, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag+1, 0
+				issue_fetch_packet.valid1, issue_inst1_op, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0,
+				issue_fetch_packet.valid0, issue_inst0_op, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0
 			);
 			/* inst0 rd mapping */
 			if(issue_inst0_rd != 0) {
-				register_map_table[issue_inst0_rd] := rob.tag+1;
+				register_map_table[issue_inst0_rd] := rob.tag;
 				register_status_table[issue_inst0_rd] := BUSY;
 			}
 			/* inst1 rd mapping */
 			if(issue_inst1_rd != 0) {
-				register_map_table[issue_inst1_rd] := rob.tag+2;
+				register_map_table[issue_inst1_rd] := rob.tag+1;
 				register_status_table[issue_inst1_rd] := BUSY;
 			}
 			finish();
