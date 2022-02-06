@@ -79,7 +79,7 @@ module ifetch_unit {
 		return ibuf.pop();
 	}
 
-	if(ibuf.full) {
+	if(ibuf.full && !redirect) {
 		st0.finish();
 		st1.finish();
 		st2.finish();
@@ -127,14 +127,13 @@ module ifetch_unit {
 		predict();
 		if(predict_not_taken && !flush_st2 && !stall_st2) {
 			finish();
-		}
-
-		any {
-			st2_vpc[2]: {
-				ibuf.push({(st2_vpc)[XLEN-1:0], (st2_vpc+4)[XLEN-1:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b01});
-			}
-			~st2_vpc[2]: {
-				ibuf.push({(st2_vpc)[XLEN-1:0], (st2_vpc+4)[XLEN-1:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b11});
+			any {
+				st2_vpc[2]: {
+					ibuf.push({(st2_vpc)[XLEN-1:0], (st2_vpc+4)[XLEN-1:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b01});
+				}
+				~st2_vpc[2]: {
+					ibuf.push({(st2_vpc)[XLEN-1:0], (st2_vpc+4)[XLEN-1:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b11});
+				}
 			}
 		}
 	}
