@@ -6,7 +6,7 @@
 Welcome to storm's documentation!
 =================================
 
-* https://github.com/koyamanX/storm.git
+= https://github.com/koyamanX/storm.git
 
 Table of Contents
 =================
