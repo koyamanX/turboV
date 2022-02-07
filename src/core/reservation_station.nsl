@@ -37,12 +37,12 @@ module reservation_station {
 			new_rs_entry.Dest0 = Dest0;
 			new_rs_entry.A1 = A1;
 			new_rs_entry.A0 = A0;
-		}
-		alt {
-			rs0_free: rs0 := new_rs_entry;
-			rs1_free: rs1 := new_rs_entry;
-			rs2_free: rs2 := new_rs_entry;
-			rs3_free: rs3 := new_rs_entry;
+			alt {
+				rs0_free: rs0 := new_rs_entry;
+				rs1_free: rs1 := new_rs_entry;
+				rs2_free: rs2 := new_rs_entry;
+				rs3_free: rs3 := new_rs_entry;
+			}
 		}
 	}
 	if(!flush) {

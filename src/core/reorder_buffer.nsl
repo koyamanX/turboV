@@ -110,27 +110,31 @@ module reorder_buffer {
 		}
 	}
 	func CDB0 {
-		any {
-			CDB0Id == 1: {rob0.Value0 := CDB0Val; rob0.Busy0 := 0;}
-			CDB0Id == 2: {rob0.Value1 := CDB0Val; rob0.Busy1 := 0;}
-			CDB0Id == 3: {rob1.Value0 := CDB0Val; rob1.Busy0 := 0;}
-			CDB0Id == 4: {rob1.Value1 := CDB0Val; rob1.Busy1 := 0;}
-			CDB0Id == 5: {rob2.Value0 := CDB0Val; rob2.Busy0 := 0;}
-			CDB0Id == 6: {rob2.Value1 := CDB0Val; rob2.Busy1 := 0;}
-			CDB0Id == 7: {rob3.Value0 := CDB0Val; rob3.Busy0 := 0;}
-			CDB0Id == 8: {rob3.Value1 := CDB0Val; rob3.Busy1 := 0;}
+		if(!flush) {
+			any {
+				CDB0Id == 1: {rob0.Value0 := CDB0Val; rob0.Busy0 := 0;}
+				CDB0Id == 2: {rob0.Value1 := CDB0Val; rob0.Busy1 := 0;}
+				CDB0Id == 3: {rob1.Value0 := CDB0Val; rob1.Busy0 := 0;}
+				CDB0Id == 4: {rob1.Value1 := CDB0Val; rob1.Busy1 := 0;}
+				CDB0Id == 5: {rob2.Value0 := CDB0Val; rob2.Busy0 := 0;}
+				CDB0Id == 6: {rob2.Value1 := CDB0Val; rob2.Busy1 := 0;}
+				CDB0Id == 7: {rob3.Value0 := CDB0Val; rob3.Busy0 := 0;}
+				CDB0Id == 8: {rob3.Value1 := CDB0Val; rob3.Busy1 := 0;}
+			}
 		}
 	}
 	func CDB1 {
-		any {
-			CDB1Id == 1: {rob0.Value0 := CDB1Val; rob0.Busy0 := 0;}
-			CDB1Id == 2: {rob0.Value1 := CDB1Val; rob0.Busy1 := 0;}
-			CDB1Id == 3: {rob1.Value0 := CDB1Val; rob1.Busy0 := 0;}
-			CDB1Id == 4: {rob1.Value1 := CDB1Val; rob1.Busy1 := 0;}
-			CDB1Id == 5: {rob2.Value0 := CDB1Val; rob2.Busy0 := 0;}
-			CDB1Id == 6: {rob2.Value1 := CDB1Val; rob2.Busy1 := 0;}
-			CDB1Id == 7: {rob3.Value0 := CDB1Val; rob3.Busy0 := 0;}
-			CDB1Id == 8: {rob3.Value1 := CDB1Val; rob3.Busy1 := 0;}
+		if(!flush) {
+			any {
+				CDB1Id == 1: {rob0.Value0 := CDB1Val; rob0.Busy0 := 0;}
+				CDB1Id == 2: {rob0.Value1 := CDB1Val; rob0.Busy1 := 0;}
+				CDB1Id == 3: {rob1.Value0 := CDB1Val; rob1.Busy0 := 0;}
+				CDB1Id == 4: {rob1.Value1 := CDB1Val; rob1.Busy1 := 0;}
+				CDB1Id == 5: {rob2.Value0 := CDB1Val; rob2.Busy0 := 0;}
+				CDB1Id == 6: {rob2.Value1 := CDB1Val; rob2.Busy1 := 0;}
+				CDB1Id == 7: {rob3.Value0 := CDB1Val; rob3.Busy0 := 0;}
+				CDB1Id == 8: {rob3.Value1 := CDB1Val; rob3.Busy1 := 0;}
+			}
 		}
 	}
 	any {
@@ -143,13 +147,13 @@ module reorder_buffer {
 		if(!flush) {
 			head := next_head;
 			commit(commit_entry.Dest0, commit_entry.Value0, commit_entry.Dest1, commit_entry.Value1);
-		}
-		// TODO:
-		any {
-			head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 0: rob0 := 0;
-			head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 1: rob1 := 0;
-			head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 2: rob2 := 0;
-			head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 3: rob3 := 0;
+			// TODO:
+			any {
+				head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 0: rob0 := 0;
+				head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 1: rob1 := 0;
+				head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 2: rob2 := 0;
+				head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 3: rob3 := 0;
+			}
 		}
 	}
 	if((tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == head[LOG2_ROB_NUM_OF_ENTRIES-1:0]) && (tail[LOG2_ROB_NUM_OF_ENTRIES] != head[LOG2_ROB_NUM_OF_ENTRIES])) {
