@@ -7,6 +7,8 @@
 struct fetch_packet_t {
 	pc0[XLEN];
 	pc1[XLEN];
+	/* TODO: optimize npc */
+	npc1[XLEN];
 	inst0[ILEN];
 	inst1[ILEN];
 	pred0[1];
@@ -14,7 +16,7 @@ struct fetch_packet_t {
 	valid0[1];
 	valid1[1];
 
-#define SIZEOF_FETCH_PACKET_T 132
+#define SIZEOF_FETCH_PACKET_T 164
 };
 
 
