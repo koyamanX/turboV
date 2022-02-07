@@ -13,7 +13,14 @@ Table of Contents
 .. toctree::
    :maxdepth: 2
 
-   introduction.rst
-   overview.rst
-   instruction_fetch_unit.rst
-   instruction_decoder.rst
+   storm_microarch.rst
+   storm_pipeline.rst
+   nsl.rst
+   riscv.rst
+   ifetch_unit.rst
+   decode.rst
+   issue.rst
+   dispatch.rst
+   execute.rst
+   writeresult.rst
+   commit.rst
