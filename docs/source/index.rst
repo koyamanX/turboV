@@ -39,6 +39,7 @@ Table of Contents
 -----------------
 .. toctree::
    :maxdepth: 2
+   :caption: Overview of Storm microarchitecture:
 
    storm_microarch.rst
    storm_pipeline.rst
