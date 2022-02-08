@@ -7,3 +7,5 @@ Storm Microarchitecture
 	:scale: 50%
 	:align: center
 	:alt: Overview of storm pipeline
+
+	Detailed Storm pipeline(currently LSU and Branch pipe are not shown)
