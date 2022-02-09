@@ -10,7 +10,8 @@
 module storm {
 	ifetch_unit ifu;
 	reorder_buffer rob;
-	reservation_station alu_rs;
+	reservation_station alu_rs0;
+	reservation_station alu_rs1;
 	instruction_decoder idec0;
 	instruction_decoder idec1;
 	register_file gpr;
@@ -82,7 +83,7 @@ module storm {
 		wire issue_inst1_Vj[32];
 		wire issue_inst1_Vk[32];
 
-		if(!rob.full && !alu_rs.full) {
+		if(!rob.full && !alu_rs0.full && !alu_rs1.full) {
 			/* inst0 rs1 read */
 			if(issue_inst0_rs1_sel == RS_SEL_ZERO) {
 				issue_inst0_Vj = 0;
@@ -195,9 +196,11 @@ module storm {
 				issue_fetch_packet.valid0, issue_fetch_packet.pc0, issue_fetch_packet.inst0, issue_inst0_rd,
 				issue_fetch_packet.valid1, issue_fetch_packet.pc1, issue_fetch_packet.inst1, issue_inst1_rd
 			);
-			alu_rs.issue(
-				issue_fetch_packet.valid1, issue_inst1_op, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0,
+			alu_rs1.issue(
 				issue_fetch_packet.valid0, issue_inst0_op, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0
+			);
+			alu_rs0.issue(
+				issue_fetch_packet.valid1, issue_inst1_op, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0
 			);
 			/* inst0 rd mapping */
 			if(issue_inst0_rd != 0) {
@@ -214,11 +217,11 @@ module storm {
 			stall_issue();
 		}
 	}
-	func alu_rs.dispatch0 {
-		execute_alu0.invoke(alu_rs.dispatch0_Op, alu_rs.dispatch0_Dest, alu_rs.dispatch0_Vj, alu_rs.dispatch0_Vk);
+	func alu_rs0.dispatch {
+		execute_alu0.invoke(alu_rs0.dispatch_Op, alu_rs0.dispatch_Dest, alu_rs0.dispatch_Vj, alu_rs0.dispatch_Vk);
 	}
-	func alu_rs.dispatch1 {
-		execute_alu1.invoke(alu_rs.dispatch1_Op, alu_rs.dispatch1_Dest, alu_rs.dispatch1_Vj, alu_rs.dispatch1_Vk);
+	func alu_rs1.dispatch {
+		execute_alu1.invoke(alu_rs1.dispatch_Op, alu_rs1.dispatch_Dest, alu_rs1.dispatch_Vj, alu_rs1.dispatch_Vk);
 	}
 	proc execute_alu0 {
 		alu32 alu0;
@@ -233,12 +236,14 @@ module storm {
 		writeresult_alu1(execute_alu1_dest, alu1.q);
 	}
 	proc writeresult_alu0 {
-		alu_rs.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
+		alu_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
+		alu_rs1.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
 		rob.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
 		finish();
 	}
 	proc writeresult_alu1 {
-		alu_rs.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
+		alu_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
+		alu_rs1.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
 		rob.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
 		finish();
 	}

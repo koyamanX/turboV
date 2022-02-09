@@ -9,34 +9,22 @@ module reservation_station {
 	func_self rs1_free();
 	func_self rs2_free();
 	func_self rs3_free();
-	func_self dispatch_rs0_0();
-	func_self dispatch_rs0_1();
-	func_self dispatch_rs1_0();
-	func_self dispatch_rs1_1();
-	func_self dispatch_rs2_0();
-	func_self dispatch_rs2_1();
-	func_self dispatch_rs3_0();
-	func_self dispatch_rs3_1();
+	func_self dispatch_rs0();
+	func_self dispatch_rs1();
+	func_self dispatch_rs2();
+	func_self dispatch_rs3();
 
 	func issue {
 		reservation_station_t wire new_rs_entry;
 		if(!flush) {
-			new_rs_entry.Busy1 = Valid1;
-			new_rs_entry.Busy0 = Valid0;
-			new_rs_entry.Op1 = Op1;
-			new_rs_entry.Op0 = Op0;
-			new_rs_entry.Vj1 = Vj1;
-			new_rs_entry.Vj0 = Vj0;
-			new_rs_entry.Vk1 = Vk1;
-			new_rs_entry.Vk0 = Vk0;
-			new_rs_entry.Qj1 = Qj1;
-			new_rs_entry.Qj0 = Qj0;
-			new_rs_entry.Qk1 = Qk1;
-			new_rs_entry.Qk0 = Qk0;
-			new_rs_entry.Dest1 = Dest1;
-			new_rs_entry.Dest0 = Dest0;
-			new_rs_entry.A1 = A1;
-			new_rs_entry.A0 = A0;
+			new_rs_entry.Busy = Valid;
+			new_rs_entry.Op = Op;
+			new_rs_entry.Vj = Vj;
+			new_rs_entry.Vk = Vk;
+			new_rs_entry.Qj = Qj;
+			new_rs_entry.Qk = Qk;
+			new_rs_entry.Dest = Dest;
+			new_rs_entry.A = A;
 			alt {
 				rs0_free: rs0 := new_rs_entry;
 				rs1_free: rs1 := new_rs_entry;
@@ -47,107 +35,61 @@ module reservation_station {
 	}
 	if(!flush) {
 		alt {
-			rs3.Busy1 && (rs3.Qj1 == 0) && (rs3.Qk1 == 0): {
-				dispatch_rs3_1();
+			rs3.Busy && (rs3.Qj == 0) && (rs3.Qk == 0): {
+				dispatch_rs3();
 			}
-			rs2.Busy1 && (rs2.Qj1 == 0) && (rs2.Qk1 == 0): {
-				dispatch_rs2_1();
+			rs2.Busy && (rs2.Qj == 0) && (rs2.Qk == 0): {
+				dispatch_rs2();
 			}
-			rs1.Busy1 && (rs1.Qj1 == 0) && (rs1.Qk1 == 0): {
-				dispatch_rs1_1();
+			rs1.Busy && (rs1.Qj == 0) && (rs1.Qk == 0): {
+				dispatch_rs1();
 			}
-			rs0.Busy1 && (rs0.Qj1 == 0) && (rs0.Qk1 == 0): {
-				dispatch_rs0_1();
-			}
-		}
-		alt {
-			rs3.Busy0 && (rs3.Qj0 == 0) && (rs3.Qk0 == 0): {
-				dispatch_rs3_0();
-			}
-			rs2.Busy0 && (rs2.Qj0 == 0) && (rs2.Qk0 == 0): {
-				dispatch_rs2_0();
-			}
-			rs1.Busy0 && (rs1.Qj0 == 0) && (rs1.Qk0 == 0): {
-				dispatch_rs1_0();
-			}
-			rs0.Busy0 && (rs0.Qj0 == 0) && (rs0.Qk0 == 0): {
-				dispatch_rs0_0();
+			rs0.Busy && (rs0.Qj == 0) && (rs0.Qk == 0): {
+				dispatch_rs0();
 			}
 		}
 	}
-	func dispatch_rs0_0 {
-		rs0.Busy0 := 0;
-		dispatch0(rs0.Op0, rs0.Dest0, rs0.Vj0, rs0.Vk0);
+	func dispatch_rs0 {
+		rs0.Busy := 0;
+		dispatch(rs0.Op, rs0.Dest, rs0.Vj, rs0.Vk);
 	}
-	func dispatch_rs0_1 {
-		rs0.Busy1 := 0;
-		dispatch1(rs0.Op1, rs0.Dest1, rs0.Vj1, rs0.Vk1);
+	func dispatch_rs1 {
+		rs1.Busy := 0;
+		dispatch(rs1.Op, rs1.Dest, rs1.Vj, rs1.Vk);
 	}
-	func dispatch_rs1_0 {
-		rs1.Busy0 := 0;
-		dispatch0(rs1.Op0, rs1.Dest0, rs1.Vj0, rs1.Vk0);
+	func dispatch_rs2 {
+		rs2.Busy := 0;
+		dispatch(rs2.Op, rs2.Dest, rs2.Vj, rs2.Vk);
 	}
-	func dispatch_rs1_1 {
-		rs1.Busy1 := 0;
-		dispatch1(rs1.Op1, rs1.Dest1, rs1.Vj1, rs1.Vk1);
-	}
-	func dispatch_rs2_0 {
-		rs2.Busy0 := 0;
-		dispatch0(rs2.Op0, rs2.Dest0, rs2.Vj0, rs2.Vk0);
-	}
-	func dispatch_rs2_1 {
-		rs2.Busy1 := 0;
-		dispatch1(rs2.Op1, rs2.Dest1, rs2.Vj1, rs2.Vk1);
-	}
-	func dispatch_rs3_0 {
-		rs3.Busy0 := 0;
-		dispatch0(rs3.Op0, rs3.Dest0, rs3.Vj0, rs3.Vk0);
-	}
-	func dispatch_rs3_1 {
-		rs3.Busy1 := 0;
-		dispatch1(rs3.Op1, rs3.Dest1, rs3.Vj1, rs3.Vk1);
+	func dispatch_rs3 {
+		rs3.Busy := 0;
+		dispatch(rs3.Op, rs3.Dest, rs3.Vj, rs3.Vk);
 	}
 	func CDB0 {
 		if(!flush) {
 			any {
-				(rs3.Qj1 == CDB0Id) && rs3.Busy1: {rs3.Vj1 := CDB0Val; rs3.Qj1 := 0;}
-				(rs3.Qj0 == CDB0Id) && rs3.Busy0: {rs3.Vj0 := CDB0Val; rs3.Qj0 := 0;}
-				(rs3.Qk1 == CDB0Id) && rs3.Busy1: {rs3.Vk1 := CDB0Val; rs3.Qk1 := 0;}
-				(rs3.Qk0 == CDB0Id) && rs3.Busy0: {rs3.Vk0 := CDB0Val; rs3.Qk0 := 0;}
-				(rs2.Qj1 == CDB0Id) && rs2.Busy1: {rs2.Vj1 := CDB0Val; rs2.Qj1 := 0;}
-				(rs2.Qj0 == CDB0Id) && rs2.Busy0: {rs2.Vj0 := CDB0Val; rs2.Qj0 := 0;}
-				(rs2.Qk1 == CDB0Id) && rs2.Busy1: {rs2.Vk1 := CDB0Val; rs2.Qk1 := 0;}
-				(rs2.Qk0 == CDB0Id) && rs2.Busy0: {rs2.Vk0 := CDB0Val; rs2.Qk0 := 0;}
-				(rs1.Qj1 == CDB0Id) && rs1.Busy1: {rs1.Vj1 := CDB0Val; rs1.Qj1 := 0;}
-				(rs1.Qj0 == CDB0Id) && rs1.Busy0: {rs1.Vj0 := CDB0Val; rs1.Qj0 := 0;}
-				(rs1.Qk1 == CDB0Id) && rs1.Busy1: {rs1.Vk1 := CDB0Val; rs1.Qk1 := 0;}
-				(rs1.Qk0 == CDB0Id) && rs1.Busy0: {rs1.Vk0 := CDB0Val; rs1.Qk0 := 0;}
-				(rs0.Qj1 == CDB0Id) && rs0.Busy1: {rs0.Vj1 := CDB0Val; rs0.Qj1 := 0;}
-				(rs0.Qj0 == CDB0Id) && rs0.Busy0: {rs0.Vj0 := CDB0Val; rs0.Qj0 := 0;}
-				(rs0.Qk1 == CDB0Id) && rs0.Busy1: {rs0.Vk1 := CDB0Val; rs0.Qk1 := 0;}
-				(rs0.Qk0 == CDB0Id) && rs0.Busy0: {rs0.Vk0 := CDB0Val; rs0.Qk0 := 0;}
+				(rs3.Qj == CDB0Id) && rs3.Busy: {rs3.Vj := CDB0Val; rs3.Qj := 0;}
+				(rs3.Qk == CDB0Id) && rs3.Busy: {rs3.Vk := CDB0Val; rs3.Qk := 0;}
+				(rs2.Qj == CDB0Id) && rs2.Busy: {rs2.Vj := CDB0Val; rs2.Qj := 0;}
+				(rs2.Qk == CDB0Id) && rs2.Busy: {rs2.Vk := CDB0Val; rs2.Qk := 0;}
+				(rs1.Qj == CDB0Id) && rs1.Busy: {rs1.Vj := CDB0Val; rs1.Qj := 0;}
+				(rs1.Qk == CDB0Id) && rs1.Busy: {rs1.Vk := CDB0Val; rs1.Qk := 0;}
+				(rs0.Qj == CDB0Id) && rs0.Busy: {rs0.Vj := CDB0Val; rs0.Qj := 0;}
+				(rs0.Qk == CDB0Id) && rs0.Busy: {rs0.Vk := CDB0Val; rs0.Qk := 0;}
 			}
 		}
 	}
 	func CDB1 {
 		if(!flush) {
 			any {
-				(rs3.Qj1 == CDB1Id) && rs3.Busy1: {rs3.Vj1 := CDB1Val; rs3.Qj1 := 0;}
-				(rs3.Qj0 == CDB1Id) && rs3.Busy0: {rs3.Vj0 := CDB1Val; rs3.Qj0 := 0;}
-				(rs3.Qk1 == CDB1Id) && rs3.Busy1: {rs3.Vk1 := CDB1Val; rs3.Qk1 := 0;}
-				(rs3.Qk0 == CDB1Id) && rs3.Busy0: {rs3.Vk0 := CDB1Val; rs3.Qk0 := 0;}
-				(rs2.Qj1 == CDB1Id) && rs2.Busy1: {rs2.Vj1 := CDB1Val; rs2.Qj1 := 0;}
-				(rs2.Qj0 == CDB1Id) && rs2.Busy0: {rs2.Vj0 := CDB1Val; rs2.Qj0 := 0;}
-				(rs2.Qk1 == CDB1Id) && rs2.Busy1: {rs2.Vk1 := CDB1Val; rs2.Qk1 := 0;}
-				(rs2.Qk0 == CDB1Id) && rs2.Busy0: {rs2.Vk0 := CDB1Val; rs2.Qk0 := 0;}
-				(rs1.Qj1 == CDB1Id) && rs1.Busy1: {rs1.Vj1 := CDB1Val; rs1.Qj1 := 0;}
-				(rs1.Qj0 == CDB1Id) && rs1.Busy0: {rs1.Vj0 := CDB1Val; rs1.Qj0 := 0;}
-				(rs1.Qk1 == CDB1Id) && rs1.Busy1: {rs1.Vk1 := CDB1Val; rs1.Qk1 := 0;}
-				(rs1.Qk0 == CDB1Id) && rs1.Busy0: {rs1.Vk0 := CDB1Val; rs1.Qk0 := 0;}
-				(rs0.Qj1 == CDB1Id) && rs0.Busy1: {rs0.Vj1 := CDB1Val; rs0.Qj1 := 0;}
-				(rs0.Qj0 == CDB1Id) && rs0.Busy0: {rs0.Vj0 := CDB1Val; rs0.Qj0 := 0;}
-				(rs0.Qk1 == CDB1Id) && rs0.Busy1: {rs0.Vk1 := CDB1Val; rs0.Qk1 := 0;}
-				(rs0.Qk0 == CDB1Id) && rs0.Busy0: {rs0.Vk0 := CDB1Val; rs0.Qk0 := 0;}
+				(rs3.Qj == CDB1Id) && rs3.Busy: {rs3.Vj := CDB1Val; rs3.Qj := 0;}
+				(rs3.Qk == CDB1Id) && rs3.Busy: {rs3.Vk := CDB1Val; rs3.Qk := 0;}
+				(rs2.Qj == CDB1Id) && rs2.Busy: {rs2.Vj := CDB1Val; rs2.Qj := 0;}
+				(rs2.Qk == CDB1Id) && rs2.Busy: {rs2.Vk := CDB1Val; rs2.Qk := 0;}
+				(rs1.Qj == CDB1Id) && rs1.Busy: {rs1.Vj := CDB1Val; rs1.Qj := 0;}
+				(rs1.Qk == CDB1Id) && rs1.Busy: {rs1.Vk := CDB1Val; rs1.Qk := 0;}
+				(rs0.Qj == CDB1Id) && rs0.Busy: {rs0.Vj := CDB1Val; rs0.Qj := 0;}
+				(rs0.Qk == CDB1Id) && rs0.Busy: {rs0.Vk := CDB1Val; rs0.Qk := 0;}
 			}
 		}
 	}
@@ -162,9 +104,9 @@ module reservation_station {
 		full();
 	}
 	any {
-		((!rs3.Busy0 || dispatch_rs3_0) && (!rs3.Busy1 || dispatch_rs3_1)): rs3_free();
-		((!rs2.Busy0 || dispatch_rs2_0) && (!rs2.Busy1 || dispatch_rs2_1)): rs2_free();
-		((!rs1.Busy0 || dispatch_rs1_0) && (!rs1.Busy1 || dispatch_rs1_1)): rs1_free();
-		((!rs0.Busy0 || dispatch_rs0_0) && (!rs0.Busy1 || dispatch_rs0_1)): rs0_free();
+		(!rs3.Busy || dispatch_rs3): rs3_free();
+		(!rs2.Busy || dispatch_rs2): rs2_free();
+		(!rs1.Busy || dispatch_rs1): rs1_free();
+		(!rs0.Busy || dispatch_rs0): rs0_free();
 	}
 }
