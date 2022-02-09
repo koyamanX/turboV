@@ -170,8 +170,8 @@ module storm {
 					issue_inst1_Vk = 0;
 					issue_inst1_Qk = 0;
 				} else if(issue_inst0_rd == issue_inst1_rs2) {
-					issue_inst1_Vj = 0;
-					issue_inst1_Qj = rob.tag;
+					issue_inst1_Vk = 0;
+					issue_inst1_Qk = rob.tag;
 				} else {
 					if(register_status_table[issue_inst1_rs2] == BUSY) {
 						if(rob.read_operandD(register_map_table[issue_inst1_rs2]) == BUSY) {
