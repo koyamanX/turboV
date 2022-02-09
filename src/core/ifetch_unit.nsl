@@ -56,6 +56,7 @@ module ifetch_unit {
 		st2.finish();
 	}
 	func flush {
+		stall();
 		flush_st0();
 		flush_st1();
 		flush_st2();
