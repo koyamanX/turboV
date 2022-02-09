@@ -27,6 +27,7 @@ module storm {
 	reg issue_inst0_rs2_sel[2];
 	reg issue_inst0_rs2[5];
 	reg issue_inst0_imm[32];
+	reg issue_inst0_jump;
 	reg issue_inst1_op[7];
 	reg issue_inst1_rd[5];
 	reg issue_inst1_rs1_sel[2];
@@ -34,9 +35,10 @@ module storm {
 	reg issue_inst1_rs2_sel[2];
 	reg issue_inst1_rs2[5];
 	reg issue_inst1_imm[32];
+	reg issue_inst1_jump;
 	proc_name issue(issue_fetch_packet,
-		issue_inst0_op, issue_inst0_rd, issue_inst0_rs1_sel, issue_inst0_rs1, issue_inst0_rs2_sel, issue_inst0_rs2, issue_inst0_imm,
-		issue_inst1_op, issue_inst1_rd, issue_inst1_rs1_sel, issue_inst1_rs1, issue_inst1_rs2_sel, issue_inst1_rs2, issue_inst1_imm
+		issue_inst0_op, issue_inst0_rd, issue_inst0_rs1_sel, issue_inst0_rs1, issue_inst0_rs2_sel, issue_inst0_rs2, issue_inst0_imm, issue_inst0_jump,
+		issue_inst1_op, issue_inst1_rd, issue_inst1_rs1_sel, issue_inst1_rs1, issue_inst1_rs2_sel, issue_inst1_rs2, issue_inst1_imm, issue_inst1_jump
 	);
 	reg execute_alu0_fn[4];
 	reg execute_alu0_dest[ROB_TAG_SIZE];
@@ -54,22 +56,40 @@ module storm {
 	reg writeresult_alu1_val[32];
 	proc_name writeresult_alu0(writeresult_alu0_dest, writeresult_alu0_val);
 	proc_name writeresult_alu1(writeresult_alu1_dest, writeresult_alu1_val);
+	func_self flush();
+	integer i_;
 
 	func reset {
 		ifu.reset();
 		ifu.redirect(resetvector);
 		decode();
 	}
+	func flush {
+		decode.finish();
+		issue.finish();
+		execute_alu0.finish();
+		execute_alu1.finish();
+		writeresult_alu0.finish();
+		writeresult_alu1.finish();
+		rob.flush();
+		alu_rs0.flush();
+		alu_rs1.flush();
+		generate(i_ = 0; i_ < 32; i_++) {
+			register_status_table[i_] := 0;
+			register_map_table[i_] := 0;
+		}
+		decode.invoke();
+	}
 	proc decode {
 		fetch_packet_t wire decode_fetch_packet;
-		if(!ifu.ibuf_empty && !stall_issue) {
+		if(!ifu.ibuf_empty && !stall_issue && !flush) {
 			decode_fetch_packet = ifu.ibuf_pop();
 			idec0.decode(decode_fetch_packet.inst0);
 			idec1.decode(decode_fetch_packet.inst1);
 			decode();
 			issue(decode_fetch_packet,
-					idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm,
-					idec1.uops, idec1.uops_rd, idec1.uops_rs1_sel, idec1.uops_rs1, idec1.uops_rs2_sel, idec1.uops_rs2, idec1.uops_imm
+					idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm, idec0.jump,
+					idec1.uops, idec1.uops_rd, idec1.uops_rs1_sel, idec1.uops_rs1, idec1.uops_rs2_sel, idec1.uops_rs2, idec1.uops_imm, idec1.jump
 			);
 		}
 	}
@@ -83,7 +103,7 @@ module storm {
 		wire issue_inst1_Vj[32];
 		wire issue_inst1_Vk[32];
 
-		if(!rob.full && !alu_rs0.full && !alu_rs1.full) {
+		if(!rob.full && !alu_rs0.full && !alu_rs1.full && !flush) {
 			/* inst0 rs1 read */
 			if(issue_inst0_rs1_sel == RS_SEL_ZERO) {
 				issue_inst0_Vj = 0;
@@ -193,8 +213,8 @@ module storm {
 				issue_inst1_Qk = 0;
 			}
 			rob.push(
-				issue_fetch_packet.valid0, issue_fetch_packet.pc0, issue_fetch_packet.inst0, issue_inst0_rd,
-				issue_fetch_packet.valid1, issue_fetch_packet.pc1, issue_fetch_packet.inst1, issue_inst1_rd
+				issue_fetch_packet.valid0, issue_fetch_packet.pc0, issue_fetch_packet.inst0, issue_inst0_rd, issue_inst0_jump,
+				issue_fetch_packet.valid1, issue_fetch_packet.pc1, issue_fetch_packet.inst1, issue_inst1_rd, issue_inst1_jump
 			);
 			alu_rs1.issue(
 				issue_fetch_packet.valid0, issue_inst0_op, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0
@@ -218,44 +238,70 @@ module storm {
 		}
 	}
 	func alu_rs0.dispatch {
-		execute_alu0.invoke(alu_rs0.dispatch_Op, alu_rs0.dispatch_Dest, alu_rs0.dispatch_Vj, alu_rs0.dispatch_Vk);
+		if(!flush) {
+			execute_alu0.invoke(alu_rs0.dispatch_Op, alu_rs0.dispatch_Dest, alu_rs0.dispatch_Vj, alu_rs0.dispatch_Vk);
+		}
 	}
 	func alu_rs1.dispatch {
-		execute_alu1.invoke(alu_rs1.dispatch_Op, alu_rs1.dispatch_Dest, alu_rs1.dispatch_Vj, alu_rs1.dispatch_Vk);
+		if(!flush) {
+			execute_alu1.invoke(alu_rs1.dispatch_Op, alu_rs1.dispatch_Dest, alu_rs1.dispatch_Vj, alu_rs1.dispatch_Vk);
+		}
 	}
 	proc execute_alu0 {
 		alu32 alu0;
 
-		alu0.exe(execute_alu0_a, execute_alu0_b, execute_alu0_fn);
-		writeresult_alu0(execute_alu0_dest, alu0.q);
+		if(!flush) {
+			alu0.exe(execute_alu0_a, execute_alu0_b, execute_alu0_fn);
+			writeresult_alu0(execute_alu0_dest, alu0.q);
+		}
 	}
 	proc execute_alu1 {
 		alu32 alu1;
 
-		alu1.exe(execute_alu1_a, execute_alu1_b, execute_alu1_fn);
-		writeresult_alu1(execute_alu1_dest, alu1.q);
+		if(!flush) {
+			alu1.exe(execute_alu1_a, execute_alu1_b, execute_alu1_fn);
+			writeresult_alu1(execute_alu1_dest, alu1.q);
+		}
 	}
 	proc writeresult_alu0 {
-		alu_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
-		alu_rs1.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
-		rob.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
-		finish();
+		if(!flush) {
+			alu_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
+			alu_rs1.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
+			rob.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
+			finish();
+		}
 	}
 	proc writeresult_alu1 {
-		alu_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
-		alu_rs1.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
-		rob.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
-		finish();
+		if(!flush) {
+			alu_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
+			alu_rs1.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
+			rob.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
+			finish();
+		}
 	}
 	func rob.commit {
-		if(issue && (issue_inst0_rd != rob.commit_Dest0)) {
+		if(!flush && issue && (issue_inst0_rd != rob.commit_Dest0)) {
 			register_status_table[rob.commit_Dest0] := READY;
 		}
-		if(issue && (issue_inst1_rd != rob.commit_Dest1)) {
+		if(!flush && issue && (issue_inst1_rd != rob.commit_Dest1)) {
 			register_status_table[rob.commit_Dest1] := READY;
 		}
-		gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
-		gpr.writeB(rob.commit_Dest1, rob.commit_Value1);
+		if(rob.commit_Jump0) {
+			gpr.writeA(rob.commit_Dest0, rob.commit_PC0+4);
+			flush();
+			ifu.redirect(rob.commit_Value0);
+		} else {
+			gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
+		}
+		if(!rob.commit_Jump0) {
+			if(rob.commit_Jump1) {
+				gpr.writeA(rob.commit_Dest0, rob.commit_PC1+4);
+				flush();
+				ifu.redirect(rob.commit_Value1);
+			} else {
+				gpr.writeB(rob.commit_Dest1, rob.commit_Value1);
+			}
+		}
 	}
 
 	WISHBONE_MASTER_IF(ifu);

@@ -13,11 +13,13 @@ module instruction_decoder {
 		r_type_t wire inst_rtype;
 		i_type_t wire inst_itype;
 		u_type_t wire inst_utype;
+		j_type_t wire inst_jtype;
 
 		inst_opcode = inst[6:0];
 		inst_rtype = inst;
 		inst_itype = inst;
 		inst_utype = inst;
+		inst_jtype = inst;
 		any {
 			inst_opcode == OP: {
 				inst_alu_fn = {inst_rtype.funct7[5], inst_rtype.funct3};
@@ -42,6 +44,12 @@ module instruction_decoder {
 				imm_gen0.u_type(inst);
 				inst_alu_fn = ALU_ADD;
 				uops_alu(inst_alu_fn, inst_utype.rd, RS_SEL_PC, 0, RS_SEL_IMM, 0, imm_gen0.imm);
+			}
+			inst_opcode == JAL: {
+				imm_gen0.j_type(inst);
+				inst_alu_fn = ALU_ADD;
+				uops_alu(inst_alu_fn, inst_jtype.rd, RS_SEL_PC, 0, RS_SEL_IMM, 0, imm_gen0.imm);
+				jump();
 			}
 		}
 	}
