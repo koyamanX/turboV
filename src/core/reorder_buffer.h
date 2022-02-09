@@ -6,7 +6,6 @@
 #define ROB_TAG_SIZE LOG2_ROB_NUM_OF_ENTRIES+2
 
 struct reorder_buffer_t {
-	Used;
 	Valid0;
 	Busy0;
 	PC0[32];
