@@ -24,14 +24,14 @@ module reorder_buffer {
 			reorder_buffer_t wire push_entry;
 
 			push_entry.Valid0 = valid0;
-			push_entry.Busy0 = 1;
+			push_entry.Busy0 = valid0;
 			push_entry.PC0 = pc0;
 			push_entry.Inst0 = inst0;
 			push_entry.Dest0 = dest0;
 			push_entry.Value0 = 0;
 			push_entry.Jump0 = jump0;
 			push_entry.Valid1 = valid1;
-			push_entry.Busy1 = 1;
+			push_entry.Busy1 = valid1;
 			push_entry.PC1 = pc1;
 			push_entry.Inst1 = inst1;
 			push_entry.Dest1 = dest1;
