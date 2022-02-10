@@ -20,6 +20,7 @@ declare instruction_decoder {
 	func_out uops_alu(uops, uops_rd, uops_rs1_sel, uops_rs1, uops_rs2_sel, uops_rs2, uops_imm);
 	func_out uops_illegal_instruction();
 	func_out jump();
+	func_out branch();
 }
 
 #endif

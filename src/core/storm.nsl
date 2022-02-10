@@ -82,15 +82,41 @@ module storm {
 	}
 	proc decode {
 		fetch_packet_t wire decode_fetch_packet;
-		if(!ifu.ibuf_empty && !stall_issue && !flush) {
-			decode_fetch_packet = ifu.ibuf_pop();
-			idec0.decode(decode_fetch_packet.inst0);
-			idec1.decode(decode_fetch_packet.inst1);
-			decode();
-			issue(decode_fetch_packet,
-					idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm, idec0.jump,
+		state_name decode1, decode2;
+
+		state decode1 {
+			if(!ifu.ibuf_empty && !stall_issue && !flush) {
+				decode_fetch_packet = ifu.ibuf_pop();
+				idec0.decode(decode_fetch_packet.inst0);
+				idec1.decode(decode_fetch_packet.inst1);
+				if(idec0.branch && idec1.branch) {
+					issue(
+						{decode_fetch_packet.pc0, 0x00000000, decode_fetch_packet.npc1, decode_fetch_packet.inst0, 0x00000000, decode_fetch_packet.pred0, 1'b0, decode_fetch_packet.valid0, 1'b0},
+						idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm, idec0.jump,
+						0, 0, 0, 0, 0, 0, 0, 0
+					);
+					goto decode2;
+				} else {
+					decode();
+					issue(decode_fetch_packet,
+							idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm, idec0.jump,
+							idec1.uops, idec1.uops_rd, idec1.uops_rs1_sel, idec1.uops_rs1, idec1.uops_rs2_sel, idec1.uops_rs2, idec1.uops_imm, idec1.jump
+					);
+				}
+			}
+		}
+		state decode2 {
+			if(flush) {
+				goto decode1;
+			} else if(!stall_issue && !flush) {
+				decode();
+				issue(
+					{0x00000000, decode_fetch_packet.pc1, decode_fetch_packet.npc1, 0x00000000, decode_fetch_packet.inst1, 1'b0, decode_fetch_packet.pred1, 1'b0, decode_fetch_packet.valid1},
+					0, 0, 0, 0, 0, 0, 0, 0,
 					idec1.uops, idec1.uops_rd, idec1.uops_rs1_sel, idec1.uops_rs1, idec1.uops_rs2_sel, idec1.uops_rs2, idec1.uops_imm, idec1.jump
-			);
+				);
+				goto decode1;
+			}
 		}
 	}
 	proc issue {
