@@ -124,11 +124,15 @@ module ifetch_unit {
 				st2(st1_vpc, st1_ppc, ic.rsp_cache_data);
 			} else {
 				stall_st0();
-				goto cache_wait;
+				if(!flush_st1 && !stall_st1) {
+					goto cache_wait;
+				}
 			}
 		}
 		state cache_wait {
-			if(ic.rsp_cache_hit && !flush_st1 && !stall_st1) {
+			if(flush_st1) {
+				goto cache_req;
+			} else if(ic.rsp_cache_hit && !flush_st1 && !stall_st1) {
 				st2(st1_vpc, st1_ppc, ic.rsp_cache_data);
 				goto cache_req;
 			}
