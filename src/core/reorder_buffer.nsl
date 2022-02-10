@@ -152,7 +152,7 @@ module reorder_buffer {
 		head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 2: commit_entry = rob2;
 		head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 3: commit_entry = rob3;
 	}
-	if((commit_entry.Valid0 || commit_entry.Valid1) && commit_entry.Valid0 && !commit_entry.Busy0 && commit_entry.Valid1 && !commit_entry.Busy1) {
+	if((commit_entry.Valid0 || commit_entry.Valid1) && !commit_entry.Busy0 && !commit_entry.Busy1) {
 		if(!flush) {
 			head := next_head;
 			// TODO:
@@ -163,10 +163,26 @@ module reorder_buffer {
 				head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 3: rob3 := 0;
 			}
 		}
-		commit(
-			commit_entry.Dest0, commit_entry.Value0, commit_entry.Jump0, commit_entry.PC0,
-			commit_entry.Dest1, commit_entry.Value1, commit_entry.Jump1, commit_entry.PC1
-		);
+		any {
+			commit_entry.Valid0 && commit_entry.Valid1: {
+				commit(
+					commit_entry.Dest0, commit_entry.Value0, commit_entry.Jump0, commit_entry.PC0,
+					commit_entry.Dest1, commit_entry.Value1, commit_entry.Jump1, commit_entry.PC1
+				);
+			}
+			!commit_entry.Valid0 && commit_entry.Valid1: {
+				commit(
+					0, 0, 0, 0,
+					commit_entry.Dest1, commit_entry.Value1, commit_entry.Jump1, commit_entry.PC1
+				);
+			}
+			commit_entry.Valid0 && !commit_entry.Valid1: {
+				commit(
+					commit_entry.Dest0, commit_entry.Value0, commit_entry.Jump0, commit_entry.PC0,
+					0, 0, 0, 0
+				);
+			}
+		}
 	}
 	if(!flush) {
 		if((tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == head[LOG2_ROB_NUM_OF_ENTRIES-1:0]) && (tail[LOG2_ROB_NUM_OF_ENTRIES] != head[LOG2_ROB_NUM_OF_ENTRIES])) {

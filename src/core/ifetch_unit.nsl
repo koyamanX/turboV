@@ -101,7 +101,6 @@ module ifetch_unit {
 		wire st0_new_pc[XLEN];
 
 		v2p(ALIGN8(st0_vpc));
-		ic.req_cache_read(ALIGN8(st0_vpc));
 		if(tlb_hit && !flush_st0 && !stall_st0) {
 			st0(st0_new_pc);
 			st1(st0_vpc, pa);
@@ -117,10 +116,22 @@ module ifetch_unit {
 		return va;
 	}
 	proc st1 {
-		ic.req_cache_pa_valid(ALIGN8(st1_ppc));
-		if(ic.rsp_cache_hit && !flush_st1 && !stall_st1) {
-			st2(st1_vpc, st1_ppc, ic.rsp_cache_data);
-		} else {
+		state_name cache_req, cache_wait;
+
+		state cache_req {
+			ic.req_cache_read(ALIGN8(st1_ppc));
+			if(ic.rsp_cache_hit && !flush_st1 && !stall_st1) {
+				st2(st1_vpc, st1_ppc, ic.rsp_cache_data);
+			} else {
+				stall_st0();
+				goto cache_wait;
+			}
+		}
+		state cache_wait {
+			if(ic.rsp_cache_hit && !flush_st1 && !stall_st1) {
+				st2(st1_vpc, st1_ppc, ic.rsp_cache_data);
+				goto cache_req;
+			}
 			stall_st0();
 		}
 	}
@@ -141,7 +152,6 @@ module ifetch_unit {
 	func predict {
 		predict_not_taken();
 	}
-
 	func ic.req_read {
 		wb_master_if.req_read(ic.req_addr, ic.req_sel);
 	}
