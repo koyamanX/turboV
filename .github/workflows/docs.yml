@@ -1,8 +1,8 @@
 name: docs-release
 on:
   push:
-    branches:
-    - develop
+    paths:
+    - 'src/docs/**'
 
 jobs:
   release:
@@ -42,7 +42,10 @@ jobs:
       run: |
           git config --local user.name "${GITHUB_USER}"
           git config --local user.email "${GITHUB_EMAIL}"
+          git config pull.rebase false
           git remote set-url origin git@github.com:${GITHUB_REPOSITORY}.git
+          git checkout -b docs
+          git pull origin docs
           git add docs
           git commit -m "[skip ci] auto rebuilding site"
-          git push origin develop
+          git push origin docs

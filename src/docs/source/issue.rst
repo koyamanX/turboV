@@ -116,7 +116,6 @@ Instructions which uses ALU are issued to ALU pipes.
 		ROB.Target = PC + imm;
 	}
 
-
 Branch Instruction
 ^^^^^^^^^^^^^^^^^^
 
