@@ -45,7 +45,6 @@ jobs:
           git config pull.rebase false
           git remote set-url origin git@github.com:${GITHUB_REPOSITORY}.git
           git checkout -b docs
-          git pull origin docs
           git add docs
           git commit -m "[skip ci] auto rebuilding site"
-          git push origin docs
+          git push -f origin docs
