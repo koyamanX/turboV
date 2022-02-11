@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Issue Stage &mdash; storm  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Dispatch Stage" href="dispatch.html" />
+    <link rel="prev" title="Decode Stage" href="decode.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> storm
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview of Storm microarchitecture:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="storm_microarch.html">Storm Microarchitecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storm_pipeline.html">Storm Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nsl.html">NSL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="riscv.html">RISC-V</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ifetch_unit.html">Instruction Fetch Stage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decode.html">Decode Stage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Issue Stage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#alu-instruction">ALU Instruction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#branch-instruction">Branch Instruction</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dispatch.html">Dispatch Stage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execute.html">Execute Stage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writeresult.html">Writeresult Stage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commit.html">Commit Stage</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">storm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Issue Stage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/issue.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="issue-stage">
+<span id="index-0"></span><h1>Issue Stage<a class="headerlink" href="#issue-stage" title="Permalink to this headline"></a></h1>
+<table class="colwidths-given docutils align-default" id="id1">
+<caption><span class="caption-text">Abbreviation</span><a class="headerlink" href="#id1" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ROB</p></td>
+<td><p>Reorder Buffer</p></td>
+</tr>
+<tr class="row-odd"><td><p>RS</p></td>
+<td><p>Reservation Station</p></td>
+</tr>
+<tr class="row-even"><td><p>register_status_table</p></td>
+<td><p>Hold register status</p></td>
+</tr>
+<tr class="row-odd"><td><p>register_map_table</p></td>
+<td><p>Hold register mappings of architectural register to ROB</p></td>
+</tr>
+<tr class="row-even"><td><p>GPR</p></td>
+<td><p>General Purpose Register</p></td>
+</tr>
+<tr class="row-odd"><td><p>PC</p></td>
+<td><p>Program Counter</p></td>
+</tr>
+<tr class="row-even"><td><p>Inst</p></td>
+<td><p>Instruction</p></td>
+</tr>
+<tr class="row-odd"><td><p>Opcode</p></td>
+<td><p>Inst.opcode</p></td>
+</tr>
+<tr class="row-even"><td><p>rd</p></td>
+<td><p>Inst.rd</p></td>
+</tr>
+<tr class="row-odd"><td><p>rs1</p></td>
+<td><p>Inst.rs1</p></td>
+</tr>
+<tr class="row-even"><td><p>rs2</p></td>
+<td><p>Inst.rs2</p></td>
+</tr>
+<tr class="row-odd"><td><p>imm</p></td>
+<td><p>Inst.imm</p></td>
+</tr>
+</tbody>
+</table>
+<section id="alu-instruction">
+<h2>ALU Instruction<a class="headerlink" href="#alu-instruction" title="Permalink to this headline"></a></h2>
+<p>Instructions which uses ALU are issued to ALU pipes.
+(e.g. Opcodes variants of OP, OP_IMM, AUIPC, LUI, JAL, JALR)</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">if</span><span class="p">((</span><span class="o">!</span><span class="n">ROB</span><span class="p">.</span><span class="n">full</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">RS</span><span class="p">.</span><span class="n">full</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">opcode</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">LUI</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="w">                </span><span class="n">Vj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="w">                </span><span class="n">Qj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="p">(</span><span class="n">opcode</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">JAL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">AUIPC</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">                </span><span class="n">Vj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PC</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">                </span><span class="n">Qj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 9</span><span class="w">                </span><span class="k">if</span><span class="p">(</span><span class="n">rs1</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">10</span><span class="w">                        </span><span class="n">Vj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">11</span><span class="w">                        </span><span class="n">Qj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">12</span><span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="p">(</span><span class="n">register_status_table</span><span class="p">[</span><span class="n">rs1</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">BUSY</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">13</span><span class="w">                        </span><span class="k">if</span><span class="p">(</span><span class="n">ROB</span><span class="p">.</span><span class="n">read_operandA</span><span class="p">(</span><span class="n">register_map_table</span><span class="p">[</span><span class="n">rs1</span><span class="p">])</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">BUSY</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">14</span><span class="w">                                </span><span class="n">Vj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">15</span><span class="w">                                </span><span class="n">Qj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">register_map_table</span><span class="p">[</span><span class="n">rs1</span><span class="p">];</span><span class="w"></span>
+<span class="linenos">16</span><span class="w">                        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">17</span><span class="w">                                </span><span class="n">Vj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ROB</span><span class="p">.</span><span class="n">read_oprandA_value</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">18</span><span class="w">                                </span><span class="n">Qj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">19</span><span class="w">                        </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">20</span><span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">21</span><span class="w">                        </span><span class="n">Vj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GPR</span><span class="p">.</span><span class="n">readA</span><span class="p">(</span><span class="n">rs1</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">22</span><span class="w">                        </span><span class="n">Qj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">23</span><span class="w">                </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">24</span><span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">25</span>
+<span class="linenos">26</span><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">opcode</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">OP</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">27</span><span class="w">                </span><span class="k">if</span><span class="p">(</span><span class="n">rs2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">28</span><span class="w">                        </span><span class="n">Vk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">29</span><span class="w">                        </span><span class="n">Qk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">30</span><span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="p">(</span><span class="n">register_status_table</span><span class="p">[</span><span class="n">rs2</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">BUSY</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">31</span><span class="w">                        </span><span class="k">if</span><span class="p">(</span><span class="n">ROB</span><span class="p">.</span><span class="n">read_operandB</span><span class="p">(</span><span class="n">register_map_table</span><span class="p">[</span><span class="n">rs2</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">BUSY</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">32</span><span class="w">                                </span><span class="n">Vk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">33</span><span class="w">                                </span><span class="n">Qk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">register_map_table</span><span class="p">[</span><span class="n">rs2</span><span class="p">];</span><span class="w"></span>
+<span class="linenos">34</span><span class="w">                        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">35</span><span class="w">                                </span><span class="n">Vk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ROB</span><span class="p">.</span><span class="n">read_operandB_value</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">36</span><span class="w">                                </span><span class="n">Qk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">37</span><span class="w">                        </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">38</span><span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">39</span><span class="w">                        </span><span class="n">Vk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GPR</span><span class="p">.</span><span class="n">readB</span><span class="p">(</span><span class="n">rs2</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">40</span><span class="w">                        </span><span class="n">Qk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">41</span><span class="w">                </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">42</span><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">43</span><span class="w">                </span><span class="n">Vk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">imm</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">44</span><span class="w">                </span><span class="n">Qk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">45</span><span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">46</span>
+<span class="linenos">47</span><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">rd</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">48</span><span class="w">                </span><span class="n">register_map_table</span><span class="p">[</span><span class="n">rd</span><span class="p">]</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">ROB</span><span class="p">.</span><span class="n">tag</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">49</span><span class="w">                </span><span class="n">register_status_table</span><span class="p">[</span><span class="n">rd</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BUSY</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">50</span><span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">51</span>
+<span class="linenos">52</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Busy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">53</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Op</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Inst</span><span class="p">.</span><span class="n">Opcode</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">54</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Vj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Vj</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">55</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Vk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Vk</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">56</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Qj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Qj</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">57</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Qk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Qk</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">58</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Dest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ROB</span><span class="p">.</span><span class="n">tag</span><span class="w"></span>
+<span class="linenos">59</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">60</span><span class="w">        </span><span class="n">ROB</span><span class="p">.</span><span class="n">Valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">61</span><span class="w">        </span><span class="n">ROB</span><span class="p">.</span><span class="n">Busy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">62</span><span class="w">        </span><span class="n">ROB</span><span class="p">.</span><span class="n">PC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PC</span><span class="o">:</span><span class="w"></span>
+<span class="linenos">63</span><span class="w">        </span><span class="n">ROB</span><span class="p">.</span><span class="n">Inst</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Inst</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">64</span><span class="w">        </span><span class="n">ROB</span><span class="p">.</span><span class="n">Dest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rd</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">65</span><span class="w">        </span><span class="c1">// ROB.Value</span>
+<span class="linenos">66</span><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">opcode</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">JAL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">opcode</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">JALR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">67</span><span class="w">                </span><span class="n">ROB</span><span class="p">.</span><span class="n">Jump</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">68</span><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">69</span><span class="w">                </span><span class="n">ROB</span><span class="p">.</span><span class="n">Jump</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">70</span><span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">71</span><span class="w">        </span><span class="n">ROB</span><span class="p">.</span><span class="n">Target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PC</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">imm</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">72</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="branch-instruction">
+<h2>Branch Instruction<a class="headerlink" href="#branch-instruction" title="Permalink to this headline"></a></h2>
+<p>Instructions with opcode == BRANCH are issued to Branch pipes.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">if</span><span class="p">((</span><span class="o">!</span><span class="n">ROB</span><span class="p">.</span><span class="n">full</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">RS</span><span class="p">.</span><span class="n">full</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">rs1</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="w">                </span><span class="n">Vj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="w">                </span><span class="n">Qj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="p">(</span><span class="n">register_status_table</span><span class="p">[</span><span class="n">rs1</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">BUSY</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">                </span><span class="k">if</span><span class="p">(</span><span class="n">ROB</span><span class="p">.</span><span class="n">read_operandA</span><span class="p">(</span><span class="n">register_map_table</span><span class="p">[</span><span class="n">rs1</span><span class="p">])</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">BUSY</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">                        </span><span class="n">Vj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">                        </span><span class="n">Qj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">register_map_table</span><span class="p">[</span><span class="n">rs1</span><span class="p">];</span><span class="w"></span>
+<span class="linenos"> 9</span><span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">10</span><span class="w">                        </span><span class="n">Vj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ROB</span><span class="p">.</span><span class="n">read_oprandA_value</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">11</span><span class="w">                        </span><span class="n">Qj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">12</span><span class="w">                </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">13</span><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">14</span><span class="w">                </span><span class="n">Vj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GPR</span><span class="p">.</span><span class="n">readA</span><span class="p">(</span><span class="n">rs1</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">15</span><span class="w">                </span><span class="n">Qj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">16</span><span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">17</span>
+<span class="linenos">18</span><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">rs2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">19</span><span class="w">                </span><span class="n">Vk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">20</span><span class="w">                </span><span class="n">Qk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">21</span><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="p">(</span><span class="n">register_status_table</span><span class="p">[</span><span class="n">rs2</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">BUSY</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">22</span><span class="w">                </span><span class="k">if</span><span class="p">(</span><span class="n">ROB</span><span class="p">.</span><span class="n">read_operandB</span><span class="p">(</span><span class="n">register_map_table</span><span class="p">[</span><span class="n">rs2</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">BUSY</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">23</span><span class="w">                        </span><span class="n">Vk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">24</span><span class="w">                        </span><span class="n">Qk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">register_map_table</span><span class="p">[</span><span class="n">rs2</span><span class="p">];</span><span class="w"></span>
+<span class="linenos">25</span><span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">26</span><span class="w">                        </span><span class="n">Vk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ROB</span><span class="p">.</span><span class="n">read_operandB_value</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">27</span><span class="w">                        </span><span class="n">Qk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">28</span><span class="w">                </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">29</span><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">30</span><span class="w">                </span><span class="n">Vk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GPR</span><span class="p">.</span><span class="n">readB</span><span class="p">(</span><span class="n">rs2</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">31</span><span class="w">                </span><span class="n">Qk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">32</span><span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">33</span>
+<span class="linenos">34</span><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">rd</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">35</span><span class="w">                </span><span class="n">register_map_table</span><span class="p">[</span><span class="n">rd</span><span class="p">]</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">ROB</span><span class="p">.</span><span class="n">tag</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">36</span><span class="w">                </span><span class="n">register_status_table</span><span class="p">[</span><span class="n">rd</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BUSY</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">37</span><span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">38</span>
+<span class="linenos">39</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Busy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">40</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Op</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Inst</span><span class="p">.</span><span class="n">Opcode</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">41</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Vj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Vj</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">42</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Vk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Vk</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">43</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Qj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Qj</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">44</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Qk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Qk</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">45</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">Dest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ROB</span><span class="p">.</span><span class="n">tag</span><span class="w"></span>
+<span class="linenos">46</span><span class="w">        </span><span class="n">RS</span><span class="p">.</span><span class="n">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">47</span><span class="w">        </span><span class="n">ROB</span><span class="p">.</span><span class="n">Valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">48</span><span class="w">        </span><span class="n">ROB</span><span class="p">.</span><span class="n">Busy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">49</span><span class="w">        </span><span class="n">ROB</span><span class="p">.</span><span class="n">PC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PC</span><span class="o">:</span><span class="w"></span>
+<span class="linenos">50</span><span class="w">        </span><span class="n">ROB</span><span class="p">.</span><span class="n">Inst</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Inst</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">51</span><span class="w">        </span><span class="n">ROB</span><span class="p">.</span><span class="n">Dest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rd</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">52</span><span class="w">        </span><span class="c1">// ROB.Value</span>
+<span class="linenos">53</span><span class="w">        </span><span class="n">ROB</span><span class="p">.</span><span class="n">Jump</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="linenos">54</span><span class="w">        </span><span class="n">ROB</span><span class="p">.</span><span class="n">Target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PC</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">imm</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">55</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="decode.html" class="btn btn-neutral float-left" title="Decode Stage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dispatch.html" class="btn btn-neutral float-right" title="Dispatch Stage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, ckoyama.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
