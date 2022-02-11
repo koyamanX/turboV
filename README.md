@@ -1,6 +1,7 @@
 # Implementaion of RISC-V Out-of-Order superscalar pipeline.
 
 [![CircleCI](https://circleci.com/gh/koyamanX/storm/tree/develop.svg?style=svg)](https://circleci.com/gh/koyamanX/storm/tree/develop)
+[![docs-release](https://github.com/koyamanX/storm/actions/workflows/docs.yml/badge.svg?branch=develop)](https://github.com/koyamanX/storm/actions/workflows/docs.yml)
 
 ## Prerequisite
 - Installation of Docker
