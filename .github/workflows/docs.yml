@@ -26,7 +26,7 @@ jobs:
         pip install -r requirements.txt
     - name: Build
       run: |
-      	cd src/docs
+        cd src/docs
         make html
     - name: Deploy Configuration
       run: |
