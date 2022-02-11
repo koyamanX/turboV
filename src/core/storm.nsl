@@ -6,6 +6,7 @@
 #include "instruction_decoder.h"
 #include "reservation_station.h"
 #include "register_file.h"
+#include "opcode_map.h"
 
 module storm {
 	ifetch_unit ifu;
@@ -20,7 +21,8 @@ module storm {
 	mem register_map_table[32][ROB_TAG_SIZE] = {0};
 	mem register_status_table[32][1] = {0};
 	fetch_packet_t reg issue_fetch_packet;
-	reg issue_inst0_op[7];
+	reg issue_inst0_opcode[7];
+	reg issue_inst0_uop[7];
 	reg issue_inst0_rd[5];
 	reg issue_inst0_rs1_sel[2];
 	reg issue_inst0_rs1[5];
@@ -28,7 +30,8 @@ module storm {
 	reg issue_inst0_rs2[5];
 	reg issue_inst0_imm[32];
 	reg issue_inst0_jump;
-	reg issue_inst1_op[7];
+	reg issue_inst1_opcode[7];
+	reg issue_inst1_uop[7];
 	reg issue_inst1_rd[5];
 	reg issue_inst1_rs1_sel[2];
 	reg issue_inst1_rs1[5];
@@ -37,8 +40,8 @@ module storm {
 	reg issue_inst1_imm[32];
 	reg issue_inst1_jump;
 	proc_name issue(issue_fetch_packet,
-		issue_inst0_op, issue_inst0_rd, issue_inst0_rs1_sel, issue_inst0_rs1, issue_inst0_rs2_sel, issue_inst0_rs2, issue_inst0_imm, issue_inst0_jump,
-		issue_inst1_op, issue_inst1_rd, issue_inst1_rs1_sel, issue_inst1_rs1, issue_inst1_rs2_sel, issue_inst1_rs2, issue_inst1_imm, issue_inst1_jump
+		issue_inst0_opcode, issue_inst0_uop, issue_inst0_rd, issue_inst0_rs1_sel, issue_inst0_rs1, issue_inst0_rs2_sel, issue_inst0_rs2, issue_inst0_imm, issue_inst0_jump,
+		issue_inst1_opcode, issue_inst1_uop, issue_inst1_rd, issue_inst1_rs1_sel, issue_inst1_rs1, issue_inst1_rs2_sel, issue_inst1_rs2, issue_inst1_imm, issue_inst1_jump
 	);
 	reg execute_alu0_fn[4];
 	reg execute_alu0_dest[ROB_TAG_SIZE];
@@ -92,15 +95,15 @@ module storm {
 				if(idec0.branch && idec1.branch) {
 					issue(
 						{decode_fetch_packet.pc0, 0x00000000, decode_fetch_packet.npc1, decode_fetch_packet.inst0, 0x00000000, decode_fetch_packet.pred0, 1'b0, decode_fetch_packet.valid0, 1'b0},
-						idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm, idec0.jump,
-						0, 0, 0, 0, 0, 0, 0, 0
+						idec0.opcode, idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm, idec0.jump,
+						0, 0, 0, 0, 0, 0, 0, 0, 0
 					);
 					goto decode2;
 				} else {
 					decode();
 					issue(decode_fetch_packet,
-							idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm, idec0.jump,
-							idec1.uops, idec1.uops_rd, idec1.uops_rs1_sel, idec1.uops_rs1, idec1.uops_rs2_sel, idec1.uops_rs2, idec1.uops_imm, idec1.jump
+							idec0.opcode, idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm, idec0.jump,
+							idec1.opcode, idec1.uops, idec1.uops_rd, idec1.uops_rs1_sel, idec1.uops_rs1, idec1.uops_rs2_sel, idec1.uops_rs2, idec1.uops_imm, idec1.jump
 					);
 				}
 			}
@@ -112,8 +115,8 @@ module storm {
 				decode();
 				issue(
 					{0x00000000, decode_fetch_packet.pc1, decode_fetch_packet.npc1, 0x00000000, decode_fetch_packet.inst1, 1'b0, decode_fetch_packet.pred1, 1'b0, decode_fetch_packet.valid1},
-					0, 0, 0, 0, 0, 0, 0, 0,
-					idec1.uops, idec1.uops_rd, idec1.uops_rs1_sel, idec1.uops_rs1, idec1.uops_rs2_sel, idec1.uops_rs2, idec1.uops_imm, idec1.jump
+					0, 0, 0, 0, 0, 0, 0, 0, 0,
+					idec1.opcode, idec1.uops, idec1.uops_rd, idec1.uops_rs1_sel, idec1.uops_rs1, idec1.uops_rs2_sel, idec1.uops_rs2, idec1.uops_imm, idec1.jump
 				);
 				goto decode1;
 			}
@@ -239,14 +242,14 @@ module storm {
 				issue_inst1_Qk = 0;
 			}
 			rob.push(
-				issue_fetch_packet.valid0, issue_fetch_packet.pc0, issue_fetch_packet.inst0, issue_inst0_rd, issue_inst0_jump,
-				issue_fetch_packet.valid1, issue_fetch_packet.pc1, issue_fetch_packet.inst1, issue_inst1_rd, issue_inst1_jump
+				issue_fetch_packet.valid0, issue_fetch_packet.pc0, issue_fetch_packet.inst0, issue_inst0_rd, issue_inst0_opcode,
+				issue_fetch_packet.valid1, issue_fetch_packet.pc1, issue_fetch_packet.inst1, issue_inst1_rd, issue_inst1_opcode
 			);
 			alu_rs1.issue(
-				issue_fetch_packet.valid0, issue_inst0_op, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0
+				issue_fetch_packet.valid0, issue_inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0
 			);
 			alu_rs0.issue(
-				issue_fetch_packet.valid1, issue_inst1_op, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0
+				issue_fetch_packet.valid1, issue_inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0
 			);
 			/* inst0 rd mapping */
 			if(issue_inst0_rd != 0) {
@@ -312,15 +315,15 @@ module storm {
 		if(!flush && issue && (issue_inst1_rd != rob.commit_Dest1)) {
 			register_status_table[rob.commit_Dest1] := READY;
 		}
-		if(rob.commit_Jump0) {
+		if(((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR))) {
 			gpr.writeA(rob.commit_Dest0, rob.commit_PC0+4);
 			flush();
 			ifu.redirect(rob.commit_Value0);
 		} else {
 			gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
 		}
-		if(!rob.commit_Jump0) {
-			if(rob.commit_Jump1) {
+		if(!((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR))) {
+			if(((rob.commit_Op1 == JAL) || (rob.commit_Op1 == JALR))) {
 				gpr.writeA(rob.commit_Dest0, rob.commit_PC1+4);
 				flush();
 				ifu.redirect(rob.commit_Value1);

@@ -29,14 +29,14 @@ module reorder_buffer {
 			push_entry.Inst0 = inst0;
 			push_entry.Dest0 = dest0;
 			push_entry.Value0 = 0;
-			push_entry.Jump0 = jump0;
+			push_entry.Op0 = op0;
 			push_entry.Valid1 = valid1;
 			push_entry.Busy1 = valid1;
 			push_entry.PC1 = pc1;
 			push_entry.Inst1 = inst1;
 			push_entry.Dest1 = dest1;
 			push_entry.Value1 = 0;
-			push_entry.Jump1 = jump1;
+			push_entry.Op1 = op1;
 
 			any {
 				tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 0: rob0 := push_entry;
@@ -166,19 +166,19 @@ module reorder_buffer {
 		any {
 			commit_entry.Valid0 && commit_entry.Valid1: {
 				commit(
-					commit_entry.Dest0, commit_entry.Value0, commit_entry.Jump0, commit_entry.PC0,
-					commit_entry.Dest1, commit_entry.Value1, commit_entry.Jump1, commit_entry.PC1
+					commit_entry.Dest0, commit_entry.Value0, commit_entry.Op0, commit_entry.PC0,
+					commit_entry.Dest1, commit_entry.Value1, commit_entry.Op1, commit_entry.PC1
 				);
 			}
 			!commit_entry.Valid0 && commit_entry.Valid1: {
 				commit(
 					0, 0, 0, 0,
-					commit_entry.Dest1, commit_entry.Value1, commit_entry.Jump1, commit_entry.PC1
+					commit_entry.Dest1, commit_entry.Value1, commit_entry.Op1, commit_entry.PC1
 				);
 			}
 			commit_entry.Valid0 && !commit_entry.Valid1: {
 				commit(
-					commit_entry.Dest0, commit_entry.Value0, commit_entry.Jump0, commit_entry.PC0,
+					commit_entry.Dest0, commit_entry.Value0, commit_entry.Op0, commit_entry.PC0,
 					0, 0, 0, 0
 				);
 			}
