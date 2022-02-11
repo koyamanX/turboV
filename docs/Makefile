@@ -15,7 +15,6 @@ help:
 .PHONY: help Makefile clean
 
 clean:
-	make -C source/tex2image clean
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 # Catch-all target: route all unknown targets to Sphinx using the new
