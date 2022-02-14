@@ -41,6 +41,9 @@ declare reservation_station {
 	input CDB1Id[ROB_TAG_SIZE];
 	input CDB1Val[32];
 	func_in CDB1(CDB1Id, CDB1Val);
+	input CDB2Id[ROB_TAG_SIZE];
+	input CDB2Val[32];
+	func_in CDB2(CDB2Id, CDB2Val);
 }
 
 #endif
