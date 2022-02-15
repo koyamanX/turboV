@@ -51,19 +51,19 @@ module reservation_station {
 	}
 	func dispatch_rs0 {
 		rs0.Busy := 0;
-		dispatch(rs0.Op, rs0.Dest, rs0.Vj, rs0.Vk);
+		dispatch(rs0.Op, rs0.Dest, rs0.Vj, rs0.Vk, rs0.A);
 	}
 	func dispatch_rs1 {
 		rs1.Busy := 0;
-		dispatch(rs1.Op, rs1.Dest, rs1.Vj, rs1.Vk);
+		dispatch(rs1.Op, rs1.Dest, rs1.Vj, rs1.Vk, rs1.A);
 	}
 	func dispatch_rs2 {
 		rs2.Busy := 0;
-		dispatch(rs2.Op, rs2.Dest, rs2.Vj, rs2.Vk);
+		dispatch(rs2.Op, rs2.Dest, rs2.Vj, rs2.Vk, rs2.A);
 	}
 	func dispatch_rs3 {
 		rs3.Busy := 0;
-		dispatch(rs3.Op, rs3.Dest, rs3.Vj, rs3.Vk);
+		dispatch(rs3.Op, rs3.Dest, rs3.Vj, rs3.Vk, rs3.A);
 	}
 	func CDB0 {
 		if(!flush) {
