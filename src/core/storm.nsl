@@ -56,10 +56,10 @@ module storm {
 	reg execute_bru0_dest[ROB_TAG_SIZE];
 	reg execute_bru0_a[32];
 	reg execute_bru0_b[32];
-	reg execute_bru0_imm[32];
+	reg execute_bru0_A[32];
 	proc_name execute_alu0(execute_alu0_fn, execute_alu0_dest, execute_alu0_a, execute_alu0_b);
 	proc_name execute_alu1(execute_alu1_fn, execute_alu1_dest, execute_alu1_a, execute_alu1_b);
-	proc_name execute_bru0(execute_bru0_fn, execute_bru0_dest, execute_bru0_a, execute_bru0_b, execute_bru0_imm);
+	proc_name execute_bru0(execute_bru0_fn, execute_bru0_dest, execute_bru0_a, execute_bru0_b, execute_bru0_A);
 	reg writeresult_alu0_dest[ROB_TAG_SIZE];
 	reg writeresult_alu0_val[32];
 	reg writeresult_alu1_dest[ROB_TAG_SIZE];
@@ -334,7 +334,7 @@ module storm {
 
 		if(!flush) {
 			alu2.exe(execute_bru0_a, execute_bru0_b, execute_bru0_fn);
-			writeresult_bru0(execute_bru0_dest, alu2.q, alu2.q);
+			writeresult_bru0(execute_bru0_dest, alu2.q, execute_bru0_A);
 		}
 	}
 	proc writeresult_alu0 {
