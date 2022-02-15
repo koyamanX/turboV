@@ -1,0 +1,33 @@
+#include "bru32.h"
+
+module bru32 {
+	wire eq;
+	wire lt;
+	wire ltu;
+
+	func exe {
+		eq = a == b;
+		lt = (33#(a) - 33#(b))[0];
+		ltu = (33'(a) - 33'(b))[0];
+		any {
+			fn == BRU_EQ: {
+				return eq;
+			}
+			fn == BRU_NE: {
+				return !eq;
+			}
+			fn == BRU_LT: {
+				return lt;
+			}
+			fn == BRU_LTU: {
+				return ltu;
+			}
+			fn == BRU_GE: {
+				return lt;
+			}
+			fn == BRU_GEU: {
+				return !ltu;
+			}
+		}
+	}
+}

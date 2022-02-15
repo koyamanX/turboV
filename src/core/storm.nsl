@@ -7,6 +7,7 @@
 #include "reservation_station.h"
 #include "register_file.h"
 #include "opcode_map.h"
+#include "bru32.h"
 
 module storm {
 	ifetch_unit ifu;
@@ -99,15 +100,18 @@ module storm {
 	}
 	proc decode {
 		fetch_packet_t wire decode_fetch_packet;
+		// TODO:
+		fetch_packet_t reg decode_fetch_packet2;
 		state_name decode1, decode2;
 
 		state decode1 {
 			if(!ifu.ibuf_empty && !stall_issue && !flush) {
 				decode_fetch_packet = ifu.ibuf_pop();
+				decode_fetch_packet2 := decode_fetch_packet;
 				idec0.decode(decode_fetch_packet.inst0);
 				idec1.decode(decode_fetch_packet.inst1);
-				if((idec0.opcode == JALR || idec0.opcode == JAL) && (idec1.opcode == JALR || idec1.opcode == JAL)) {
-					issue(
+				if((idec0.uops_bru && decode_fetch_packet.valid0) && (idec1.uops_bru && decode_fetch_packet.valid1)) {
+					issue.invoke(
 						{decode_fetch_packet.pc0, 0x00000000, decode_fetch_packet.npc1, decode_fetch_packet.inst0, 0x00000000, decode_fetch_packet.pred0, 1'b0, decode_fetch_packet.valid0, 1'b0},
 						idec0.opcode, idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm, idec0.jump,
 						0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -123,12 +127,14 @@ module storm {
 			}
 		}
 		state decode2 {
+			// TODO:
+			idec1.decode(decode_fetch_packet2.inst1);
 			if(flush) {
+				decode();
 				goto decode1;
 			} else if(!stall_issue && !flush) {
-				decode();
-				issue(
-					{0x00000000, decode_fetch_packet.pc1, decode_fetch_packet.npc1, 0x00000000, decode_fetch_packet.inst1, 1'b0, decode_fetch_packet.pred1, 1'b0, decode_fetch_packet.valid1},
+				issue.invoke(
+					{0x00000000, decode_fetch_packet2.pc1, decode_fetch_packet2.npc1, 0x00000000, decode_fetch_packet2.inst1, 1'b0, decode_fetch_packet2.pred1, 1'b0, decode_fetch_packet2.valid1},
 					0, 0, 0, 0, 0, 0, 0, 0, 0,
 					idec1.opcode, idec1.uops, idec1.uops_rd, idec1.uops_rs1_sel, idec1.uops_rs1, idec1.uops_rs2_sel, idec1.uops_rs2, idec1.uops_imm, idec1.jump
 				);
@@ -146,7 +152,7 @@ module storm {
 		wire issue_inst1_Vj[32];
 		wire issue_inst1_Vk[32];
 
-		if(!rob.full && !alu_rs0.full && !alu_rs1.full && !flush) {
+		if(!rob.full && !alu_rs0.full && !alu_rs1.full && !bru_rs0.full && !flush) {
 			/* inst0 rs1 read */
 			if(issue_inst0_rs1_sel == RS_SEL_ZERO) {
 				issue_inst0_Vj = 0;
@@ -260,36 +266,36 @@ module storm {
 				issue_fetch_packet.valid1, issue_fetch_packet.pc1, issue_fetch_packet.inst1, issue_inst1_rd, issue_inst1_opcode
 			);
 			any {
-				issue_fetch_packet.valid0 && (issue_inst0_opcode == JALR || issue_inst0_opcode == JAL): {
+				issue_fetch_packet.valid0 && (issue_inst0_opcode == JALR || issue_inst0_opcode == JAL || issue_inst0_opcode == BRANCH): {
 					bru_rs0.issue(
 						issue_fetch_packet.valid0, issue_inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_fetch_packet.pc0 + issue_inst0_imm
 					);
 				}
-				issue_fetch_packet.valid0 && !(issue_inst0_opcode == JALR || issue_inst0_opcode == JAL): {
-					alu_rs1.issue(
+				issue_fetch_packet.valid0 && !(issue_inst0_opcode == JALR || issue_inst0_opcode == JAL || issue_inst0_opcode == BRANCH): {
+					alu_rs0.issue(
 						issue_fetch_packet.valid0, issue_inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0
 					);
 				}
 			}
 			any {
-				issue_fetch_packet.valid1 && (issue_inst1_opcode == JALR || issue_inst1_opcode == JAL): {
+				issue_fetch_packet.valid1 && (issue_inst1_opcode == JALR || issue_inst1_opcode == JAL || issue_inst0_opcode == BRANCH): {
 					bru_rs0.issue(
 						issue_fetch_packet.valid1, issue_inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_fetch_packet.pc1 + issue_inst1_imm
 					);
 				}
-				issue_fetch_packet.valid1 && !(issue_inst1_opcode == JALR || issue_inst1_opcode == JAL): {
-					alu_rs0.issue(
+				issue_fetch_packet.valid1 && !(issue_inst1_opcode == JALR || issue_inst1_opcode == JAL || issue_inst0_opcode == BRANCH): {
+					alu_rs1.issue(
 						issue_fetch_packet.valid1, issue_inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0
 					);
 				}
 			}
 			/* inst0 rd mapping */
-			if(issue_inst0_rd != 0) {
+			if(issue_inst0_rd != 0 && issue_fetch_packet.valid0) {
 				register_map_table[issue_inst0_rd] := rob.tag;
 				register_status_table[issue_inst0_rd] := BUSY;
 			}
 			/* inst1 rd mapping */
-			if(issue_inst1_rd != 0) {
+			if(issue_inst1_rd != 0 && issue_fetch_packet.valid1) {
 				register_map_table[issue_inst1_rd] := rob.tag+1;
 				register_status_table[issue_inst1_rd] := BUSY;
 			}
@@ -330,11 +336,12 @@ module storm {
 		}
 	}
 	proc execute_bru0 {
-		alu32 alu2;
+		func_self execute_bru0_taken;
+		bru32 bru0;
 
 		if(!flush) {
-			alu2.exe(execute_bru0_a, execute_bru0_b, execute_bru0_fn);
-			writeresult_bru0(execute_bru0_dest, alu2.q, execute_bru0_A);
+			bru0.exe(execute_bru0_a, execute_bru0_b, execute_bru0_fn);
+			writeresult_bru0(execute_bru0_dest, bru0.taken, execute_bru0_A);
 		}
 	}
 	proc writeresult_alu0 {
@@ -361,27 +368,42 @@ module storm {
 			alu_rs1.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
 			bru_rs0.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
 			rob.CDB2(writeresult_bru0_dest, writeresult_bru0_val, writeresult_bru0_target);
+			finish();
 		}
 	}
 	func rob.commit {
-		if(!flush && issue && (issue_inst0_rd != rob.commit_Dest0)) {
+		if(!flush && issue && (issue_inst0_rd != rob.commit_Dest0) && rob.commit_Op0 != BRANCH) {
 			register_status_table[rob.commit_Dest0] := READY;
 		}
-		if(!flush && issue && (issue_inst1_rd != rob.commit_Dest1)) {
+		if(!flush && issue && (issue_inst1_rd != rob.commit_Dest1) && rob.commit_Op1 != BRANCH) {
 			register_status_table[rob.commit_Dest1] := READY;
 		}
-		if(((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR))) {
-			gpr.writeA(rob.commit_Dest0, rob.commit_PC0+4);
-			flush();
-			ifu.redirect(rob.commit_Target0);
+		if(((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR) || (rob.commit_Op0 == BRANCH))) {
+			if(rob.commit_Op0 != BRANCH) {
+				gpr.writeA(rob.commit_Dest0, rob.commit_PC0+4);
+			}
+			if((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR)) {
+				flush();
+				ifu.redirect(rob.commit_Target0);
+			} else if(rob.commit_Op0 == BRANCH && rob.commit_Value0[0] == 1) {
+				flush();
+				ifu.redirect(rob.commit_Target0);
+			}
 		} else {
 			gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
 		}
-		if(!((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR))) {
-			if(((rob.commit_Op1 == JAL) || (rob.commit_Op1 == JALR))) {
-				gpr.writeA(rob.commit_Dest0, rob.commit_PC1+4);
-				flush();
-				ifu.redirect(rob.commit_Target1);
+		if(!((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR) || (rob.commit_Op0 == BRANCH))) {
+			if(((rob.commit_Op1 == JAL) || (rob.commit_Op1 == JALR) || (rob.commit_Op1 == BRANCH))) {
+				if(rob.commit_Op1 != BRANCH) {
+					gpr.writeA(rob.commit_Dest0, rob.commit_PC1+4);
+				}
+				if((rob.commit_Op1 == JAL) || (rob.commit_Op1 == JALR)) {
+					ifu.redirect(rob.commit_Target1);
+					flush();
+				} else if(rob.commit_Op1 == BRANCH && rob.commit_Value1[0] == 1) {
+					ifu.redirect(rob.commit_Target1);
+					flush();
+				}
 			} else {
 				gpr.writeB(rob.commit_Dest1, rob.commit_Value1);
 			}

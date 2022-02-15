@@ -23,7 +23,7 @@ struct s_type_t {
 	rs2[5];
 	rs1[5];
 	funct3[3];
-	rd[5];
+	imm1[5];
 	opcode[7];
 };
 
@@ -32,7 +32,7 @@ struct b_type_t {
 	rs2[5];
 	rs1[5];
 	funct3[3];
-	rd[5];
+	imm1[5];
 	opcode[7];
 };
 
