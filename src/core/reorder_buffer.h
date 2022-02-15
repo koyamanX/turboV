@@ -13,6 +13,7 @@ struct reorder_buffer_t {
 	Dest0[5];
 	Value0[32];
 	Op0[7];
+	Target0[32];
 	Valid1;
 	Busy1;
 	PC1[32];
@@ -20,7 +21,8 @@ struct reorder_buffer_t {
 	Dest1[5];
 	Value1[32];
 	Op1[7];
-#define SIZEOF_REORDER_BUFFER_T 220
+	Target1[32];
+#define SIZEOF_REORDER_BUFFER_T 284
 };
 declare reorder_buffer {
 	input valid0;
@@ -41,11 +43,13 @@ declare reorder_buffer {
 	output commit_Value0[32];
 	output commit_Op0[7];
 	output commit_PC0[32];
+	output commit_Target0[32];
 	output commit_Dest1[5];
 	output commit_Value1[32];
 	output commit_Op1[7];
 	output commit_PC1[32];
-	func_out commit(commit_Dest0, commit_Value0, commit_Op0, commit_PC0, commit_Dest1, commit_Value1, commit_Op1, commit_PC1);
+	output commit_Target1[32];
+	func_out commit(commit_Dest0, commit_Value0, commit_Op0, commit_PC0, commit_Target0, commit_Dest1, commit_Value1, commit_Op1, commit_PC1, commit_Target1);
 	input CDB0Id[ROB_TAG_SIZE];
 	input CDB0Val[32];
 	func_in CDB0(CDB0Id, CDB0Val);
@@ -54,7 +58,8 @@ declare reorder_buffer {
 	func_in CDB1(CDB1Id, CDB1Val);
 	input CDB2Id[ROB_TAG_SIZE];
 	input CDB2Val[32];
-	func_in CDB2(CDB2Id, CDB2Val);
+	input CDB2Target[32];
+	func_in CDB2(CDB2Id, CDB2Val, CDB2Target);
 	output read_operandA_val[32];
 	input read_operandA_id[ROB_TAG_SIZE];
 	output read_operandA_busy;

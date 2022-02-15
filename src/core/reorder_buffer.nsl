@@ -30,6 +30,7 @@ module reorder_buffer {
 			push_entry.Dest0 = dest0;
 			push_entry.Value0 = 0;
 			push_entry.Op0 = op0;
+			push_entry.Target0 = 0;
 			push_entry.Valid1 = valid1;
 			push_entry.Busy1 = valid1;
 			push_entry.PC1 = pc1;
@@ -37,6 +38,7 @@ module reorder_buffer {
 			push_entry.Dest1 = dest1;
 			push_entry.Value1 = 0;
 			push_entry.Op1 = op1;
+			push_entry.Target1 = 0;
 
 			any {
 				tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 0: rob0 := push_entry;
@@ -149,14 +151,14 @@ module reorder_buffer {
 	func CDB2 {
 		if(!flush) {
 			any {
-				CDB2Id == 1: {rob0.Value0 := CDB2Val; rob0.Busy0 := 0;}
-				CDB2Id == 2: {rob0.Value1 := CDB2Val; rob0.Busy1 := 0;}
-				CDB2Id == 3: {rob1.Value0 := CDB2Val; rob1.Busy0 := 0;}
-				CDB2Id == 4: {rob1.Value1 := CDB2Val; rob1.Busy1 := 0;}
-				CDB2Id == 5: {rob2.Value0 := CDB2Val; rob2.Busy0 := 0;}
-				CDB2Id == 6: {rob2.Value1 := CDB2Val; rob2.Busy1 := 0;}
-				CDB2Id == 7: {rob3.Value0 := CDB2Val; rob3.Busy0 := 0;}
-				CDB2Id == 8: {rob3.Value1 := CDB2Val; rob3.Busy1 := 0;}
+				CDB2Id == 1: {rob0.Value0 := CDB2Val; rob0.Target0 := CDB2Target; rob0.Busy0 := 0;}
+				CDB2Id == 2: {rob0.Value1 := CDB2Val; rob0.Target1 := CDB2Target; rob0.Busy1 := 0;}
+				CDB2Id == 3: {rob1.Value0 := CDB2Val; rob1.Target0 := CDB2Target; rob1.Busy0 := 0;}
+				CDB2Id == 4: {rob1.Value1 := CDB2Val; rob1.Target1 := CDB2Target; rob1.Busy1 := 0;}
+				CDB2Id == 5: {rob2.Value0 := CDB2Val; rob2.Target0 := CDB2Target; rob2.Busy0 := 0;}
+				CDB2Id == 6: {rob2.Value1 := CDB2Val; rob2.Target1 := CDB2Target; rob2.Busy1 := 0;}
+				CDB2Id == 7: {rob3.Value0 := CDB2Val; rob3.Target0 := CDB2Target; rob3.Busy0 := 0;}
+				CDB2Id == 8: {rob3.Value1 := CDB2Val; rob3.Target1 := CDB2Target; rob3.Busy1 := 0;}
 			}
 		}
 	}
@@ -180,20 +182,20 @@ module reorder_buffer {
 		any {
 			commit_entry.Valid0 && commit_entry.Valid1: {
 				commit(
-					commit_entry.Dest0, commit_entry.Value0, commit_entry.Op0, commit_entry.PC0,
-					commit_entry.Dest1, commit_entry.Value1, commit_entry.Op1, commit_entry.PC1
+					commit_entry.Dest0, commit_entry.Value0, commit_entry.Op0, commit_entry.PC0, commit_entry.Target0,
+					commit_entry.Dest1, commit_entry.Value1, commit_entry.Op1, commit_entry.PC1, commit_entry.Target1
 				);
 			}
 			!commit_entry.Valid0 && commit_entry.Valid1: {
 				commit(
-					0, 0, 0, 0,
-					commit_entry.Dest1, commit_entry.Value1, commit_entry.Op1, commit_entry.PC1
+					0, 0, 0, 0, 0,
+					commit_entry.Dest1, commit_entry.Value1, commit_entry.Op1, commit_entry.PC1, commit_entry.Target1
 				);
 			}
 			commit_entry.Valid0 && !commit_entry.Valid1: {
 				commit(
-					commit_entry.Dest0, commit_entry.Value0, commit_entry.Op0, commit_entry.PC0,
-					0, 0, 0, 0
+					commit_entry.Dest0, commit_entry.Value0, commit_entry.Op0, commit_entry.PC0, commit_entry.Target0,
+					0, 0, 0, 0, 0
 				);
 			}
 		}
