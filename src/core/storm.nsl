@@ -278,12 +278,12 @@ module storm {
 				}
 			}
 			any {
-				issue_fetch_packet.valid1 && (issue_inst1_opcode == JALR || issue_inst1_opcode == JAL || issue_inst0_opcode == BRANCH): {
+				issue_fetch_packet.valid1 && (issue_inst1_opcode == JALR || issue_inst1_opcode == JAL || issue_inst1_opcode == BRANCH): {
 					bru_rs0.issue(
 						issue_fetch_packet.valid1, issue_inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_fetch_packet.pc1 + issue_inst1_imm
 					);
 				}
-				issue_fetch_packet.valid1 && !(issue_inst1_opcode == JALR || issue_inst1_opcode == JAL || issue_inst0_opcode == BRANCH): {
+				issue_fetch_packet.valid1 && !(issue_inst1_opcode == JALR || issue_inst1_opcode == JAL || issue_inst1_opcode == BRANCH): {
 					alu_rs1.issue(
 						issue_fetch_packet.valid1, issue_inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0
 					);
