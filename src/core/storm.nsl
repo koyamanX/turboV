@@ -372,40 +372,62 @@ module storm {
 		}
 	}
 	func rob.commit {
-		if(!flush && issue && (issue_inst0_rd != rob.commit_Dest0) && rob.commit_Op0 != BRANCH) {
-			register_status_table[rob.commit_Dest0] := READY;
-		}
-		if(!flush && issue && (issue_inst1_rd != rob.commit_Dest1) && rob.commit_Op1 != BRANCH) {
-			register_status_table[rob.commit_Dest1] := READY;
-		}
-		if(((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR) || (rob.commit_Op0 == BRANCH))) {
+		// Flush will be triggered in commit, Do not check !flush or combination loop occurs.
+		if(!flush && !(issue && !stall_issue && (issue_inst0_rd == rob.commit_Dest0))) {
+			/* If rd field of instruction in issue stage has same register destination,
+				conflict will occur for register_status_table, so do not make READY.
+				issue_inst0_rd is only valid on (issue && !stall_issue).
+			*/
 			if(rob.commit_Op0 != BRANCH) {
-				gpr.writeA(rob.commit_Dest0, rob.commit_PC0+4);
+				// Branch instruction has no Dest register.
+				register_status_table[rob.commit_Dest0] := READY;
 			}
-			if((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR)) {
-				flush();
-				ifu.redirect(rob.commit_Target0);
-			} else if(rob.commit_Op0 == BRANCH && rob.commit_Value0[0] == 1) {
-				flush();
-				ifu.redirect(rob.commit_Target0);
-			}
-		} else {
-			gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
 		}
-		if(!((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR) || (rob.commit_Op0 == BRANCH))) {
-			if(((rob.commit_Op1 == JAL) || (rob.commit_Op1 == JALR) || (rob.commit_Op1 == BRANCH))) {
-				if(rob.commit_Op1 != BRANCH) {
+		if(!flush && !(issue && !stall_issue && (issue_inst1_rd == rob.commit_Dest1))) {
+			/* If rd field of instruction in issue stage has same register destination,
+				conflict will occur for register_status_table, so do not make READY.
+				issue_inst1_rd is only valid on (issue && !stall_issue).
+			*/
+			if(rob.commit_Op1 != BRANCH) {
+				// Branch instruction has no Dest register.
+				register_status_table[rob.commit_Dest1] := READY;
+			}
+		}
+		any {
+			((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR)): {
+				// Jump instruction always redirect and flush pipeline.
+				gpr.writeA(rob.commit_Dest0, rob.commit_PC0+4);
+				ifu.redirect(rob.commit_Target0);
+				flush();
+			}
+			((rob.commit_Op0 == BRANCH) && (rob.commit_Value0[0] == 1)): {
+				// Branch instruction only redirect and flush pipeline if branch is taken.
+				ifu.redirect(rob.commit_Target0);
+				flush();
+			}
+			else: {
+				// Other instructions which has Dest register field.
+				gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
+			}
+		}
+		if(!((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR) || ((rob.commit_Op0 == BRANCH) && (rob.commit_Value0[0] == 1)))) {
+			// If older instruction is taken branch, this instruction will be flushed.
+			any {
+				((rob.commit_Op1 == JAL) || (rob.commit_Op1 == JALR)): {
+					// Jump instruction always redirect and flush pipeline.
 					gpr.writeA(rob.commit_Dest0, rob.commit_PC1+4);
-				}
-				if((rob.commit_Op1 == JAL) || (rob.commit_Op1 == JALR)) {
-					ifu.redirect(rob.commit_Target1);
-					flush();
-				} else if(rob.commit_Op1 == BRANCH && rob.commit_Value1[0] == 1) {
 					ifu.redirect(rob.commit_Target1);
 					flush();
 				}
-			} else {
-				gpr.writeB(rob.commit_Dest1, rob.commit_Value1);
+				((rob.commit_Op1 == BRANCH) && (rob.commit_Value1[0] == 1)): {
+					// Branch instruction only redirect and flush pipeline if branch is taken.
+					ifu.redirect(rob.commit_Target1);
+					flush();
+				}
+				else: {
+					// Other instructions which has Dest register field.
+					gpr.writeB(rob.commit_Dest1, rob.commit_Value1);
+				}
 			}
 		}
 	}
