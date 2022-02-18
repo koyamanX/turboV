@@ -36,7 +36,7 @@ declare reorder_buffer {
 	input dest1[5];
 	input op1[7];
 	output tag[ROB_TAG_SIZE];
-	func_in push(valid0, pc0, inst0, dest0, op0, valid1, pc1, inst1, dest1, op1): tag;
+	func_in issue(valid0, pc0, inst0, dest0, op0, valid1, pc1, inst1, dest1, op1): tag;
 	func_in flush();
 	func_out full();
 	output commit_Dest0[5];

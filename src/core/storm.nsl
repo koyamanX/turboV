@@ -341,7 +341,7 @@ module storm {
 					}
 				}
 			}
-			rob.push(
+			rob.issue(
 				issue_fetch_packet.valid0, issue_fetch_packet.pc0, issue_fetch_packet.inst0, issue_inst0_rd, issue_inst0_opcode,
 				issue_fetch_packet.valid1, issue_fetch_packet.pc1, issue_fetch_packet.inst1, issue_inst1_rd, issue_inst1_opcode
 			);
