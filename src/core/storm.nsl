@@ -178,150 +178,165 @@ module storm {
 
 		if(!rob.full && !alu_rs0.full && !alu_rs1.full && !bru_rs0.full && !flush) {
 			/* inst0 rs1 read */
-			if(issue_inst0_rs1_sel == RS_SEL_ZERO) {
-				issue_inst0_Vj = 0;
-				issue_inst0_Qj = 0;
-			} else if(issue_inst0_rs1_sel == RS_SEL_PC) {
-				issue_inst0_Vj = issue_fetch_packet.pc0;
-				issue_inst0_Qj = 0;
-			} else {
-				if(issue_inst0_rs1 == 5'b00000) {
+			any {
+				(issue_inst0_rs1_sel == RS_SEL_ZERO): {
 					issue_inst0_Vj = 0;
 					issue_inst0_Qj = 0;
-				} else if(register_status_table[issue_inst0_rs1] == BUSY) {
-					if(rob.read_operandA(register_map_table[issue_inst0_rs1]) == BUSY) {
-						/* Wait for inst in ROB to produce value */
+				}
+				(issue_inst0_rs1_sel == RS_SEL_PC): {
+					issue_inst0_Vj = issue_fetch_packet.pc0;
+					issue_inst0_Qj = 0;
+				}
+				(issue_inst0_rs1_sel == RS_SEL_REG): {
+					if(issue_inst0_rs1 == 5'b00000) {
 						issue_inst0_Vj = 0;
-						issue_inst0_Qj = register_map_table[issue_inst0_rs1];
+						issue_inst0_Qj = 0;
+					} else if(register_status_table[issue_inst0_rs1] == BUSY) {
+						if(rob.read_operandA(register_map_table[issue_inst0_rs1]) == BUSY) {
+							/* Wait for inst in ROB to produce value */
+							issue_inst0_Vj = 0;
+							issue_inst0_Qj = register_map_table[issue_inst0_rs1];
+						} else {
+							/* Use value inside ROB */
+							issue_inst0_Vj = rob.read_operandA_val;
+							issue_inst0_Qj = 0;
+						}
 					} else {
-						/* Use value inside ROB */
-						issue_inst0_Vj = rob.read_operandA_val;
+						// Operand is in register file.
+						issue_inst0_Vj = gpr.readA(issue_inst0_rs1);
 						issue_inst0_Qj = 0;
 					}
-				} else {
-					issue_inst0_Vj = gpr.readA(issue_inst0_rs1);
-					issue_inst0_Qj = 0;
 				}
 			}
 			/* inst0 rs2 read */
-			if(issue_inst0_rs2_sel == RS_SEL_REG) {
-				if(issue_inst0_rs2 == 5'b00000) {
-					issue_inst0_Vk = 0;
-					issue_inst0_Qk = 0;
-				} else if(register_status_table[issue_inst0_rs2] == BUSY) {
-					if(rob.read_operandB(register_map_table[issue_inst0_rs2]) == BUSY) {
-						/* Wait for inst in ROB to produce value */
+			any {
+				(issue_inst0_rs2_sel == RS_SEL_REG): {
+					if(issue_inst0_rs2 == 5'b00000) {
 						issue_inst0_Vk = 0;
-						issue_inst0_Qk = register_map_table[issue_inst0_rs2];
-					} else {
-						/* Use value inside ROB */
-						issue_inst0_Vk = rob.read_operandB_val;
 						issue_inst0_Qk = 0;
-					}
-				} else {
-					issue_inst0_Vk = gpr.readB(issue_inst0_rs1);
-					issue_inst0_Qk = 0;
-				}
-			} else if(issue_inst0_rs2_sel == RS_SEL_IMM) {
-				issue_inst0_Vk = issue_inst0_imm;
-				issue_inst0_Qk = 0;
-			}
-			/* inst1 rs1 read */
-			if(issue_inst1_rs1_sel == RS_SEL_ZERO) {
-				issue_inst1_Vj = 0;
-				issue_inst1_Qj = 0;
-			} else if(issue_inst1_rs1_sel == RS_SEL_PC) {
-				issue_inst1_Vj = issue_fetch_packet.pc1;
-				issue_inst1_Qj = 0;
-			} else {
-				if(issue_inst1_rs1 == 5'b00000) {
-					issue_inst1_Vj = 0;
-					issue_inst1_Qj = 0;
-				} else if(issue_inst0_rd == issue_inst1_rs1) {
-					issue_inst1_Vj = 0;
-					issue_inst1_Qj = rob.tag;
-				} else {
-					if(register_status_table[issue_inst1_rs1] == BUSY) {
-						if(rob.read_operandC(register_map_table[issue_inst1_rs1]) == BUSY) {
+					} else if(register_status_table[issue_inst0_rs2] == BUSY) {
+						if(rob.read_operandB(register_map_table[issue_inst0_rs2]) == BUSY) {
 							/* Wait for inst in ROB to produce value */
-							issue_inst1_Vj = 0;
-							issue_inst1_Qj = register_map_table[issue_inst1_rs1];
+							issue_inst0_Vk = 0;
+							issue_inst0_Qk = register_map_table[issue_inst0_rs2];
 						} else {
 							/* Use value inside ROB */
-							issue_inst1_Vj = rob.read_operandC_val;
-							issue_inst1_Qj = 0;
+							issue_inst0_Vk = rob.read_operandB_val;
+							issue_inst0_Qk = 0;
 						}
 					} else {
-						issue_inst1_Vj = gpr.readC(issue_inst1_rs1);
+						issue_inst0_Vk = gpr.readB(issue_inst0_rs1);
+						issue_inst0_Qk = 0;
+					}
+				}
+				(issue_inst0_rs2_sel == RS_SEL_IMM): {
+					issue_inst0_Vk = issue_inst0_imm;
+					issue_inst0_Qk = 0;
+				}
+			}
+			/* inst1 rs1 read */
+			any {
+				(issue_inst1_rs1_sel == RS_SEL_ZERO): {
+					issue_inst1_Vj = 0;
+					issue_inst1_Qj = 0;
+				}
+				(issue_inst1_rs1_sel == RS_SEL_PC): {
+					issue_inst1_Vj = issue_fetch_packet.pc1;
+					issue_inst1_Qj = 0;
+				}
+				(issue_inst1_rs1_sel == RS_SEL_REG): {
+					if(issue_inst1_rs1 == 5'b00000) {
+						issue_inst1_Vj = 0;
 						issue_inst1_Qj = 0;
+					} else if(issue_inst0_rd == issue_inst1_rs1) {
+						issue_inst1_Vj = 0;
+						issue_inst1_Qj = rob.tag;
+					} else {
+						if(register_status_table[issue_inst1_rs1] == BUSY) {
+							if(rob.read_operandC(register_map_table[issue_inst1_rs1]) == BUSY) {
+								/* Wait for inst in ROB to produce value */
+								issue_inst1_Vj = 0;
+								issue_inst1_Qj = register_map_table[issue_inst1_rs1];
+							} else {
+								/* Use value inside ROB */
+								issue_inst1_Vj = rob.read_operandC_val;
+								issue_inst1_Qj = 0;
+							}
+						} else {
+							issue_inst1_Vj = gpr.readC(issue_inst1_rs1);
+							issue_inst1_Qj = 0;
+						}
 					}
 				}
 			}
 			/* inst1 rs2 read */
-			if(issue_inst1_rs2_sel == RS_SEL_REG) {
-				if(issue_inst1_rs2 == 5'b00000) {
-					issue_inst1_Vk = 0;
-					issue_inst1_Qk = 0;
-				} else if(issue_inst0_rd == issue_inst1_rs2) {
-					issue_inst1_Vk = 0;
-					issue_inst1_Qk = rob.tag;
-				} else {
-					if(register_status_table[issue_inst1_rs2] == BUSY) {
-						if(rob.read_operandD(register_map_table[issue_inst1_rs2]) == BUSY) {
-							/* Wait for inst in ROB to produce value */
-							issue_inst1_Vk = 0;
-							issue_inst1_Qk = register_map_table[issue_inst1_rs2];
+			any {
+				(issue_inst1_rs2_sel == RS_SEL_REG): {
+					if(issue_inst1_rs2 == 5'b00000) {
+						issue_inst1_Vk = 0;
+						issue_inst1_Qk = 0;
+					} else if(issue_inst0_rd == issue_inst1_rs2) {
+						issue_inst1_Vk = 0;
+						issue_inst1_Qk = rob.tag;
+					} else {
+						if(register_status_table[issue_inst1_rs2] == BUSY) {
+							if(rob.read_operandD(register_map_table[issue_inst1_rs2]) == BUSY) {
+								/* Wait for inst in ROB to produce value */
+								issue_inst1_Vk = 0;
+								issue_inst1_Qk = register_map_table[issue_inst1_rs2];
+							} else {
+								/* Use value inside ROB */
+								issue_inst1_Vk = rob.read_operandD_val;
+								issue_inst1_Qk = 0;
+							}
 						} else {
-							/* Use value inside ROB */
-							issue_inst1_Vk = rob.read_operandD_val;
+							issue_inst1_Vk = gpr.readD(issue_inst1_rs1);
 							issue_inst1_Qk = 0;
 						}
-					} else {
-						issue_inst1_Vk = gpr.readD(issue_inst1_rs1);
-						issue_inst1_Qk = 0;
 					}
 				}
-			} else if(issue_inst1_rs2_sel == RS_SEL_IMM) {
-				issue_inst1_Vk = issue_inst1_imm;
-				issue_inst1_Qk = 0;
+				(issue_inst1_rs2_sel == RS_SEL_IMM): {
+					issue_inst1_Vk = issue_inst1_imm;
+					issue_inst1_Qk = 0;
+				}
+			}
+			/* inst0 rd mapping */
+			if((issue_inst0_rd != 0) && issue_fetch_packet.valid0) {
+				register_map_table[issue_inst0_rd] := rob.tag;
+				register_status_table[issue_inst0_rd] := BUSY;
+			}
+			/* inst1 rd mapping */
+			if((issue_inst1_rd != 0) && issue_fetch_packet.valid1) {
+				register_map_table[issue_inst1_rd] := rob.tag+1;
+				register_status_table[issue_inst1_rd] := BUSY;
 			}
 			rob.push(
 				issue_fetch_packet.valid0, issue_fetch_packet.pc0, issue_fetch_packet.inst0, issue_inst0_rd, issue_inst0_opcode,
 				issue_fetch_packet.valid1, issue_fetch_packet.pc1, issue_fetch_packet.inst1, issue_inst1_rd, issue_inst1_opcode
 			);
 			any {
-				issue_fetch_packet.valid0 && (issue_inst0_opcode == JALR || issue_inst0_opcode == JAL || issue_inst0_opcode == BRANCH): {
+				issue_fetch_packet.valid0 && ((issue_inst0_opcode == JALR) || (issue_inst0_opcode == JAL) || (issue_inst0_opcode == BRANCH)): {
 					bru_rs0.issue(
 						issue_fetch_packet.valid0, issue_inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_fetch_packet.pc0 + issue_inst0_imm
 					);
 				}
-				issue_fetch_packet.valid0 && !(issue_inst0_opcode == JALR || issue_inst0_opcode == JAL || issue_inst0_opcode == BRANCH): {
+				issue_fetch_packet.valid0 && !((issue_inst0_opcode == JALR) || (issue_inst0_opcode == JAL) || (issue_inst0_opcode == BRANCH)): {
 					alu_rs0.issue(
 						issue_fetch_packet.valid0, issue_inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0
 					);
 				}
 			}
 			any {
-				issue_fetch_packet.valid1 && (issue_inst1_opcode == JALR || issue_inst1_opcode == JAL || issue_inst1_opcode == BRANCH): {
+				issue_fetch_packet.valid1 && ((issue_inst1_opcode == JALR) || (issue_inst1_opcode == JAL) || (issue_inst1_opcode == BRANCH)): {
 					bru_rs0.issue(
 						issue_fetch_packet.valid1, issue_inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_fetch_packet.pc1 + issue_inst1_imm
 					);
 				}
-				issue_fetch_packet.valid1 && !(issue_inst1_opcode == JALR || issue_inst1_opcode == JAL || issue_inst1_opcode == BRANCH): {
+				issue_fetch_packet.valid1 && !((issue_inst1_opcode == JALR) || (issue_inst1_opcode == JAL) || (issue_inst1_opcode == BRANCH)): {
 					alu_rs1.issue(
 						issue_fetch_packet.valid1, issue_inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0
 					);
 				}
-			}
-			/* inst0 rd mapping */
-			if(issue_inst0_rd != 0 && issue_fetch_packet.valid0) {
-				register_map_table[issue_inst0_rd] := rob.tag;
-				register_status_table[issue_inst0_rd] := BUSY;
-			}
-			/* inst1 rd mapping */
-			if(issue_inst1_rd != 0 && issue_fetch_packet.valid1) {
-				register_map_table[issue_inst1_rd] := rob.tag+1;
-				register_status_table[issue_inst1_rd] := BUSY;
 			}
 			finish();
 		} else {
