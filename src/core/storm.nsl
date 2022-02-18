@@ -10,18 +10,10 @@
 #include "bru32.h"
 
 module storm {
-	ifetch_unit ifu;
-	reorder_buffer rob;
-	reservation_station alu_rs0;
-	reservation_station alu_rs1;
-	reservation_station bru_rs0;
-	instruction_decoder idec0;
-	instruction_decoder idec1;
-	register_file gpr;
+	/* Decode stage */
 	proc_name decode();
 	func_self stall_issue();
-	mem register_map_table[32][ROB_TAG_SIZE] = {0};
-	mem register_status_table[32][1] = {0};
+	/* Issue stage */
 	fetch_packet_t reg issue_fetch_packet;
 	reg issue_inst0_opcode[7];
 	reg issue_inst0_uop[7];
@@ -45,6 +37,7 @@ module storm {
 		issue_inst0_opcode, issue_inst0_uop, issue_inst0_rd, issue_inst0_rs1_sel, issue_inst0_rs1, issue_inst0_rs2_sel, issue_inst0_rs2, issue_inst0_imm, issue_inst0_jump,
 		issue_inst1_opcode, issue_inst1_uop, issue_inst1_rd, issue_inst1_rs1_sel, issue_inst1_rs1, issue_inst1_rs2_sel, issue_inst1_rs2, issue_inst1_imm, issue_inst1_jump
 	);
+	/* Execute stage */
 	reg execute_alu0_fn[4];
 	reg execute_alu0_dest[ROB_TAG_SIZE];
 	reg execute_alu0_a[32];
@@ -61,6 +54,7 @@ module storm {
 	proc_name execute_alu0(execute_alu0_fn, execute_alu0_dest, execute_alu0_a, execute_alu0_b);
 	proc_name execute_alu1(execute_alu1_fn, execute_alu1_dest, execute_alu1_a, execute_alu1_b);
 	proc_name execute_bru0(execute_bru0_fn, execute_bru0_dest, execute_bru0_a, execute_bru0_b, execute_bru0_A);
+	/* Write Result stage */
 	reg writeresult_alu0_dest[ROB_TAG_SIZE];
 	reg writeresult_alu0_val[32];
 	reg writeresult_alu1_dest[ROB_TAG_SIZE];
@@ -73,6 +67,24 @@ module storm {
 	proc_name writeresult_bru0(writeresult_bru0_dest, writeresult_bru0_val, writeresult_bru0_target);
 	func_self flush();
 	integer i_;
+	/* Instruction Fetch Unit */
+	ifetch_unit ifu;
+	/* Instruction decoder */
+	instruction_decoder idec0;
+	instruction_decoder idec1;
+	/* Reorder Buffer */
+	reorder_buffer rob;
+	/* Reservation station for ALUs */
+	reservation_station alu_rs0;
+	reservation_station alu_rs1;
+	/* Reservation station for BRanch Unit */
+	reservation_station bru_rs0;
+	/* General Purpose Register */
+	register_file gpr;
+	/* Register map table from rs fields to reorder buffer entry */
+	mem register_map_table[32][ROB_TAG_SIZE] = {0};
+	/* Register status table indexing with rs feilds */
+	mem register_status_table[32][1] = {0};
 
 	func reset {
 		ifu.reset();
@@ -99,27 +111,38 @@ module storm {
 		decode.invoke();
 	}
 	proc decode {
-		fetch_packet_t wire decode_fetch_packet;
-		// TODO:
+		fetch_packet_t wire decode_fetch_packet1;
 		fetch_packet_t reg decode_fetch_packet2;
 		state_name decode1, decode2;
 
+		/*
+			Decode two instructions, if structual hazard for FUs occurs,
+			Send first instruction to issue, then in next cycle, handle
+			remaining instruction. otherwise send both instructions to
+			issue.
+		*/
 		state decode1 {
 			if(!ifu.ibuf_empty && !stall_issue && !flush) {
-				decode_fetch_packet = ifu.ibuf_pop();
-				decode_fetch_packet2 := decode_fetch_packet;
-				idec0.decode(decode_fetch_packet.inst0);
-				idec1.decode(decode_fetch_packet.inst1);
-				if((idec0.uops_bru && decode_fetch_packet.valid0) && (idec1.uops_bru && decode_fetch_packet.valid1)) {
+				decode_fetch_packet1 = ifu.ibuf_pop();
+				// Save fetch packet for decode2.
+				decode_fetch_packet2 := decode_fetch_packet1;
+				// Decode two instructions.
+				idec0.decode(decode_fetch_packet1.inst0);
+				idec1.decode(decode_fetch_packet1.inst1);
+				// Check if structural hazard occurs for FUs.
+				if((idec0.uops_bru && decode_fetch_packet1.valid0) && (idec1.uops_bru && decode_fetch_packet1.valid1)) {
+					// If hazard occurs, send first instructions to issue.
 					issue.invoke(
-						{decode_fetch_packet.pc0, 0x00000000, decode_fetch_packet.npc1, decode_fetch_packet.inst0, 0x00000000, decode_fetch_packet.pred0, 1'b0, decode_fetch_packet.valid0, 1'b0},
+						{decode_fetch_packet1.pc0, 0x00000000, decode_fetch_packet1.npc1, decode_fetch_packet1.inst0, 0x00000000, decode_fetch_packet1.pred0, 1'b0, decode_fetch_packet1.valid0, 1'b0},
 						idec0.opcode, idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm, idec0.jump,
 						0, 0, 0, 0, 0, 0, 0, 0, 0
 					);
+					// Handle remaining instructions in next cycle.
 					goto decode2;
 				} else {
+					// No structual hazard for FUs.
 					decode();
-					issue(decode_fetch_packet,
+					issue(decode_fetch_packet1,
 							idec0.opcode, idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm, idec0.jump,
 							idec1.opcode, idec1.uops, idec1.uops_rd, idec1.uops_rs1_sel, idec1.uops_rs1, idec1.uops_rs2_sel, idec1.uops_rs2, idec1.uops_imm, idec1.jump
 					);
@@ -127,12 +150,13 @@ module storm {
 			}
 		}
 		state decode2 {
-			// TODO:
+			// Decode second instrction again.
 			idec1.decode(decode_fetch_packet2.inst1);
 			if(flush) {
 				decode();
 				goto decode1;
 			} else if(!stall_issue && !flush) {
+				// Send second instruction to issue.
 				issue.invoke(
 					{0x00000000, decode_fetch_packet2.pc1, decode_fetch_packet2.npc1, 0x00000000, decode_fetch_packet2.inst1, 1'b0, decode_fetch_packet2.pred1, 1'b0, decode_fetch_packet2.valid1},
 					0, 0, 0, 0, 0, 0, 0, 0, 0,
