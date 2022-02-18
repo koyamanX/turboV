@@ -36,180 +36,147 @@ module register_file {
 	reg x31[XLEN];
 
 	func readA {
-		wire read_dataA[32];
 		any {
-			(rnumA == 5'b00000): read_dataA = 32'b0;
-			(rnumA == 5'b00001): read_dataA = x1;
-			(rnumA == 5'b00010): read_dataA = x2;
-			(rnumA == 5'b00011): read_dataA = x3;
-			(rnumA == 5'b00100): read_dataA = x4;
-			(rnumA == 5'b00101): read_dataA = x5;
-			(rnumA == 5'b00110): read_dataA = x6;
-			(rnumA == 5'b00111): read_dataA = x7;
-			(rnumA == 5'b01000): read_dataA = x8;
-			(rnumA == 5'b01001): read_dataA = x9;
-			(rnumA == 5'b01010): read_dataA = x10;
-			(rnumA == 5'b01011): read_dataA = x11;
-			(rnumA == 5'b01100): read_dataA = x12;
-			(rnumA == 5'b01101): read_dataA = x13;
-			(rnumA == 5'b01110): read_dataA = x14;
-			(rnumA == 5'b01111): read_dataA = x15;
-			(rnumA == 5'b10000): read_dataA = x16;
-			(rnumA == 5'b10001): read_dataA = x17;
-			(rnumA == 5'b10010): read_dataA = x18;
-			(rnumA == 5'b10011): read_dataA = x19;
-			(rnumA == 5'b10100): read_dataA = x20;
-			(rnumA == 5'b10101): read_dataA = x21;
-			(rnumA == 5'b10110): read_dataA = x22;
-			(rnumA == 5'b10111): read_dataA = x23;
-			(rnumA == 5'b11000): read_dataA = x24;
-			(rnumA == 5'b11001): read_dataA = x25;
-			(rnumA == 5'b11010): read_dataA = x26;
-			(rnumA == 5'b11011): read_dataA = x27;
-			(rnumA == 5'b11100): read_dataA = x28;
-			(rnumA == 5'b11101): read_dataA = x29;
-			(rnumA == 5'b11110): read_dataA = x30;
-			(rnumA == 5'b11111): read_dataA = x31;
-		}
-
-		if((rnumA == wnumA) && (rnumA != 5'b0000) && writeA) {
-			return wdataA;
-		} else if((rnumA == wnumB) && (rnumA != 5'b0000) && writeB) {
-			return wdataB;
-		} else {
-			return read_dataA;
+			(rnumA == 5'b00000): return 32'b0;
+			(rnumA == 5'b00001): return x1;
+			(rnumA == 5'b00010): return x2;
+			(rnumA == 5'b00011): return x3;
+			(rnumA == 5'b00100): return x4;
+			(rnumA == 5'b00101): return x5;
+			(rnumA == 5'b00110): return x6;
+			(rnumA == 5'b00111): return x7;
+			(rnumA == 5'b01000): return x8;
+			(rnumA == 5'b01001): return x9;
+			(rnumA == 5'b01010): return x10;
+			(rnumA == 5'b01011): return x11;
+			(rnumA == 5'b01100): return x12;
+			(rnumA == 5'b01101): return x13;
+			(rnumA == 5'b01110): return x14;
+			(rnumA == 5'b01111): return x15;
+			(rnumA == 5'b10000): return x16;
+			(rnumA == 5'b10001): return x17;
+			(rnumA == 5'b10010): return x18;
+			(rnumA == 5'b10011): return x19;
+			(rnumA == 5'b10100): return x20;
+			(rnumA == 5'b10101): return x21;
+			(rnumA == 5'b10110): return x22;
+			(rnumA == 5'b10111): return x23;
+			(rnumA == 5'b11000): return x24;
+			(rnumA == 5'b11001): return x25;
+			(rnumA == 5'b11010): return x26;
+			(rnumA == 5'b11011): return x27;
+			(rnumA == 5'b11100): return x28;
+			(rnumA == 5'b11101): return x29;
+			(rnumA == 5'b11110): return x30;
+			(rnumA == 5'b11111): return x31;
 		}
 	}
 	func readB {
-		wire read_dataB[32];
 		any {
-			(rnumB == 5'b00000): read_dataB = 32'b0;
-			(rnumB == 5'b00001): read_dataB = x1;
-			(rnumB == 5'b00010): read_dataB = x2;
-			(rnumB == 5'b00011): read_dataB = x3;
-			(rnumB == 5'b00100): read_dataB = x4;
-			(rnumB == 5'b00101): read_dataB = x5;
-			(rnumB == 5'b00110): read_dataB = x6;
-			(rnumB == 5'b00111): read_dataB = x7;
-			(rnumB == 5'b01000): read_dataB = x8;
-			(rnumB == 5'b01001): read_dataB = x9;
-			(rnumB == 5'b01010): read_dataB = x10;
-			(rnumB == 5'b01011): read_dataB = x11;
-			(rnumB == 5'b01100): read_dataB = x12;
-			(rnumB == 5'b01101): read_dataB = x13;
-			(rnumB == 5'b01110): read_dataB = x14;
-			(rnumB == 5'b01111): read_dataB = x15;
-			(rnumB == 5'b10000): read_dataB = x16;
-			(rnumB == 5'b10001): read_dataB = x17;
-			(rnumB == 5'b10010): read_dataB = x18;
-			(rnumB == 5'b10011): read_dataB = x19;
-			(rnumB == 5'b10100): read_dataB = x20;
-			(rnumB == 5'b10101): read_dataB = x21;
-			(rnumB == 5'b10110): read_dataB = x22;
-			(rnumB == 5'b10111): read_dataB = x23;
-			(rnumB == 5'b11000): read_dataB = x24;
-			(rnumB == 5'b11001): read_dataB = x25;
-			(rnumB == 5'b11010): read_dataB = x26;
-			(rnumB == 5'b11011): read_dataB = x27;
-			(rnumB == 5'b11100): read_dataB = x28;
-			(rnumB == 5'b11101): read_dataB = x29;
-			(rnumB == 5'b11110): read_dataB = x30;
-			(rnumB == 5'b11111): read_dataB = x31;
-		}
-		if((rnumB == wnumA) && (rnumB != 5'b0000) && writeA) {
-			return wdataA;
-		} else if((rnumB == wnumB) && (rnumB != 5'b0000) && writeB) {
-			return wdataB;
-		} else {
-			return read_dataB;
+			(rnumB == 5'b00000): return 32'b0;
+			(rnumB == 5'b00001): return x1;
+			(rnumB == 5'b00010): return x2;
+			(rnumB == 5'b00011): return x3;
+			(rnumB == 5'b00100): return x4;
+			(rnumB == 5'b00101): return x5;
+			(rnumB == 5'b00110): return x6;
+			(rnumB == 5'b00111): return x7;
+			(rnumB == 5'b01000): return x8;
+			(rnumB == 5'b01001): return x9;
+			(rnumB == 5'b01010): return x10;
+			(rnumB == 5'b01011): return x11;
+			(rnumB == 5'b01100): return x12;
+			(rnumB == 5'b01101): return x13;
+			(rnumB == 5'b01110): return x14;
+			(rnumB == 5'b01111): return x15;
+			(rnumB == 5'b10000): return x16;
+			(rnumB == 5'b10001): return x17;
+			(rnumB == 5'b10010): return x18;
+			(rnumB == 5'b10011): return x19;
+			(rnumB == 5'b10100): return x20;
+			(rnumB == 5'b10101): return x21;
+			(rnumB == 5'b10110): return x22;
+			(rnumB == 5'b10111): return x23;
+			(rnumB == 5'b11000): return x24;
+			(rnumB == 5'b11001): return x25;
+			(rnumB == 5'b11010): return x26;
+			(rnumB == 5'b11011): return x27;
+			(rnumB == 5'b11100): return x28;
+			(rnumB == 5'b11101): return x29;
+			(rnumB == 5'b11110): return x30;
+			(rnumB == 5'b11111): return x31;
 		}
 	}
 	func readC {
-		wire read_dataC[32];
 		any {
-			(rnumC == 5'b00000): read_dataC = 32'b0;
-			(rnumC == 5'b00001): read_dataC = x1;
-			(rnumC == 5'b00010): read_dataC = x2;
-			(rnumC == 5'b00011): read_dataC = x3;
-			(rnumC == 5'b00100): read_dataC = x4;
-			(rnumC == 5'b00101): read_dataC = x5;
-			(rnumC == 5'b00110): read_dataC = x6;
-			(rnumC == 5'b00111): read_dataC = x7;
-			(rnumC == 5'b01000): read_dataC = x8;
-			(rnumC == 5'b01001): read_dataC = x9;
-			(rnumC == 5'b01010): read_dataC = x10;
-			(rnumC == 5'b01011): read_dataC = x11;
-			(rnumC == 5'b01100): read_dataC = x12;
-			(rnumC == 5'b01101): read_dataC = x13;
-			(rnumC == 5'b01110): read_dataC = x14;
-			(rnumC == 5'b01111): read_dataC = x15;
-			(rnumC == 5'b10000): read_dataC = x16;
-			(rnumC == 5'b10001): read_dataC = x17;
-			(rnumC == 5'b10010): read_dataC = x18;
-			(rnumC == 5'b10011): read_dataC = x19;
-			(rnumC == 5'b10100): read_dataC = x20;
-			(rnumC == 5'b10101): read_dataC = x21;
-			(rnumC == 5'b10110): read_dataC = x22;
-			(rnumC == 5'b10111): read_dataC = x23;
-			(rnumC == 5'b11000): read_dataC = x24;
-			(rnumC == 5'b11001): read_dataC = x25;
-			(rnumC == 5'b11010): read_dataC = x26;
-			(rnumC == 5'b11011): read_dataC = x27;
-			(rnumC == 5'b11100): read_dataC = x28;
-			(rnumC == 5'b11101): read_dataC = x29;
-			(rnumC == 5'b11110): read_dataC = x30;
-			(rnumC == 5'b11111): read_dataC = x31;
-		}
-		if((rnumC == wnumA) && (rnumC != 5'b0000) && writeA) {
-			return wdataA;
-		} else if((rnumC == wnumB) && (rnumC != 5'b0000) && writeB) {
-			return wdataB;
-		} else {
-			return read_dataC;
+			(rnumC == 5'b00000): return 32'b0;
+			(rnumC == 5'b00001): return x1;
+			(rnumC == 5'b00010): return x2;
+			(rnumC == 5'b00011): return x3;
+			(rnumC == 5'b00100): return x4;
+			(rnumC == 5'b00101): return x5;
+			(rnumC == 5'b00110): return x6;
+			(rnumC == 5'b00111): return x7;
+			(rnumC == 5'b01000): return x8;
+			(rnumC == 5'b01001): return x9;
+			(rnumC == 5'b01010): return x10;
+			(rnumC == 5'b01011): return x11;
+			(rnumC == 5'b01100): return x12;
+			(rnumC == 5'b01101): return x13;
+			(rnumC == 5'b01110): return x14;
+			(rnumC == 5'b01111): return x15;
+			(rnumC == 5'b10000): return x16;
+			(rnumC == 5'b10001): return x17;
+			(rnumC == 5'b10010): return x18;
+			(rnumC == 5'b10011): return x19;
+			(rnumC == 5'b10100): return x20;
+			(rnumC == 5'b10101): return x21;
+			(rnumC == 5'b10110): return x22;
+			(rnumC == 5'b10111): return x23;
+			(rnumC == 5'b11000): return x24;
+			(rnumC == 5'b11001): return x25;
+			(rnumC == 5'b11010): return x26;
+			(rnumC == 5'b11011): return x27;
+			(rnumC == 5'b11100): return x28;
+			(rnumC == 5'b11101): return x29;
+			(rnumC == 5'b11110): return x30;
+			(rnumC == 5'b11111): return x31;
 		}
 	}
 	func readD {
-		wire read_dataD[32];
 		any {
-			(rnumD == 5'b00000): read_dataD = 32'b0;
-			(rnumD == 5'b00001): read_dataD = x1;
-			(rnumD == 5'b00010): read_dataD = x2;
-			(rnumD == 5'b00011): read_dataD = x3;
-			(rnumD == 5'b00100): read_dataD = x4;
-			(rnumD == 5'b00101): read_dataD = x5;
-			(rnumD == 5'b00110): read_dataD = x6;
-			(rnumD == 5'b00111): read_dataD = x7;
-			(rnumD == 5'b01000): read_dataD = x8;
-			(rnumD == 5'b01001): read_dataD = x9;
-			(rnumD == 5'b01010): read_dataD = x10;
-			(rnumD == 5'b01011): read_dataD = x11;
-			(rnumD == 5'b01100): read_dataD = x12;
-			(rnumD == 5'b01101): read_dataD = x13;
-			(rnumD == 5'b01110): read_dataD = x14;
-			(rnumD == 5'b01111): read_dataD = x15;
-			(rnumD == 5'b10000): read_dataD = x16;
-			(rnumD == 5'b10001): read_dataD = x17;
-			(rnumD == 5'b10010): read_dataD = x18;
-			(rnumD == 5'b10011): read_dataD = x19;
-			(rnumD == 5'b10100): read_dataD = x20;
-			(rnumD == 5'b10101): read_dataD = x21;
-			(rnumD == 5'b10110): read_dataD = x22;
-			(rnumD == 5'b10111): read_dataD = x23;
-			(rnumD == 5'b11000): read_dataD = x24;
-			(rnumD == 5'b11001): read_dataD = x25;
-			(rnumD == 5'b11010): read_dataD = x26;
-			(rnumD == 5'b11011): read_dataD = x27;
-			(rnumD == 5'b11100): read_dataD = x28;
-			(rnumD == 5'b11101): read_dataD = x29;
-			(rnumD == 5'b11110): read_dataD = x30;
-			(rnumD == 5'b11111): read_dataD = x31;
-		}
-		if((rnumD == wnumA) && (rnumD != 5'b0000) && writeA) {
-			return wdataA;
-		} else if((rnumD == wnumB) && (rnumD != 5'b0000) && writeB) {
-			return wdataB;
-		} else {
-			return read_dataD;
+			(rnumD == 5'b00000): return 32'b0;
+			(rnumD == 5'b00001): return x1;
+			(rnumD == 5'b00010): return x2;
+			(rnumD == 5'b00011): return x3;
+			(rnumD == 5'b00100): return x4;
+			(rnumD == 5'b00101): return x5;
+			(rnumD == 5'b00110): return x6;
+			(rnumD == 5'b00111): return x7;
+			(rnumD == 5'b01000): return x8;
+			(rnumD == 5'b01001): return x9;
+			(rnumD == 5'b01010): return x10;
+			(rnumD == 5'b01011): return x11;
+			(rnumD == 5'b01100): return x12;
+			(rnumD == 5'b01101): return x13;
+			(rnumD == 5'b01110): return x14;
+			(rnumD == 5'b01111): return x15;
+			(rnumD == 5'b10000): return x16;
+			(rnumD == 5'b10001): return x17;
+			(rnumD == 5'b10010): return x18;
+			(rnumD == 5'b10011): return x19;
+			(rnumD == 5'b10100): return x20;
+			(rnumD == 5'b10101): return x21;
+			(rnumD == 5'b10110): return x22;
+			(rnumD == 5'b10111): return x23;
+			(rnumD == 5'b11000): return x24;
+			(rnumD == 5'b11001): return x25;
+			(rnumD == 5'b11010): return x26;
+			(rnumD == 5'b11011): return x27;
+			(rnumD == 5'b11100): return x28;
+			(rnumD == 5'b11101): return x29;
+			(rnumD == 5'b11110): return x30;
+			(rnumD == 5'b11111): return x31;
 		}
 	}
 	func writeA {
@@ -249,7 +216,7 @@ module register_file {
 		}
 	}
 	func writeB {
-		if(writeA && (wnumA != wnumB)) {
+		if(!(writeA && (wnumA == wnumB))) {
 			/* writeA has higher priority, if reg num is same for write, disable writeB */
 			any {
 				(wnumB == 5'b00000): ; 
