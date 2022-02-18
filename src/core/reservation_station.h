@@ -30,6 +30,7 @@ declare reservation_station {
 	func_in issue(Valid, Op, Vj, Vk, Qj, Qk, Dest, A);
 	func_in flush();
 	func_out full();
+	func_in stall();
 	output dispatch_Op[7];
 	output dispatch_Dest[ROB_TAG_SIZE];
 	output dispatch_Vj[32];

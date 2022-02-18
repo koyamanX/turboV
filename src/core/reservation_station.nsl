@@ -33,7 +33,7 @@ module reservation_station {
 			}
 		}
 	}
-	if(!flush) {
+	if(!flush && !stall) {
 		alt {
 			rs3.Busy && (rs3.Qj == 0) && (rs3.Qk == 0): {
 				dispatch_rs3();
@@ -107,7 +107,6 @@ module reservation_station {
 			}
 		}
 	}
-
 
 	func flush {
 		rs3 := 0;
