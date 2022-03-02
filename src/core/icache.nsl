@@ -4,12 +4,12 @@
 module icache {
 	mem icache_valid_array[128];
 	mem icache_tag_array[128][20];
-	mem icache_data_array[512][64];
+	mem icache_data_array[128][256];
 	proc_name idle();
 	reg compare_tag_addr[32];
 	reg compare_tag_icache_valid;
 	reg compare_tag_icache_tag[20];
-	reg compare_tag_icache_data[64];
+	reg compare_tag_icache_data[256];
 	proc_name compare_tag(compare_tag_addr, compare_tag_icache_valid,
 							compare_tag_icache_tag, compare_tag_icache_data);
 	reg allocate_addr[32];
@@ -29,7 +29,7 @@ module icache {
 		any {
 			req_cache_read: {
 				compare_tag(req_cache_addr, icache_valid_array[idle_index],
-							icache_tag_array[idle_index], icache_data_array[{idle_index, idle_block_offset}]);
+							icache_tag_array[idle_index], icache_data_array[idle_index]);
 			}
 		}
 	}
@@ -43,7 +43,12 @@ module icache {
 
 		if((compare_tag_tag == compare_tag_icache_tag) && compare_tag_icache_valid) {
 			idle();
-			rsp_cache_hit(compare_tag_icache_data);
+			any {
+				compare_tag_block_offset == 0: rsp_cache_hit(compare_tag_icache_data[63:0]);
+				compare_tag_block_offset == 1: rsp_cache_hit(compare_tag_icache_data[127:64]);
+				compare_tag_block_offset == 2: rsp_cache_hit(compare_tag_icache_data[191:128]);
+				compare_tag_block_offset == 3: rsp_cache_hit(compare_tag_icache_data[255:192]);
+			}
 		} else {
 			allocate(compare_tag_addr, compare_tag_addr);
 		}
@@ -58,6 +63,7 @@ module icache {
 		wire allocate_hit_index[7];
 		wire allocate_hit_block_offset[2];
 		wire allocate_hit_byte_offset[3];
+		mem allocate_data[4][64];
 		state_name allocate_bus_req, allocate_bus_wait, allocate_done;
 
 		.{allocate_tag, allocate_index, allocate_block_offset, allocate_byte_offset} = allocate_addr;
@@ -66,7 +72,7 @@ module icache {
 			req_read(allocate_addr, 0xff);
 
 			if(rsp_valid) {
-				icache_data_array[{allocate_index, allocate_block_offset}] := rsp_data;
+				allocate_data[allocate_block_offset] := rsp_data;
 				icache_tag_array[allocate_index] := allocate_tag;
 				icache_valid_array[allocate_index] := 1;
 				allocate_addr := allocate_addr + 8;
@@ -82,7 +88,7 @@ module icache {
 		}
 		state allocate_bus_wait {
 			if(rsp_valid) {
-				icache_data_array[{allocate_index, allocate_block_offset}] := rsp_data;
+				allocate_data[allocate_block_offset] := rsp_data;
 				icache_tag_array[allocate_index] := allocate_tag;
 				icache_valid_array[allocate_index] := 1;
 				allocate_addr := allocate_addr + 8;
@@ -96,9 +102,15 @@ module icache {
 			}
 		}
 		state allocate_done {
-			rsp_cache_hit(icache_data_array[{allocate_hit_index, allocate_hit_block_offset}]);
-			idle();
+			icache_data_array[allocate_hit_index] := {allocate_data[3], allocate_data[2], allocate_data[1], allocate_data[0]};
+			any {
+				allocate_hit_block_offset == 0: rsp_cache_hit(allocate_data[0]);
+				allocate_hit_block_offset == 1: rsp_cache_hit(allocate_data[1]);
+				allocate_hit_block_offset == 2: rsp_cache_hit(allocate_data[2]);
+				allocate_hit_block_offset == 3: rsp_cache_hit(allocate_data[3]);
+			}
 			goto allocate_bus_req;
+			idle();
 		}
 	}
 }
