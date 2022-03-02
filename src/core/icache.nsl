@@ -2,139 +2,103 @@
 #include "wishbone_master.h"
 
 module icache {
-	mem icache_data_array_way0[128][256];
-	mem icache_data_array_way1[128][256];
-	mem icache_tag_array_way0[128][20];
-	mem icache_tag_array_way1[128][20];
-	mem icache_valid_array_way0[128] = {0};
-	mem icache_valid_array_way1[128] = {0};
-	mem icache_lru_array[128] = {0};
-	reg icache_hit_data[256];
-	reg icache_hit_tag[20];
-	reg icache_hit_index[7];
-	reg icache_hit_valid;
-	proc_name idle(icache_hit_data, icache_hit_tag, icache_hit_index, icache_hit_valid);
-	reg icache_pa[32];
-	reg icache_data_way0[256];
-	reg icache_data_way1[256];
-	reg icache_tag_way0[20];
-	reg icache_tag_way1[20];
-	reg icache_valid_way0;
-	reg icache_valid_way1;
-	reg icache_lru;
-	reg icache_idx[12];
-	proc_name compare_tag(icache_pa, icache_data_way0, icache_tag_way0, icache_valid_way0,
-						  icache_data_way1, icache_tag_way1, icache_valid_way1,
-						  icache_lru, icache_idx);
-	reg allocate_paddr[32];
-	reg allocate_way_sel;
-	proc_name allocate(allocate_paddr, allocate_way_sel);
+	mem icache_valid_array[128];
+	mem icache_tag_array[128][20];
+	mem icache_data_array[512][64];
+	proc_name idle();
+	reg compare_tag_addr[32];
+	reg compare_tag_icache_valid;
+	reg compare_tag_icache_tag[20];
+	reg compare_tag_icache_data[64];
+	proc_name compare_tag(compare_tag_addr, compare_tag_icache_valid,
+							compare_tag_icache_tag, compare_tag_icache_data);
+	reg allocate_addr[32];
+	reg allocate_req_cache_addr[32];
+	proc_name allocate(allocate_addr, allocate_req_cache_addr);
 
 	func reset {
-		idle(0, 0, 0, 0);
+		idle();
 	}
-
 	proc idle {
 		wire idle_tag[20];
-		wire idle_idx[7];
-		wire idle_woff[2];
-		wire idle_boff[3];
+		wire idle_index[7];
+		wire idle_block_offset[2];
+		wire idle_byte_offset[3];
 
-		.{idle_tag, idle_idx, idle_woff, idle_boff} = req_cache_pa;
-		if(req_cache_read) {
-			any {
-				icache_hit_tag == idle_tag && icache_hit_index == idle_idx && icache_hit_valid && idle_woff == 0: {rsp_cache_hit(icache_hit_data[63:0]);}
-				icache_hit_tag == idle_tag && icache_hit_index == idle_idx && icache_hit_valid && idle_woff == 1: {rsp_cache_hit(icache_hit_data[127:64]);}
-				icache_hit_tag == idle_tag && icache_hit_index == idle_idx && icache_hit_valid && idle_woff == 2: {rsp_cache_hit(icache_hit_data[191:128]);}
-				icache_hit_tag == idle_tag && icache_hit_index == idle_idx && icache_hit_valid && idle_woff == 3: {rsp_cache_hit(icache_hit_data[255:192]);}
-				else: {
-					compare_tag(req_cache_pa,
-						icache_data_array_way0[idle_idx], icache_tag_array_way0[idle_idx], icache_valid_array_way0[idle_idx],
-						icache_data_array_way1[idle_idx], icache_tag_array_way1[idle_idx], icache_valid_array_way1[idle_idx],
-						icache_lru_array[idle_idx], idle_idx);
-				}
+		.{idle_tag, idle_index, idle_block_offset, idle_byte_offset} = req_cache_addr;
+		any {
+			req_cache_read: {
+				compare_tag(req_cache_addr, icache_valid_array[idle_index],
+							icache_tag_array[idle_index], icache_data_array[{idle_index, idle_block_offset}]);
 			}
 		}
 	}
 	proc compare_tag {
-		wire ptag[20], pidx[7], pwoff[2], pboff[3];
+		wire compare_tag_tag[20];
+		wire compare_tag_index[7];
+		wire compare_tag_block_offset[2];
+		wire compare_tag_byte_offset[3];
 
-		.{ptag, pidx, pwoff, pboff} = icache_pa;
+		.{compare_tag_tag, compare_tag_index, compare_tag_block_offset, compare_tag_byte_offset} = compare_tag_addr;
 
-		any {
-			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 0: {rsp_cache_hit(icache_data_way0[63:0]); idle(icache_data_way0, icache_tag_way0, pidx, icache_valid_way0);}
-			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 1: {rsp_cache_hit(icache_data_way0[127:64]); idle(icache_data_way0, icache_tag_way0, pidx, icache_valid_way0);}
-			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 2: {rsp_cache_hit(icache_data_way0[191:128]); idle(icache_data_way0, icache_tag_way0, pidx, icache_valid_way0);}
-			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 3: {rsp_cache_hit(icache_data_way0[255:192]); idle(icache_data_way0, icache_tag_way0, pidx, icache_valid_way0);}
-			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 0: {rsp_cache_hit(icache_data_way1[63:0]); idle(icache_data_way1, icache_tag_way1, pidx, icache_valid_way1);}
-			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 1: {rsp_cache_hit(icache_data_way1[127:64]); idle(icache_data_way1, icache_tag_way1, pidx, icache_valid_way1);}
-			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 2: {rsp_cache_hit(icache_data_way1[191:128]); idle(icache_data_way1, icache_tag_way1, pidx, icache_valid_way1);}
-			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 3: {rsp_cache_hit(icache_data_way1[255:192]); idle(icache_data_way1, icache_tag_way1, pidx, icache_valid_way1);}
-			else: {rsp_cache_miss(); allocate(icache_pa, icache_lru); icache_lru_array[pidx] := ~icache_lru;}
+		if((compare_tag_tag == compare_tag_icache_tag) && compare_tag_icache_valid) {
+			idle();
+			rsp_cache_hit(compare_tag_icache_data);
+		} else {
+			allocate(compare_tag_addr, compare_tag_addr);
 		}
 	}
 	proc allocate {
-		state_name bus_req, bus_wait;
-		reg allocate_bwoff[2] = 0;
-		mem allocate_buf[4][64];
-		reg allocate_paddr2refill[32];
-		wire refill_paddr[32];
-		wire refill_data[256];
-		wire refill_way_sel;
-		func_self refill(refill_paddr, refill_data, refill_way_sel);
+		reg allocate_count[2] = 0;
+		wire allocate_tag[20];
+		wire allocate_index[7];
+		wire allocate_block_offset[2];
+		wire allocate_byte_offset[3];
+		wire allocate_hit_tag[20];
+		wire allocate_hit_index[7];
+		wire allocate_hit_block_offset[2];
+		wire allocate_hit_byte_offset[3];
+		state_name allocate_bus_req, allocate_bus_wait, allocate_done;
 
-		if(allocate_bwoff == 0) {
-			allocate_paddr2refill := allocate_paddr;
-		}
-		state bus_req {
-			req_read(allocate_paddr, 0xff);
+		.{allocate_tag, allocate_index, allocate_block_offset, allocate_byte_offset} = allocate_addr;
+		.{allocate_hit_tag, allocate_hit_index, allocate_hit_block_offset, allocate_hit_byte_offset} = allocate_req_cache_addr;
+		state allocate_bus_req {
+			req_read(allocate_addr, 0xff);
+
 			if(rsp_valid) {
-				allocate_buf[allocate_bwoff] := rsp_data;
-				allocate_paddr := allocate_paddr + 8;
-				if(allocate_bwoff == 3) {
-					refill(allocate_paddr2refill, {rsp_data, allocate_buf[2], allocate_buf[1], allocate_buf[0]}, allocate_way_sel);
-					allocate_bwoff := 0;
-					idle({rsp_data, allocate_buf[2], allocate_buf[1], allocate_buf[0]}, allocate_paddr[31:12], allocate_paddr[11:5], 1);
+				icache_data_array[{allocate_index, allocate_block_offset}] := rsp_data;
+				icache_tag_array[allocate_index] := allocate_tag;
+				icache_valid_array[allocate_index] := 1;
+				allocate_addr := allocate_addr + 8;
+				if(allocate_count == 3) {
+					allocate_count := 0;
+					goto allocate_done;
 				} else {
-					allocate_bwoff++;
+					allocate_count++;
 				}
 			} else {
-				goto bus_wait;
+				goto allocate_bus_wait;
 			}
 		}
-		state bus_wait {
+		state allocate_bus_wait {
 			if(rsp_valid) {
-				allocate_buf[allocate_bwoff] := rsp_data;
-				allocate_paddr := allocate_paddr + 8;
-				if(allocate_bwoff == 3) {
-					refill(allocate_paddr2refill, {rsp_data, allocate_buf[2], allocate_buf[1], allocate_buf[0]}, allocate_way_sel);
-					allocate_bwoff := 0;
-					goto bus_req;
-					idle({rsp_data, allocate_buf[2], allocate_buf[1], allocate_buf[0]}, allocate_paddr[31:12], allocate_paddr[11:5], 1);
+				icache_data_array[{allocate_index, allocate_block_offset}] := rsp_data;
+				icache_tag_array[allocate_index] := allocate_tag;
+				icache_valid_array[allocate_index] := 1;
+				allocate_addr := allocate_addr + 8;
+				if(allocate_count == 3) {
+					allocate_count := 0;
+					goto allocate_done;
 				} else {
-					goto bus_req;
-					allocate_bwoff++;
+					allocate_count++;
 				}
+				goto allocate_bus_req;
 			}
 		}
-	}
-	func refill {
-		wire refill_ptag[20];
-		wire refill_pidx[7];
-		wire refill_poff[5];
-		.{refill_ptag, refill_pidx, refill_poff} = refill_paddr;
-		any {
-			refill_way_sel == 0: {
-				icache_tag_array_way0[refill_pidx] := refill_ptag;
-				icache_data_array_way0[refill_pidx] := refill_data;
-				icache_valid_array_way0[refill_pidx] := 1;
-			}
-			refill_way_sel == 1: {
-				icache_tag_array_way1[refill_pidx] := refill_ptag;
-				icache_data_array_way1[refill_pidx] := refill_data;
-				icache_valid_array_way1[refill_pidx] := 1;
-			}
+		state allocate_done {
+			rsp_cache_hit(icache_data_array[{allocate_hit_index, allocate_hit_block_offset}]);
+			idle();
+			goto allocate_bus_req;
 		}
-		rsp_cache_hit(refill_data);
 	}
 }
