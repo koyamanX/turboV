@@ -9,6 +9,7 @@ add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/storm.nsl ${CMAKE_CURRENT_BINARY_DIR}
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reorder_buffer.nsl ${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reservation_station.nsl ${CMAKE_CURRENT_BINARY_DIR}/reservation_station.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/bru32.nsl ${CMAKE_CURRENT_BINARY_DIR}/bru32.v)
+add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reservation_station_in_order_2way.nsl ${CMAKE_CURRENT_BINARY_DIR}/reservation_station_in_order_2way.v)
 
 add_custom_target(core
 	DEPENDS
@@ -23,4 +24,5 @@ add_custom_target(core
 		${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v
 		${CMAKE_CURRENT_BINARY_DIR}/reservation_station.v
 		${CMAKE_CURRENT_BINARY_DIR}/bru32.v
+		${CMAKE_CURRENT_BINARY_DIR}/reservation_station_in_order_2way.v
 )
