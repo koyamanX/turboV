@@ -5,7 +5,7 @@ add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/register_file.nsl ${CMAKE_CURRENT_BIN
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/imm_gen.nsl ${CMAKE_CURRENT_BINARY_DIR}/imm_gen.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/instruction_decoder.nsl ${CMAKE_CURRENT_BINARY_DIR}/instruction_decoder.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/alu32.nsl ${CMAKE_CURRENT_BINARY_DIR}/alu32.v)
-add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/storm.nsl ${CMAKE_CURRENT_BINARY_DIR}/storm.v)
+add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/turboV.nsl ${CMAKE_CURRENT_BINARY_DIR}/turboV.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reorder_buffer.nsl ${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reservation_station.nsl ${CMAKE_CURRENT_BINARY_DIR}/reservation_station.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/bru32.nsl ${CMAKE_CURRENT_BINARY_DIR}/bru32.v)
@@ -20,7 +20,7 @@ add_custom_target(core
 		${CMAKE_CURRENT_BINARY_DIR}/imm_gen.v
 		${CMAKE_CURRENT_BINARY_DIR}/instruction_decoder.v
 		${CMAKE_CURRENT_BINARY_DIR}/alu32.v
-		${CMAKE_CURRENT_BINARY_DIR}/storm.v
+		${CMAKE_CURRENT_BINARY_DIR}/turboV.v
 		${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v
 		${CMAKE_CURRENT_BINARY_DIR}/reservation_station.v
 		${CMAKE_CURRENT_BINARY_DIR}/bru32.v

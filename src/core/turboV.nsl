@@ -1,4 +1,4 @@
-#include "storm.h"
+#include "turboV.h"
 #include "ifetch_unit.h"
 #include "alu32.h"
 #include "wishbone_common.h"
@@ -9,7 +9,7 @@
 #include "opcode_map.h"
 #include "bru32.h"
 
-module storm {
+module turboV {
 	/* Decode stage */
 	proc_name decode();
 	func_self stall_issue();

@@ -1,12 +1,12 @@
-#ifndef STORM_H
-#define STORM_H
+#ifndef TURBOV_H
+#define TURBOV_H
 
 #include "wishbone_common.h"
 
 #define BUSY 1'b1
 #define READY 1'b0
 
-declare storm {
+declare turboV {
 	input resetvector[32];
 	func_in reset(resetvector);
 

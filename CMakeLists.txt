@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(storm)
+project(turboV)
 enable_testing()
 include(CTest)
 

@@ -1,15 +1,15 @@
-#include "storm.h"
+#include "turboV.h"
 #include "wishbone_common.h"
 #include "wishbone_syscon.h"
 #include "rom64x2K.h"
 
-declare storm_unit_test simulation {
+declare turboV_unit_test simulation {
 	input resetvector[32];
 	func_in reset(resetvector);
 }
 
-module storm_unit_test {
-	storm core;
+module turboV_unit_test {
+	turboV core;
 	wishbone_syscon wb_syscon;
 	rom64x2K wb_rom;
 
