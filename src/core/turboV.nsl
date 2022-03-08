@@ -242,13 +242,13 @@ module turboV {
 					register_status_table[issue_inst0_rd] := BUSY;
 				}
 				/* Issue inst0 to RSs */
-				any {
+				alt {
 					((issue_inst0_opcode == JALR) || (issue_inst0_opcode == JAL) || (issue_inst0_opcode == BRANCH)): {
 						bru_rs0.issue(
 							issue_fetch_packet.valid0, issue_inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_fetch_packet.pc0 + issue_inst0_imm
 						);
 					}
-					!((issue_inst0_opcode == JALR) || (issue_inst0_opcode == JAL) || (issue_inst0_opcode == BRANCH)): {
+					else: {
 						alu_rs0.issue(
 							issue_fetch_packet.valid0, issue_inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0
 						);
@@ -327,14 +327,14 @@ module turboV {
 					register_map_table[issue_inst1_rd] := rob.tag+1;
 					register_status_table[issue_inst1_rd] := BUSY;
 				}
-				/* Issue inst0 to RSs */
-				any {
+				/* Issue inst1 to RSs */
+				alt {
 					((issue_inst1_opcode == JALR) || (issue_inst1_opcode == JAL) || (issue_inst1_opcode == BRANCH)): {
 						bru_rs0.issue(
 							issue_fetch_packet.valid1, issue_inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_fetch_packet.pc1 + issue_inst1_imm
 						);
 					}
-					!((issue_inst1_opcode == JALR) || (issue_inst1_opcode == JAL) || (issue_inst1_opcode == BRANCH)): {
+					else: {
 						alu_rs1.issue(
 							issue_fetch_packet.valid1, issue_inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0
 						);
