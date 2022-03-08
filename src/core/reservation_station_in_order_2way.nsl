@@ -10,39 +10,58 @@ module reservation_station_in_order_2way {
 	wire next_tail[LOG2_RS_IN_ORDER_2WAY_NUM_OF_ENTRIES+1];
 	wire next_head[LOG2_RS_IN_ORDER_2WAY_NUM_OF_ENTRIES+1];
 	reservation_station_2way_t wire dispatch_entry;
+	reservation_station_2way_t wire new_entry;
 
 	next_tail = tail + 1;
 	next_head = head + 1;
 
-	func issue {
-		reservation_station_2way_t wire new_entry;
+	if(issue0 && !flush) {
+		new_entry.Busy0 = Valid0;
+		new_entry.Op0 = Op0;
+		new_entry.Vj0 = Vj0;
+		new_entry.Vk0 = Vk0;
+		new_entry.Qj0 = Qj0;
+		new_entry.Qk0 = Qk0;
+		new_entry.Dest0 = Dest0;
+		new_entry.A0 = A0;
+	} else {
+		new_entry.Busy0 = 0;
+		new_entry.Op0 = 0;
+		new_entry.Vj0 = 0;
+		new_entry.Vk0 = 0;
+		new_entry.Qj0 = 0;
+		new_entry.Qk0 = 0;
+		new_entry.Dest0 = 0;
+		new_entry.A0 = 0;
 
-		if(!flush) {
-			new_entry.Busy0 = Valid0;
-			new_entry.Busy1 = Valid1;
-			new_entry.Op0 = Op0;
-			new_entry.Op1 = Op1;
-			new_entry.Vj0 = Vj0;
-			new_entry.Vj1 = Vj1;
-			new_entry.Vk0 = Vk0;
-			new_entry.Vk1 = Vk1;
-			new_entry.Qj0 = Qj0;
-			new_entry.Qj1 = Qj1;
-			new_entry.Qk0 = Qk0;
-			new_entry.Qk1 = Qk1;
-			new_entry.Dest0 = Dest0;
-			new_entry.Dest1 = Dest1;
-			new_entry.A0 = A0;
-			new_entry.A1 = A1;
-
-			any {
-				tail[LOG2_RS_IN_ORDER_2WAY_NUM_OF_ENTRIES-1:0] == 0: rs0 := new_entry;
-				tail[LOG2_RS_IN_ORDER_2WAY_NUM_OF_ENTRIES-1:0] == 1: rs1 := new_entry;
-				tail[LOG2_RS_IN_ORDER_2WAY_NUM_OF_ENTRIES-1:0] == 2: rs2 := new_entry;
-				tail[LOG2_RS_IN_ORDER_2WAY_NUM_OF_ENTRIES-1:0] == 3: rs3 := new_entry;
-			}
-			tail := next_tail;
+	}
+	if(issue1 && !flush) {
+		new_entry.Busy1 = Valid1;
+		new_entry.Op1 = Op1;
+		new_entry.Vj1 = Vj1;
+		new_entry.Vk1 = Vk1;
+		new_entry.Qj1 = Qj1;
+		new_entry.Qk1 = Qk1;
+		new_entry.Dest1 = Dest1;
+		new_entry.A1 = A1;
+	} else {
+		new_entry.Busy1 = 0;
+		new_entry.Op1 = 0;
+		new_entry.Vj1 = 0;
+		new_entry.Vk1 = 0;
+		new_entry.Qj1 = 0;
+		new_entry.Qk1 = 0;
+		new_entry.Dest1 = 0;
+		new_entry.A1 = 0;
+	}
+	if(issue0 || issue1) {
+		any {
+			tail[LOG2_RS_IN_ORDER_2WAY_NUM_OF_ENTRIES-1:0] == 0: rs0 := new_entry;
+			tail[LOG2_RS_IN_ORDER_2WAY_NUM_OF_ENTRIES-1:0] == 1: rs1 := new_entry;
+			tail[LOG2_RS_IN_ORDER_2WAY_NUM_OF_ENTRIES-1:0] == 2: rs2 := new_entry;
+			tail[LOG2_RS_IN_ORDER_2WAY_NUM_OF_ENTRIES-1:0] == 3: rs3 := new_entry;
 		}
+		tail := next_tail;
 	}
 	func flush {
 		rs0 := 0;

@@ -43,7 +43,8 @@ declare reservation_station_in_order_2way {
 	input Qk1[ROB_TAG_SIZE];
 	input Dest1[ROB_TAG_SIZE];
 	input A1[32];
-	func_in issue(Valid0, Op0, Vj0, Vk0, Qj0, Qk0, Dest0, A0, Valid1, Op1, Vj1, Vk1, Qj1, Qk1, Dest1, A1);
+	func_in issue0(Valid0, Op0, Vj0, Vk0, Qj0, Qk0, Dest0, A0);
+	func_in issue1(Valid1, Op1, Vj1, Vk1, Qj1, Qk1, Dest1, A1);
 	func_in flush();
 	func_out full();
 	func_in stall();

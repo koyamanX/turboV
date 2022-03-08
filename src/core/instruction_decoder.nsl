@@ -65,6 +65,12 @@ module instruction_decoder {
 				uops_bru(inst_opcode, inst_fn, 0, RS_SEL_REG, inst_btype.rs1, RS_SEL_REG, inst_btype.rs2, imm_gen0.imm);
 				branch();
 			}
+			inst_opcode == LOAD: {
+				imm_gen0.i_type(inst);
+				inst_fn = inst_itype.funct3;
+				uops_lsu(inst_opcode, inst_fn, inst_itype.rd, RS_SEL_REG, inst_itype.rs1, RS_SEL_IMM, 0, imm_gen0.imm);
+				load();
+			}
 		}
 	}
 }

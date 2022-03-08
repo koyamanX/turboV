@@ -5,6 +5,7 @@
 #include "reorder_buffer.h"
 #include "instruction_decoder.h"
 #include "reservation_station.h"
+#include "reservation_station_in_order_2way.h"
 #include "register_file.h"
 #include "opcode_map.h"
 #include "bru32.h"
@@ -79,6 +80,8 @@ module turboV {
 	reservation_station alu_rs1;
 	/* Reservation station for BRanch Unit */
 	reservation_station bru_rs0;
+	/* Reservation station for Load-Store Unit (In-order) */
+	reservation_station_in_order_2way lsu_rs0;
 	/* General Purpose Register */
 	register_file gpr;
 	/* Register map table from rs fields to reorder buffer entry */
@@ -104,6 +107,7 @@ module turboV {
 		alu_rs0.flush();
 		alu_rs1.flush();
 		bru_rs0.flush();
+		lsu_rs0.flush();
 		generate(i_ = 0; i_ < 32; i_++) {
 			register_status_table[i_] := 0;
 			register_map_table[i_] := 0;
@@ -176,7 +180,7 @@ module turboV {
 		wire issue_inst1_Vj[32];
 		wire issue_inst1_Vk[32];
 
-		if(!rob.full && !alu_rs0.full && !alu_rs1.full && !bru_rs0.full && !flush) {
+		if(!rob.full && !alu_rs0.full && !alu_rs1.full && !bru_rs0.full && !lsu_rs0.full && !flush) {
 			/* TODO: Optimize RSs free entry check */
 			/* inst0 rs1 read */
 			if(issue_fetch_packet.valid0) {
@@ -247,6 +251,9 @@ module turboV {
 						bru_rs0.issue(
 							issue_fetch_packet.valid0, issue_inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_fetch_packet.pc0 + issue_inst0_imm
 						);
+					}
+					(issue_inst0_opcode == LOAD): {
+						lsu_rs0.issue0(issue_fetch_packet.valid0, issue_inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_inst0_imm);
 					}
 					else: {
 						alu_rs0.issue(
@@ -333,6 +340,9 @@ module turboV {
 						bru_rs0.issue(
 							issue_fetch_packet.valid1, issue_inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_fetch_packet.pc1 + issue_inst1_imm
 						);
+					}
+					(issue_inst1_opcode == LOAD): {
+						lsu_rs0.issue1(issue_fetch_packet.valid1, issue_inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag, issue_inst1_imm);
 					}
 					else: {
 						alu_rs1.issue(
