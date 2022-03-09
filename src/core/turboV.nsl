@@ -9,6 +9,7 @@
 #include "register_file.h"
 #include "opcode_map.h"
 #include "bru32.h"
+#include "memory_order_buffer.h"
 
 module turboV {
 	/* Decode stage */
@@ -52,9 +53,19 @@ module turboV {
 	reg execute_bru0_a[32];
 	reg execute_bru0_b[32];
 	reg execute_bru0_A[32];
+	reg execute_agu0_fn[4];
+	reg execute_agu0_dest[ROB_TAG_SIZE];
+	reg execute_agu0_a[32];
+	reg execute_agu0_b[32];
+	reg execute_agu1_fn[4];
+	reg execute_agu1_dest[ROB_TAG_SIZE];
+	reg execute_agu1_a[32];
+	reg execute_agu1_b[32];
 	proc_name execute_alu0(execute_alu0_fn, execute_alu0_dest, execute_alu0_a, execute_alu0_b);
 	proc_name execute_alu1(execute_alu1_fn, execute_alu1_dest, execute_alu1_a, execute_alu1_b);
 	proc_name execute_bru0(execute_bru0_fn, execute_bru0_dest, execute_bru0_a, execute_bru0_b, execute_bru0_A);
+	proc_name execute_agu0(execute_agu0_fn, execute_agu0_dest, execute_agu0_a, execute_agu0_b);
+	proc_name execute_agu1(execute_agu1_fn, execute_agu1_dest, execute_agu1_a, execute_agu1_b);
 	/* Write Result stage */
 	reg writeresult_alu0_dest[ROB_TAG_SIZE];
 	reg writeresult_alu0_val[32];
@@ -88,6 +99,7 @@ module turboV {
 	mem register_map_table[32][ROB_TAG_SIZE] = {0};
 	/* Register status table indexing with rs feilds */
 	mem register_status_table[32][1] = {0};
+	memory_order_buffer mob;
 
 	func reset {
 		ifu.reset();
@@ -100,10 +112,13 @@ module turboV {
 		execute_alu0.finish();
 		execute_alu1.finish();
 		execute_bru0.finish();
+		execute_agu0.finish();
+		execute_agu1.finish();
 		writeresult_alu0.finish();
 		writeresult_alu1.finish();
 		writeresult_bru0.finish();
 		rob.flush();
+		mob.flush();
 		alu_rs0.flush();
 		alu_rs1.flush();
 		bru_rs0.flush();
@@ -375,6 +390,16 @@ module turboV {
 			execute_bru0.invoke(bru_rs0.dispatch_Op, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_A);
 		}
 	}
+	func lsu_rs0.dispatch0 {
+		if(!flush && !(lsu_rs0.dispatch0_Op == LOAD && mob.ldq_full)) {
+			execute_agu0.invoke(lsu_rs0.dispatch0_Op, lsu_rs0.dispatch0_Dest, lsu_rs0.dispatch0_Vj, lsu_rs0.dispatch0_Vk);
+		}
+	}
+	func lsu_rs0.dispatch1 {
+		if(!flush && !(lsu_rs0.dispatch1_Op == LOAD && mob.ldq_full)) {
+			execute_agu1.invoke(lsu_rs0.dispatch1_Op, lsu_rs0.dispatch1_Dest, lsu_rs0.dispatch1_Vj, lsu_rs0.dispatch1_Vk);
+		}
+	}
 	proc execute_alu0 {
 		alu32 alu0;
 
@@ -400,6 +425,22 @@ module turboV {
 			writeresult_bru0(execute_bru0_dest, bru0.taken, execute_bru0_A);
 		}
 	}
+	proc execute_agu0 {
+		if(!flush) {
+			if(!execute_agu0_fn[3]) {
+				mob.ldq_push(execute_agu0_a + execute_agu0_b, execute_agu0_dest, execute_agu0_dest);
+			}
+			finish();
+		}
+	}
+	proc execute_agu1 {
+		if(!flush) {
+			if(!execute_agu1_fn[3]) {
+				mob.ldq_push(execute_agu1_a + execute_agu1_b, execute_agu1_dest, execute_agu1_dest);
+			}
+			finish();
+		}
+	}
 	proc writeresult_alu0 {
 		if(!flush) {
 			alu_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
@@ -407,6 +448,7 @@ module turboV {
 			bru_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
 			lsu_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
 			rob.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
+			mob.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
 			finish();
 		}
 	}
@@ -417,6 +459,7 @@ module turboV {
 			bru_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
 			lsu_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
 			rob.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
+			mob.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
 			finish();
 		}
 	}
@@ -427,6 +470,7 @@ module turboV {
 			bru_rs0.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
 			lsu_rs0.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
 			rob.CDB2(writeresult_bru0_dest, writeresult_bru0_val, writeresult_bru0_target);
+			mob.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
 			finish();
 		}
 	}

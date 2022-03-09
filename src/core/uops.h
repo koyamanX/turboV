@@ -20,4 +20,6 @@
 #define uOPS_BRU_BLTU	4'b0110
 #define uOPS_BRU_BGEU	4'b0111
 
+#define uOPS_LOAD_WORD	4'b0010
+
 #endif
