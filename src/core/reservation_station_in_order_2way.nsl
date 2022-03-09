@@ -137,6 +137,28 @@ module reservation_station_in_order_2way {
 			}
 		}
 	}
+	func CDB3 {
+		if(!flush) {
+			any {
+				(rs3.Qj0 == CDB3Id) && rs3.Busy0: {rs3.Vj0 := CDB3Val; rs3.Qj0 := 0;}
+				(rs3.Qk0 == CDB3Id) && rs3.Busy0: {rs3.Vk0 := CDB3Val; rs3.Qk0 := 0;}
+				(rs2.Qj0 == CDB3Id) && rs2.Busy0: {rs2.Vj0 := CDB3Val; rs2.Qj0 := 0;}
+				(rs2.Qk0 == CDB3Id) && rs2.Busy0: {rs2.Vk0 := CDB3Val; rs2.Qk0 := 0;}
+				(rs1.Qj0 == CDB3Id) && rs1.Busy0: {rs1.Vj0 := CDB3Val; rs1.Qj0 := 0;}
+				(rs1.Qk0 == CDB3Id) && rs1.Busy0: {rs1.Vk0 := CDB3Val; rs1.Qk0 := 0;}
+				(rs0.Qj0 == CDB3Id) && rs0.Busy0: {rs0.Vj0 := CDB3Val; rs0.Qj0 := 0;}
+				(rs0.Qk0 == CDB3Id) && rs0.Busy0: {rs0.Vk0 := CDB3Val; rs0.Qk0 := 0;}
+				(rs3.Qj1 == CDB3Id) && rs3.Busy1: {rs3.Vj1 := CDB3Val; rs3.Qj1 := 0;}
+				(rs3.Qk1 == CDB3Id) && rs3.Busy1: {rs3.Vk1 := CDB3Val; rs3.Qk1 := 0;}
+				(rs2.Qj1 == CDB3Id) && rs2.Busy1: {rs2.Vj1 := CDB3Val; rs2.Qj1 := 0;}
+				(rs2.Qk1 == CDB3Id) && rs2.Busy1: {rs2.Vk1 := CDB3Val; rs2.Qk1 := 0;}
+				(rs1.Qj1 == CDB3Id) && rs1.Busy1: {rs1.Vj1 := CDB3Val; rs1.Qj1 := 0;}
+				(rs1.Qk1 == CDB3Id) && rs1.Busy1: {rs1.Vk1 := CDB3Val; rs1.Qk1 := 0;}
+				(rs0.Qj1 == CDB3Id) && rs0.Busy1: {rs0.Vj1 := CDB3Val; rs0.Qj1 := 0;}
+				(rs0.Qk1 == CDB3Id) && rs0.Busy1: {rs0.Vk1 := CDB3Val; rs0.Qk1 := 0;}
+			}
+		}
+	}
 	any {
 		head[LOG2_RS_IN_ORDER_2WAY_NUM_OF_ENTRIES-1:0] == 0: dispatch_entry = rs0;
 		head[LOG2_RS_IN_ORDER_2WAY_NUM_OF_ENTRIES-1:0] == 1: dispatch_entry = rs1;

@@ -107,7 +107,20 @@ module reservation_station {
 			}
 		}
 	}
-
+	func CDB3 {
+		if(!flush) {
+			any {
+				(rs3.Qj == CDB3Id) && rs3.Busy: {rs3.Vj := CDB3Val; rs3.Qj := 0;}
+				(rs3.Qk == CDB3Id) && rs3.Busy: {rs3.Vk := CDB3Val; rs3.Qk := 0;}
+				(rs2.Qj == CDB3Id) && rs2.Busy: {rs2.Vj := CDB3Val; rs2.Qj := 0;}
+				(rs2.Qk == CDB3Id) && rs2.Busy: {rs2.Vk := CDB3Val; rs2.Qk := 0;}
+				(rs1.Qj == CDB3Id) && rs1.Busy: {rs1.Vj := CDB3Val; rs1.Qj := 0;}
+				(rs1.Qk == CDB3Id) && rs1.Busy: {rs1.Vk := CDB3Val; rs1.Qk := 0;}
+				(rs0.Qj == CDB3Id) && rs0.Busy: {rs0.Vj := CDB3Val; rs0.Qj := 0;}
+				(rs0.Qk == CDB3Id) && rs0.Busy: {rs0.Vk := CDB3Val; rs0.Qk := 0;}
+			}
+		}
+	}
 	func flush {
 		rs3 := 0;
 		rs2 := 0;

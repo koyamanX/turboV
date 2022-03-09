@@ -69,6 +69,9 @@ declare reservation_station_in_order_2way {
 	input CDB2Id[ROB_TAG_SIZE];
 	input CDB2Val[32];
 	func_in CDB2(CDB2Id, CDB2Val);
+	input CDB3Id[ROB_TAG_SIZE];
+	input CDB3Val[32];
+	func_in CDB3(CDB3Id, CDB3Val);
 }
 
 #endif

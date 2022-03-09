@@ -405,6 +405,7 @@ module turboV {
 			alu_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
 			alu_rs1.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
 			bru_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
+			lsu_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
 			rob.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
 			finish();
 		}
@@ -414,6 +415,7 @@ module turboV {
 			alu_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
 			alu_rs1.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
 			bru_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
+			lsu_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
 			rob.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
 			finish();
 		}
@@ -423,6 +425,7 @@ module turboV {
 			alu_rs0.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
 			alu_rs1.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
 			bru_rs0.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
+			lsu_rs0.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
 			rob.CDB2(writeresult_bru0_dest, writeresult_bru0_val, writeresult_bru0_target);
 			finish();
 		}
