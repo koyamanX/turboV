@@ -161,6 +161,20 @@ module reorder_buffer {
 			}
 		}
 	}
+	func CDB3 {
+		if(!flush) {
+			any {
+				CDB3Id == 1: {rob0.Value0 := CDB3Val; rob0.Busy0 := 0;}
+				CDB3Id == 2: {rob0.Value1 := CDB3Val; rob0.Busy1 := 0;}
+				CDB3Id == 3: {rob1.Value0 := CDB3Val; rob1.Busy0 := 0;}
+				CDB3Id == 4: {rob1.Value1 := CDB3Val; rob1.Busy1 := 0;}
+				CDB3Id == 5: {rob2.Value0 := CDB3Val; rob2.Busy0 := 0;}
+				CDB3Id == 6: {rob2.Value1 := CDB3Val; rob2.Busy1 := 0;}
+				CDB3Id == 7: {rob3.Value0 := CDB3Val; rob3.Busy0 := 0;}
+				CDB3Id == 8: {rob3.Value1 := CDB3Val; rob3.Busy1 := 0;}
+			}
+		}
+	}
 	any {
 		head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 0: commit_entry = rob0;
 		head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 1: commit_entry = rob1;

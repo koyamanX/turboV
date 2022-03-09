@@ -60,6 +60,9 @@ declare reorder_buffer {
 	input CDB2Val[32];
 	input CDB2Target[32];
 	func_in CDB2(CDB2Id, CDB2Val, CDB2Target);
+	input CDB3Id[ROB_TAG_SIZE];
+	input CDB3Val[32];
+	func_in CDB3(CDB3Id, CDB3Val);
 	output read_operandA_val[32];
 	input read_operandA_id[ROB_TAG_SIZE];
 	output read_operandA_busy;
