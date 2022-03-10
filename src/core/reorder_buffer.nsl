@@ -181,7 +181,7 @@ module reorder_buffer {
 		head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 2: commit_entry = rob2;
 		head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 3: commit_entry = rob3;
 	}
-	if((commit_entry.Valid0 || commit_entry.Valid1) && !commit_entry.Busy0 && !commit_entry.Busy1) {
+	if(!commit_stall && (commit_entry.Valid0 || commit_entry.Valid1) && !commit_entry.Busy0 && !commit_entry.Busy1) {
 		if(!flush) {
 			// TODO:
 			any {

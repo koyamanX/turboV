@@ -39,6 +39,7 @@ declare reorder_buffer {
 	func_in issue(valid0, pc0, inst0, dest0, op0, valid1, pc1, inst1, dest1, op1): tag;
 	func_in flush();
 	func_out full();
+	func_in commit_stall();
 	output commit_Dest0[5];
 	output commit_Value0[32];
 	output commit_Op0[7];
