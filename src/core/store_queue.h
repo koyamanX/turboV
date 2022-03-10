@@ -1,19 +1,11 @@
-#ifndef MEMORY_ORDER_BUFFER_H
-#define MEMORY_ORDER_BUFFER_H
+#ifndef STORE_QUEUE_H
+#define STORE_QUEUE_H
 
 #include "reorder_buffer.h"
 
 #define MOB_NUM_OF_ENTRIES 4.0
 #define LOG2_MOB_NUM_OF_ENTRIES _int(_log10(MOB_NUM_OF_LDQ_ENTRIES)/_log10(2.0))
 
-struct load_queue_t {
-	Valid;
-	A[32];
-	Dest[LOG2_ROB_NUM_OF_ENTRIES];
-	ValidData;
-	Data[32];
-	RobId[LOG2_ROB_NUM_OF_ENTRIES];
-};
 struct store_queue_t {
 	Valid;
 	A[32];
@@ -22,18 +14,13 @@ struct store_queue_t {
 	RobId[LOG2_ROB_NUM_OF_ENTRIES];
 };
 
-declare memory_order_buffer {
-	input ldq_A[32];
-	input ldq_Dest[LOG2_ROB_NUM_OF_ENTRIES];
-	input ldq_RobId[LOG2_ROB_NUM_OF_ENTRIES];
-	func_in ldq_push(ldq_A, ldq_Dest, ldq_RobId);	
-	func_out ldq_full();
-	input stq_A[32];
-	input stq_Qj[LOG2_ROB_NUM_OF_ENTRIES];
-	input stq_Vj[32];
-	input stq_RobId[LOG2_ROB_NUM_OF_ENTRIES];
-	func_in stq_push(stq_A, stq_Qj, stq_Vj, stq_RobId);
-	func_out stq_full();
+declare store_queue {
+	input A[32];
+	input Qj[LOG2_ROB_NUM_OF_ENTRIES];
+	input Vj[32];
+	input RobId[LOG2_ROB_NUM_OF_ENTRIES];
+	func_in push(A, Qj, Vj, RobId);
+	func_out full();
 	func_in flush();
 	input CDB0Id[ROB_TAG_SIZE];
 	input CDB0Val[32];

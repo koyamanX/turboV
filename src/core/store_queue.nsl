@@ -1,67 +1,37 @@
-#include "memory_order_buffer.h"
+#include "store_queue.h"
 
-module memory_order_buffer {
+module store_queue {
 	store_queue_t reg stq0 = 0;
 	store_queue_t reg stq1 = 0;
 	store_queue_t reg stq2 = 0;
 	store_queue_t reg stq3 = 0;
-	load_queue_t reg ldq0 = 0;
-	load_queue_t reg ldq1 = 0;
-	load_queue_t reg ldq2 = 0;
-	load_queue_t reg ldq3 = 0;
 
-	func stq_push {
-		store_queue_t wire new_stq_entry;
+	func push {
+		store_queue_t wire new_entry;
 
 		if(!flush) {
-			new_stq_entry.Valid = 1;
-			new_stq_entry.A = stq_A;
-			new_stq_entry.Qj = stq_Qj;
-			new_stq_entry.Vj = stq_Vj;
-			new_stq_entry.RobId = stq_RobId;
+			new_entry.Valid = 1;
+			new_entry.A = A;
+			new_entry.Qj = Qj;
+			new_entry.Vj = Vj;
+			new_entry.RobId = RobId;
 
 			alt {
-				stq0.Valid: {stq0 := new_stq_entry;}
-				stq1.Valid: {stq1 := new_stq_entry;}
-				stq2.Valid: {stq2 := new_stq_entry;}
-				stq3.Valid: {stq3 := new_stq_entry;}
+				stq0.Valid: {stq0 := new_entry;}
+				stq1.Valid: {stq1 := new_entry;}
+				stq2.Valid: {stq2 := new_entry;}
+				stq3.Valid: {stq3 := new_entry;}
 			}
 		}
 	}
 	if(!flush && stq0.Valid && stq1.Valid && stq2.Valid && stq3.Valid) {
-		stq_full();
-	}
-	func ldq_push {
-		load_queue_t wire new_ldq_entry;
-
-		if(!flush) {
-			new_ldq_entry.Valid = 1;
-			new_ldq_entry.A = ldq_A;
-			new_ldq_entry.Dest = ldq_Dest;
-			new_ldq_entry.RobId = ldq_RobId;
-			new_ldq_entry.ValidData = 0;
-			new_ldq_entry.Data = 0;
-
-			alt {
-				ldq0.Valid: {ldq0 := new_ldq_entry;}
-				ldq1.Valid: {ldq1 := new_ldq_entry;}
-				ldq2.Valid: {ldq2 := new_ldq_entry;}
-				ldq3.Valid: {ldq3 := new_ldq_entry;}
-			}
-		}
-	}
-	if(!flush && ldq0.Valid && ldq1.Valid && ldq2.Valid && ldq3.Valid) {
-		ldq_full();
+		full();
 	}
 	func flush {
 		stq0 := 0;
 		stq1 := 0;
 		stq2 := 0;
 		stq3 := 0;
-		ldq0 := 0;
-		ldq1 := 0;
-		ldq2 := 0;
-		ldq3 := 0;
 	}
 	func CDB0 {
 		if(!flush) {
@@ -106,10 +76,10 @@ module memory_order_buffer {
 	func commit {
 		if(!flush) {
 			any {
-				(stq0.RobId == commitId) && stq0.Valid: {stq0.Valid := 0;}
-				(stq1.RobId == commitId) && stq1.Valid: {stq1.Valid := 0;}
-				(stq2.RobId == commitId) && stq2.Valid: {stq2.Valid := 0;}
-				(stq3.RobId == commitId) && stq3.Valid: {stq3.Valid := 0;}
+				(stq0.RobId == commitId) && stq0.Valid && (stq0.Qj == 0): {stq0.Valid := 0;}
+				(stq1.RobId == commitId) && stq1.Valid && (stq1.Qj == 0): {stq1.Valid := 0;}
+				(stq2.RobId == commitId) && stq2.Valid && (stq2.Qj == 0): {stq2.Valid := 0;}
+				(stq3.RobId == commitId) && stq3.Valid && (stq3.Qj == 0): {stq3.Valid := 0;}
 			}
 		}
 	}

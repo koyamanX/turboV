@@ -9,7 +9,8 @@
 #include "register_file.h"
 #include "opcode_map.h"
 #include "bru32.h"
-#include "memory_order_buffer.h"
+#include "store_queue.h"
+#include "load_queue.h"
 
 module turboV {
 	/* Decode stage */
@@ -99,7 +100,8 @@ module turboV {
 	mem register_map_table[32][ROB_TAG_SIZE] = {0};
 	/* Register status table indexing with rs feilds */
 	mem register_status_table[32][1] = {0};
-	memory_order_buffer mob;
+	store_queue stq;
+	load_queue ldq;
 
 	func reset {
 		ifu.reset();
@@ -118,7 +120,8 @@ module turboV {
 		writeresult_alu1.finish();
 		writeresult_bru0.finish();
 		rob.flush();
-		mob.flush();
+		stq.flush();
+		ldq.flush();
 		alu_rs0.flush();
 		alu_rs1.flush();
 		bru_rs0.flush();
@@ -391,12 +394,12 @@ module turboV {
 		}
 	}
 	func lsu_rs0.dispatch0 {
-		if(!flush && !(lsu_rs0.dispatch0_Op == LOAD && mob.ldq_full)) {
+		if(!flush && !stq.full && !ldq.full) {
 			execute_agu0.invoke(lsu_rs0.dispatch0_Op, lsu_rs0.dispatch0_Dest, lsu_rs0.dispatch0_Vj, lsu_rs0.dispatch0_Vk);
 		}
 	}
 	func lsu_rs0.dispatch1 {
-		if(!flush && !(lsu_rs0.dispatch1_Op == LOAD && mob.ldq_full)) {
+		if(!flush && !stq.full && !ldq.full) {
 			execute_agu1.invoke(lsu_rs0.dispatch1_Op, lsu_rs0.dispatch1_Dest, lsu_rs0.dispatch1_Vj, lsu_rs0.dispatch1_Vk);
 		}
 	}
@@ -428,7 +431,9 @@ module turboV {
 	proc execute_agu0 {
 		if(!flush) {
 			if(!execute_agu0_fn[3]) {
-				mob.ldq_push(execute_agu0_a + execute_agu0_b, execute_agu0_dest, execute_agu0_dest);
+				ldq.push(execute_agu0_a + execute_agu0_b, execute_agu0_dest);
+			} else {
+				//stq.push(execute_agu0_a + execute_agu0_b, execute_agu0_dest, execute_agu0_dest);
 			}
 			finish();
 		}
@@ -436,7 +441,9 @@ module turboV {
 	proc execute_agu1 {
 		if(!flush) {
 			if(!execute_agu1_fn[3]) {
-				mob.ldq_push(execute_agu1_a + execute_agu1_b, execute_agu1_dest, execute_agu1_dest);
+				ldq.push(execute_agu1_a + execute_agu1_b, execute_agu1_dest);
+			} else {
+				//stq.push(execute_agu1_a + execute_agu1_b, execute_agu1_dest, execute_agu1_dest);
 			}
 			finish();
 		}
@@ -448,7 +455,7 @@ module turboV {
 			bru_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
 			lsu_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
 			rob.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
-			mob.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
+			stq.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
 			finish();
 		}
 	}
@@ -459,7 +466,7 @@ module turboV {
 			bru_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
 			lsu_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
 			rob.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
-			mob.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
+			stq.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
 			finish();
 		}
 	}
@@ -470,7 +477,7 @@ module turboV {
 			bru_rs0.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
 			lsu_rs0.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
 			rob.CDB2(writeresult_bru0_dest, writeresult_bru0_val, writeresult_bru0_target);
-			mob.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
+			stq.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
 			finish();
 		}
 	}

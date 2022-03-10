@@ -1,0 +1,34 @@
+#include "load_queue.h"
+
+module load_queue {
+	load_queue_t reg ldq0 = 0;
+	load_queue_t reg ldq1 = 0;
+	load_queue_t reg ldq2 = 0;
+	load_queue_t reg ldq3 = 0;
+
+	func push {
+		load_queue_t wire new_entry;
+
+		if(!flush) {
+			new_entry.Valid = 1;
+			new_entry.A = A;
+			new_entry.RobId = RobId;
+
+			alt {
+				ldq0.Valid: {ldq0 := new_entry;}
+				ldq1.Valid: {ldq1 := new_entry;}
+				ldq2.Valid: {ldq2 := new_entry;}
+				ldq3.Valid: {ldq3 := new_entry;}
+			}
+		}
+	}
+	if(!flush && ldq0.Valid && ldq1.Valid && ldq2.Valid && ldq3.Valid) {
+		full();
+	}
+	func flush {
+		ldq0 := 0;
+		ldq1 := 0;
+		ldq2 := 0;
+		ldq3 := 0;
+	}
+}
