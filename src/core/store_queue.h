@@ -12,6 +12,7 @@ struct store_queue_t {
 	Qj[LOG2_ROB_NUM_OF_ENTRIES];
 	Vj[32];
 	RobId[LOG2_ROB_NUM_OF_ENTRIES];
+	Commited;
 };
 
 declare store_queue {
