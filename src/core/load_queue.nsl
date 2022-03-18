@@ -11,8 +11,9 @@ module load_queue {
 
 		if(!flush) {
 			new_entry.Valid = 1;
-			new_entry.A = A;
-			new_entry.RobId = RobId;
+			new_entry.A = push_A;
+			new_entry.Op = push_Op;
+			new_entry.RobId = push_RobId;
 
 			alt {
 				ldq0.Valid: {ldq0 := new_entry;}
@@ -24,6 +25,9 @@ module load_queue {
 	}
 	if(!flush && ldq0.Valid && ldq1.Valid && ldq2.Valid && ldq3.Valid) {
 		full();
+	}
+	if(!flush && (!ldq0.Valid && !ldq1.Valid && !ldq2.Valid && !ldq3.Valid)) {
+		empty();
 	}
 	func flush {
 		ldq0 := 0;

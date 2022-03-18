@@ -9,17 +9,19 @@
 struct load_queue_t {
 	Valid;
 	A[32];
+	Op[7];
 	RobId[LOG2_ROB_NUM_OF_ENTRIES];
 };
 
 declare load_queue {
-	input A[32];
-	input RobId[LOG2_ROB_NUM_OF_ENTRIES];
-	func_in push(A, RobId);
+	input push_A[32];
+	input push_Op[7];
+	input push_RobId[LOG2_ROB_NUM_OF_ENTRIES];
+	func_in push(push_A, push_Op, push_RobId);
 	func_out full();
+	func_out empty();
 	func_in flush();
 	func_in stall();
-	func_out searchSTQ();
 }
 
 #endif
