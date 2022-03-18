@@ -543,5 +543,40 @@ module turboV {
 		}
 	}
 
-	WISHBONE_MASTER_IF(ifu);
+	lsu.CLK_I = CLK_I;
+	lsu.RST_I = RST_I;
+	lsu.DAT_I = DAT_I;
+	if(ACK_I) lsu.ACK_I();
+	if(ERR_I) lsu.ERR_I();
+	if(RTY_I) lsu.RTY_I();
+	if(STALL_I) lsu.STALL_I();
+
+	ifu.CLK_I = CLK_I;
+	ifu.RST_I = RST_I;
+	ifu.DAT_I = DAT_I;
+	if(ACK_I) ifu.ACK_I();
+	if(ERR_I) ifu.ERR_I();
+	if(RTY_I) ifu.RTY_I();
+	if(STALL_I) ifu.STALL_I();
+
+	alt {
+		((lsu.CYC_O && lsu.STB_O) || lsu.LOCK_O): {
+			ADR_O = lsu.ADR_O;
+			SEL_O = lsu.SEL_O;
+			DAT_O = lsu.DAT_O;
+			if(lsu.CYC_O) CYC_O();
+			if(lsu.STB_O) STB_O();
+			if(lsu.WE_O) WE_O();
+			if(lsu.LOCK_O) LOCK_O();
+		}
+		((ifu.CYC_O && ifu.STB_O) || ifu.LOCK_O): {
+			ADR_O = ifu.ADR_O;
+			SEL_O = ifu.SEL_O;
+			DAT_O = ifu.DAT_O;
+			if(ifu.CYC_O) CYC_O();
+			if(ifu.STB_O) STB_O();
+			if(ifu.WE_O) WE_O();
+			if(ifu.LOCK_O) LOCK_O();
+		}
+	}
 }
