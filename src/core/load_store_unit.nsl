@@ -10,24 +10,71 @@ module load_store_unit {
 	wire load_uOp[7];
 	wire load_RobId[LOG2_ROB_NUM_OF_ENTRIES];
 	func_self load(load_A, load_uOp, load_RobId);
+	reg memory_A[32];
+	reg memory_uOp[7];
+	reg memory_RobId[LOG2_ROB_NUM_OF_ENTRIES];
+	proc_name memory(memory_A, memory_uOp, memory_RobId);
+	load_queue_t wire ldq_entry;
 
 	func issue0 {
 		/* TLB access, always va == pa for now (TLB hit) */
-		if(issue0_uOp == uOPS_LOAD_WORD) {
+		if(!flush && issue0_uOp == uOPS_LOAD_WORD) {
 			load(issue0_A, issue0_uOp, issue0_RobId);
 		}
 	}
 	func issue1 {
 		/* TLB access, always va == pa for now (TLB hit) */
-		if(issue1_uOp == uOPS_LOAD_WORD) {
+		if(!flush && issue1_uOp == uOPS_LOAD_WORD) {
 			load(issue1_A, issue1_uOp, issue1_RobId);
 		}
 	}
 	func load {
 		ldq.push(load_A, load_uOp, load_RobId);	
 	}
-	if(ldq.full) {
+	if(!flush && ldq.full) {
 		full();
+	}
+	if(!flush && !memory) {
+		alt {
+			ldq.full: {
+				ldq.pop();
+				ldq_entry = ldq.pop_ldq_entry;
+				memory(ldq_entry.A, ldq_entry.Op, ldq_entry.RobId);
+			}
+		}
+	}
+	proc memory {
+		state_name memory_req, memory_wait;
+
+		state memory_req {
+			wb_master_if.req_read(memory_A, 0xff);
+			if(wb_master_if.rsp_valid) {
+				CDBOut(memory_RobId, wb_master_if.rsp_data);
+				if(!ldq.empty) {
+					ldq.pop();
+					ldq_entry = ldq.pop_ldq_entry;
+					memory(ldq_entry.A, ldq_entry.Op, ldq_entry.RobId);
+				} else {
+					finish();
+				}
+			} else {
+				goto memory_wait;
+			}
+		}
+		state memory_wait {
+			if(wb_master_if.rsp_valid) {
+				CDBOut(memory_RobId, wb_master_if.rsp_data);
+				if(!ldq.empty) {
+					ldq.pop();
+					ldq_entry = ldq.pop_ldq_entry;
+					memory(ldq_entry.A, ldq_entry.Op, ldq_entry.RobId);
+				} else {
+					finish();
+				}
+				goto memory_req;
+			}
+		}
+		stall();
 	}
 	func flush {
 		ldq.flush();

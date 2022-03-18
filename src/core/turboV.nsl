@@ -150,7 +150,8 @@ module turboV {
 				idec0.decode(decode_fetch_packet1.inst0);
 				idec1.decode(decode_fetch_packet1.inst1);
 				// Check if structural hazard occurs for FUs.
-				if((idec0.uops_bru && decode_fetch_packet1.valid0) && (idec1.uops_bru && decode_fetch_packet1.valid1)) {
+				if(((idec0.uops_bru && decode_fetch_packet1.valid0) && (idec1.uops_bru && decode_fetch_packet1.valid1))
+					|| ((idec0.load && decode_fetch_packet1.valid0) && (idec1.load && decode_fetch_packet1.valid1))) {
 					// If hazard occurs, send first instructions to issue.
 					issue.invoke(
 						{decode_fetch_packet1.pc0, 0x00000000, decode_fetch_packet1.npc1, decode_fetch_packet1.inst0, 0x00000000, decode_fetch_packet1.pred0, 1'b0, decode_fetch_packet1.valid0, 1'b0},

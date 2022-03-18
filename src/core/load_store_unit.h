@@ -36,6 +36,7 @@ declare load_store_unit {
 	func_out CDBOut(CDBOutId, CDBOutVal);
 	input commitId[LOG2_ROB_NUM_OF_ENTRIES];
 	func_in commit(commitId);
+	func_out stall();
 
 	WISHBONE_GEN_MASTER_IF(32, 64, 8)
 }
