@@ -10,14 +10,14 @@ struct load_queue_t {
 	Valid;
 	A[32];
 	Op[7];
-	RobId[LOG2_ROB_NUM_OF_ENTRIES];
-#define SIZEOF_LOAD_QUEUE_T 40+LOG2_ROB_NUM_OF_ENTRIES
+	RobId[ROB_TAG_SIZE];
+#define SIZEOF_LOAD_QUEUE_T 40+ROB_TAG_SIZE
 };
 
 declare load_queue {
 	input push_A[32];
 	input push_Op[7];
-	input push_RobId[LOG2_ROB_NUM_OF_ENTRIES];
+	input push_RobId[ROB_TAG_SIZE];
 	func_in push(push_A, push_Op, push_RobId);
 	output pop_ldq_entry[SIZEOF_LOAD_QUEUE_T];
 	func_in pop(): pop_ldq_entry;

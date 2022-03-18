@@ -359,7 +359,7 @@ module turboV {
 						);
 					}
 					(issue_inst1_opcode == LOAD): {
-						lsu_rs0.issue1(issue_fetch_packet.valid1, issue_inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag, issue_inst1_imm);
+						lsu_rs0.issue1(issue_fetch_packet.valid1, issue_inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_inst1_imm);
 					}
 					else: {
 						alu_rs1.issue(

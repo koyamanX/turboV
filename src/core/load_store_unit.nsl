@@ -8,11 +8,11 @@ module load_store_unit {
 	wishbone_master wb_master_if;
 	wire load_A[32];
 	wire load_uOp[7];
-	wire load_RobId[LOG2_ROB_NUM_OF_ENTRIES];
+	wire load_RobId[ROB_TAG_SIZE];
 	func_self load(load_A, load_uOp, load_RobId);
 	reg memory_A[32];
 	reg memory_uOp[7];
-	reg memory_RobId[LOG2_ROB_NUM_OF_ENTRIES];
+	reg memory_RobId[ROB_TAG_SIZE];
 	proc_name memory(memory_A, memory_uOp, memory_RobId);
 	load_queue_t wire ldq_entry;
 
