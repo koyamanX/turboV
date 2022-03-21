@@ -166,15 +166,14 @@ module reservation_station_in_order_2way {
 		head[LOG2_RS_IN_ORDER_2WAY_NUM_OF_ENTRIES-1:0] == 3: dispatch_entry = rs3;
 	}
 	if((dispatch_entry.Busy0 || dispatch_entry.Busy1)
-		&& ((dispatch_entry.Qj0 == 0) && (dispatch_entry.Qk0 == 0)
-		&& (dispatch_entry.Qj1 == 0) && (dispatch_entry.Qk1 == 0))) {
+		&& ((dispatch_entry.Qj0 == 0) && (dispatch_entry.Qj1 == 0))) {
 		if(!flush) {
 			any {
 				dispatch_entry.Busy0: {
-					dispatch0(dispatch_entry.Op0, dispatch_entry.Dest0, dispatch_entry.Vj0, dispatch_entry.Vk0, dispatch_entry.A0);
+					dispatch0(dispatch_entry.Op0, dispatch_entry.Dest0, dispatch_entry.Vj0, dispatch_entry.Qk0, dispatch_entry.Vk0, dispatch_entry.A0);
 				}
 				dispatch_entry.Busy1: {
-					dispatch1(dispatch_entry.Op1, dispatch_entry.Dest1, dispatch_entry.Vj1, dispatch_entry.Vk1, dispatch_entry.A1);
+					dispatch1(dispatch_entry.Op1, dispatch_entry.Dest1, dispatch_entry.Vj1, dispatch_entry.Qk1, dispatch_entry.Vk1, dispatch_entry.A1);
 				}
 			}
 			any {
