@@ -9,7 +9,13 @@ module store_queue {
 	store_queue_t reg stq5 = 0;
 	store_queue_t reg stq6 = 0;
 	store_queue_t reg stq7 = 0;
+	reg tail[LOG2_STQ_NUM_OF_ENTRIES+1] = 0;
+	reg head[LOG2_STQ_NUM_OF_ENTRIES+1] = 0;
+	wire next_tail[LOG2_STQ_NUM_OF_ENTRIES+1];
+	wire next_head[LOG2_STQ_NUM_OF_ENTRIES+1];
 
+	next_tail = tail + 1;
+	next_head = head + 1;
 	func push {
 		store_queue_t wire new_entry;
 
@@ -21,20 +27,26 @@ module store_queue {
 			new_entry.RobId = RobId;
 			new_entry.Commited = 0;
 
-			alt {
-				stq0.Valid: {stq0 := new_entry;}
-				stq1.Valid: {stq1 := new_entry;}
-				stq2.Valid: {stq2 := new_entry;}
-				stq3.Valid: {stq3 := new_entry;}
-				stq4.Valid: {stq4 := new_entry;}
-				stq5.Valid: {stq5 := new_entry;}
-				stq6.Valid: {stq6 := new_entry;}
-				stq7.Valid: {stq7 := new_entry;}
+			any {
+				tail[LOG2_STQ_NUM_OF_ENTRIES-1:0] == 0: {stq0 := new_entry;}
+				tail[LOG2_STQ_NUM_OF_ENTRIES-1:0] == 1: {stq1 := new_entry;}
+				tail[LOG2_STQ_NUM_OF_ENTRIES-1:0] == 2: {stq2 := new_entry;}
+				tail[LOG2_STQ_NUM_OF_ENTRIES-1:0] == 3: {stq3 := new_entry;}
+				tail[LOG2_STQ_NUM_OF_ENTRIES-1:0] == 4: {stq4 := new_entry;}
+				tail[LOG2_STQ_NUM_OF_ENTRIES-1:0] == 5: {stq5 := new_entry;}
+				tail[LOG2_STQ_NUM_OF_ENTRIES-1:0] == 6: {stq6 := new_entry;}
+				tail[LOG2_STQ_NUM_OF_ENTRIES-1:0] == 7: {stq7 := new_entry;}
 			}
+			tail := next_tail;
 		}
 	}
-	if(!flush && stq0.Valid && stq1.Valid && stq2.Valid && stq3.Valid && stq4.Valid && stq5.Valid && stq6.Valid && stq7.Valid) {
-		full();
+	if(!flush) {
+		if((tail[LOG2_STQ_NUM_OF_ENTRIES-1:0] == head[LOG2_STQ_NUM_OF_ENTRIES-1:0]) && (tail[LOG2_STQ_NUM_OF_ENTRIES] != head[LOG2_STQ_NUM_OF_ENTRIES])) {
+			full();
+		}
+		if(tail == head) {
+			empty();
+		}
 	}
 	func flush {
 		stq0 := 0;
@@ -45,6 +57,8 @@ module store_queue {
 		stq5 := 0;
 		stq6 := 0;
 		stq7 := 0;
+		head := 0;
+		tail := 0;
 	}
 	func CDB0 {
 		if(!flush) {

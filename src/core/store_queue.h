@@ -3,23 +3,24 @@
 
 #include "reorder_buffer.h"
 
-#define MOB_NUM_OF_ENTRIES 4.0
-#define LOG2_MOB_NUM_OF_ENTRIES _int(_log10(MOB_NUM_OF_LDQ_ENTRIES)/_log10(2.0))
+#define MOB_NUM_OF_ENTRIES 8.0
+#define LOG2_STQ_NUM_OF_ENTRIES _int(_log10(STQ_NUM_OF_ENTRIES)/_log10(2.0))
 
 struct store_queue_t {
 	Valid;
 	A[32];
-	Qj[LOG2_ROB_NUM_OF_ENTRIES];
+	Qj[ROB_TAG_SIZE];
 	Vj[32];
-	RobId[LOG2_ROB_NUM_OF_ENTRIES];
+	RobId[ROB_TAG_SIZE];
 	Commited;
+#define SIZEOF_STORE_QUEUE_T 64+2+ROB_TAG_SIZE+ROB_TAG_SIZE
 };
 
 declare store_queue {
 	input A[32];
-	input Qj[LOG2_ROB_NUM_OF_ENTRIES];
+	input Qj[ROB_TAG_SIZE];
 	input Vj[32];
-	input RobId[LOG2_ROB_NUM_OF_ENTRIES];
+	input RobId[ROB_TAG_SIZE];
 	func_in push(A, Qj, Vj, RobId);
 	func_out full();
 	func_in flush();
