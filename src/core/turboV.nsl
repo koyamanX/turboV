@@ -57,15 +57,19 @@ module turboV {
 	reg execute_lsu0_dest[ROB_TAG_SIZE];
 	reg execute_lsu0_a[32];
 	reg execute_lsu0_b[32];
+	reg execute_lsu0_Qk[ROB_TAG_SIZE];
+	reg execute_lsu0_Vk[32];
 	reg execute_lsu1_fn[7];
 	reg execute_lsu1_dest[ROB_TAG_SIZE];
 	reg execute_lsu1_a[32];
 	reg execute_lsu1_b[32];
+	reg execute_lsu1_Qk[ROB_TAG_SIZE];
+	reg execute_lsu1_Vk[32];
 	proc_name execute_alu0(execute_alu0_fn, execute_alu0_dest, execute_alu0_a, execute_alu0_b);
 	proc_name execute_alu1(execute_alu1_fn, execute_alu1_dest, execute_alu1_a, execute_alu1_b);
 	proc_name execute_bru0(execute_bru0_fn, execute_bru0_dest, execute_bru0_a, execute_bru0_b, execute_bru0_A);
-	proc_name execute_lsu0(execute_lsu0_fn, execute_lsu0_dest, execute_lsu0_a, execute_lsu0_b);
-	proc_name execute_lsu1(execute_lsu1_fn, execute_lsu1_dest, execute_lsu1_a, execute_lsu1_b);
+	proc_name execute_lsu0(execute_lsu0_fn, execute_lsu0_dest, execute_lsu0_a, execute_lsu0_b, execute_lsu0_Qk, execute_lsu0_Vk);
+	proc_name execute_lsu1(execute_lsu1_fn, execute_lsu1_dest, execute_lsu1_a, execute_lsu1_b, execute_lsu1_Qk, execute_lsu1_Vk);
 	/* Write Result stage */
 	reg writeresult_alu0_dest[ROB_TAG_SIZE];
 	reg writeresult_alu0_val[32];
@@ -394,12 +398,12 @@ module turboV {
 	}
 	func lsu_rs0.dispatch0 {
 		if(!flush && !lsu.full) {
-			execute_lsu0.invoke(lsu_rs0.dispatch0_Op, lsu_rs0.dispatch0_Dest, lsu_rs0.dispatch0_Vj, lsu_rs0.dispatch0_Vk);
+			execute_lsu0.invoke(lsu_rs0.dispatch0_Op, lsu_rs0.dispatch0_Dest, lsu_rs0.dispatch0_Vj, lsu_rs0.dispatch0_A, lsu_rs0.dispatch0_Qk, lsu_rs0.dispatch0_Vk);
 		}
 	}
 	func lsu_rs0.dispatch1 {
 		if(!flush && !lsu.full) {
-			execute_lsu1.invoke(lsu_rs0.dispatch1_Op, lsu_rs0.dispatch1_Dest, lsu_rs0.dispatch1_Vj, lsu_rs0.dispatch1_Vk);
+			execute_lsu1.invoke(lsu_rs0.dispatch1_Op, lsu_rs0.dispatch1_Dest, lsu_rs0.dispatch1_Vj, lsu_rs0.dispatch1_A, lsu_rs0.dispatch1_Qk, lsu_rs0.dispatch1_Vk);
 		}
 	}
 	proc execute_alu0 {
@@ -429,13 +433,13 @@ module turboV {
 	}
 	proc execute_lsu0 {
 		if(!flush && !lsu.full) {
-			lsu.issue0(execute_lsu0_a + execute_lsu0_b, execute_lsu0_fn, 0, 0, execute_lsu0_dest);
+			lsu.issue0(execute_lsu0_a + execute_lsu0_b, execute_lsu0_fn, execute_lsu0_Qk, execute_lsu0_Vk, execute_lsu0_dest);
 			finish();
 		}
 	}
 	proc execute_lsu1 {
 		if(!flush && !lsu.full) {
-			lsu.issue1(execute_lsu1_a + execute_lsu1_b, execute_lsu1_fn, 0, 0, execute_lsu1_dest);
+			lsu.issue1(execute_lsu1_a + execute_lsu1_b, execute_lsu1_fn, execute_lsu1_Qk, execute_lsu1_Vk, execute_lsu1_dest);
 			finish();
 		}
 	}
