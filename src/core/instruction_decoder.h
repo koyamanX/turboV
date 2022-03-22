@@ -23,6 +23,7 @@ declare instruction_decoder {
 	func_out uops_illegal_instruction();
 	func_out jump();
 	func_out load();
+	func_out store();
 	func_out branch();
 }
 
