@@ -21,5 +21,6 @@
 #define uOPS_BRU_BGEU	4'b0111
 
 #define uOPS_LOAD_WORD	4'b0010
+#define uOPS_STORE_WORD	4'b1010
 
 #endif
