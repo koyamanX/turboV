@@ -22,10 +22,11 @@ module store_queue {
 		if(!flush) {
 			new_entry.Valid = 1;
 			new_entry.A = A;
-			new_entry.Qj = Qj;
-			new_entry.Vj = Vj;
+			new_entry.Qk = Qk;
+			new_entry.Vk = Vk;
 			new_entry.RobId = RobId;
 			new_entry.Commited = 0;
+			new_entry.Op = Op;
 
 			any {
 				tail[LOG2_STQ_NUM_OF_ENTRIES-1:0] == 0: {stq0 := new_entry;}
@@ -63,70 +64,70 @@ module store_queue {
 	func CDB0 {
 		if(!flush) {
 			any {
-				(stq0.Qj == CDB0Id) && stq0.Valid: {stq0.Vj := CDB0Val; stq0.Qj := 0;}
-				(stq1.Qj == CDB0Id) && stq1.Valid: {stq1.Vj := CDB0Val; stq1.Qj := 0;}
-				(stq2.Qj == CDB0Id) && stq2.Valid: {stq2.Vj := CDB0Val; stq2.Qj := 0;}
-				(stq3.Qj == CDB0Id) && stq3.Valid: {stq3.Vj := CDB0Val; stq3.Qj := 0;}
-				(stq4.Qj == CDB0Id) && stq4.Valid: {stq4.Vj := CDB0Val; stq4.Qj := 0;}
-				(stq5.Qj == CDB0Id) && stq5.Valid: {stq5.Vj := CDB0Val; stq5.Qj := 0;}
-				(stq6.Qj == CDB0Id) && stq6.Valid: {stq6.Vj := CDB0Val; stq6.Qj := 0;}
-				(stq7.Qj == CDB0Id) && stq7.Valid: {stq7.Vj := CDB0Val; stq7.Qj := 0;}
+				(stq0.Qk == CDB0Id) && stq0.Valid: {stq0.Vk := CDB0Val; stq0.Qk := 0;}
+				(stq1.Qk == CDB0Id) && stq1.Valid: {stq1.Vk := CDB0Val; stq1.Qk := 0;}
+				(stq2.Qk == CDB0Id) && stq2.Valid: {stq2.Vk := CDB0Val; stq2.Qk := 0;}
+				(stq3.Qk == CDB0Id) && stq3.Valid: {stq3.Vk := CDB0Val; stq3.Qk := 0;}
+				(stq4.Qk == CDB0Id) && stq4.Valid: {stq4.Vk := CDB0Val; stq4.Qk := 0;}
+				(stq5.Qk == CDB0Id) && stq5.Valid: {stq5.Vk := CDB0Val; stq5.Qk := 0;}
+				(stq6.Qk == CDB0Id) && stq6.Valid: {stq6.Vk := CDB0Val; stq6.Qk := 0;}
+				(stq7.Qk == CDB0Id) && stq7.Valid: {stq7.Vk := CDB0Val; stq7.Qk := 0;}
 			}
 		}
 	}
 	func CDB1 {
 		if(!flush) {
 			any {
-				(stq0.Qj == CDB1Id) && stq0.Valid: {stq0.Vj := CDB1Val; stq0.Qj := 0;}
-				(stq1.Qj == CDB1Id) && stq1.Valid: {stq1.Vj := CDB1Val; stq1.Qj := 0;}
-				(stq2.Qj == CDB1Id) && stq2.Valid: {stq2.Vj := CDB1Val; stq2.Qj := 0;}
-				(stq3.Qj == CDB1Id) && stq3.Valid: {stq3.Vj := CDB1Val; stq3.Qj := 0;}
-				(stq4.Qj == CDB1Id) && stq4.Valid: {stq4.Vj := CDB1Val; stq4.Qj := 0;}
-				(stq5.Qj == CDB1Id) && stq5.Valid: {stq5.Vj := CDB1Val; stq5.Qj := 0;}
-				(stq6.Qj == CDB1Id) && stq6.Valid: {stq6.Vj := CDB1Val; stq6.Qj := 0;}
-				(stq7.Qj == CDB1Id) && stq7.Valid: {stq7.Vj := CDB1Val; stq7.Qj := 0;}
+				(stq0.Qk == CDB1Id) && stq0.Valid: {stq0.Vk := CDB1Val; stq0.Qk := 0;}
+				(stq1.Qk == CDB1Id) && stq1.Valid: {stq1.Vk := CDB1Val; stq1.Qk := 0;}
+				(stq2.Qk == CDB1Id) && stq2.Valid: {stq2.Vk := CDB1Val; stq2.Qk := 0;}
+				(stq3.Qk == CDB1Id) && stq3.Valid: {stq3.Vk := CDB1Val; stq3.Qk := 0;}
+				(stq4.Qk == CDB1Id) && stq4.Valid: {stq4.Vk := CDB1Val; stq4.Qk := 0;}
+				(stq5.Qk == CDB1Id) && stq5.Valid: {stq5.Vk := CDB1Val; stq5.Qk := 0;}
+				(stq6.Qk == CDB1Id) && stq6.Valid: {stq6.Vk := CDB1Val; stq6.Qk := 0;}
+				(stq7.Qk == CDB1Id) && stq7.Valid: {stq7.Vk := CDB1Val; stq7.Qk := 0;}
 			}
 		}
 	}
 	func CDB2 {
 		if(!flush) {
 			any {
-				(stq0.Qj == CDB2Id) && stq0.Valid: {stq0.Vj := CDB2Val; stq0.Qj := 0;}
-				(stq1.Qj == CDB2Id) && stq1.Valid: {stq1.Vj := CDB2Val; stq1.Qj := 0;}
-				(stq2.Qj == CDB2Id) && stq2.Valid: {stq2.Vj := CDB2Val; stq2.Qj := 0;}
-				(stq3.Qj == CDB2Id) && stq3.Valid: {stq3.Vj := CDB2Val; stq3.Qj := 0;}
-				(stq4.Qj == CDB2Id) && stq4.Valid: {stq4.Vj := CDB2Val; stq4.Qj := 0;}
-				(stq5.Qj == CDB2Id) && stq5.Valid: {stq5.Vj := CDB2Val; stq5.Qj := 0;}
-				(stq6.Qj == CDB2Id) && stq6.Valid: {stq6.Vj := CDB2Val; stq6.Qj := 0;}
-				(stq7.Qj == CDB2Id) && stq7.Valid: {stq7.Vj := CDB2Val; stq7.Qj := 0;}
+				(stq0.Qk == CDB2Id) && stq0.Valid: {stq0.Vk := CDB2Val; stq0.Qk := 0;}
+				(stq1.Qk == CDB2Id) && stq1.Valid: {stq1.Vk := CDB2Val; stq1.Qk := 0;}
+				(stq2.Qk == CDB2Id) && stq2.Valid: {stq2.Vk := CDB2Val; stq2.Qk := 0;}
+				(stq3.Qk == CDB2Id) && stq3.Valid: {stq3.Vk := CDB2Val; stq3.Qk := 0;}
+				(stq4.Qk == CDB2Id) && stq4.Valid: {stq4.Vk := CDB2Val; stq4.Qk := 0;}
+				(stq5.Qk == CDB2Id) && stq5.Valid: {stq5.Vk := CDB2Val; stq5.Qk := 0;}
+				(stq6.Qk == CDB2Id) && stq6.Valid: {stq6.Vk := CDB2Val; stq6.Qk := 0;}
+				(stq7.Qk == CDB2Id) && stq7.Valid: {stq7.Vk := CDB2Val; stq7.Qk := 0;}
 			}
 		}
 	}
 	func CDB3 {
 		if(!flush) {
 			any {
-				(stq0.Qj == CDB3Id) && stq0.Valid: {stq0.Vj := CDB3Val; stq0.Qj := 0;}
-				(stq1.Qj == CDB3Id) && stq1.Valid: {stq1.Vj := CDB3Val; stq1.Qj := 0;}
-				(stq2.Qj == CDB3Id) && stq2.Valid: {stq2.Vj := CDB3Val; stq2.Qj := 0;}
-				(stq3.Qj == CDB3Id) && stq3.Valid: {stq3.Vj := CDB3Val; stq3.Qj := 0;}
-				(stq4.Qj == CDB3Id) && stq4.Valid: {stq4.Vj := CDB3Val; stq4.Qj := 0;}
-				(stq5.Qj == CDB3Id) && stq5.Valid: {stq5.Vj := CDB3Val; stq5.Qj := 0;}
-				(stq6.Qj == CDB3Id) && stq6.Valid: {stq6.Vj := CDB3Val; stq6.Qj := 0;}
-				(stq7.Qj == CDB3Id) && stq7.Valid: {stq7.Vj := CDB3Val; stq7.Qj := 0;}
+				(stq0.Qk == CDB3Id) && stq0.Valid: {stq0.Vk := CDB3Val; stq0.Qk := 0;}
+				(stq1.Qk == CDB3Id) && stq1.Valid: {stq1.Vk := CDB3Val; stq1.Qk := 0;}
+				(stq2.Qk == CDB3Id) && stq2.Valid: {stq2.Vk := CDB3Val; stq2.Qk := 0;}
+				(stq3.Qk == CDB3Id) && stq3.Valid: {stq3.Vk := CDB3Val; stq3.Qk := 0;}
+				(stq4.Qk == CDB3Id) && stq4.Valid: {stq4.Vk := CDB3Val; stq4.Qk := 0;}
+				(stq5.Qk == CDB3Id) && stq5.Valid: {stq5.Vk := CDB3Val; stq5.Qk := 0;}
+				(stq6.Qk == CDB3Id) && stq6.Valid: {stq6.Vk := CDB3Val; stq6.Qk := 0;}
+				(stq7.Qk == CDB3Id) && stq7.Valid: {stq7.Vk := CDB3Val; stq7.Qk := 0;}
 			}
 		}
 	}
 	func commit {
 		if(!flush) {
 			any {
-				(stq0.RobId == commitId) && stq0.Valid && (stq0.Qj == 0): {stq0.Commited := 1;}
-				(stq1.RobId == commitId) && stq1.Valid && (stq1.Qj == 0): {stq1.Commited := 1;}
-				(stq2.RobId == commitId) && stq2.Valid && (stq2.Qj == 0): {stq2.Commited := 1;}
-				(stq3.RobId == commitId) && stq3.Valid && (stq3.Qj == 0): {stq3.Commited := 1;}
-				(stq4.RobId == commitId) && stq4.Valid && (stq4.Qj == 0): {stq4.Commited := 1;}
-				(stq5.RobId == commitId) && stq5.Valid && (stq5.Qj == 0): {stq5.Commited := 1;}
-				(stq6.RobId == commitId) && stq6.Valid && (stq6.Qj == 0): {stq6.Commited := 1;}
-				(stq7.RobId == commitId) && stq7.Valid && (stq7.Qj == 0): {stq7.Commited := 1;}
+				(stq0.RobId == commitId) && stq0.Valid && (stq0.Qk == 0): {stq0.Commited := 1;}
+				(stq1.RobId == commitId) && stq1.Valid && (stq1.Qk == 0): {stq1.Commited := 1;}
+				(stq2.RobId == commitId) && stq2.Valid && (stq2.Qk == 0): {stq2.Commited := 1;}
+				(stq3.RobId == commitId) && stq3.Valid && (stq3.Qk == 0): {stq3.Commited := 1;}
+				(stq4.RobId == commitId) && stq4.Valid && (stq4.Qk == 0): {stq4.Commited := 1;}
+				(stq5.RobId == commitId) && stq5.Valid && (stq5.Qk == 0): {stq5.Commited := 1;}
+				(stq6.RobId == commitId) && stq6.Valid && (stq6.Qk == 0): {stq6.Commited := 1;}
+				(stq7.RobId == commitId) && stq7.Valid && (stq7.Qk == 0): {stq7.Commited := 1;}
 			}
 		}
 	}
