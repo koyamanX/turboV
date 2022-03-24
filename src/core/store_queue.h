@@ -3,8 +3,8 @@
 
 #include "reorder_buffer.h"
 
-#define STQ_NUM_OF_ENTRIES 8.0
-#define LOG2_STQ_NUM_OF_ENTRIES _int(_log10(STQ_NUM_OF_ENTRIES)/_log10(2.0))
+#define STQ_NUM_OF_ENTRIES 8
+#define LOG2_STQ_NUM_OF_ENTRIES _int(_log10(STQ_NUM_OF_ENTRIES.0)/_log10(2.0))
 
 struct store_queue_t {
 	Valid;
