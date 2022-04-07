@@ -18,13 +18,13 @@ module load_store_unit {
 
 	func issue0 {
 		/* TLB access, always va == pa for now (TLB hit) */
-		if(!flush && issue0_uOp == uOPS_LOAD_WORD) {
+		if(!flush && issue0_uOp == uOP_LOAD_WORD) {
 			load(issue0_A, issue0_uOp, issue0_RobId);
 		}
 	}
 	func issue1 {
 		/* TLB access, always va == pa for now (TLB hit) */
-		if(!flush && issue1_uOp == uOPS_LOAD_WORD) {
+		if(!flush && issue1_uOp == uOP_LOAD_WORD) {
 			load(issue1_A, issue1_uOp, issue1_RobId);
 		}
 	}

@@ -154,12 +154,12 @@ module turboV {
 				idec0.decode(decode_fetch_packet1.inst0);
 				idec1.decode(decode_fetch_packet1.inst1);
 				// Check if structural hazard occurs for FUs.
-				if(((idec0.uops_bru && decode_fetch_packet1.valid0) && (idec1.uops_bru && decode_fetch_packet1.valid1))
+				if(((idec0.uop_bru && decode_fetch_packet1.valid0) && (idec1.uop_bru && decode_fetch_packet1.valid1))
 					|| ((idec0.load && decode_fetch_packet1.valid0) && (idec1.load && decode_fetch_packet1.valid1))) {
 					// If hazard occurs, send first instructions to issue.
 					issue.invoke(
 						{decode_fetch_packet1.pc0, 0x00000000, decode_fetch_packet1.npc1, decode_fetch_packet1.inst0, 0x00000000, decode_fetch_packet1.pred0, 1'b0, decode_fetch_packet1.valid0, 1'b0},
-						idec0.opcode, idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm, idec0.jump,
+						idec0.opcode, idec0.uop, idec0.uop_rd, idec0.uop_rs1_sel, idec0.uop_rs1, idec0.uop_rs2_sel, idec0.uop_rs2, idec0.uop_imm, idec0.jump,
 						0, 0, 0, 0, 0, 0, 0, 0, 0
 					);
 					// Handle remaining instructions in next cycle.
@@ -168,8 +168,8 @@ module turboV {
 					// No structual hazard for FUs.
 					decode();
 					issue(decode_fetch_packet1,
-							idec0.opcode, idec0.uops, idec0.uops_rd, idec0.uops_rs1_sel, idec0.uops_rs1, idec0.uops_rs2_sel, idec0.uops_rs2, idec0.uops_imm, idec0.jump,
-							idec1.opcode, idec1.uops, idec1.uops_rd, idec1.uops_rs1_sel, idec1.uops_rs1, idec1.uops_rs2_sel, idec1.uops_rs2, idec1.uops_imm, idec1.jump
+							idec0.opcode, idec0.uop, idec0.uop_rd, idec0.uop_rs1_sel, idec0.uop_rs1, idec0.uop_rs2_sel, idec0.uop_rs2, idec0.uop_imm, idec0.jump,
+							idec1.opcode, idec1.uop, idec1.uop_rd, idec1.uop_rs1_sel, idec1.uop_rs1, idec1.uop_rs2_sel, idec1.uop_rs2, idec1.uop_imm, idec1.jump
 					);
 				}
 			}
@@ -185,7 +185,7 @@ module turboV {
 				issue.invoke(
 					{0x00000000, decode_fetch_packet2.pc1, decode_fetch_packet2.npc1, 0x00000000, decode_fetch_packet2.inst1, 1'b0, decode_fetch_packet2.pred1, 1'b0, decode_fetch_packet2.valid1},
 					0, 0, 0, 0, 0, 0, 0, 0, 0,
-					idec1.opcode, idec1.uops, idec1.uops_rd, idec1.uops_rs1_sel, idec1.uops_rs1, idec1.uops_rs2_sel, idec1.uops_rs2, idec1.uops_imm, idec1.jump
+					idec1.opcode, idec1.uop, idec1.uop_rd, idec1.uop_rs1_sel, idec1.uop_rs1, idec1.uop_rs2_sel, idec1.uop_rs2, idec1.uop_imm, idec1.jump
 				);
 				goto decode1;
 			}
