@@ -12,6 +12,10 @@
 #include "load_store_unit.h"
 
 struct issue_packet_t {
+	inst0_valid;
+	inst0_pred;
+	inst0_pc[XLEN];
+	inst0[ILEN];
 	inst0_opcode[7];
 	inst0_uop[7];
 	inst0_rd[5];
@@ -21,6 +25,11 @@ struct issue_packet_t {
 	inst0_rs2[5];
 	inst0_imm[32];
 	inst0_jump;
+	inst1_valid;
+	inst1_pred;
+	inst1_pc[XLEN];
+	inst1_npc[XLEN];
+	inst1[ILEN];
 	inst1_opcode[7];
 	inst1_uop[7];
 	inst1_rd[5];
@@ -37,9 +46,8 @@ module turboV {
 	proc_name decode();
 	func_self stall_issue();
 	/* Issue stage */
-	fetch_packet_t reg issue_fetch_packet;
 	issue_packet_t reg issue_packet;
-	proc_name issue(issue_fetch_packet, issue_packet);
+	proc_name issue(issue_packet);
 	/* Execute stage */
 	reg execute_alu0_fn[4];
 	reg execute_alu0_dest[ROB_TAG_SIZE];
@@ -159,6 +167,10 @@ module turboV {
 				if(((idec0.uop_bru && decode_fetch_packet1.valid0) && (idec1.uop_bru && decode_fetch_packet1.valid1))
 					|| ((idec0.load && decode_fetch_packet1.valid0) && (idec1.load && decode_fetch_packet1.valid1))) {
 					// If hazard occurs, send first instructions to issue.
+					decode_issue_packet.inst0_valid 	= decode_fetch_packet1.valid0;
+					decode_issue_packet.inst0_pred		= decode_fetch_packet1.pred0;
+					decode_issue_packet.inst0_pc		= decode_fetch_packet1.pc0;
+					decode_issue_packet.inst0		= decode_fetch_packet1.inst0;
 					decode_issue_packet.inst0_opcode	= idec0.opcode;
 					decode_issue_packet.inst0_uop		= idec0.uop;
 					decode_issue_packet.inst0_rd		= idec0.uop_rd;
@@ -168,6 +180,11 @@ module turboV {
 					decode_issue_packet.inst0_rs2		= idec0.uop_rs2;
 					decode_issue_packet.inst0_imm		= idec0.uop_imm;
 					decode_issue_packet.inst0_jump		= idec0.jump;
+					decode_issue_packet.inst1_valid 	= 0;
+					decode_issue_packet.inst1_pred		= 0;
+					decode_issue_packet.inst1_pc		= decode_fetch_packet1.pc1;
+					decode_issue_packet.inst1_npc		= decode_fetch_packet1.npc1;
+					decode_issue_packet.inst1		= 0;
 					decode_issue_packet.inst1_opcode	= 0;
 					decode_issue_packet.inst1_uop		= 0;
 					decode_issue_packet.inst1_rd		= 0;
@@ -177,12 +194,15 @@ module turboV {
 					decode_issue_packet.inst1_rs2		= 0;
 					decode_issue_packet.inst1_imm		= 0;
 					decode_issue_packet.inst1_jump		= 0;
-					issue.invoke(
-						{decode_fetch_packet1.pc0, 0x00000000, decode_fetch_packet1.npc1, decode_fetch_packet1.inst0, 0x00000000, decode_fetch_packet1.pred0, 1'b0, decode_fetch_packet1.valid0, 1'b0},	decode_issue_packet);
+					issue.invoke(decode_issue_packet);
 					// Handle remaining instructions in next cycle.
 					goto decode2;
 				} else {
 					// No structual hazard for FUs.
+					decode_issue_packet.inst0_valid 	= decode_fetch_packet1.valid0;
+					decode_issue_packet.inst0_pred		= decode_fetch_packet1.pred0;
+					decode_issue_packet.inst0_pc		= decode_fetch_packet1.pc0;
+					decode_issue_packet.inst0		= decode_fetch_packet1.inst0;
 					decode_issue_packet.inst0_opcode	= idec0.opcode;
 					decode_issue_packet.inst0_uop		= idec0.uop;
 					decode_issue_packet.inst0_rd		= idec0.uop_rd;
@@ -192,6 +212,11 @@ module turboV {
 					decode_issue_packet.inst0_rs2		= idec0.uop_rs2;
 					decode_issue_packet.inst0_imm		= idec0.uop_imm;
 					decode_issue_packet.inst0_jump		= idec0.jump;
+					decode_issue_packet.inst1_valid 	= decode_fetch_packet1.valid1;
+					decode_issue_packet.inst1_pred		= decode_fetch_packet1.pred1;
+					decode_issue_packet.inst1_pc		= decode_fetch_packet1.pc1;
+					decode_issue_packet.inst1_npc		= decode_fetch_packet1.npc1;
+					decode_issue_packet.inst1		= decode_fetch_packet1.inst1;
 					decode_issue_packet.inst1_opcode	= idec1.opcode;
 					decode_issue_packet.inst1_uop		= idec1.uop;
 					decode_issue_packet.inst1_rd		= idec1.uop_rd;
@@ -202,7 +227,7 @@ module turboV {
 					decode_issue_packet.inst1_imm		= idec1.uop_imm;
 					decode_issue_packet.inst1_jump		= idec1.jump;
 					decode();
-					issue(decode_fetch_packet1, decode_issue_packet);
+					issue(decode_issue_packet);
 				}
 			}
 		}
@@ -214,6 +239,10 @@ module turboV {
 				goto decode1;
 			} else if(!stall_issue && !flush) {
 				// Send second instruction to issue.
+				decode_issue_packet.inst0_valid 	= decode_fetch_packet2.valid0;
+				decode_issue_packet.inst0_pred		= decode_fetch_packet2.pred0;
+				decode_issue_packet.inst0_pc		= decode_fetch_packet2.pc0;
+				decode_issue_packet.inst0		= decode_fetch_packet2.inst0;
 				decode_issue_packet.inst0_opcode	= idec0.opcode;
 				decode_issue_packet.inst0_uop		= idec0.uop;
 				decode_issue_packet.inst0_rd		= idec0.uop_rd;
@@ -223,6 +252,11 @@ module turboV {
 				decode_issue_packet.inst0_rs2		= idec0.uop_rs2;
 				decode_issue_packet.inst0_imm		= idec0.uop_imm;
 				decode_issue_packet.inst0_jump		= idec0.jump;
+				decode_issue_packet.inst1_valid 	= 0;
+				decode_issue_packet.inst1_pred		= 0;
+				decode_issue_packet.inst1_pc		= decode_fetch_packet1.pc1;
+				decode_issue_packet.inst1_npc		= decode_fetch_packet1.npc1;
+				decode_issue_packet.inst1		= 0;
 				decode_issue_packet.inst1_opcode	= 0;
 				decode_issue_packet.inst1_uop		= 0;
 				decode_issue_packet.inst1_rd		= 0;
@@ -233,8 +267,7 @@ module turboV {
 				decode_issue_packet.inst1_imm		= 0;
 				decode_issue_packet.inst1_jump		= 0;
 
-				issue.invoke(
-					{0x00000000, decode_fetch_packet2.pc1, decode_fetch_packet2.npc1, 0x00000000, decode_fetch_packet2.inst1, 1'b0, decode_fetch_packet2.pred1, 1'b0, decode_fetch_packet2.valid1},	decode_issue_packet);
+				issue.invoke(decode_issue_packet);
 				goto decode1;
 			}
 		}
@@ -252,14 +285,14 @@ module turboV {
 		if(!rob.full && !alu_rs0.full && !alu_rs1.full && !bru_rs0.full && !lsu_rs0.full && !flush) {
 			/* TODO: Optimize RSs free entry check */
 			/* inst0 rs1 read */
-			if(issue_fetch_packet.valid0) {
+			if(issue_packet.inst0_valid) {
 				any {
 					(issue_packet.inst0_rs1_sel == RS_SEL_ZERO): {
 						issue_inst0_Vj = 0;
 						issue_inst0_Qj = 0;
 					}
 					(issue_packet.inst0_rs1_sel == RS_SEL_PC): {
-						issue_inst0_Vj = issue_fetch_packet.pc0;
+						issue_inst0_Vj = issue_packet.inst0_pc;
 						issue_inst0_Qj = 0;
 					}
 					(issue_packet.inst0_rs1_sel == RS_SEL_REG): {
@@ -310,7 +343,7 @@ module turboV {
 					}
 				}
 				/* inst0 rd mapping */
-				if((issue_packet.inst0_rd != 0) && !(issue_fetch_packet.valid1 && (issue_packet.inst0_rd == issue_packet.inst1_rd))) {
+				if((issue_packet.inst0_rd != 0) && !(issue_packet.inst1_valid && (issue_packet.inst0_rd == issue_packet.inst1_rd))) {
 					register_map_table[issue_packet.inst0_rd] := rob.tag;
 					register_status_table[issue_packet.inst0_rd] := BUSY;
 				}
@@ -318,19 +351,19 @@ module turboV {
 				alt {
 					((issue_packet.inst0_opcode == JALR) || (issue_packet.inst0_opcode == JAL) || (issue_packet.inst0_opcode == BRANCH)): {
 						bru_rs0.issue(
-							issue_fetch_packet.valid0, issue_packet.inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_fetch_packet.pc0 + issue_packet.inst0_imm
+							issue_packet.inst0_valid, issue_packet.inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_pc + issue_packet.inst0_imm
 						);
 					}
 					(issue_packet.inst0_opcode == LOAD): {
-						lsu_rs0.issue0(issue_fetch_packet.valid0, issue_packet.inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_imm);
+						lsu_rs0.issue0(issue_packet.inst0_valid, issue_packet.inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_imm);
 					}
 					else: {
 						alu_rs0.issue(
-							issue_fetch_packet.valid0, issue_packet.inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0);
+							issue_packet.inst0_valid, issue_packet.inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0);
 					}
 				}
 			}
-			if(issue_fetch_packet.valid1) {
+			if(issue_packet.inst1_valid) {
 				/* inst1 rs1 read */
 				any {
 					(issue_packet.inst1_rs1_sel == RS_SEL_ZERO): {
@@ -338,14 +371,14 @@ module turboV {
 						issue_inst1_Qj = 0;
 					}
 					(issue_packet.inst1_rs1_sel == RS_SEL_PC): {
-						issue_inst1_Vj = issue_fetch_packet.pc1;
+						issue_inst1_Vj = issue_packet.inst1_pc;
 						issue_inst1_Qj = 0;
 					}
 					(issue_packet.inst1_rs1_sel == RS_SEL_REG): {
 						if(issue_packet.inst1_rs1 == 5'b00000) {
 							issue_inst1_Vj = 0;
 							issue_inst1_Qj = 0;
-						} else if((issue_packet.inst0_rd == issue_packet.inst1_rs1) && issue_fetch_packet.valid0) {
+						} else if((issue_packet.inst0_rd == issue_packet.inst1_rs1) && issue_packet.inst0_valid) {
 							issue_inst1_Vj = 0;
 							issue_inst1_Qj = rob.tag;
 						} else {
@@ -372,7 +405,7 @@ module turboV {
 						if(issue_packet.inst1_rs2 == 5'b00000) {
 							issue_inst1_Vk = 0;
 							issue_inst1_Qk = 0;
-						} else if((issue_packet.inst0_rd == issue_packet.inst1_rs2) && issue_fetch_packet.valid0) {
+						} else if((issue_packet.inst0_rd == issue_packet.inst1_rs2) && issue_packet.inst0_valid) {
 							issue_inst1_Vk = 0;
 							issue_inst1_Qk = rob.tag;
 						} else {
@@ -406,21 +439,21 @@ module turboV {
 				alt {
 					((issue_packet.inst1_opcode == JALR) || (issue_packet.inst1_opcode == JAL) || (issue_packet.inst1_opcode == BRANCH)): {
 						bru_rs0.issue(
-							issue_fetch_packet.valid1, issue_packet.inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_fetch_packet.pc1 + issue_packet.inst1_imm
+							issue_packet.inst1_valid, issue_packet.inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_pc + issue_packet.inst1_imm
 						);
 					}
 					(issue_packet.inst1_opcode == LOAD): {
-						lsu_rs0.issue1(issue_fetch_packet.valid1, issue_packet.inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_imm);
+						lsu_rs0.issue1(issue_packet.inst1_valid, issue_packet.inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_imm);
 					}
 					else: {
 						alu_rs1.issue(
-							issue_fetch_packet.valid1, issue_packet.inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0);
+							issue_packet.inst1_valid, issue_packet.inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0);
 					}
 				}
 			}
 			rob.issue(
-				issue_fetch_packet.valid0, issue_fetch_packet.pc0, issue_fetch_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode,
-				issue_fetch_packet.valid1, issue_fetch_packet.pc1, issue_fetch_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode
+				issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode,
+				issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode
 			);
 			finish();
 		} else {
