@@ -467,12 +467,6 @@ module turboV {
         if(!flush && !lsu.full) {
             lsu_rs0_dispatch_Addr = lsu_rs0.dispatch_Vj + lsu_rs0.dispatch_A;
             lsu.issue(lsu_rs0_dispatch_Addr, lsu_rs0.dispatch_Op, lsu_rs0.dispatch_Qk, lsu_rs0.dispatch_Vk, lsu_rs0.dispatch_Dest);
-
-            alu_rs0.CDB3(lsu_rs0.dispatch_Dest, lsu_rs0_dispatch_Addr);
-            alu_rs1.CDB3(lsu_rs0.dispatch_Dest, lsu_rs0_dispatch_Addr);
-            bru_rs0.CDB3(lsu_rs0.dispatch_Dest, lsu_rs0_dispatch_Addr);
-            lsu_rs0.CDB3(lsu_rs0.dispatch_Dest, lsu_rs0_dispatch_Addr);
-            rob.CDB3(lsu_rs0.dispatch_Dest, lsu_rs0_dispatch_Addr);
         }
     }
     proc execute_alu0 {
