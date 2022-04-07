@@ -104,7 +104,7 @@ module reservation_station_in_order {
         head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 2: dispatch_entry = rs2;
         head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 3: dispatch_entry = rs3;
     }
-    if((dispatch_entry.Busy) && (dispatch_entry.Qj == 0)) {
+    if((dispatch_entry.Busy) && (dispatch_entry.Qj == 0) && (dispatch_entry.Qk == 0)) {
         if(!flush) {
             any {
                 dispatch_entry.Busy: {
