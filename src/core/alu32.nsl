@@ -1,43 +1,43 @@
 #include "alu32.h"
 
 module alu32 {
-	wire result[33];
-	func exe {
-		any {
-			fn[2:0] == ALU_ADD && ~fn[3]: {
-				return a + b;
-			}
-			fn[2:0] == ALU_ADD && fn[3]: {
-				return a - b;
-			}
-			fn[2:0] == ALU_SLL: {
-				return (a << b[4:0]);
-			}
-			fn[2:0] == ALU_SLT: {
-				result = 32'((33#(a) - 33#(b))[32]);
-				if(result == 0) zero();
-				return result;
-			}
-			fn[2:0] == ALU_SLTU: {
-				result = (33'(a) - 33'(b))[32];
-				if(result == 0) zero();
-				return result;
-			}
-			fn[2:0] == ALU_XOR: {
-				return a ^ b;
-			}
-			fn[2:0] == ALU_SRL & ~fn[3]: {
-				return (a >> b[4:0]);
-			}
-			fn[2:0] == ALU_SRL & fn[3]: {
-				return (64#(a) >> b[4:0]);
-			}
-			fn[2:0] == ALU_OR: {
-				return a | b;
-			}
-			fn[2:0] == ALU_AND: {
-				return a & b;
-			}
-		}
-	}
+    wire result[33];
+    func exe {
+        any {
+            fn[2:0] == ALU_ADD && ~fn[3]: {
+                return a + b;
+            }
+            fn[2:0] == ALU_ADD && fn[3]: {
+                return a - b;
+            }
+            fn[2:0] == ALU_SLL: {
+                return (a << b[4:0]);
+            }
+            fn[2:0] == ALU_SLT: {
+                result = 32'((33#(a) - 33#(b))[32]);
+                if(result == 0) zero();
+                return result;
+            }
+            fn[2:0] == ALU_SLTU: {
+                result = (33'(a) - 33'(b))[32];
+                if(result == 0) zero();
+                return result;
+            }
+            fn[2:0] == ALU_XOR: {
+                return a ^ b;
+            }
+            fn[2:0] == ALU_SRL & ~fn[3]: {
+                return (a >> b[4:0]);
+            }
+            fn[2:0] == ALU_SRL & fn[3]: {
+                return (64#(a) >> b[4:0]);
+            }
+            fn[2:0] == ALU_OR: {
+                return a | b;
+            }
+            fn[2:0] == ALU_AND: {
+                return a & b;
+            }
+        }
+    }
 }

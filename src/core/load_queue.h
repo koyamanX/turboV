@@ -7,23 +7,23 @@
 #define LOG2_LDQ_NUM_OF_ENTRIES _int(_log10(LDQ_NUM_OF_ENTRIES)/_log10(2.0))
 
 struct load_queue_t {
-	Valid;
-	A[32];
-	Op[7];
-	RobId[ROB_TAG_SIZE];
+    Valid;
+    A[32];
+    Op[7];
+    RobId[ROB_TAG_SIZE];
 #define SIZEOF_LOAD_QUEUE_T 40+ROB_TAG_SIZE
 };
 
 declare load_queue {
-	input push_A[32];
-	input push_Op[7];
-	input push_RobId[ROB_TAG_SIZE];
-	func_in push(push_A, push_Op, push_RobId);
-	output pop_ldq_entry[SIZEOF_LOAD_QUEUE_T];
-	func_in pop(): pop_ldq_entry;
-	func_out full();
-	func_out empty();
-	func_in flush();
+    input push_A[32];
+    input push_Op[7];
+    input push_RobId[ROB_TAG_SIZE];
+    func_in push(push_A, push_Op, push_RobId);
+    output pop_ldq_entry[SIZEOF_LOAD_QUEUE_T];
+    func_in pop(): pop_ldq_entry;
+    func_out full();
+    func_out empty();
+    func_in flush();
 }
 
 #endif

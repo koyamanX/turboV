@@ -2,57 +2,57 @@
 #include "wishbone_common.h"
 
 module wishbone_master {
-	reg req_addr_internal[32];
-	reg req_sel_internal[8];
-	reg req_data_internal[64];
-	reg req_internal;
-	proc_name wait4ack(req_addr_internal, req_sel_internal, req_data_internal, req_internal);
+    reg req_addr_internal[32];
+    reg req_sel_internal[8];
+    reg req_data_internal[64];
+    reg req_internal;
+    proc_name wait4ack(req_addr_internal, req_sel_internal, req_data_internal, req_internal);
 
-	func req_read {
-		ADR_O = req_addr;
-		SEL_O = req_sel;
-		CYC_O();
-		STB_O();
-		if(!ACK_I) {
-			wait4ack(req_addr, req_sel, req_data, READ);
-		}
-	}
-	func req_write {
-		ADR_O = req_addr;
-		DAT_O = req_data;
-		SEL_O = req_sel;
-		CYC_O();
-		STB_O();
-		WE_O();
-		if(!ACK_I) {
-			wait4ack(req_addr, req_sel, req_data, WRITE);
-		}
-	}
-	proc wait4ack {
-		CYC_O();
-		if(STALL_I) {
-			ADR_O = req_addr_internal;
-			SEL_O = req_sel_internal;
-			STB_O();
-			if(req_internal) {
-				DAT_O = req_data_internal;
-				WE_O();
-			}
-		}
-		if(ACK_I) {
-			rsp_valid(DAT_I);
-			finish();
-		}
-		req_stall();
-	}
-	func ERR_I {
-		rsp_error();
-	}
-	func RTY_I {
-		rsp_retry();
-	}
-	func STALL_I {
-		rsp_stall();
-	}
+    func req_read {
+        ADR_O = req_addr;
+        SEL_O = req_sel;
+        CYC_O();
+        STB_O();
+        if(!ACK_I) {
+            wait4ack(req_addr, req_sel, req_data, READ);
+        }
+    }
+    func req_write {
+        ADR_O = req_addr;
+        DAT_O = req_data;
+        SEL_O = req_sel;
+        CYC_O();
+        STB_O();
+        WE_O();
+        if(!ACK_I) {
+            wait4ack(req_addr, req_sel, req_data, WRITE);
+        }
+    }
+    proc wait4ack {
+        CYC_O();
+        if(STALL_I) {
+            ADR_O = req_addr_internal;
+            SEL_O = req_sel_internal;
+            STB_O();
+            if(req_internal) {
+                DAT_O = req_data_internal;
+                WE_O();
+            }
+        }
+        if(ACK_I) {
+            rsp_valid(DAT_I);
+            finish();
+        }
+        req_stall();
+    }
+    func ERR_I {
+        rsp_error();
+    }
+    func RTY_I {
+        rsp_retry();
+    }
+    func STALL_I {
+        rsp_stall();
+    }
 }
 

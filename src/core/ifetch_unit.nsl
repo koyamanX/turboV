@@ -8,162 +8,161 @@
 #define ALIGN8(s32) {s32[31:3], 3'b000}
 
 module ifetch_unit {
-	reg st0_vpc[XLEN];
-	proc_name st0(st0_vpc);
-	func_self tlb_hit;
-	wire va[XLEN];
-	wire pa[XLEN];
-	func_self v2p(va) : pa;
-	reg st1_vpc[XLEN];
-	reg st1_ppc[XLEN];
-	proc_name st1(st1_vpc, st1_ppc);
-	reg st2_vpc[XLEN];
-	reg st2_ppc[XLEN];
-	reg st2_fetch_packet[64];
-	proc_name st2(st2_vpc, st2_ppc, st2_fetch_packet);
-	func_self predict();
-	func_self predict_taken();
-	func_self predict_not_taken();
-	icache ic;
-	wishbone_master wb_master_if;
-	inst_buffer ibuf;
+    reg st0_vpc[XLEN];
+    proc_name st0(st0_vpc);
+    func_self tlb_hit;
+    wire va[XLEN];
+    wire pa[XLEN];
+    func_self v2p(va) : pa;
+    reg st1_vpc[XLEN];
+    reg st1_ppc[XLEN];
+    proc_name st1(st1_vpc, st1_ppc);
+    reg st2_vpc[XLEN];
+    reg st2_ppc[XLEN];
+    reg st2_fetch_packet[64];
+    proc_name st2(st2_vpc, st2_ppc, st2_fetch_packet);
+    func_self predict();
+    func_self predict_taken();
+    func_self predict_not_taken();
+    icache ic;
+    wishbone_master wb_master_if;
+    inst_buffer ibuf;
 
-	func_self flush_st0();
-	func_self flush_st1();
-	func_self flush_st2();
-	func_self flush();
-	func_self stall_st0();
-	func_self stall_st1();
-	func_self stall_st2();
-	func_self stall();
-	reg stall_ifetch_vpc[XLEN];
-	proc_name stall_ifetch(stall_ifetch_vpc);
+    func_self flush_st0();
+    func_self flush_st1();
+    func_self flush_st2();
+    func_self flush();
+    func_self stall_st0();
+    func_self stall_st1();
+    func_self stall_st2();
+    func_self stall();
+    reg stall_ifetch_vpc[XLEN];
+    proc_name stall_ifetch(stall_ifetch_vpc);
 
-	func reset {
-		ic.reset();
-	}
-	func redirect {
-		flush();
-		st0(newpc);
-	}
-	func flush_st0 {
-		st0.finish();
-	}
-	func flush_st1 {
-		st1.finish();
-	}
-	func flush_st2 {
-		st2.finish();
-	}
-	func flush {
-		stall();
-		flush_st0();
-		flush_st1();
-		flush_st2();
-		ibuf.flush();
-	}
-	func stall {
-		stall_st0();
-		stall_st1();
-		stall_st2();
-	}
-	func ibuf.full {
-		ibuf_full();
-	}
-	func ibuf.empty {
-		ibuf_empty();
-	}
-	func ibuf_flush {
-		ibuf.flush();
-	}
-	func ibuf_pop {
-		return ibuf.pop();
-	}
+    func reset {
+        ic.reset();
+    }
+    func redirect {
+        flush();
+        st0(newpc);
+    }
+    func flush_st0 {
+        st0.finish();
+    }
+    func flush_st1 {
+        st1.finish();
+    }
+    func flush_st2 {
+        st2.finish();
+    }
+    func flush {
+        stall();
+        flush_st0();
+        flush_st1();
+        flush_st2();
+        ibuf.flush();
+    }
+    func stall {
+        stall_st0();
+        stall_st1();
+        stall_st2();
+    }
+    func ibuf.full {
+        ibuf_full();
+    }
+    func ibuf.empty {
+        ibuf_empty();
+    }
+    func ibuf_flush {
+        ibuf.flush();
+    }
+    func ibuf_pop {
+        return ibuf.pop();
+    }
 
-	if(ibuf.full && !redirect) {
-		st0.finish();
-		st1.finish();
-		st2.finish();
-		stall();
+    if(ibuf.full && !redirect) {
+        st0.finish();
+        st1.finish();
+        st2.finish();
+        stall();
 
-		alt {
-			st2: stall_ifetch(st2_vpc);
-			st1: stall_ifetch(st1_vpc);
-			st0: stall_ifetch(st0_vpc);
-		}
-	}
-	if(stall_ifetch && !ibuf.full && !redirect) {
-		stall_ifetch.finish();
-		st0(stall_ifetch_vpc);
-	}
+        alt {
+            st2: stall_ifetch(st2_vpc);
+            st1: stall_ifetch(st1_vpc);
+            st0: stall_ifetch(st0_vpc);
+        }
+    }
+    if(stall_ifetch && !ibuf.full && !redirect) {
+        stall_ifetch.finish();
+        st0(stall_ifetch_vpc);
+    }
 
-	proc st0 {
-		wire st0_new_pc[XLEN];
+    proc st0 {
+        wire st0_new_pc[XLEN];
 
-		v2p(ALIGN8(st0_vpc));
-		if(tlb_hit && !flush_st0 && !stall_st0) {
-			st0(st0_new_pc);
-			st1(st0_vpc, pa);
-		}
-		
-		any {
-			st0_vpc[2]: st0_new_pc = st0_vpc + 4;
-			~st0_vpc[2]: st0_new_pc = st0_vpc + 8;
-		}
-	}
-	func v2p {
-		tlb_hit();
-		return va;
-	}
-	proc st1 {
-		ic.req_cache_read(ALIGN8(st1_ppc));
-		if(ic.rsp_cache_hit && !flush_st1 && !stall_st1) {
-			st2(st1_vpc, st1_ppc, ic.rsp_cache_data);
-		} else {
-			stall_st0();
-		}
-	}
-	proc st2 {
-		predict();
-		if(predict_not_taken && !flush_st2 && !stall_st2) {
-			finish();
-			any {
-				st2_vpc[2]: {
-					ibuf.push({(st2_vpc)[XLEN-1:0], (st2_vpc+4)[XLEN-1:0], (st2_vpc+8)[XLEN-1:0], {st2_fetch_packet[63:32], st2_fetch_packet[31:0]}, 2'b00, 2'b10});
-				}
-				~st2_vpc[2]: {
-					ibuf.push({(st2_vpc)[XLEN-1:0], (st2_vpc+4)[XLEN-1:0], (st2_vpc+8)[XLEN-1:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b11});
-				}
-			}
-		}
-	}
-	func predict {
-		predict_not_taken();
-	}
-	func ic.req_read {
-		wb_master_if.req_read(ic.req_addr, ic.req_sel);
-	}
-	func ic.req_write {
-		wb_master_if.req_write(ic.req_addr, ic.req_sel, ic.req_data);
-	}
-	func ic.req_read_modify_write {
-		wb_master_if.req_read_modify_write(ic.req_addr, ic.req_sel, ic.req_data);
-	}
-	func wb_master_if.req_stall {
-		ic.req_stall();
-	}
-	func wb_master_if.rsp_valid {
-		ic.rsp_valid(wb_master_if.rsp_data);
-	}
-	func wb_master_if.rsp_error {
-		ic.rsp_error();
-	}
-	func wb_master_if.rsp_retry {
-		ic.rsp_retry();
-	}
-	func wb_master_if.rsp_stall {
-		ic.rsp_stall();
-	}
+        v2p(ALIGN8(st0_vpc));
+        if(tlb_hit && !flush_st0 && !stall_st0) {
+            st0(st0_new_pc);
+            st1(st0_vpc, pa);
+        }
+        any {
+            st0_vpc[2]: st0_new_pc = st0_vpc + 4;
+            ~st0_vpc[2]: st0_new_pc = st0_vpc + 8;
+        }
+    }
+    func v2p {
+        tlb_hit();
+        return va;
+    }
+    proc st1 {
+        ic.req_cache_read(ALIGN8(st1_ppc));
+        if(ic.rsp_cache_hit && !flush_st1 && !stall_st1) {
+            st2(st1_vpc, st1_ppc, ic.rsp_cache_data);
+        } else {
+            stall_st0();
+        }
+    }
+    proc st2 {
+        predict();
+        if(predict_not_taken && !flush_st2 && !stall_st2) {
+            finish();
+            any {
+                st2_vpc[2]: {
+                    ibuf.push({(st2_vpc)[XLEN-1:0], (st2_vpc+4)[XLEN-1:0], (st2_vpc+8)[XLEN-1:0], {st2_fetch_packet[63:32], st2_fetch_packet[31:0]}, 2'b00, 2'b10});
+                }
+                ~st2_vpc[2]: {
+                    ibuf.push({(st2_vpc)[XLEN-1:0], (st2_vpc+4)[XLEN-1:0], (st2_vpc+8)[XLEN-1:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b11});
+                }
+            }
+        }
+    }
+    func predict {
+        predict_not_taken();
+    }
+    func ic.req_read {
+        wb_master_if.req_read(ic.req_addr, ic.req_sel);
+    }
+    func ic.req_write {
+        wb_master_if.req_write(ic.req_addr, ic.req_sel, ic.req_data);
+    }
+    func ic.req_read_modify_write {
+        wb_master_if.req_read_modify_write(ic.req_addr, ic.req_sel, ic.req_data);
+    }
+    func wb_master_if.req_stall {
+        ic.req_stall();
+    }
+    func wb_master_if.rsp_valid {
+        ic.rsp_valid(wb_master_if.rsp_data);
+    }
+    func wb_master_if.rsp_error {
+        ic.rsp_error();
+    }
+    func wb_master_if.rsp_retry {
+        ic.rsp_retry();
+    }
+    func wb_master_if.rsp_stall {
+        ic.rsp_stall();
+    }
 
-	WISHBONE_MASTER_IF(wb_master_if);
+    WISHBONE_MASTER_IF(wb_master_if);
 }

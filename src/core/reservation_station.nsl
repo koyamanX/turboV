@@ -1,139 +1,139 @@
 #include "reservation_station.h"
 
 module reservation_station {
-	reservation_station_t reg rs0 = 0;
-	reservation_station_t reg rs1 = 0;
-	reservation_station_t reg rs2 = 0;
-	reservation_station_t reg rs3 = 0;
-	func_self rs0_free();
-	func_self rs1_free();
-	func_self rs2_free();
-	func_self rs3_free();
-	func_self dispatch_rs0();
-	func_self dispatch_rs1();
-	func_self dispatch_rs2();
-	func_self dispatch_rs3();
+    reservation_station_t reg rs0 = 0;
+    reservation_station_t reg rs1 = 0;
+    reservation_station_t reg rs2 = 0;
+    reservation_station_t reg rs3 = 0;
+    func_self rs0_free();
+    func_self rs1_free();
+    func_self rs2_free();
+    func_self rs3_free();
+    func_self dispatch_rs0();
+    func_self dispatch_rs1();
+    func_self dispatch_rs2();
+    func_self dispatch_rs3();
 
-	func issue {
-		reservation_station_t wire new_rs_entry;
-		if(!flush) {
-			new_rs_entry.Busy = Valid;
-			new_rs_entry.Op = Op;
-			new_rs_entry.Vj = Vj;
-			new_rs_entry.Vk = Vk;
-			new_rs_entry.Qj = Qj;
-			new_rs_entry.Qk = Qk;
-			new_rs_entry.Dest = Dest;
-			new_rs_entry.A = A;
-			alt {
-				rs0_free: rs0 := new_rs_entry;
-				rs1_free: rs1 := new_rs_entry;
-				rs2_free: rs2 := new_rs_entry;
-				rs3_free: rs3 := new_rs_entry;
-			}
-		}
-	}
-	if(!flush && !stall) {
-		alt {
-			rs3.Busy && (rs3.Qj == 0) && (rs3.Qk == 0): {
-				dispatch_rs3();
-			}
-			rs2.Busy && (rs2.Qj == 0) && (rs2.Qk == 0): {
-				dispatch_rs2();
-			}
-			rs1.Busy && (rs1.Qj == 0) && (rs1.Qk == 0): {
-				dispatch_rs1();
-			}
-			rs0.Busy && (rs0.Qj == 0) && (rs0.Qk == 0): {
-				dispatch_rs0();
-			}
-		}
-	}
-	func dispatch_rs0 {
-		rs0.Busy := 0;
-		dispatch(rs0.Op, rs0.Dest, rs0.Vj, rs0.Vk, rs0.A);
-	}
-	func dispatch_rs1 {
-		rs1.Busy := 0;
-		dispatch(rs1.Op, rs1.Dest, rs1.Vj, rs1.Vk, rs1.A);
-	}
-	func dispatch_rs2 {
-		rs2.Busy := 0;
-		dispatch(rs2.Op, rs2.Dest, rs2.Vj, rs2.Vk, rs2.A);
-	}
-	func dispatch_rs3 {
-		rs3.Busy := 0;
-		dispatch(rs3.Op, rs3.Dest, rs3.Vj, rs3.Vk, rs3.A);
-	}
-	func CDB0 {
-		if(!flush) {
-			any {
-				(rs3.Qj == CDB0Id) && rs3.Busy: {rs3.Vj := CDB0Val; rs3.Qj := 0;}
-				(rs3.Qk == CDB0Id) && rs3.Busy: {rs3.Vk := CDB0Val; rs3.Qk := 0;}
-				(rs2.Qj == CDB0Id) && rs2.Busy: {rs2.Vj := CDB0Val; rs2.Qj := 0;}
-				(rs2.Qk == CDB0Id) && rs2.Busy: {rs2.Vk := CDB0Val; rs2.Qk := 0;}
-				(rs1.Qj == CDB0Id) && rs1.Busy: {rs1.Vj := CDB0Val; rs1.Qj := 0;}
-				(rs1.Qk == CDB0Id) && rs1.Busy: {rs1.Vk := CDB0Val; rs1.Qk := 0;}
-				(rs0.Qj == CDB0Id) && rs0.Busy: {rs0.Vj := CDB0Val; rs0.Qj := 0;}
-				(rs0.Qk == CDB0Id) && rs0.Busy: {rs0.Vk := CDB0Val; rs0.Qk := 0;}
-			}
-		}
-	}
-	func CDB1 {
-		if(!flush) {
-			any {
-				(rs3.Qj == CDB1Id) && rs3.Busy: {rs3.Vj := CDB1Val; rs3.Qj := 0;}
-				(rs3.Qk == CDB1Id) && rs3.Busy: {rs3.Vk := CDB1Val; rs3.Qk := 0;}
-				(rs2.Qj == CDB1Id) && rs2.Busy: {rs2.Vj := CDB1Val; rs2.Qj := 0;}
-				(rs2.Qk == CDB1Id) && rs2.Busy: {rs2.Vk := CDB1Val; rs2.Qk := 0;}
-				(rs1.Qj == CDB1Id) && rs1.Busy: {rs1.Vj := CDB1Val; rs1.Qj := 0;}
-				(rs1.Qk == CDB1Id) && rs1.Busy: {rs1.Vk := CDB1Val; rs1.Qk := 0;}
-				(rs0.Qj == CDB1Id) && rs0.Busy: {rs0.Vj := CDB1Val; rs0.Qj := 0;}
-				(rs0.Qk == CDB1Id) && rs0.Busy: {rs0.Vk := CDB1Val; rs0.Qk := 0;}
-			}
-		}
-	}
-	func CDB2 {
-		if(!flush) {
-			any {
-				(rs3.Qj == CDB2Id) && rs3.Busy: {rs3.Vj := CDB2Val; rs3.Qj := 0;}
-				(rs3.Qk == CDB2Id) && rs3.Busy: {rs3.Vk := CDB2Val; rs3.Qk := 0;}
-				(rs2.Qj == CDB2Id) && rs2.Busy: {rs2.Vj := CDB2Val; rs2.Qj := 0;}
-				(rs2.Qk == CDB2Id) && rs2.Busy: {rs2.Vk := CDB2Val; rs2.Qk := 0;}
-				(rs1.Qj == CDB2Id) && rs1.Busy: {rs1.Vj := CDB2Val; rs1.Qj := 0;}
-				(rs1.Qk == CDB2Id) && rs1.Busy: {rs1.Vk := CDB2Val; rs1.Qk := 0;}
-				(rs0.Qj == CDB2Id) && rs0.Busy: {rs0.Vj := CDB2Val; rs0.Qj := 0;}
-				(rs0.Qk == CDB2Id) && rs0.Busy: {rs0.Vk := CDB2Val; rs0.Qk := 0;}
-			}
-		}
-	}
-	func CDB3 {
-		if(!flush) {
-			any {
-				(rs3.Qj == CDB3Id) && rs3.Busy: {rs3.Vj := CDB3Val; rs3.Qj := 0;}
-				(rs3.Qk == CDB3Id) && rs3.Busy: {rs3.Vk := CDB3Val; rs3.Qk := 0;}
-				(rs2.Qj == CDB3Id) && rs2.Busy: {rs2.Vj := CDB3Val; rs2.Qj := 0;}
-				(rs2.Qk == CDB3Id) && rs2.Busy: {rs2.Vk := CDB3Val; rs2.Qk := 0;}
-				(rs1.Qj == CDB3Id) && rs1.Busy: {rs1.Vj := CDB3Val; rs1.Qj := 0;}
-				(rs1.Qk == CDB3Id) && rs1.Busy: {rs1.Vk := CDB3Val; rs1.Qk := 0;}
-				(rs0.Qj == CDB3Id) && rs0.Busy: {rs0.Vj := CDB3Val; rs0.Qj := 0;}
-				(rs0.Qk == CDB3Id) && rs0.Busy: {rs0.Vk := CDB3Val; rs0.Qk := 0;}
-			}
-		}
-	}
-	func flush {
-		rs3 := 0;
-		rs2 := 0;
-		rs1 := 0;
-		rs0 := 0;
-	}
-	if(!flush && (!rs3_free && !rs2_free && !rs1_free && !rs0_free)) {
-		full();
-	}
-	any {
-		(!rs3.Busy || dispatch_rs3): rs3_free();
-		(!rs2.Busy || dispatch_rs2): rs2_free();
-		(!rs1.Busy || dispatch_rs1): rs1_free();
-		(!rs0.Busy || dispatch_rs0): rs0_free();
-	}
+    func issue {
+        reservation_station_t wire new_rs_entry;
+        if(!flush) {
+            new_rs_entry.Busy = Valid;
+            new_rs_entry.Op = Op;
+            new_rs_entry.Vj = Vj;
+            new_rs_entry.Vk = Vk;
+            new_rs_entry.Qj = Qj;
+            new_rs_entry.Qk = Qk;
+            new_rs_entry.Dest = Dest;
+            new_rs_entry.A = A;
+            alt {
+                rs0_free: rs0 := new_rs_entry;
+                rs1_free: rs1 := new_rs_entry;
+                rs2_free: rs2 := new_rs_entry;
+                rs3_free: rs3 := new_rs_entry;
+            }
+        }
+    }
+    if(!flush && !stall) {
+        alt {
+            rs3.Busy && (rs3.Qj == 0) && (rs3.Qk == 0): {
+                dispatch_rs3();
+            }
+            rs2.Busy && (rs2.Qj == 0) && (rs2.Qk == 0): {
+                dispatch_rs2();
+            }
+            rs1.Busy && (rs1.Qj == 0) && (rs1.Qk == 0): {
+                dispatch_rs1();
+            }
+            rs0.Busy && (rs0.Qj == 0) && (rs0.Qk == 0): {
+                dispatch_rs0();
+            }
+        }
+    }
+    func dispatch_rs0 {
+        rs0.Busy := 0;
+        dispatch(rs0.Op, rs0.Dest, rs0.Vj, rs0.Vk, rs0.A);
+    }
+    func dispatch_rs1 {
+        rs1.Busy := 0;
+        dispatch(rs1.Op, rs1.Dest, rs1.Vj, rs1.Vk, rs1.A);
+    }
+    func dispatch_rs2 {
+        rs2.Busy := 0;
+        dispatch(rs2.Op, rs2.Dest, rs2.Vj, rs2.Vk, rs2.A);
+    }
+    func dispatch_rs3 {
+        rs3.Busy := 0;
+        dispatch(rs3.Op, rs3.Dest, rs3.Vj, rs3.Vk, rs3.A);
+    }
+    func CDB0 {
+        if(!flush) {
+            any {
+                (rs3.Qj == CDB0Id) && rs3.Busy: {rs3.Vj := CDB0Val; rs3.Qj := 0;}
+                (rs3.Qk == CDB0Id) && rs3.Busy: {rs3.Vk := CDB0Val; rs3.Qk := 0;}
+                (rs2.Qj == CDB0Id) && rs2.Busy: {rs2.Vj := CDB0Val; rs2.Qj := 0;}
+                (rs2.Qk == CDB0Id) && rs2.Busy: {rs2.Vk := CDB0Val; rs2.Qk := 0;}
+                (rs1.Qj == CDB0Id) && rs1.Busy: {rs1.Vj := CDB0Val; rs1.Qj := 0;}
+                (rs1.Qk == CDB0Id) && rs1.Busy: {rs1.Vk := CDB0Val; rs1.Qk := 0;}
+                (rs0.Qj == CDB0Id) && rs0.Busy: {rs0.Vj := CDB0Val; rs0.Qj := 0;}
+                (rs0.Qk == CDB0Id) && rs0.Busy: {rs0.Vk := CDB0Val; rs0.Qk := 0;}
+            }
+        }
+    }
+    func CDB1 {
+        if(!flush) {
+            any {
+                (rs3.Qj == CDB1Id) && rs3.Busy: {rs3.Vj := CDB1Val; rs3.Qj := 0;}
+                (rs3.Qk == CDB1Id) && rs3.Busy: {rs3.Vk := CDB1Val; rs3.Qk := 0;}
+                (rs2.Qj == CDB1Id) && rs2.Busy: {rs2.Vj := CDB1Val; rs2.Qj := 0;}
+                (rs2.Qk == CDB1Id) && rs2.Busy: {rs2.Vk := CDB1Val; rs2.Qk := 0;}
+                (rs1.Qj == CDB1Id) && rs1.Busy: {rs1.Vj := CDB1Val; rs1.Qj := 0;}
+                (rs1.Qk == CDB1Id) && rs1.Busy: {rs1.Vk := CDB1Val; rs1.Qk := 0;}
+                (rs0.Qj == CDB1Id) && rs0.Busy: {rs0.Vj := CDB1Val; rs0.Qj := 0;}
+                (rs0.Qk == CDB1Id) && rs0.Busy: {rs0.Vk := CDB1Val; rs0.Qk := 0;}
+            }
+        }
+    }
+    func CDB2 {
+        if(!flush) {
+            any {
+                (rs3.Qj == CDB2Id) && rs3.Busy: {rs3.Vj := CDB2Val; rs3.Qj := 0;}
+                (rs3.Qk == CDB2Id) && rs3.Busy: {rs3.Vk := CDB2Val; rs3.Qk := 0;}
+                (rs2.Qj == CDB2Id) && rs2.Busy: {rs2.Vj := CDB2Val; rs2.Qj := 0;}
+                (rs2.Qk == CDB2Id) && rs2.Busy: {rs2.Vk := CDB2Val; rs2.Qk := 0;}
+                (rs1.Qj == CDB2Id) && rs1.Busy: {rs1.Vj := CDB2Val; rs1.Qj := 0;}
+                (rs1.Qk == CDB2Id) && rs1.Busy: {rs1.Vk := CDB2Val; rs1.Qk := 0;}
+                (rs0.Qj == CDB2Id) && rs0.Busy: {rs0.Vj := CDB2Val; rs0.Qj := 0;}
+                (rs0.Qk == CDB2Id) && rs0.Busy: {rs0.Vk := CDB2Val; rs0.Qk := 0;}
+            }
+        }
+    }
+    func CDB3 {
+        if(!flush) {
+            any {
+                (rs3.Qj == CDB3Id) && rs3.Busy: {rs3.Vj := CDB3Val; rs3.Qj := 0;}
+                (rs3.Qk == CDB3Id) && rs3.Busy: {rs3.Vk := CDB3Val; rs3.Qk := 0;}
+                (rs2.Qj == CDB3Id) && rs2.Busy: {rs2.Vj := CDB3Val; rs2.Qj := 0;}
+                (rs2.Qk == CDB3Id) && rs2.Busy: {rs2.Vk := CDB3Val; rs2.Qk := 0;}
+                (rs1.Qj == CDB3Id) && rs1.Busy: {rs1.Vj := CDB3Val; rs1.Qj := 0;}
+                (rs1.Qk == CDB3Id) && rs1.Busy: {rs1.Vk := CDB3Val; rs1.Qk := 0;}
+                (rs0.Qj == CDB3Id) && rs0.Busy: {rs0.Vj := CDB3Val; rs0.Qj := 0;}
+                (rs0.Qk == CDB3Id) && rs0.Busy: {rs0.Vk := CDB3Val; rs0.Qk := 0;}
+            }
+        }
+    }
+    func flush {
+        rs3 := 0;
+        rs2 := 0;
+        rs1 := 0;
+        rs0 := 0;
+    }
+    if(!flush && (!rs3_free && !rs2_free && !rs1_free && !rs0_free)) {
+        full();
+    }
+    any {
+        (!rs3.Busy || dispatch_rs3): rs3_free();
+        (!rs2.Busy || dispatch_rs2): rs2_free();
+        (!rs1.Busy || dispatch_rs1): rs1_free();
+        (!rs0.Busy || dispatch_rs0): rs0_free();
+    }
 }

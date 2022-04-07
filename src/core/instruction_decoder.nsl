@@ -5,82 +5,82 @@
 #include "alu32.h"
 
 module instruction_decoder {
-	imm_gen imm_gen0;
+    imm_gen imm_gen0;
 
-	func decode {
-		wire inst_opcode[7];
-		wire inst_fn[4];
-		r_type_t wire inst_rtype;
-		i_type_t wire inst_itype;
-		u_type_t wire inst_utype;
-		j_type_t wire inst_jtype;
-		b_type_t wire inst_btype;
-		s_type_t wire inst_stype;
+    func decode {
+        wire inst_opcode[7];
+        wire inst_fn[4];
+        r_type_t wire inst_rtype;
+        i_type_t wire inst_itype;
+        u_type_t wire inst_utype;
+        j_type_t wire inst_jtype;
+        b_type_t wire inst_btype;
+        s_type_t wire inst_stype;
 
-		inst_opcode = inst[6:0];
-		inst_rtype = inst;
-		inst_itype = inst;
-		inst_utype = inst;
-		inst_jtype = inst;
-		inst_btype = inst;
-		inst_stype = inst;
-		any {
-			inst_opcode == OP: {
-				inst_fn = {inst_rtype.funct7[5], inst_rtype.funct3};
-				uop_alu(inst_opcode, inst_fn, inst_rtype.rd, RS_SEL_REG, inst_rtype.rs1, RS_SEL_REG, inst_rtype.rs2, 0);
-			}
-			inst_opcode == OP_IMM: {
-				imm_gen0.i_type(inst);
-				if((inst_itype.funct3 == ALU_SLL) || (inst_itype.funct3 == ALU_SRA) || (inst_itype.funct3 == ALU_SRL)) {
-					/* use rtype field for funct7 */
-					inst_fn = {inst_rtype.funct7[5], inst_itype.funct3};
-				} else {
-					inst_fn = {1'b0, inst_itype.funct3};
-				}
-				uop_alu(inst_opcode, inst_fn, inst_itype.rd, RS_SEL_REG, inst_itype.rs1, RS_SEL_IMM, 0, imm_gen0.imm);
-			}
-			inst_opcode == LUI: {
-				imm_gen0.u_type(inst);
-				inst_fn = ALU_OR;
-				uop_alu(inst_opcode, inst_fn, inst_utype.rd, RS_SEL_ZERO, 0, RS_SEL_IMM, 0, imm_gen0.imm);
-			}
-			inst_opcode == AUIPC: {
-				imm_gen0.u_type(inst);
-				inst_fn = ALU_ADD;
-				uop_alu(inst_opcode, inst_fn, inst_utype.rd, RS_SEL_PC, 0, RS_SEL_IMM, 0, imm_gen0.imm);
-			}
-			inst_opcode == JAL: {
-				imm_gen0.j_type(inst);
-				inst_fn = ALU_ADD;
-				uop_bru(inst_opcode, inst_fn, inst_jtype.rd, RS_SEL_PC, 0, RS_SEL_IMM, 0, imm_gen0.imm);
-				jump();
-			}
-			inst_opcode == JALR: {
-				imm_gen0.i_type(inst);
-				inst_fn = ALU_ADD;
-				uop_bru(inst_opcode, inst_fn, inst_itype.rd, RS_SEL_REG, inst_itype.rs1, RS_SEL_IMM, 0, imm_gen0.imm);
-				jump();
-			}
-			inst_opcode == BRANCH: {
-				imm_gen0.b_type(inst);
-				inst_fn = inst_btype.funct3;
-				uop_bru(inst_opcode, inst_fn, 0, RS_SEL_REG, inst_btype.rs1, RS_SEL_REG, inst_btype.rs2, imm_gen0.imm);
-				branch();
-			}
-			inst_opcode == LOAD: {
-				imm_gen0.i_type(inst);
-				// TODO:
-				inst_fn = {1'b0, inst_itype.funct3};
-				uop_lsu(inst_opcode, inst_fn, inst_itype.rd, RS_SEL_REG, inst_itype.rs1, RS_SEL_IMM, 0, imm_gen0.imm);
-				load();
-			}
-			inst_opcode == STORE: {
-				imm_gen0.s_type(inst);
-				// TODO:
-				inst_fn = {1'b1, inst_stype.funct3};
-				uop_lsu(inst_opcode, inst_fn, 0, RS_SEL_REG, inst_stype.rs1, RS_SEL_REG, inst_stype.rs2, imm_gen0.imm);
-				store();
-			}
-		}
-	}
+        inst_opcode = inst[6:0];
+        inst_rtype = inst;
+        inst_itype = inst;
+        inst_utype = inst;
+        inst_jtype = inst;
+        inst_btype = inst;
+        inst_stype = inst;
+        any {
+            inst_opcode == OP: {
+                inst_fn = {inst_rtype.funct7[5], inst_rtype.funct3};
+                uop_alu(inst_opcode, inst_fn, inst_rtype.rd, RS_SEL_REG, inst_rtype.rs1, RS_SEL_REG, inst_rtype.rs2, 0);
+            }
+            inst_opcode == OP_IMM: {
+                imm_gen0.i_type(inst);
+                if((inst_itype.funct3 == ALU_SLL) || (inst_itype.funct3 == ALU_SRA) || (inst_itype.funct3 == ALU_SRL)) {
+                    /* use rtype field for funct7 */
+                    inst_fn = {inst_rtype.funct7[5], inst_itype.funct3};
+                } else {
+                    inst_fn = {1'b0, inst_itype.funct3};
+                }
+                uop_alu(inst_opcode, inst_fn, inst_itype.rd, RS_SEL_REG, inst_itype.rs1, RS_SEL_IMM, 0, imm_gen0.imm);
+            }
+            inst_opcode == LUI: {
+                imm_gen0.u_type(inst);
+                inst_fn = ALU_OR;
+                uop_alu(inst_opcode, inst_fn, inst_utype.rd, RS_SEL_ZERO, 0, RS_SEL_IMM, 0, imm_gen0.imm);
+            }
+            inst_opcode == AUIPC: {
+                imm_gen0.u_type(inst);
+                inst_fn = ALU_ADD;
+                uop_alu(inst_opcode, inst_fn, inst_utype.rd, RS_SEL_PC, 0, RS_SEL_IMM, 0, imm_gen0.imm);
+            }
+            inst_opcode == JAL: {
+                imm_gen0.j_type(inst);
+                inst_fn = ALU_ADD;
+                uop_bru(inst_opcode, inst_fn, inst_jtype.rd, RS_SEL_PC, 0, RS_SEL_IMM, 0, imm_gen0.imm);
+                jump();
+            }
+            inst_opcode == JALR: {
+                imm_gen0.i_type(inst);
+                inst_fn = ALU_ADD;
+                uop_bru(inst_opcode, inst_fn, inst_itype.rd, RS_SEL_REG, inst_itype.rs1, RS_SEL_IMM, 0, imm_gen0.imm);
+                jump();
+            }
+            inst_opcode == BRANCH: {
+                imm_gen0.b_type(inst);
+                inst_fn = inst_btype.funct3;
+                uop_bru(inst_opcode, inst_fn, 0, RS_SEL_REG, inst_btype.rs1, RS_SEL_REG, inst_btype.rs2, imm_gen0.imm);
+                branch();
+            }
+            inst_opcode == LOAD: {
+                imm_gen0.i_type(inst);
+                // TODO:
+                inst_fn = {1'b0, inst_itype.funct3};
+                uop_lsu(inst_opcode, inst_fn, inst_itype.rd, RS_SEL_REG, inst_itype.rs1, RS_SEL_IMM, 0, imm_gen0.imm);
+                load();
+            }
+            inst_opcode == STORE: {
+                imm_gen0.s_type(inst);
+                // TODO:
+                inst_fn = {1'b1, inst_stype.funct3};
+                uop_lsu(inst_opcode, inst_fn, 0, RS_SEL_REG, inst_stype.rs1, RS_SEL_REG, inst_stype.rs2, imm_gen0.imm);
+                store();
+            }
+        }
+    }
 }
