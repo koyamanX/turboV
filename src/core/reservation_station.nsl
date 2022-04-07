@@ -15,21 +15,33 @@ module reservation_station {
     func_self dispatch_rs3();
 
     func issue {
-        reservation_station_t wire new_rs_entry;
+        reservation_station_t wire new_entry;
         if(!flush) {
-            new_rs_entry.Busy = Valid;
-            new_rs_entry.Op = Op;
-            new_rs_entry.Vj = Vj;
-            new_rs_entry.Vk = Vk;
-            new_rs_entry.Qj = Qj;
-            new_rs_entry.Qk = Qk;
-            new_rs_entry.Dest = Dest;
-            new_rs_entry.A = A;
+            new_entry.Busy = Valid;
+            new_entry.Op = Op;
+            any {
+                CDB0 && (Qj == CDB0Id) && Valid: {new_entry.Vj = CDB0Val; new_entry.Qj = 0;}
+                CDB0 && (Qk == CDB0Id) && Valid: {new_entry.Vk = CDB0Val; new_entry.Qk = 0;}
+                CDB1 && (Qj == CDB1Id) && Valid: {new_entry.Vj = CDB1Val; new_entry.Qj = 0;}
+                CDB1 && (Qk == CDB1Id) && Valid: {new_entry.Vk = CDB1Val; new_entry.Qk = 0;}
+                CDB2 && (Qj == CDB2Id) && Valid: {new_entry.Vj = CDB2Val; new_entry.Qj = 0;}
+                CDB2 && (Qk == CDB2Id) && Valid: {new_entry.Vk = CDB2Val; new_entry.Qk = 0;}
+                CDB3 && (Qj == CDB3Id) && Valid: {new_entry.Vj = CDB3Val; new_entry.Qj = 0;}
+                CDB3 && (Qk == CDB3Id) && Valid: {new_entry.Vk = CDB3Val; new_entry.Qk = 0;}
+                else: {
+                    new_entry.Vj = Vj;
+                    new_entry.Vk = Vk;
+                    new_entry.Qj = Qj;
+                    new_entry.Qk = Qk;
+                }
+            }
+            new_entry.Dest = Dest;
+            new_entry.A = A;
             alt {
-                rs0_free: rs0 := new_rs_entry;
-                rs1_free: rs1 := new_rs_entry;
-                rs2_free: rs2 := new_rs_entry;
-                rs3_free: rs3 := new_rs_entry;
+                rs0_free: rs0 := new_entry;
+                rs1_free: rs1 := new_entry;
+                rs2_free: rs2 := new_entry;
+                rs3_free: rs3 := new_entry;
             }
         }
     }

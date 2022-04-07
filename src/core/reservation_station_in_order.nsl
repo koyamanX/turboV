@@ -19,10 +19,23 @@ module reservation_station_in_order {
         if(!flush) {
             new_entry.Busy = Valid;
             new_entry.Op = Op;
-            new_entry.Vj = Vj;
-            new_entry.Vk = Vk;
-            new_entry.Qj = Qj;
-            new_entry.Qk = Qk;
+            /* Bypass */
+            any {
+                CDB0 && (Qj == CDB0Id) && Valid: {new_entry.Vj = CDB0Val; new_entry.Qj = 0;}
+                CDB0 && (Qk == CDB0Id) && Valid: {new_entry.Vk = CDB0Val; new_entry.Qk = 0;}
+                CDB1 && (Qj == CDB1Id) && Valid: {new_entry.Vj = CDB1Val; new_entry.Qj = 0;}
+                CDB1 && (Qk == CDB1Id) && Valid: {new_entry.Vk = CDB1Val; new_entry.Qk = 0;}
+                CDB2 && (Qj == CDB2Id) && Valid: {new_entry.Vj = CDB2Val; new_entry.Qj = 0;}
+                CDB2 && (Qk == CDB2Id) && Valid: {new_entry.Vk = CDB2Val; new_entry.Qk = 0;}
+                CDB3 && (Qj == CDB3Id) && Valid: {new_entry.Vj = CDB3Val; new_entry.Qj = 0;}
+                CDB3 && (Qk == CDB3Id) && Valid: {new_entry.Vk = CDB3Val; new_entry.Qk = 0;}
+                else: {
+                    new_entry.Vj = Vj;
+                    new_entry.Vk = Vk;
+                    new_entry.Qj = Qj;
+                    new_entry.Qk = Qk;
+                }
+            }
             new_entry.Dest = Dest;
             new_entry.A = A;
             any {
@@ -105,7 +118,7 @@ module reservation_station_in_order {
         head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 3: dispatch_entry = rs3;
     }
     if((dispatch_entry.Busy) && (dispatch_entry.Qj == 0) && (dispatch_entry.Qk == 0)) {
-        if(!flush) {
+        if(!flush && !stall) {
             any {
                 dispatch_entry.Busy: {
                     dispatch(dispatch_entry.Op, dispatch_entry.Dest, dispatch_entry.Vj, dispatch_entry.Qk, dispatch_entry.Vk, dispatch_entry.A);

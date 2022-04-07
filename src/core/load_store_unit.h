@@ -5,38 +5,20 @@
 #include "reorder_buffer.h"
 
 declare load_store_unit {
-    input issue0_A[32];
-    input issue0_uOp[7];
-    input issue0_Qj[ROB_TAG_SIZE];
-    input issue0_Vj[32];
-    input issue0_RobId[ROB_TAG_SIZE];
-    func_in issue0(issue0_A, issue0_uOp, issue0_Qj, issue0_Vj, issue0_RobId);
-    input issue1_A[32];
-    input issue1_uOp[7];
-    input issue1_Qj[ROB_TAG_SIZE];
-    input issue1_Vj[32];
-    input issue1_RobId[ROB_TAG_SIZE];
-    func_in issue1(issue1_A, issue1_uOp, issue1_Qj, issue1_Vj, issue1_RobId);
+    input issue_A[32];
+    input issue_uOp[7];
+    input issue_Qj[ROB_TAG_SIZE];
+    input issue_Vj[32];
+    input issue_RobId[ROB_TAG_SIZE];
+    func_in issue(issue_A, issue_uOp, issue_Qj, issue_Vj, issue_RobId);
+    func_out stall();
     func_out full();
     func_in flush();
-    input CDB0Id[ROB_TAG_SIZE];
-    input CDB0Val[32];
-    func_in CDB0(CDB0Id, CDB0Val);
-    input CDB1Id[ROB_TAG_SIZE];
-    input CDB1Val[32];
-    func_in CDB1(CDB1Id, CDB1Val);
-    input CDB2Id[ROB_TAG_SIZE];
-    input CDB2Val[32];
-    func_in CDB2(CDB2Id, CDB2Val);
-    input CDB3Id[ROB_TAG_SIZE];
-    input CDB3Val[32];
-    func_in CDB3(CDB3Id, CDB3Val);
     output CDBOutId[ROB_TAG_SIZE];
     output CDBOutVal[32];
     func_out CDBOut(CDBOutId, CDBOutVal);
     input commitId[ROB_TAG_SIZE];
     func_in commit(commitId);
-    func_out stall();
 
     WISHBONE_GEN_MASTER_IF(32, 64, 8)
 }

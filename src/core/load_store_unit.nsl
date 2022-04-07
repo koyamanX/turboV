@@ -4,44 +4,17 @@
 #include "uops.h"
 
 module load_store_unit {
-    load_queue ldq;
     wishbone_master wb_master_if;
-    wire load_A[32];
-    wire load_uOp[7];
-    wire load_RobId[ROB_TAG_SIZE];
-    func_self load(load_A, load_uOp, load_RobId);
     reg memory_A[32];
     reg memory_uOp[7];
     reg memory_RobId[ROB_TAG_SIZE];
     proc_name memory(memory_A, memory_uOp, memory_RobId);
-    load_queue_t wire ldq_entry;
 
-    func issue0 {
-        /* TLB access, always va == pa for now (TLB hit) */
-        if(!flush && issue0_uOp == uOP_LOAD_WORD) {
-            load(issue0_A, issue0_uOp, issue0_RobId);
-        }
+    func issue {
+        memory(issue_A, issue_uOp, issue_RobId);
     }
-    func issue1 {
-        /* TLB access, always va == pa for now (TLB hit) */
-        if(!flush && issue1_uOp == uOP_LOAD_WORD) {
-            load(issue1_A, issue1_uOp, issue1_RobId);
-        }
-    }
-    func load {
-        ldq.push(load_A, load_uOp, load_RobId);
-    }
-    if(!flush && ldq.full) {
+    if(!flush && memory) {
         full();
-    }
-    if(!flush && !memory) {
-        alt {
-            ldq.full: {
-                ldq.pop();
-                ldq_entry = ldq.pop_ldq_entry;
-                memory(ldq_entry.A, ldq_entry.Op, ldq_entry.RobId);
-            }
-        }
     }
     proc memory {
         state_name memory_req, memory_wait;
@@ -50,13 +23,7 @@ module load_store_unit {
             wb_master_if.req_read(memory_A, 0xff);
             if(wb_master_if.rsp_valid) {
                 CDBOut(memory_RobId, wb_master_if.rsp_data);
-                if(!ldq.empty) {
-                    ldq.pop();
-                    ldq_entry = ldq.pop_ldq_entry;
-                    memory(ldq_entry.A, ldq_entry.Op, ldq_entry.RobId);
-                } else {
-                    finish();
-                }
+                finish();
             } else {
                 goto memory_wait;
             }
@@ -64,28 +31,13 @@ module load_store_unit {
         state memory_wait {
             if(wb_master_if.rsp_valid) {
                 CDBOut(memory_RobId, wb_master_if.rsp_data);
-                if(!ldq.empty) {
-                    ldq.pop();
-                    ldq_entry = ldq.pop_ldq_entry;
-                    memory(ldq_entry.A, ldq_entry.Op, ldq_entry.RobId);
-                } else {
-                    finish();
-                }
+                finish();
                 goto memory_req;
             }
         }
         stall();
     }
     func flush {
-        ldq.flush();
-    }
-    func CDB0 {
-    }
-    func CDB1 {
-    }
-    func CDB2 {
-    }
-    func CDB3 {
     }
     func commit {
     }

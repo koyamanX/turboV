@@ -62,16 +62,9 @@ module turboV {
     reg execute_bru0_a[32];
     reg execute_bru0_b[32];
     reg execute_bru0_A[32];
-    reg execute_lsu0_fn[7];
-    reg execute_lsu0_dest[ROB_TAG_SIZE];
-    reg execute_lsu0_a[32];
-    reg execute_lsu0_b[32];
-    reg execute_lsu0_Qk[ROB_TAG_SIZE];
-    reg execute_lsu0_Vk[32];
     proc_name execute_alu0(execute_alu0_fn, execute_alu0_dest, execute_alu0_a, execute_alu0_b);
     proc_name execute_alu1(execute_alu1_fn, execute_alu1_dest, execute_alu1_a, execute_alu1_b);
     proc_name execute_bru0(execute_bru0_fn, execute_bru0_dest, execute_bru0_a, execute_bru0_b, execute_bru0_A);
-    proc_name execute_lsu0(execute_lsu0_fn, execute_lsu0_dest, execute_lsu0_a, execute_lsu0_b, execute_lsu0_Qk, execute_lsu0_Vk);
     /* Write Result stage */
     reg writeresult_alu0_dest[ROB_TAG_SIZE];
     reg writeresult_alu0_val[32];
@@ -119,7 +112,6 @@ module turboV {
         execute_alu0.finish();
         execute_alu1.finish();
         execute_bru0.finish();
-        execute_lsu0.finish();
         writeresult_alu0.finish();
         writeresult_alu1.finish();
         writeresult_bru0.finish();
@@ -467,9 +459,20 @@ module turboV {
             execute_bru0.invoke(bru_rs0.dispatch_Op, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_A);
         }
     }
+    if(lsu.full) {
+        lsu_rs0.stall();
+    }
     func lsu_rs0.dispatch {
+        wire lsu_rs0_dispatch_Addr[32];
         if(!flush && !lsu.full) {
-            execute_lsu0.invoke(lsu_rs0.dispatch_Op, lsu_rs0.dispatch_Dest, lsu_rs0.dispatch_Vj, lsu_rs0.dispatch_A, lsu_rs0.dispatch_Qk, lsu_rs0.dispatch_Vk);
+            lsu_rs0_dispatch_Addr = lsu_rs0.dispatch_Vj + lsu_rs0.dispatch_A;
+            lsu.issue(lsu_rs0_dispatch_Addr, lsu_rs0.dispatch_Op, lsu_rs0.dispatch_Qk, lsu_rs0.dispatch_Vk, lsu_rs0.dispatch_Dest);
+
+            alu_rs0.CDB3(lsu_rs0.dispatch_Dest, lsu_rs0_dispatch_Addr);
+            alu_rs1.CDB3(lsu_rs0.dispatch_Dest, lsu_rs0_dispatch_Addr);
+            bru_rs0.CDB3(lsu_rs0.dispatch_Dest, lsu_rs0_dispatch_Addr);
+            lsu_rs0.CDB3(lsu_rs0.dispatch_Dest, lsu_rs0_dispatch_Addr);
+            rob.CDB3(lsu_rs0.dispatch_Dest, lsu_rs0_dispatch_Addr);
         }
     }
     proc execute_alu0 {
@@ -497,12 +500,6 @@ module turboV {
             writeresult_bru0(execute_bru0_dest, bru0.taken, execute_bru0_A);
         }
     }
-    proc execute_lsu0 {
-        if(!flush && !lsu.full) {
-            lsu.issue0(execute_lsu0_a + execute_lsu0_b, execute_lsu0_fn, execute_lsu0_Qk, execute_lsu0_Vk, execute_lsu0_dest);
-            finish();
-        }
-    }
     proc writeresult_alu0 {
         if(!flush) {
             alu_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
@@ -510,7 +507,6 @@ module turboV {
             bru_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
             lsu_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
             rob.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
-            lsu.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
             finish();
         }
     }
@@ -521,7 +517,6 @@ module turboV {
             bru_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
             lsu_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
             rob.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
-            lsu.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
             finish();
         }
     }
@@ -532,7 +527,6 @@ module turboV {
             bru_rs0.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
             lsu_rs0.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
             rob.CDB2(writeresult_bru0_dest, writeresult_bru0_val, writeresult_bru0_target);
-            lsu.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
             finish();
         }
     }
@@ -543,7 +537,6 @@ module turboV {
             bru_rs0.CDB3(lsu.CDBOutId, lsu.CDBOutVal);
             lsu_rs0.CDB3(lsu.CDBOutId, lsu.CDBOutVal);
             rob.CDB3(lsu.CDBOutId, lsu.CDBOutVal);
-            lsu.CDB3(lsu.CDBOutId, lsu.CDBOutVal);
         }
     }
     func rob.commit {
@@ -607,21 +600,29 @@ module turboV {
         }
     }
 
+    ifu.CLK_I = CLK_I;
+    ifu.RST_I = RST_I;
     lsu.CLK_I = CLK_I;
     lsu.RST_I = RST_I;
+
     lsu.DAT_I = DAT_I;
-    if(ACK_I) lsu.ACK_I();
     if(ERR_I) lsu.ERR_I();
     if(RTY_I) lsu.RTY_I();
     if(STALL_I) lsu.STALL_I();
 
-    ifu.CLK_I = CLK_I;
-    ifu.RST_I = RST_I;
     ifu.DAT_I = DAT_I;
-    if(ACK_I) ifu.ACK_I();
     if(ERR_I) ifu.ERR_I();
     if(RTY_I) ifu.RTY_I();
     if(STALL_I) ifu.STALL_I();
+
+    alt {
+        lsu.CYC_O: {
+            if(ACK_I) lsu.ACK_I();
+        }
+        ifu.CYC_O: {
+            if(ACK_I) ifu.ACK_I();
+        }
+    }
 
     alt {
         ((lsu.CYC_O && lsu.STB_O) || lsu.LOCK_O): {
