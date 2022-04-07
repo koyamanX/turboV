@@ -170,7 +170,7 @@ module turboV {
 					decode_issue_packet.inst0_valid 	= decode_fetch_packet1.valid0;
 					decode_issue_packet.inst0_pred		= decode_fetch_packet1.pred0;
 					decode_issue_packet.inst0_pc		= decode_fetch_packet1.pc0;
-					decode_issue_packet.inst0			= decode_fetch_packet1.inst0;
+					decode_issue_packet.inst0		= decode_fetch_packet1.inst0;
 					decode_issue_packet.inst0_opcode	= idec0.opcode;
 					decode_issue_packet.inst0_uop		= idec0.uop;
 					decode_issue_packet.inst0_rd		= idec0.uop_rd;
@@ -184,7 +184,7 @@ module turboV {
 					decode_issue_packet.inst1_pred		= 0;
 					decode_issue_packet.inst1_pc		= decode_fetch_packet1.pc1;
 					decode_issue_packet.inst1_npc		= decode_fetch_packet1.npc1;
-					decode_issue_packet.inst1			= 0;
+					decode_issue_packet.inst1		= 0;
 					decode_issue_packet.inst1_opcode	= 0;
 					decode_issue_packet.inst1_uop		= 0;
 					decode_issue_packet.inst1_rd		= 0;
@@ -202,7 +202,7 @@ module turboV {
 					decode_issue_packet.inst0_valid 	= decode_fetch_packet1.valid0;
 					decode_issue_packet.inst0_pred		= decode_fetch_packet1.pred0;
 					decode_issue_packet.inst0_pc		= decode_fetch_packet1.pc0;
-					decode_issue_packet.inst0			= decode_fetch_packet1.inst0;
+					decode_issue_packet.inst0		= decode_fetch_packet1.inst0;
 					decode_issue_packet.inst0_opcode	= idec0.opcode;
 					decode_issue_packet.inst0_uop		= idec0.uop;
 					decode_issue_packet.inst0_rd		= idec0.uop_rd;
@@ -216,7 +216,7 @@ module turboV {
 					decode_issue_packet.inst1_pred		= decode_fetch_packet1.pred1;
 					decode_issue_packet.inst1_pc		= decode_fetch_packet1.pc1;
 					decode_issue_packet.inst1_npc		= decode_fetch_packet1.npc1;
-					decode_issue_packet.inst1			= decode_fetch_packet1.inst1;
+					decode_issue_packet.inst1		= decode_fetch_packet1.inst1;
 					decode_issue_packet.inst1_opcode	= idec1.opcode;
 					decode_issue_packet.inst1_uop		= idec1.uop;
 					decode_issue_packet.inst1_rd		= idec1.uop_rd;
@@ -242,7 +242,7 @@ module turboV {
 				decode_issue_packet.inst0_valid 	= decode_fetch_packet2.valid0;
 				decode_issue_packet.inst0_pred		= decode_fetch_packet2.pred0;
 				decode_issue_packet.inst0_pc		= decode_fetch_packet2.pc0;
-				decode_issue_packet.inst0			= decode_fetch_packet2.inst0;
+				decode_issue_packet.inst0		= decode_fetch_packet2.inst0;
 				decode_issue_packet.inst0_opcode	= idec0.opcode;
 				decode_issue_packet.inst0_uop		= idec0.uop;
 				decode_issue_packet.inst0_rd		= idec0.uop_rd;
@@ -256,7 +256,7 @@ module turboV {
 				decode_issue_packet.inst1_pred		= 0;
 				decode_issue_packet.inst1_pc		= decode_fetch_packet1.pc1;
 				decode_issue_packet.inst1_npc		= decode_fetch_packet1.npc1;
-				decode_issue_packet.inst1			= 0;
+				decode_issue_packet.inst1		= 0;
 				decode_issue_packet.inst1_opcode	= 0;
 				decode_issue_packet.inst1_uop		= 0;
 				decode_issue_packet.inst1_rd		= 0;
