@@ -9,7 +9,7 @@ add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/turboV.nsl ${CMAKE_CURRENT_BINARY_DIR
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reorder_buffer.nsl ${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reservation_station.nsl ${CMAKE_CURRENT_BINARY_DIR}/reservation_station.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/bru32.nsl ${CMAKE_CURRENT_BINARY_DIR}/bru32.v)
-add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reservation_station_in_order_2way.nsl ${CMAKE_CURRENT_BINARY_DIR}/reservation_station_in_order_2way.v)
+add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reservation_station_in_order.nsl ${CMAKE_CURRENT_BINARY_DIR}/reservation_station_in_order.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/store_queue.nsl ${CMAKE_CURRENT_BINARY_DIR}/store_queue.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/load_queue.nsl ${CMAKE_CURRENT_BINARY_DIR}/load_queue.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/load_store_unit.nsl ${CMAKE_CURRENT_BINARY_DIR}/load_store_unit.v)
@@ -27,7 +27,7 @@ add_custom_target(core
 		${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v
 		${CMAKE_CURRENT_BINARY_DIR}/reservation_station.v
 		${CMAKE_CURRENT_BINARY_DIR}/bru32.v
-		${CMAKE_CURRENT_BINARY_DIR}/reservation_station_in_order_2way.v
+		${CMAKE_CURRENT_BINARY_DIR}/reservation_station_in_order.v
 		${CMAKE_CURRENT_BINARY_DIR}/store_queue.v
 		${CMAKE_CURRENT_BINARY_DIR}/load_queue.v
 		${CMAKE_CURRENT_BINARY_DIR}/load_store_unit.v
