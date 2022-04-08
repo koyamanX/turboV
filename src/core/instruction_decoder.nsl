@@ -77,7 +77,7 @@ module instruction_decoder {
             inst_opcode == STORE: {
                 imm_gen0.s_type(inst);
                 // TODO:
-                inst_fn = {1'b1, inst_stype.funct3};
+                inst_fn = {1'b1, inst_stype.funct3[2:0]};
                 uop_lsu(inst_opcode, inst_fn, 0, RS_SEL_REG, inst_stype.rs1, RS_SEL_REG, inst_stype.rs2, imm_gen0.imm);
                 store();
             }

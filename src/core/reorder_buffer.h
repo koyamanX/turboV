@@ -64,6 +64,9 @@ declare reorder_buffer {
     input CDB3Id[ROB_TAG_SIZE];
     input CDB3Val[32];
     func_in CDB3(CDB3Id, CDB3Val);
+    // TODO:
+    input StqId[ROB_TAG_SIZE];
+    func_in Store(StqId);
     output read_operandA_val[32];
     input read_operandA_id[ROB_TAG_SIZE];
     output read_operandA_busy;

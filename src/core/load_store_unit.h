@@ -7,10 +7,9 @@
 declare load_store_unit {
     input issue_A[32];
     input issue_uOp[7];
-    input issue_Qj[ROB_TAG_SIZE];
     input issue_Vj[32];
     input issue_RobId[ROB_TAG_SIZE];
-    func_in issue(issue_A, issue_uOp, issue_Qj, issue_Vj, issue_RobId);
+    func_in issue(issue_A, issue_uOp, issue_Vj, issue_RobId);
     func_out stall();
     func_out full();
     func_in flush();

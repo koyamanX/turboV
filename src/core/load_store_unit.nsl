@@ -6,23 +6,39 @@
 module load_store_unit {
     wishbone_master wb_master_if;
     reg memory_A[32];
+    reg memory_Data[32];
     reg memory_uOp[7];
     reg memory_RobId[ROB_TAG_SIZE];
-    proc_name memory(memory_A, memory_uOp, memory_RobId);
+    reg stqV = 0;
+    proc_name memory(memory_A, memory_Data, memory_uOp, memory_RobId);
 
     func issue {
-        memory(issue_A, issue_uOp, issue_RobId);
+        if(issue_uOp == uOP_LOAD_WORD) {
+            memory(issue_A, 0, issue_uOp, issue_RobId);
+        } else {
+            stqV := 1;
+            memory_A := issue_A;
+            memory_Data := issue_Vj;
+            memory_uOp := issue_uOp;
+            memory_RobId := issue_RobId;
+        }
     }
-    if(!flush && memory) {
+    if(!flush && (memory || stqV)) {
         full();
     }
     proc memory {
         state_name memory_req, memory_wait;
 
         state memory_req {
-            wb_master_if.req_read(memory_A, 0xff);
+            if(issue_uOp == uOP_LOAD_WORD) {
+                wb_master_if.req_read(memory_A, 0xff);
+            } else {
+                wb_master_if.req_write(memory_A, 0xff, memory_Data);
+            }
             if(wb_master_if.rsp_valid) {
-                CDBOut(memory_RobId, wb_master_if.rsp_data);
+                if(issue_uOp == uOP_LOAD_WORD) {
+                    CDBOut(memory_RobId, wb_master_if.rsp_data);
+                }
                 finish();
             } else {
                 goto memory_wait;
@@ -38,8 +54,13 @@ module load_store_unit {
         stall();
     }
     func flush {
+        stqV := 0;
     }
     func commit {
+        if(!flush) {
+            stqV := 0;
+            memory(memory_A, memory_Data, memory_uOp, memory_RobId);
+        }
     }
     WISHBONE_MASTER_IF(wb_master_if);
 }
