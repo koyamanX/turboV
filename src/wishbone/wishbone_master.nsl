@@ -7,13 +7,16 @@ module wishbone_master {
     reg req_data_internal[64];
     reg req_internal;
     proc_name wait4ack(req_addr_internal, req_sel_internal, req_data_internal, req_internal);
+    proc_name stall(req_addr_internal, req_sel_internal, req_data_internal, req_internal);
 
     func req_read {
         ADR_O = req_addr;
         SEL_O = req_sel;
         CYC_O();
         STB_O();
-        if(!ACK_I) {
+        if(STALL_I) {
+            stall(req_addr, req_sel, req_data, READ);
+        } else if(!ACK_I) {
             wait4ack(req_addr, req_sel, req_data, READ);
         }
     }
@@ -24,9 +27,27 @@ module wishbone_master {
         CYC_O();
         STB_O();
         WE_O();
-        if(!ACK_I) {
+        if(STALL_I) {
+            stall(req_addr, req_sel, req_data, WRITE);
+        } else if(!ACK_I) {
             wait4ack(req_addr, req_sel, req_data, WRITE);
         }
+    }
+    proc stall {
+        CYC_O();
+        if(!STALL_I) {
+            ADR_O = req_addr_internal;
+            SEL_O = req_sel_internal;
+            STB_O();
+            if(req_internal) {
+                DAT_O = req_data_internal;
+                WE_O();
+            }
+            if(!ACK_I) {
+                wait4ack(req_addr_internal, req_sel_internal, req_data_internal, req_internal);
+            }
+        }
+        req_stall();
     }
     proc wait4ack {
         CYC_O();

@@ -100,6 +100,7 @@ module turboV {
     mem register_status_table[32][1] = {0};
     /* Load Store Unit */
     load_store_unit lsu;
+    reg ownership = 0;
 
     func reset {
         ifu.reset();
@@ -599,27 +600,27 @@ module turboV {
     lsu.CLK_I = CLK_I;
     lsu.RST_I = RST_I;
 
-    lsu.DAT_I = DAT_I;
-    if(ERR_I) lsu.ERR_I();
-    if(RTY_I) lsu.RTY_I();
-    if(STALL_I) lsu.STALL_I();
-
-    ifu.DAT_I = DAT_I;
-    if(ERR_I) ifu.ERR_I();
-    if(RTY_I) ifu.RTY_I();
-    if(STALL_I) ifu.STALL_I();
-
     alt {
-        lsu.CYC_O: {
-            if(ACK_I) lsu.ACK_I();
+        lsu.CYC_O && lsu.STB_O && !ACK_I: {
+            ownership := 0;
         }
-        ifu.CYC_O: {
-            if(ACK_I) ifu.ACK_I();
+        ifu.CYC_O && ifu.STB_O && !ACK_I: {
+            ownership := 1;
+        }
+    }
+    alt {
+        (ownership == 0) && !lsu.LOCK_O && ACK_I: {
+            lsu.ACK_I();
+            ownership++;
+        }
+        (ownership == 1) && !ifu.LOCK_O && ACK_I: {
+            ifu.ACK_I();
+            ownership++;
         }
     }
 
     alt {
-        ((lsu.CYC_O && lsu.STB_O) || lsu.LOCK_O): {
+        ownership == 0: {
             ADR_O = lsu.ADR_O;
             SEL_O = lsu.SEL_O;
             DAT_O = lsu.DAT_O;
@@ -627,8 +628,13 @@ module turboV {
             if(lsu.STB_O) STB_O();
             if(lsu.WE_O) WE_O();
             if(lsu.LOCK_O) LOCK_O();
+            lsu.DAT_I = DAT_I;
+            if(ERR_I) lsu.ERR_I();
+            if(RTY_I) lsu.RTY_I();
+            if(STALL_I) lsu.STALL_I();
+            ifu.STALL_I();
         }
-        ((ifu.CYC_O && ifu.STB_O) || ifu.LOCK_O): {
+        ownership == 1: {
             ADR_O = ifu.ADR_O;
             SEL_O = ifu.SEL_O;
             DAT_O = ifu.DAT_O;
@@ -636,6 +642,11 @@ module turboV {
             if(ifu.STB_O) STB_O();
             if(ifu.WE_O) WE_O();
             if(ifu.LOCK_O) LOCK_O();
+            ifu.DAT_I = DAT_I;
+            if(ERR_I) ifu.ERR_I();
+            if(RTY_I) ifu.RTY_I();
+            if(STALL_I) ifu.STALL_I();
+            lsu.STALL_I();
         }
     }
 }
