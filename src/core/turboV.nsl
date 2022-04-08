@@ -610,11 +610,9 @@ module turboV {
     }
     alt {
         (ownership == 0) && !lsu.LOCK_O && ACK_I: {
-            lsu.ACK_I();
             ownership++;
         }
         (ownership == 1) && !ifu.LOCK_O && ACK_I: {
-            ifu.ACK_I();
             ownership++;
         }
     }
@@ -632,6 +630,7 @@ module turboV {
             if(ERR_I) lsu.ERR_I();
             if(RTY_I) lsu.RTY_I();
             if(STALL_I) lsu.STALL_I();
+            if(ACK_I) lsu.ACK_I();
             ifu.STALL_I();
         }
         ownership == 1: {
@@ -646,6 +645,7 @@ module turboV {
             if(ERR_I) ifu.ERR_I();
             if(RTY_I) ifu.RTY_I();
             if(STALL_I) ifu.STALL_I();
+            if(ACK_I) ifu.ACK_I();
             lsu.STALL_I();
         }
     }
