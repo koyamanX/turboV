@@ -30,13 +30,13 @@ module load_store_unit {
         state_name memory_req, memory_wait;
 
         state memory_req {
-            if(issue_uOp == uOP_LOAD_WORD) {
+            if(memory_uOp == uOP_LOAD_WORD) {
                 wb_master_if.req_read(memory_A, 0xff);
             } else {
                 wb_master_if.req_write(memory_A, 0xff, memory_Data);
             }
             if(wb_master_if.rsp_valid) {
-                if(issue_uOp == uOP_LOAD_WORD) {
+                if(memory_uOp == uOP_LOAD_WORD) {
                     CDBOut(memory_RobId, wb_master_if.rsp_data);
                 }
                 finish();

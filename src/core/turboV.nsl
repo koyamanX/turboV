@@ -100,7 +100,8 @@ module turboV {
     mem register_status_table[32][1] = {0};
     /* Load Store Unit */
     load_store_unit lsu;
-    reg ownership = 0;
+    reg ifu_grant = 0;
+    reg lsu_grant = 0;
 
     func reset {
         ifu.reset();
@@ -608,24 +609,28 @@ module turboV {
     lsu.RST_I = RST_I;
 
     alt {
-        lsu.CYC_O && lsu.STB_O && !ACK_I: {
-            ownership := 0;
+        lsu.CYC_O && !lsu_grant: {
+            lsu_grant := 1;
+            lsu.STALL_I();
+            ifu.STALL_I();
         }
-        ifu.CYC_O && ifu.STB_O && !ACK_I: {
-            ownership := 1;
+        ifu.CYC_O && !ifu_grant: {
+            ifu_grant := 1;
+            lsu.STALL_I();
+            ifu.STALL_I();
         }
     }
     alt {
-        (ownership == 0) && !lsu.LOCK_O && ACK_I: {
-            ownership++;
+        lsu_grant && lsu.CYC_O && ACK_I: {
+            lsu_grant := 0;
         }
-        (ownership == 1) && !ifu.LOCK_O && ACK_I: {
-            ownership++;
+        ifu_grant && ifu.CYC_O && ACK_I: {
+            ifu_grant := 0;
         }
     }
 
     alt {
-        ownership == 0: {
+        lsu_grant: {
             ADR_O = lsu.ADR_O;
             SEL_O = lsu.SEL_O;
             DAT_O = lsu.DAT_O;
@@ -640,7 +645,7 @@ module turboV {
             if(ACK_I) lsu.ACK_I();
             ifu.STALL_I();
         }
-        ownership == 1: {
+        ifu_grant: {
             ADR_O = ifu.ADR_O;
             SEL_O = ifu.SEL_O;
             DAT_O = ifu.DAT_O;
