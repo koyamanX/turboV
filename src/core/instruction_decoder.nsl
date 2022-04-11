@@ -27,7 +27,7 @@ module instruction_decoder {
         any {
             inst_opcode == OP: {
                 inst_fn = {inst_rtype.funct7[5], inst_rtype.funct3};
-                uop_alu(inst_opcode, inst_fn, inst_rtype.rd, RS_SEL_REG, inst_rtype.rs1, RS_SEL_REG, inst_rtype.rs2, 0);
+                uop_alu(inst_opcode, inst_fn, inst_rtype.rd, RS1_SEL_REG, inst_rtype.rs1, RS2_SEL_REG, inst_rtype.rs2, 0);
             }
             inst_opcode == OP_IMM: {
                 imm_gen0.i_type(inst);
@@ -37,48 +37,48 @@ module instruction_decoder {
                 } else {
                     inst_fn = {1'b0, inst_itype.funct3};
                 }
-                uop_alu(inst_opcode, inst_fn, inst_itype.rd, RS_SEL_REG, inst_itype.rs1, RS_SEL_IMM, 0, imm_gen0.imm);
+                uop_alu(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_IMM, 0, imm_gen0.imm);
             }
             inst_opcode == LUI: {
                 imm_gen0.u_type(inst);
                 inst_fn = ALU_OR;
-                uop_alu(inst_opcode, inst_fn, inst_utype.rd, RS_SEL_ZERO, 0, RS_SEL_IMM, 0, imm_gen0.imm);
+                uop_alu(inst_opcode, inst_fn, inst_utype.rd, RS1_SEL_ZERO, 0, RS2_SEL_IMM, 0, imm_gen0.imm);
             }
             inst_opcode == AUIPC: {
                 imm_gen0.u_type(inst);
                 inst_fn = ALU_ADD;
-                uop_alu(inst_opcode, inst_fn, inst_utype.rd, RS_SEL_PC, 0, RS_SEL_IMM, 0, imm_gen0.imm);
+                uop_alu(inst_opcode, inst_fn, inst_utype.rd, RS1_SEL_PC, 0, RS2_SEL_IMM, 0, imm_gen0.imm);
             }
             inst_opcode == JAL: {
                 imm_gen0.j_type(inst);
                 inst_fn = ALU_ADD;
-                uop_bru(inst_opcode, inst_fn, inst_jtype.rd, RS_SEL_PC, 0, RS_SEL_IMM, 0, imm_gen0.imm);
+                uop_bru(inst_opcode, inst_fn, inst_jtype.rd, RS1_SEL_PC, 0, RS2_SEL_IMM, 0, imm_gen0.imm);
                 jump();
             }
             inst_opcode == JALR: {
                 imm_gen0.i_type(inst);
                 inst_fn = ALU_ADD;
-                uop_bru(inst_opcode, inst_fn, inst_itype.rd, RS_SEL_REG, inst_itype.rs1, RS_SEL_IMM, 0, imm_gen0.imm);
+                uop_bru(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_IMM, 0, imm_gen0.imm);
                 jump();
             }
             inst_opcode == BRANCH: {
                 imm_gen0.b_type(inst);
                 inst_fn = inst_btype.funct3;
-                uop_bru(inst_opcode, inst_fn, 0, RS_SEL_REG, inst_btype.rs1, RS_SEL_REG, inst_btype.rs2, imm_gen0.imm);
+                uop_bru(inst_opcode, inst_fn, 0, RS1_SEL_REG, inst_btype.rs1, RS2_SEL_REG, inst_btype.rs2, imm_gen0.imm);
                 branch();
             }
             inst_opcode == LOAD: {
                 imm_gen0.i_type(inst);
                 // TODO:
                 inst_fn = {1'b0, inst_itype.funct3};
-                uop_lsu(inst_opcode, inst_fn, inst_itype.rd, RS_SEL_REG, inst_itype.rs1, RS_SEL_IMM, 0, imm_gen0.imm);
+                uop_lsu(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_IMM, 0, imm_gen0.imm);
                 load();
             }
             inst_opcode == STORE: {
                 imm_gen0.s_type(inst);
                 // TODO:
                 inst_fn = {1'b1, inst_stype.funct3[2:0]};
-                uop_lsu(inst_opcode, inst_fn, 0, RS_SEL_REG, inst_stype.rs1, RS_SEL_REG, inst_stype.rs2, imm_gen0.imm);
+                uop_lsu(inst_opcode, inst_fn, 0, RS1_SEL_REG, inst_stype.rs1, RS2_SEL_REG, inst_stype.rs2, imm_gen0.imm);
                 store();
             }
         }
