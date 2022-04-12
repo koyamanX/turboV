@@ -543,7 +543,7 @@ module turboV {
                 conflict will occur for register_status_table, so do not make READY.
                 issue_packet.inst0_rd is only valid on (issue && !stall_issue).
             */
-            if(rob.commit_Op0 != BRANCH) {
+            if(rob.commit_Opcode0 != BRANCH) {
                 // Branch instruction has no Dest register.
                 register_status_table[rob.commit_Dest0] := READY;
             }
@@ -553,24 +553,24 @@ module turboV {
                 conflict will occur for register_status_table, so do not make READY.
                 issue_packet.inst1_rd is only valid on (issue && !stall_issue).
             */
-            if(rob.commit_Op1 != BRANCH) {
+            if(rob.commit_Opcode1 != BRANCH) {
                 // Branch instruction has no Dest register.
                 register_status_table[rob.commit_Dest1] := READY;
             }
         }
         any {
-            ((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR)): {
+            ((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR)): {
                 // Jump instruction always redirect and flush pipeline.
                 gpr.writeA(rob.commit_Dest0, rob.commit_PC0+4);
                 ifu.redirect(rob.commit_Target0);
                 flush();
             }
-            ((rob.commit_Op0 == BRANCH) && (rob.commit_Value0[0] == 1)): {
+            ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)): {
                 // Branch instruction only redirect and flush pipeline if branch is taken.
                 ifu.redirect(rob.commit_Target0);
                 flush();
             }
-            (rob.commit_Op0 == STORE): {
+            (rob.commit_Opcode0 == STORE): {
                 lsu.commit(rob.commit_Dest0);
             }
             else: {
@@ -578,21 +578,21 @@ module turboV {
                 gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
             }
         }
-        if(!((rob.commit_Op0 == JAL) || (rob.commit_Op0 == JALR) || ((rob.commit_Op0 == BRANCH) && (rob.commit_Value0[0] == 1)))) {
+        if(!((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)))) {
             // If older instruction is taken branch, this instruction will be flushed.
             any {
-                ((rob.commit_Op1 == JAL) || (rob.commit_Op1 == JALR)): {
+                ((rob.commit_Opcode1 == JAL) || (rob.commit_Opcode1 == JALR)): {
                     // Jump instruction always redirect and flush pipeline.
                     gpr.writeA(rob.commit_Dest0, rob.commit_PC1+4);
                     ifu.redirect(rob.commit_Target1);
                     flush();
                 }
-                ((rob.commit_Op1 == BRANCH) && (rob.commit_Value1[0] == 1)): {
+                ((rob.commit_Opcode1 == BRANCH) && (rob.commit_Value1[0] == 1)): {
                     // Branch instruction only redirect and flush pipeline if branch is taken.
                     ifu.redirect(rob.commit_Target1);
                     flush();
                 }
-                (rob.commit_Op1 == STORE): {
+                (rob.commit_Opcode1 == STORE): {
                     lsu.commit(rob.commit_Dest1);
                 }
                 else: {
