@@ -20,6 +20,10 @@
 #define uOP_BRU_BLTU    4'b0110
 #define uOP_BRU_BGEU    4'b0111
 
+#define uOP_SYSTEM_CSRRW    7'b110_0110
+#define uOP_SYSTEM_CSRRS    7'b110_0110
+#define uOP_SYSTEM_CSRRC    7'b110_0111
+
 #define uOP_LOAD_WORD   4'b0010
 #define uOP_STORE_WORD  4'b1010
 

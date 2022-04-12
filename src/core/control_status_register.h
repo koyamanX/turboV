@@ -10,11 +10,11 @@ declare control_status_register {
     input csr_rnum[12];
     output csr_rdata[32];
     func_in read(csr_rnum): csr_rdata;
-    input wcsr[12];
     input csr_wnum[12];
     input csr_wdata[32];
     func_in write(csr_wnum, csr_wdata);
     func_out csr_illegal_instruction();
+    func_in reset();
 }
 
 #endif

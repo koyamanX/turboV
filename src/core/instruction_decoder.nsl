@@ -2,6 +2,7 @@
 #include "inst.h"
 #include "opcode_map.h"
 #include "imm_gen.h"
+#include "uops.h"
 #include "alu32.h"
 
 module instruction_decoder {
@@ -9,7 +10,7 @@ module instruction_decoder {
 
     func decode {
         wire inst_opcode[7];
-        wire inst_fn[4];
+        wire inst_fn[7];
         r_type_t wire inst_rtype;
         i_type_t wire inst_itype;
         u_type_t wire inst_utype;
@@ -80,6 +81,37 @@ module instruction_decoder {
                 inst_fn = {1'b1, inst_stype.funct3[2:0]};
                 uop_lsu(inst_opcode, inst_fn, 0, RS1_SEL_REG, inst_stype.rs1, RS2_SEL_REG, inst_stype.rs2, imm_gen0.imm);
                 store();
+            }
+            inst_opcode == SYSTEM: {
+                /* TODO: */
+                any {
+                    inst_itype.funct3 == SYSTEM_CSRRW: {
+                        inst_fn = uOP_SYSTEM_CSRRW;
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_ZERO, 0, RS2_SEL_CSR, 0, inst_itype.imm0);
+                    }
+                    inst_itype.funct3 == SYSTEM_CSRRS: {
+                        inst_fn = uOP_SYSTEM_CSRRS;
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                    }
+                    inst_itype.funct3 == SYSTEM_CSRRC: {
+                        inst_fn = uOP_SYSTEM_CSRRC;
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_NOT_CSR, 0, RS2_SEL_REG, inst_itype.rs1, inst_itype.imm0);
+                    }
+#if 0
+                    inst_itype.funct3 == SYSTEM_CSRRWI: {
+
+                    }
+                    inst_itype.funct3 == SYSTEM_CSRRSI: {
+
+                    }
+                    inst_itype.funct3 == SYSTEM_CSRRCI: {
+
+                    }
+#endif
+                    else: {
+                        uop_illegal_instruction();
+                    }
+                }
             }
         }
     }

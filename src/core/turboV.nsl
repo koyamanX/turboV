@@ -10,6 +10,8 @@
 #include "opcode_map.h"
 #include "bru32.h"
 #include "load_store_unit.h"
+#include "control_status_register.h"
+#include "priv.h"
 
 struct issue_packet_t {
     inst0_valid;
@@ -39,6 +41,7 @@ struct issue_packet_t {
     inst1_rs2[5];
     inst1_imm[32];
     inst1_jump;
+    csr_num[12];
 };
 
 module turboV {
@@ -102,9 +105,11 @@ module turboV {
     load_store_unit lsu;
     reg ifu_grant = 0;
     reg lsu_grant = 0;
+    control_status_register csr;
 
     func reset {
         ifu.reset();
+        csr.reset();
         ifu.redirect(resetvector);
         decode();
     }
@@ -151,7 +156,8 @@ module turboV {
                 idec1.decode(decode_fetch_packet1.inst1);
                 // Check if structural hazard occurs for FUs.
                 if(((idec0.uop_bru && decode_fetch_packet1.valid0) && (idec1.uop_bru && decode_fetch_packet1.valid1))
-                    || (((idec0.load || idec0.store) && decode_fetch_packet1.valid0) && ((idec1.load || idec1.store) && decode_fetch_packet1.valid1))) {
+                    || (((idec0.load || idec0.store) && decode_fetch_packet1.valid0) && ((idec1.load || idec1.store) && decode_fetch_packet1.valid1))
+                    || ((idec0.uop_system && decode_fetch_packet1.valid0) && (idec1.uop_system) && decode_fetch_packet1.valid1)) {
                     // If hazard occurs, send first instructions to issue.
                     decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
                     decode_issue_packet.inst0_pred      = decode_fetch_packet1.pred0;
@@ -180,6 +186,7 @@ module turboV {
                     decode_issue_packet.inst1_rs2       = 0;
                     decode_issue_packet.inst1_imm       = 0;
                     decode_issue_packet.inst1_jump      = 0;
+                    decode_issue_packet.csr_num         = idec0.uop_imm;
                     issue.invoke(decode_issue_packet);
                     // Handle remaining instructions in next cycle.
                     goto decode2;
@@ -212,6 +219,7 @@ module turboV {
                     decode_issue_packet.inst1_rs2       = idec1.uop_rs2;
                     decode_issue_packet.inst1_imm       = idec1.uop_imm;
                     decode_issue_packet.inst1_jump      = idec1.jump;
+                    decode_issue_packet.csr_num         = if(idec0.uop_system) idec0.uop_imm else idec1.uop_imm;
                     decode();
                     issue(decode_issue_packet);
                 }
@@ -252,6 +260,7 @@ module turboV {
                 decode_issue_packet.inst1_rs2       = 0;
                 decode_issue_packet.inst1_imm       = 0;
                 decode_issue_packet.inst1_jump      = 0;
+                decode_issue_packet.csr_num         = idec0.uop_imm;
 
                 issue.invoke(decode_issue_packet);
                 goto decode1;
@@ -301,6 +310,10 @@ module turboV {
                             issue_inst0_Qj = 0;
                         }
                     }
+                    (issue_packet.inst0_rs1_sel == RS1_SEL_NOT_CSR): {
+                        issue_inst0_Vj = ~csr.read(issue_packet.csr_num);
+                        issue_inst0_Qj = 0;
+                    }
                 }
                 /* inst0 rs2 read */
                 any {
@@ -325,6 +338,10 @@ module turboV {
                     }
                     (issue_packet.inst0_rs2_sel == RS2_SEL_IMM): {
                         issue_inst0_Vk = issue_packet.inst0_imm;
+                        issue_inst0_Qk = 0;
+                    }
+                    (issue_packet.inst0_rs2_sel == RS2_SEL_CSR): {
+                        issue_inst0_Vk = csr.read(issue_packet.csr_num);
                         issue_inst0_Qk = 0;
                     }
                 }
@@ -384,6 +401,10 @@ module turboV {
                             }
                         }
                     }
+                    (issue_packet.inst1_rs1_sel == RS1_SEL_NOT_CSR): {
+                        issue_inst1_Vj = ~csr.read(issue_packet.csr_num);
+                        issue_inst1_Qj = 0;
+                    }
                 }
                 /* inst1 rs2 read */
                 any {
@@ -415,6 +436,10 @@ module turboV {
                         issue_inst1_Vk = issue_packet.inst1_imm;
                         issue_inst1_Qk = 0;
                     }
+                    (issue_packet.inst1_rs2_sel == RS2_SEL_CSR): {
+                        issue_inst1_Vk = csr.read(issue_packet.csr_num);
+                        issue_inst1_Qk = 0;
+                    }
                 }
                 /* inst1 rd mapping */
                 if((issue_packet.inst1_rd != 0)) {
@@ -439,7 +464,8 @@ module turboV {
             }
             rob.issue(
                 issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode, issue_packet.inst0_uop,
-                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode, issue_packet.inst1_uop, 0
+                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode, issue_packet.inst1_uop,
+                issue_packet.csr_num, csr.csr_rdata
             );
             finish();
         } else {
@@ -573,6 +599,14 @@ module turboV {
             (rob.commit_Opcode0 == STORE): {
                 lsu.commit(rob.commit_Dest0);
             }
+            (rob.commit_Opcode0 == SYSTEM): {
+                if(rob.commit_uOp0[6:5] == 2'b11) {
+                    csr.write(rob.commit_CSR_num, rob.commit_Value0);
+                    gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
+                }
+                ifu.redirect(rob.commit_PC0 + 4);
+                flush();
+            }
             else: {
                 // Other instructions which has Dest register field.
                 gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
@@ -595,6 +629,14 @@ module turboV {
                 (rob.commit_Opcode1 == STORE): {
                     lsu.commit(rob.commit_Dest1);
                 }
+                (rob.commit_Opcode1 == SYSTEM): {
+                    if(rob.commit_uOp1[6:5] == 2'b11) {
+                        csr.write(rob.commit_CSR_num, rob.commit_Value1);
+                        gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
+                    }
+                    ifu.redirect(rob.commit_PC1 + 4);
+                    flush();
+                }
                 else: {
                     // Other instructions which has Dest register field.
                     gpr.writeB(rob.commit_Dest1, rob.commit_Value1);
@@ -602,6 +644,8 @@ module turboV {
             }
         }
     }
+
+    csr.mode = MACHINE;
 
     ifu.CLK_I = CLK_I;
     ifu.RST_I = RST_I;

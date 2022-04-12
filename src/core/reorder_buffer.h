@@ -24,8 +24,9 @@ struct reorder_buffer_t {
     Opcode1[7];
     uOp1[7];
     Target1[32];
-    CSR[12];
-#define SIZEOF_REORDER_BUFFER_T 310
+    CSR_num[12];
+    CSR_Value[32];
+#define SIZEOF_REORDER_BUFFER_T 342
 };
 declare reorder_buffer {
     input valid0;
@@ -40,9 +41,10 @@ declare reorder_buffer {
     input dest1[5];
     input opcode1[7];
     input uop1[7];
-    input csr[12];
+    input csr_num[12];
+    input csr_value[32];
     output tag[ROB_TAG_SIZE];
-    func_in issue(valid0, pc0, inst0, dest0, opcode0, uop0, valid1, pc1, inst1, dest1, opcode1, uop1, csr): tag;
+    func_in issue(valid0, pc0, inst0, dest0, opcode0, uop0, valid1, pc1, inst1, dest1, opcode1, uop1, csr_num, csr_value): tag;
     func_in flush();
     func_out full();
     func_in commit_stall();
@@ -58,8 +60,9 @@ declare reorder_buffer {
     output commit_uOp1[7];
     output commit_PC1[32];
     output commit_Target1[32];
-    output commit_CSR[12];
-    func_out commit(commit_Dest0, commit_Value0, commit_Opcode0, commit_uOp0, commit_PC0, commit_Target0, commit_Dest1, commit_Value1, commit_Opcode1, commit_uOp1, commit_PC1, commit_Target1, commit_CSR);
+    output commit_CSR_num[12];
+    output commit_CSR_Value[32];
+    func_out commit(commit_Dest0, commit_Value0, commit_Opcode0, commit_uOp0, commit_PC0, commit_Target0, commit_Dest1, commit_Value1, commit_Opcode1, commit_uOp1, commit_PC1, commit_Target1, commit_CSR_num, commit_CSR_Value);
     input CDB0Id[ROB_TAG_SIZE];
     input CDB0Val[32];
     func_in CDB0(CDB0Id, CDB0Val);

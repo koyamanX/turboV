@@ -3,6 +3,11 @@
 module control_status_register {
     reg misa[32];
 
+    func reset {
+        /* TODO: */
+        misa := 0;
+    }
+
     func read {
         any {
             (mode >= MACHINE) && (csr_rnum == MISA): {
@@ -16,7 +21,7 @@ module control_status_register {
     func write {
         any {
             (mode >= MACHINE) && (csr_wnum == MISA): {
-                ;
+                misa := csr_wdata;
             }
             else: {
                 csr_illegal_instruction();
