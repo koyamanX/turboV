@@ -438,8 +438,8 @@ module turboV {
                 }
             }
             rob.issue(
-                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode,
-                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode
+                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode, issue_packet.inst0_uop,
+                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode, issue_packet.inst1_uop, 0
             );
             finish();
         } else {
