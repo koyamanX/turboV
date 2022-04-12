@@ -1,0 +1,26 @@
+#include "control_status_register.h"
+
+module control_status_register {
+    reg misa[32];
+
+    func read {
+        any {
+            (mode >= MACHINE) && (csr_rnum == MISA): {
+                return misa;
+            }
+            else: {
+                csr_illegal_instruction();
+            }
+        }
+    }
+    func write {
+        any {
+            (mode >= MACHINE) && (csr_wnum == MISA): {
+                ;
+            }
+            else: {
+                csr_illegal_instruction();
+            }
+        }
+    }
+}
