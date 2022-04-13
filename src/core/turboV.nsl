@@ -108,11 +108,13 @@ module turboV {
     reg ifu_grant = 0;
     reg lsu_grant = 0;
     control_status_register csr;
+    mtvec_t wire xtvec;
 
+    xtvec = csr.xtvec;
     func reset {
         ifu.reset();
         csr.reset();
-        ifu.redirect(resetvector);
+        ifu.redirect({xtvec.base, 2'b00});
         decode();
     }
     func flush {

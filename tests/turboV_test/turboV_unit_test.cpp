@@ -17,26 +17,18 @@ protected:
 	~turboV_unit_test(void) {
 
 	}
-	void Reset(uint32_t v) {
-		reset = true;
-		resetvector = v;
-	}
 	void Step() {
 		sim->reset = reset;
-		sim->resetvector = resetvector;
 		Tick();
 		reset = false;
-		resetvector = 0x0;
 		sim->reset = reset;
-		sim->resetvector = resetvector;
 	}
 	bool reset = false;
-	uint32_t resetvector;
 };
 TEST_F(turboV_unit_test, Reset) {
 	SetUp("Reset.vcd");
 
-	Reset(0x0);
+    reset = true;
 	Step();
 	for(int i = 0; i < 1024; i++) {
 		Tick();

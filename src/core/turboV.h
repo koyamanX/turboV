@@ -7,8 +7,7 @@
 #define READY 1'b0
 
 declare turboV {
-    input resetvector[32];
-    func_in reset(resetvector);
+    func_in reset();
 
     WISHBONE_GEN_MASTER_IF(32, 64, 8)
 }

@@ -9,7 +9,7 @@ module control_status_register {
     mhartid_t reg mhartid = 0;
     mstatush_t reg mstatush = 0;
     mstatus_t reg mstatus = 0;
-    mtvec_t reg mtvec = 0;
+    mtvec_t reg mtvec = {0, MTVEC_MODE_DIRECT};
     medeleg_t reg medeleg = 0;
     mideleg_t reg mideleg = 0;
     mip_t reg mip = 0;
@@ -23,6 +23,8 @@ module control_status_register {
         /* TODO: */
         misa.mxl := MISA_MXL_XLEN32;
         misa.extensions := (MISA_EXTENSIONS_I);
+        mtvec.mode := MTVEC_MODE_DIRECT;
+        mtvec.base := 0;
     }
 
     func read {
@@ -104,6 +106,11 @@ module control_status_register {
                 // nop
             }
             (mode >= MACHINE) && (csr_wnum == MTVEC): {
+                mtvec.base := csr_wdata[31:2];
+                any {
+                    csr_wdata[1:0] == 0: mtvec.mode := csr_wdata[1:0];
+                    csr_wdata[1:0] == 1: mtvec.mode := csr_wdata[1:0];
+                }
                 // nop
             }
             (mode >= MACHINE) && (csr_wnum == MEDELEG): {
@@ -133,6 +140,11 @@ module control_status_register {
             else: {
                 csr_illegal_instruction();
             }
+        }
+    }
+    any {
+        mode == MACHINE: {
+            xtvec = mtvec;
         }
     }
 }

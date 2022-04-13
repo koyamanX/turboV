@@ -4,8 +4,7 @@
 #include "rom64x2K.h"
 
 declare turboV_unit_test simulation {
-	input resetvector[32];
-	func_in reset(resetvector);
+	func_in reset();
 }
 
 module turboV_unit_test {
@@ -14,7 +13,7 @@ module turboV_unit_test {
 	rom64x2K wb_rom;
 
 	func reset {
-		core.reset(resetvector);
+		core.reset();
 		wb_rom.reset();
 	}
 	wb_syscon.CLK_I = m_clock;

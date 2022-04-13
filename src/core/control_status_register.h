@@ -15,6 +15,7 @@ declare control_status_register {
     func_in write(csr_wnum, csr_wdata);
     func_out csr_illegal_instruction();
     func_in reset();
+    output xtvec[32];
 }
 
 #endif
