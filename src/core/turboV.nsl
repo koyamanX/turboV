@@ -163,7 +163,7 @@ module turboV {
                     || (((idec0.load || idec0.store) && decode_fetch_packet1.valid0) && ((idec1.load || idec1.store) && decode_fetch_packet1.valid1))
                     || ((idec0.uop_system && decode_fetch_packet1.valid0) && (idec1.uop_system) && decode_fetch_packet1.valid1)) {
                     // If hazard occurs, send first instructions to issue.
-                    decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
+                    decode_issue_packet.inst0_valid     = if(|decode_issue_packet.inst0_cause) 0 else decode_fetch_packet1.valid0;
                     decode_issue_packet.inst0_pred      = decode_fetch_packet1.pred0;
                     decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc0;
                     decode_issue_packet.inst0           = decode_fetch_packet1.inst0;
@@ -198,7 +198,7 @@ module turboV {
                     goto decode2;
                 } else {
                     // No structual hazard for FUs.
-                    decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
+                    decode_issue_packet.inst0_valid     = if(|decode_issue_packet.inst0_cause) 0 else decode_fetch_packet1.valid0;
                     decode_issue_packet.inst0_pred      = decode_fetch_packet1.pred0;
                     decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc0;
                     decode_issue_packet.inst0           = decode_fetch_packet1.inst0;
@@ -212,7 +212,7 @@ module turboV {
                     decode_issue_packet.inst0_imm       = idec0.uop_imm;
                     decode_issue_packet.inst0_jump      = idec0.jump;
                     decode_issue_packet.inst0_cause     = idec0.uop_illegal_instruction << 2;
-                    decode_issue_packet.inst1_valid     = decode_fetch_packet1.valid1;
+                    decode_issue_packet.inst1_valid     = if(|decode_issue_packet.inst1_cause) 0 else decode_fetch_packet1.valid1;
                     decode_issue_packet.inst1_pred      = decode_fetch_packet1.pred1;
                     decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc1;
                     decode_issue_packet.inst1_npc       = decode_fetch_packet1.npc1;
