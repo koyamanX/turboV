@@ -27,6 +27,7 @@ struct issue_packet_t {
     inst0_rs2[5];
     inst0_imm[32];
     inst0_jump;
+    inst0_cause[16];
     inst1_valid;
     inst1_pred;
     inst1_pc[XLEN];
@@ -41,6 +42,7 @@ struct issue_packet_t {
     inst1_rs2[5];
     inst1_imm[32];
     inst1_jump;
+    inst1_cause[16];
     csr_num[12];
 };
 
@@ -172,6 +174,7 @@ module turboV {
                     decode_issue_packet.inst0_rs2       = idec0.uop_rs2;
                     decode_issue_packet.inst0_imm       = idec0.uop_imm;
                     decode_issue_packet.inst0_jump      = idec0.jump;
+                    decode_issue_packet.inst0_cause     = idec0.uop_illegal_instruction << 2;
                     decode_issue_packet.inst1_valid     = 0;
                     decode_issue_packet.inst1_pred      = 0;
                     decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc1;
@@ -186,6 +189,7 @@ module turboV {
                     decode_issue_packet.inst1_rs2       = 0;
                     decode_issue_packet.inst1_imm       = 0;
                     decode_issue_packet.inst1_jump      = 0;
+                    decode_issue_packet.inst1_cause     = 0;
                     decode_issue_packet.csr_num         = idec0.uop_imm;
                     issue.invoke(decode_issue_packet);
                     // Handle remaining instructions in next cycle.
@@ -205,6 +209,7 @@ module turboV {
                     decode_issue_packet.inst0_rs2       = idec0.uop_rs2;
                     decode_issue_packet.inst0_imm       = idec0.uop_imm;
                     decode_issue_packet.inst0_jump      = idec0.jump;
+                    decode_issue_packet.inst0_cause     = idec0.uop_illegal_instruction << 2;
                     decode_issue_packet.inst1_valid     = decode_fetch_packet1.valid1;
                     decode_issue_packet.inst1_pred      = decode_fetch_packet1.pred1;
                     decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc1;
@@ -219,6 +224,7 @@ module turboV {
                     decode_issue_packet.inst1_rs2       = idec1.uop_rs2;
                     decode_issue_packet.inst1_imm       = idec1.uop_imm;
                     decode_issue_packet.inst1_jump      = idec1.jump;
+                    decode_issue_packet.inst1_cause     = idec1.uop_illegal_instruction << 2;
                     decode_issue_packet.csr_num         = if(idec0.uop_system) idec0.uop_imm else idec1.uop_imm;
                     decode();
                     issue(decode_issue_packet);
@@ -246,6 +252,7 @@ module turboV {
                 decode_issue_packet.inst0_rs2       = idec0.uop_rs2;
                 decode_issue_packet.inst0_imm       = idec0.uop_imm;
                 decode_issue_packet.inst0_jump      = idec0.jump;
+                decode_issue_packet.inst0_cause     = idec0.uop_illegal_instruction << 2;
                 decode_issue_packet.inst1_valid     = 0;
                 decode_issue_packet.inst1_pred      = 0;
                 decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc1;
@@ -260,6 +267,7 @@ module turboV {
                 decode_issue_packet.inst1_rs2       = 0;
                 decode_issue_packet.inst1_imm       = 0;
                 decode_issue_packet.inst1_jump      = 0;
+                decode_issue_packet.inst1_cause     = 0;
                 decode_issue_packet.csr_num         = idec0.uop_imm;
 
                 issue.invoke(decode_issue_packet);
@@ -463,8 +471,8 @@ module turboV {
                 }
             }
             rob.issue(
-                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode, issue_packet.inst0_uop, 0,
-                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode, issue_packet.inst1_uop, 0,
+                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode, issue_packet.inst0_uop, issue_packet.inst0_cause,
+                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode, issue_packet.inst1_uop, issue_packet.inst1_cause,
                 issue_packet.csr_num, csr.csr_rdata
             );
             finish();
