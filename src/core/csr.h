@@ -1,5 +1,5 @@
-#ifndef CSR_MAP_H
-#define CSR_MAP_H
+#ifndef CSR_H
+#define CSR_H
 
 #define MISA            0x301
 

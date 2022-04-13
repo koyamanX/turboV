@@ -2,7 +2,7 @@
 #define CONTROL_STATUS_REGISTER_H
 
 #include "priv.h"
-#include "csr_map.h"
+#include "csr.h"
 
 declare control_status_register {
     input mode[2];
