@@ -15,6 +15,7 @@ struct reorder_buffer_t {
     Opcode0[7];
     uOp0[7];
     Target0[32];
+    Cause0[16];
     Valid1;
     Busy1;
     PC1[32];
@@ -24,9 +25,10 @@ struct reorder_buffer_t {
     Opcode1[7];
     uOp1[7];
     Target1[32];
+    Cause1[16];
     CSR_num[12];
     CSR_Value[32];
-#define SIZEOF_REORDER_BUFFER_T 342
+#define SIZEOF_REORDER_BUFFER_T 374
 };
 declare reorder_buffer {
     input valid0;
@@ -35,16 +37,18 @@ declare reorder_buffer {
     input dest0[5];
     input opcode0[7];
     input uop0[7];
+    input cause0[16];
     input valid1;
     input pc1[32];
     input inst1[32];
     input dest1[5];
     input opcode1[7];
     input uop1[7];
+    input cause1[16];
     input csr_num[12];
     input csr_value[32];
     output tag[ROB_TAG_SIZE];
-    func_in issue(valid0, pc0, inst0, dest0, opcode0, uop0, valid1, pc1, inst1, dest1, opcode1, uop1, csr_num, csr_value): tag;
+    func_in issue(valid0, pc0, inst0, dest0, opcode0, uop0, cause0, valid1, pc1, inst1, dest1, opcode1, uop1, cause1, csr_num, csr_value): tag;
     func_in flush();
     func_out full();
     func_in commit_stall();
@@ -54,15 +58,17 @@ declare reorder_buffer {
     output commit_uOp0[7];
     output commit_PC0[32];
     output commit_Target0[32];
+    output commit_Cause0[16];
     output commit_Dest1[5];
     output commit_Value1[32];
     output commit_Opcode1[7];
     output commit_uOp1[7];
     output commit_PC1[32];
     output commit_Target1[32];
+    output commit_Cause1[16];
     output commit_CSR_num[12];
     output commit_CSR_Value[32];
-    func_out commit(commit_Dest0, commit_Value0, commit_Opcode0, commit_uOp0, commit_PC0, commit_Target0, commit_Dest1, commit_Value1, commit_Opcode1, commit_uOp1, commit_PC1, commit_Target1, commit_CSR_num, commit_CSR_Value);
+    func_out commit(commit_Dest0, commit_Value0, commit_Opcode0, commit_uOp0, commit_PC0, commit_Target0, commit_Cause0, commit_Dest1, commit_Value1, commit_Opcode1, commit_uOp1, commit_PC1, commit_Target1, commit_Cause1, commit_CSR_num, commit_CSR_Value);
     input CDB0Id[ROB_TAG_SIZE];
     input CDB0Val[32];
     func_in CDB0(CDB0Id, CDB0Val);
