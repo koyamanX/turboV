@@ -655,8 +655,6 @@ module turboV {
         }
     }
 
-    csr.mode = MACHINE;
-
     ifu.CLK_I = CLK_I;
     ifu.RST_I = RST_I;
     lsu.CLK_I = CLK_I;

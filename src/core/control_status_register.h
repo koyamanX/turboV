@@ -5,8 +5,6 @@
 #include "csr.h"
 
 declare control_status_register {
-    input mode[2];
-
     input csr_rnum[12];
     output csr_rdata[32];
     func_in read(csr_rnum): csr_rdata;

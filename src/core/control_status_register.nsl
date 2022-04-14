@@ -18,9 +18,11 @@ module control_status_register {
     mepc_t reg mepc = 0;
     mtval_t reg mtval = 0;
     mcause_t reg mcause = 0;
+    reg mode = MACHINE;
 
     func reset {
         /* TODO: */
+        mode := MACHINE;
         misa.mxl := MISA_MXL_XLEN32;
         misa.extensions := (MISA_EXTENSIONS_I);
         mtvec.mode := MTVEC_MODE_DIRECT;
