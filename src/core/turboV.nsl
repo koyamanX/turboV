@@ -108,14 +108,14 @@ module turboV {
     reg ifu_grant = 0;
     reg lsu_grant = 0;
     control_status_register csr;
-    proc_name soft_reset();
+    proc_name warm_reset();
 
     func reset {
-        if(!soft_reset) {
-            soft_reset.invoke();
+        if(!warm_reset) {
+            warm_reset.invoke();
         }
     }
-    proc soft_reset seq {
+    proc warm_reset seq {
         {
             ifu.reset();
             csr.reset();
