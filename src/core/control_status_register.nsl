@@ -22,23 +22,39 @@ module control_status_register {
 
     func reset {
         /* TODO: */
-        mode := MACHINE;
-        misa.mxl := MISA_MXL_XLEN32;
-        misa.extensions := (MISA_EXTENSIONS_I);
-        mtvec.mode := MTVEC_MODE_DIRECT;
-        mtvec.base := 0;
+        mode                := MACHINE;
+        misa.mxl            := MISA_MXL_XLEN32;
+        misa.extensions     := (MISA_EXTENSIONS_I);
+        mtvec.mode          := MTVEC_MODE_DIRECT;
+        mtvec.base          := 0;
+        mstatus.mie         := 0;
+        mstatus.mprv        := 0;
+        mstatus.mpp         := MACHINE;
+        mstatush.mbe        := 0;
     }
     func trap {
         any {
             (mode == MACHINE): {
-                mode := trap_mode;
-                mcause := trap_cause;
-                mepc := trap_pc;
-                mtval := mtval;
+                mstatus.mpie    := mstatus.mie;
+                mstatus.mie     := 0;
+                mstatus.mpp     := trap_mode;
+                mode            := trap_mode;
+                mcause          := trap_cause;
+                mepc            := trap_pc;
+                mtval           := mtval;
 
                 return {mtvec.base, 2'b00};
             }
         }
+    }
+    func mret {
+        mtval           := 0;
+        mstatus.mie     := mstatus.mpie;
+        mstatus.mpie    := 1;
+        mstatus.mprv    := 0;
+        mode            := mstatus.mpp;
+
+        return mepc;
     }
     func read {
         if(!trap) {

@@ -20,6 +20,8 @@ declare control_status_register {
     input trap_val[32];
     output trap_vector[32];
     func_in trap(trap_mode, trap_cause, trap_pc, trap_val): trap_vector;
+    output mret_pc[32];
+    func_in mret(): mret_pc;
 }
 
 #endif
