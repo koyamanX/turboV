@@ -13,7 +13,13 @@ declare control_status_register {
     func_in write(csr_wnum, csr_wdata);
     func_out csr_illegal_instruction();
     func_in reset();
-    output xtvec[32];
+
+    input trap_mode[2];
+    input trap_cause[32];
+    input trap_pc[32];
+    input trap_val[32];
+    output trap_vector[32];
+    func_in trap(trap_mode, trap_cause, trap_pc, trap_val): trap_vector;
 }
 
 #endif

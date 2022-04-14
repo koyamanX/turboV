@@ -108,14 +108,23 @@ module turboV {
     reg ifu_grant = 0;
     reg lsu_grant = 0;
     control_status_register csr;
-    mtvec_t wire xtvec;
+    proc_name soft_reset();
 
-    xtvec = csr.xtvec;
     func reset {
-        ifu.reset();
-        csr.reset();
-        ifu.redirect({xtvec.base, 2'b00});
-        decode();
+        if(!soft_reset) {
+            soft_reset.invoke();
+        }
+    }
+    proc soft_reset seq {
+        {
+            ifu.reset();
+            csr.reset();
+        }
+        {
+            ifu.redirect(csr.trap(MACHINE, 0, 0, 0));
+            decode();
+            finish();
+        }
     }
     func flush {
         decode.finish();

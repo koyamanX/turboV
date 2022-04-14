@@ -28,125 +28,135 @@ module control_status_register {
         mtvec.mode := MTVEC_MODE_DIRECT;
         mtvec.base := 0;
     }
-
-    func read {
+    func trap {
         any {
-            (mode >= MACHINE) && (csr_rnum == MISA): {
-                return misa;
+            (mode == MACHINE): {
+                mode := trap_mode;
+                mcause := trap_cause;
+                mepc := trap_pc;
+                mtval := mtval;
+
+                return {mtvec.base, 2'b00};
             }
-            (mode >= MACHINE) && (csr_rnum == MVENDORID): {
-                return mvendorid;
-            }
-            (mode >= MACHINE) && (csr_rnum == MARCHID): {
-                return marchid;
-            }
-            (mode >= MACHINE) && (csr_rnum == MIMPID): {
-                return mimpid;
-            }
-            (mode >= MACHINE) && (csr_rnum == MHARTID): {
-                return mhartid;
-            }
-            (mode >= MACHINE) && (csr_rnum == MSTATUSH): {
-                return mstatush;
-            }
-            (mode >= MACHINE) && (csr_rnum == MSTATUS): {
-                return mstatus;
-            }
-            (mode >= MACHINE) && (csr_rnum == MTVEC): {
-                return mtvec;
-            }
-            (mode >= MACHINE) && (csr_rnum == MEDELEG): {
-                return medeleg;
-            }
-            (mode >= MACHINE) && (csr_rnum == MIDELEG): {
-                return mideleg;
-            }
-            (mode >= MACHINE) && (csr_rnum == MIP): {
-                return mip;
-            }
-            (mode >= MACHINE) && (csr_rnum == MIE): {
-                return mie;
-            }
-            (mode >= MACHINE) && (csr_rnum == MSCRATCH): {
-                return mscratch;
-            }
-            (mode >= MACHINE) && (csr_rnum == MEPC): {
-                return mepc;
-            }
-            (mode >= MACHINE) && (csr_rnum == MCAUSE): {
-                return mcause;
-            }
-            (mode >= MACHINE) && (csr_rnum == MTVAL): {
-                return mtval;
-            }
-            else: {
-                csr_illegal_instruction();
+        }
+    }
+    func read {
+        if(!trap) {
+            any {
+                (mode >= MACHINE) && (csr_rnum == MISA): {
+                    return misa;
+                }
+                (mode >= MACHINE) && (csr_rnum == MVENDORID): {
+                    return mvendorid;
+                }
+                (mode >= MACHINE) && (csr_rnum == MARCHID): {
+                    return marchid;
+                }
+                (mode >= MACHINE) && (csr_rnum == MIMPID): {
+                    return mimpid;
+                }
+                (mode >= MACHINE) && (csr_rnum == MHARTID): {
+                    return mhartid;
+                }
+                (mode >= MACHINE) && (csr_rnum == MSTATUSH): {
+                    return mstatush;
+                }
+                (mode >= MACHINE) && (csr_rnum == MSTATUS): {
+                    return mstatus;
+                }
+                (mode >= MACHINE) && (csr_rnum == MTVEC): {
+                    return mtvec;
+                }
+                (mode >= MACHINE) && (csr_rnum == MEDELEG): {
+                    return medeleg;
+                }
+                (mode >= MACHINE) && (csr_rnum == MIDELEG): {
+                    return mideleg;
+                }
+                (mode >= MACHINE) && (csr_rnum == MIP): {
+                    return mip;
+                }
+                (mode >= MACHINE) && (csr_rnum == MIE): {
+                    return mie;
+                }
+                (mode >= MACHINE) && (csr_rnum == MSCRATCH): {
+                    return mscratch;
+                }
+                (mode >= MACHINE) && (csr_rnum == MEPC): {
+                    return mepc;
+                }
+                (mode >= MACHINE) && (csr_rnum == MCAUSE): {
+                    return mcause;
+                }
+                (mode >= MACHINE) && (csr_rnum == MTVAL): {
+                    return mtval;
+                }
+                else: {
+                    csr_illegal_instruction();
+                }
             }
         }
     }
     func write {
-        any {
-            (mode >= MACHINE) && (csr_wnum == MISA): {
-                //misa := csr_wdata;
-            }
-            (mode >= MACHINE) && (csr_wnum == MVENDORID): {
-                // nop
-            }
-            (mode >= MACHINE) && (csr_wnum == MARCHID): {
-                // nop
-            }
-            (mode >= MACHINE) && (csr_wnum == MIMPID): {
-                // nop
-            }
-            (mode >= MACHINE) && (csr_wnum == MHARTID): {
-                // nop
-            }
-            (mode >= MACHINE) && (csr_wnum == MSTATUSH): {
-                // nop
-            }
-            (mode >= MACHINE) && (csr_wnum == MSTATUS): {
-                // nop
-            }
-            (mode >= MACHINE) && (csr_wnum == MTVEC): {
-                mtvec.base := csr_wdata[31:2];
-                any {
-                    csr_wdata[1:0] == 0: mtvec.mode := csr_wdata[1:0];
-                    csr_wdata[1:0] == 1: mtvec.mode := csr_wdata[1:0];
+        if(!trap) {
+            any {
+                (mode >= MACHINE) && (csr_wnum == MISA): {
+                    //misa := csr_wdata;
                 }
-                // nop
+                (mode >= MACHINE) && (csr_wnum == MVENDORID): {
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MARCHID): {
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MIMPID): {
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MHARTID): {
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MSTATUSH): {
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MSTATUS): {
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MTVEC): {
+                    mtvec.base := csr_wdata[31:2];
+                    any {
+                        csr_wdata[1:0] == 0: mtvec.mode := csr_wdata[1:0];
+                        csr_wdata[1:0] == 1: mtvec.mode := csr_wdata[1:0];
+                    }
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MEDELEG): {
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MIDELEG): {
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MIP): {
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MIE): {
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MSCRATCH): {
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MEPC): {
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MCAUSE): {
+                    // nop
+                }
+                (mode >= MACHINE) && (csr_wnum == MTVAL): {
+                    // nop
+                }
+                else: {
+                    csr_illegal_instruction();
+                }
             }
-            (mode >= MACHINE) && (csr_wnum == MEDELEG): {
-                // nop
-            }
-            (mode >= MACHINE) && (csr_wnum == MIDELEG): {
-                // nop
-            }
-            (mode >= MACHINE) && (csr_wnum == MIP): {
-                // nop
-            }
-            (mode >= MACHINE) && (csr_wnum == MIE): {
-                // nop
-            }
-            (mode >= MACHINE) && (csr_wnum == MSCRATCH): {
-                // nop
-            }
-            (mode >= MACHINE) && (csr_wnum == MEPC): {
-                // nop
-            }
-            (mode >= MACHINE) && (csr_wnum == MCAUSE): {
-                // nop
-            }
-            (mode >= MACHINE) && (csr_wnum == MTVAL): {
-                // nop
-            }
-            else: {
-                csr_illegal_instruction();
-            }
-        }
-    }
-    any {
-        mode == MACHINE: {
-            xtvec = mtvec;
         }
     }
 }
