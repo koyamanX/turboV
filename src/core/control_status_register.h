@@ -14,12 +14,11 @@ declare control_status_register {
     func_out csr_illegal_instruction();
     func_in reset();
 
-    input trap_mode[2];
     input trap_cause[32];
     input trap_pc[32];
     input trap_val[32];
     output trap_vector[32];
-    func_in trap(trap_mode, trap_cause, trap_pc, trap_val): trap_vector;
+    func_in trap(trap_cause, trap_pc, trap_val): trap_vector;
     output mret_pc[32];
     func_in mret(): mret_pc;
 }

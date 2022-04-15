@@ -16,7 +16,7 @@ module control_status_register {
     mepc_t reg mepc = 0;
     mtval_t reg mtval = 0;
     mcause_t reg mcause = 0;
-    reg mode = MACHINE;
+    reg mode[2] = MACHINE;
     /*
         SXLEN=32
         UXLEN=32
@@ -41,8 +41,8 @@ module control_status_register {
             (mode == MACHINE): {
                 mstatus.mpie    := mstatus.mie;
                 mstatus.mie     := 0;
-                mstatus.mpp     := trap_mode;
-                mode            := trap_mode;
+                mstatus.mpp     := MACHINE;
+                mode            := MACHINE;
                 mcause          := trap_cause;
                 mepc            := trap_pc;
                 mtval           := mtval;

@@ -87,7 +87,7 @@ module instruction_decoder {
                 any {
                     inst_itype.funct3 == SYSTEM_CSRRW: {
                         inst_fn = uOP_SYSTEM_CSRRW;
-                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_ZERO, 0, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     inst_itype.funct3 == SYSTEM_CSRRS: {
                         inst_fn = uOP_SYSTEM_CSRRS;

@@ -121,7 +121,7 @@ module turboV {
             csr.reset();
         }
         {
-            ifu.redirect(csr.trap(MACHINE, 0, 0, 0));
+            ifu.redirect(csr.trap(0, 0, 0));
             decode();
             finish();
         }
@@ -172,7 +172,7 @@ module turboV {
                     || (((idec0.load || idec0.store) && decode_fetch_packet1.valid0) && ((idec1.load || idec1.store) && decode_fetch_packet1.valid1))
                     || ((idec0.uop_system && decode_fetch_packet1.valid0) && (idec1.uop_system) && decode_fetch_packet1.valid1)) {
                     // If hazard occurs, send first instructions to issue.
-                    decode_issue_packet.inst0_valid     = if(|decode_issue_packet.inst0_cause) 0 else decode_fetch_packet1.valid0;
+                    decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
                     decode_issue_packet.inst0_pred      = decode_fetch_packet1.pred0;
                     decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc0;
                     decode_issue_packet.inst0           = decode_fetch_packet1.inst0;
@@ -185,7 +185,7 @@ module turboV {
                     decode_issue_packet.inst0_rs2       = idec0.uop_rs2;
                     decode_issue_packet.inst0_imm       = idec0.uop_imm;
                     decode_issue_packet.inst0_jump      = idec0.jump;
-                    decode_issue_packet.inst0_cause     = idec0.uop_illegal_instruction << 2;
+                    decode_issue_packet.inst0_cause     = {idec0.uop_illegal_instruction, 2'b00};
                     decode_issue_packet.inst1_valid     = 0;
                     decode_issue_packet.inst1_pred      = 0;
                     decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc1;
@@ -207,7 +207,7 @@ module turboV {
                     goto decode2;
                 } else {
                     // No structual hazard for FUs.
-                    decode_issue_packet.inst0_valid     = if(|decode_issue_packet.inst0_cause) 0 else decode_fetch_packet1.valid0;
+                    decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
                     decode_issue_packet.inst0_pred      = decode_fetch_packet1.pred0;
                     decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc0;
                     decode_issue_packet.inst0           = decode_fetch_packet1.inst0;
@@ -220,8 +220,8 @@ module turboV {
                     decode_issue_packet.inst0_rs2       = idec0.uop_rs2;
                     decode_issue_packet.inst0_imm       = idec0.uop_imm;
                     decode_issue_packet.inst0_jump      = idec0.jump;
-                    decode_issue_packet.inst0_cause     = idec0.uop_illegal_instruction << 2;
-                    decode_issue_packet.inst1_valid     = if(|decode_issue_packet.inst1_cause) 0 else decode_fetch_packet1.valid1;
+                    decode_issue_packet.inst0_cause     = {idec0.uop_illegal_instruction, 2'b00};
+                    decode_issue_packet.inst1_valid     = decode_fetch_packet1.valid1;
                     decode_issue_packet.inst1_pred      = decode_fetch_packet1.pred1;
                     decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc1;
                     decode_issue_packet.inst1_npc       = decode_fetch_packet1.npc1;
@@ -235,7 +235,7 @@ module turboV {
                     decode_issue_packet.inst1_rs2       = idec1.uop_rs2;
                     decode_issue_packet.inst1_imm       = idec1.uop_imm;
                     decode_issue_packet.inst1_jump      = idec1.jump;
-                    decode_issue_packet.inst1_cause     = idec1.uop_illegal_instruction << 2;
+                    decode_issue_packet.inst1_cause     = {idec1.uop_illegal_instruction, 2'b00};
                     decode_issue_packet.csr_num         = if(idec0.uop_system) idec0.uop_imm else idec1.uop_imm;
                     decode();
                     issue(decode_issue_packet);
@@ -263,7 +263,7 @@ module turboV {
                 decode_issue_packet.inst0_rs2       = idec0.uop_rs2;
                 decode_issue_packet.inst0_imm       = idec0.uop_imm;
                 decode_issue_packet.inst0_jump      = idec0.jump;
-                decode_issue_packet.inst0_cause     = idec0.uop_illegal_instruction << 2;
+                decode_issue_packet.inst0_cause     = {idec0.uop_illegal_instruction, 2'b00};
                 decode_issue_packet.inst1_valid     = 0;
                 decode_issue_packet.inst1_pred      = 0;
                 decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc1;
@@ -621,6 +621,13 @@ module turboV {
                     gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
                 }
             }
+        } else {
+            alt {
+                rob.commit_Cause0[2]: {
+                    flush();
+                    ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC0, rob.commit_Inst0));
+                }
+            }
         }
         if(!|rob.commit_Cause1 && !|rob.commit_Cause0) {
             if(!flush && !(issue && !stall_issue && (issue_packet.inst1_rd == rob.commit_Dest1))) {
@@ -662,6 +669,13 @@ module turboV {
                         // Other instructions which has Dest register field.
                         gpr.writeB(rob.commit_Dest1, rob.commit_Value1);
                     }
+                }
+            }
+        } else {
+            alt {
+                rob.commit_Cause1[2]: {
+                    flush();
+                    ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC1, rob.commit_Inst1));
                 }
             }
         }
