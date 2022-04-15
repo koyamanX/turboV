@@ -10,8 +10,6 @@ module control_status_register {
     mstatush_t reg mstatush = 0;
     mstatus_t reg mstatus = 0;
     mtvec_t reg mtvec = {0, MTVEC_MODE_DIRECT};
-    medeleg_t reg medeleg = 0;
-    mideleg_t reg mideleg = 0;
     mip_t reg mip = 0;
     mie_t reg mie = 0;
     mscratch_t reg mscratch = 0;
@@ -90,12 +88,6 @@ module control_status_register {
                 }
                 (mode >= MACHINE) && (csr_rnum == MTVEC): {
                     return mtvec;
-                }
-                (mode >= MACHINE) && (csr_rnum == MEDELEG): {
-                    return medeleg;
-                }
-                (mode >= MACHINE) && (csr_rnum == MIDELEG): {
-                    return mideleg;
                 }
                 (mode >= MACHINE) && (csr_rnum == MIP): {
                     return mip;
@@ -180,12 +172,6 @@ module control_status_register {
                         xtvec.mode == MTVEC_MODE_DIRECT: mtvec.mode := xtvec.mode;
                         xtvec.mode == MTVEC_MODE_VECTORED: mtvec.mode := xtvec.mode;
                     }
-                }
-                (mode >= MACHINE) && (csr_wnum == MEDELEG): {
-                    // nop
-                }
-                (mode >= MACHINE) && (csr_wnum == MIDELEG): {
-                    // nop
                 }
                 (mode >= MACHINE) && (csr_wnum == MIP): {
                     // nop
