@@ -121,7 +121,7 @@ module control_status_register {
         if(!trap) {
             any {
                 (mode >= MACHINE) && (csr_wnum == MISA): {
-                    //misa := csr_wdata;
+                    // nop
                 }
                 (mode >= MACHINE) && (csr_wnum == MVENDORID): {
                     // nop
@@ -136,7 +136,6 @@ module control_status_register {
                     // nop
                 }
                 (mode >= MACHINE) && (csr_wnum == MSTATUSH): {
-                    // nop
                     /*
                         MBE is always 0
                         SBE is always 0
@@ -175,7 +174,6 @@ module control_status_register {
                     }
                 }
                 (mode >= MACHINE) && (csr_wnum == MIP): {
-                    // nop
                     /*
                         read-only and written through memory-mapped interrupt controller.
                         - MEIP
@@ -189,7 +187,6 @@ module control_status_register {
                     */
                 }
                 (mode >= MACHINE) && (csr_wnum == MIE): {
-                    // nop
                     xie = csr_wdata;
                     mie.meie := xie.meie;
                     mie.mtie := xie.mtie;
@@ -202,10 +199,10 @@ module control_status_register {
                     */
                 }
                 (mode >= MACHINE) && (csr_wnum == MSCRATCH): {
-                    // nop
+                    mscratch := csr_wdata;
                 }
                 (mode >= MACHINE) && (csr_wnum == MEPC): {
-                    // nop
+                    mepc := csr_wdata;
                 }
                 (mode >= MACHINE) && (csr_wnum == MCAUSE): {
                     // nop
