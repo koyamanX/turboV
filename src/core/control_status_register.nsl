@@ -21,7 +21,9 @@ module control_status_register {
         SXLEN=32
         UXLEN=32
     */
+    wire ialign[2];
 
+    ialign = if(misa.extensions & MISA_EXTENSIONS_C) 2'b00 else 2'b11;
     func reset {
         /* TODO: */
         mode                := MACHINE;
@@ -46,9 +48,9 @@ module control_status_register {
                 mtval           := mtval;
 
                 any {
-                    (mtvec.mode == MTVEC_MODE_DIRECT): return {mtvec.base, 2'b00};
-                    (mtvec.mode == MTVEC_MODE_VECTORED) && !trap_cause[31]: return {mtvec.base, 2'b00};
-                    (mtvec.mode == MTVEC_MODE_VECTORED) && trap_cause[31]: return {mtvec.base, 2'b00} + 32'({trap_cause[9:0], 2'b00});
+                    (mtvec.mode == MTVEC_MODE_DIRECT): return {mtvec.base, 2'b00} & ~ialign;
+                    (mtvec.mode == MTVEC_MODE_VECTORED) && !trap_cause[31]: return {mtvec.base, 2'b00} & ~ialign;
+                    (mtvec.mode == MTVEC_MODE_VECTORED) && trap_cause[31]: return {mtvec.base, 2'b00} + 32'({trap_cause[9:0], 2'b00}) & ~ialign;
                 }
             }
         }
@@ -60,7 +62,7 @@ module control_status_register {
         mstatus.mprv    := 0;
         mode            := mstatus.mpp;
 
-        return mepc;
+        return mepc & ~ialign;
     }
     func read {
         if(!trap) {
@@ -99,7 +101,7 @@ module control_status_register {
                     return mscratch;
                 }
                 (mode >= MACHINE) && (csr_rnum == MEPC): {
-                    return mepc;
+                    return mepc & ~ialign;
                 }
                 (mode >= MACHINE) && (csr_rnum == MCAUSE): {
                     return mcause;
