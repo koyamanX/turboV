@@ -352,17 +352,13 @@ struct mie_t {
 	usie[1];
 };
 
-struct mscratch_t {
-    mscratch[32];
+struct csr32_t {
+    v[32];
 };
 
-struct mepc_t {
-    mepc[32];
-};
-
-struct mtval_t {
-    mtval[32];
-};
+#define mscratch_t csr32_t
+#define mepc_t csr32_t
+#define mtval_t csr32_t
 
 struct mcause_t {
     interrupt;
