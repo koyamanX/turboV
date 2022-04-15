@@ -145,7 +145,7 @@ module control_status_register {
                     */
                 }
                 (mode >= MACHINE) && (csr_wnum == MSTATUS): {
-                    xstatus = mstatus;
+                    xstatus = csr_wdata;
                     // nop
                     /*
                         UBE is always 0
