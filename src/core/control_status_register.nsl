@@ -207,10 +207,10 @@ module control_status_register {
                     mepc := csr_wdata;
                 }
                 (mode >= MACHINE) && (csr_wnum == MCAUSE): {
-                    // nop
+                    mcause := csr_wdata;
                 }
                 (mode >= MACHINE) && (csr_wnum == MTVAL): {
-                    // nop
+                    mtval := csr_wdata;
                 }
                 else: {
                     csr_illegal_instruction();
