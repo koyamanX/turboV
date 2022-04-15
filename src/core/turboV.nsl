@@ -582,7 +582,6 @@ module turboV {
         }
     }
     func rob.commit {
-        // Flush will be triggered in commit, Do not check !flush or combination loop occurs.
         if(!flush && !(issue && !stall_issue && (issue_packet.inst0_rd == rob.commit_Dest0))) {
             /* If rd field of instruction in issue stage has same register destination,
                 conflict will occur for register_status_table, so do not make READY.
