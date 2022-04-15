@@ -1,7 +1,7 @@
 #include "inst_buffer.h"
 
 module inst_buffer {
-    mem ibuf[8][SIZEOF_FETCH_PACKET_T];
+    mem ibuf[8][SIZEOF_FETCH_PACKET_T] = {0};
     reg rptr[4] = 0;
     reg wptr[4] = 0;
     wire next_rptr[4];

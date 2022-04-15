@@ -2,8 +2,8 @@
 #include "wishbone_master.h"
 
 module icache {
-    mem icache_valid_array[128];
-    mem icache_tag_array[128][20];
+    mem icache_valid_array[128] = {0};
+    mem icache_tag_array[128][20] = {0};
     mem icache_data_array[128][256];
     reg idle_icache_hit_valid = 0;
     reg idle_icache_hit_tag[20];
