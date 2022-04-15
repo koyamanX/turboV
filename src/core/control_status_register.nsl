@@ -116,6 +116,7 @@ module control_status_register {
     func write {
         mstatus_t wire xstatus;
         mtvec_t wire xtvec;
+        mie_t wire xie;
 
         if(!trap) {
             any {
@@ -175,9 +176,30 @@ module control_status_register {
                 }
                 (mode >= MACHINE) && (csr_wnum == MIP): {
                     // nop
+                    /*
+                        read-only and written through memory-mapped interrupt controller.
+                        - MEIP
+                        - MTIP
+                        - MSIP
+
+                        always 0
+                        - SEIP
+                        - STIP
+                        - SSIP
+                    */
                 }
                 (mode >= MACHINE) && (csr_wnum == MIE): {
                     // nop
+                    xie = csr_wdata;
+                    mie.meie := xie.meie;
+                    mie.mtie := xie.mtie;
+                    mie.msie := xie.msie;
+                    /*
+                        always 0
+                        - SEIP
+                        - STIP
+                        - SSIP
+                    */
                 }
                 (mode >= MACHINE) && (csr_wnum == MSCRATCH): {
                     // nop
