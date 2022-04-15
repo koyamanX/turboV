@@ -19,6 +19,10 @@ module control_status_register {
     mtval_t reg mtval = 0;
     mcause_t reg mcause = 0;
     reg mode = MACHINE;
+    /*
+        SXLEN=32
+        UXLEN=32
+    */
 
     func reset {
         /* TODO: */
@@ -30,7 +34,7 @@ module control_status_register {
         mstatus.mie         := 0;
         mstatus.mprv        := 0;
         mstatus.mpp         := MACHINE;
-        mstatush.mbe        := 0;
+        mstatush.mbe        := 0;   /* Little-endian */
     }
     func trap {
         any {
@@ -48,9 +52,9 @@ module control_status_register {
         }
     }
     func mret {
-        mtval           := 0;
         mstatus.mie     := mstatus.mpie;
         mstatus.mpie    := 1;
+        mstatus.mpp     := MACHINE;
         mstatus.mprv    := 0;
         mode            := mstatus.mpp;
 
@@ -114,6 +118,8 @@ module control_status_register {
         }
     }
     func write {
+        mstatus_t wire xstatus;
+
         if(!trap) {
             any {
                 (mode >= MACHINE) && (csr_wnum == MISA): {
@@ -133,9 +139,34 @@ module control_status_register {
                 }
                 (mode >= MACHINE) && (csr_wnum == MSTATUSH): {
                     // nop
+                    /*
+                        MBE is always 0
+                        SBE is always 0
+                    */
                 }
                 (mode >= MACHINE) && (csr_wnum == MSTATUS): {
+                    xstatus = mstatus;
                     // nop
+                    /*
+                        UBE is always 0
+                        TVM is always 0
+                        TW is always 0
+                        TSR is always 0
+                        SPIE is always 0
+                        SIE is always 0
+                        MPP takes MACHINE
+                        SPP is always 0
+                        MPRV is always 0
+                        MXR is always 0
+                        SUM is always 0
+                        FS is always 0
+                        XS is always 0
+                        VS is always 0
+                        SD is always 0
+                    */
+                    mstatus.mie     := xstatus.mie;
+                    mstatus.mpie    := xstatus.mpie;
+                    mstatus.mpp     := MACHINE;
                 }
                 (mode >= MACHINE) && (csr_wnum == MTVEC): {
                     mtvec.base := csr_wdata[31:2];
