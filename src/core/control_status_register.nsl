@@ -47,7 +47,11 @@ module control_status_register {
                 mepc            := trap_pc;
                 mtval           := mtval;
 
-                return {mtvec.base, 2'b00};
+                any {
+                    (mtvec.mode == MTVEC_MODE_DIRECT): return {mtvec.base, 2'b00};
+                    (mtvec.mode == MTVEC_MODE_VECTORED) && !trap_cause[31]: return {mtvec.base, 2'b00};
+                    (mtvec.mode == MTVEC_MODE_VECTORED) && trap_cause[31]: return {mtvec.base, 2'b00} + 32'({trap_cause[9:0], 2'b00});
+                }
             }
         }
     }
@@ -119,6 +123,7 @@ module control_status_register {
     }
     func write {
         mstatus_t wire xstatus;
+        mtvec_t wire xtvec;
 
         if(!trap) {
             any {
@@ -146,7 +151,6 @@ module control_status_register {
                 }
                 (mode >= MACHINE) && (csr_wnum == MSTATUS): {
                     xstatus = csr_wdata;
-                    // nop
                     /*
                         UBE is always 0
                         TVM is always 0
@@ -169,12 +173,13 @@ module control_status_register {
                     mstatus.mpp     := MACHINE;
                 }
                 (mode >= MACHINE) && (csr_wnum == MTVEC): {
-                    mtvec.base := csr_wdata[31:2];
+                    xtvec = csr_wdata;
+
+                    mtvec.base := xtvec.base;
                     any {
-                        csr_wdata[1:0] == 0: mtvec.mode := csr_wdata[1:0];
-                        csr_wdata[1:0] == 1: mtvec.mode := csr_wdata[1:0];
+                        xtvec.mode == MTVEC_MODE_DIRECT: mtvec.mode := xtvec.mode;
+                        xtvec.mode == MTVEC_MODE_VECTORED: mtvec.mode := xtvec.mode;
                     }
-                    // nop
                 }
                 (mode >= MACHINE) && (csr_wnum == MEDELEG): {
                     // nop
