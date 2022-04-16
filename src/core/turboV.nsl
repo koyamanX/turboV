@@ -12,6 +12,7 @@
 #include "load_store_unit.h"
 #include "control_status_register.h"
 #include "priv.h"
+#include "uops.h"
 
 struct issue_packet_t {
     inst0_valid;
@@ -588,7 +589,7 @@ module turboV {
                     conflict will occur for register_status_table, so do not make READY.
                     issue_packet.inst0_rd is only valid on (issue && !stall_issue).
                 */
-                if(rob.commit_Opcode0 != BRANCH) {
+                if((rob.commit_Opcode0 != BRANCH) && (rob.commit_uOp0 != uOP_SYSTEM_MRET) && (rob.commit_Opcode0 != STORE)) {
                     // Branch instruction has no Dest register.
                     register_status_table[rob.commit_Dest0] := READY;
                 }
@@ -612,9 +613,12 @@ module turboV {
                     if(rob.commit_uOp0[6:5] == 2'b11) {
                         csr.write(rob.commit_CSR_num, rob.commit_Value0);
                         gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
+                        ifu.redirect(rob.commit_PC0 + 4);
+                        flush();
+                    } else if(rob.commit_uOp0 == uOP_SYSTEM_MRET) {
+                        ifu.redirect(csr.mret());
+                        flush();
                     }
-                    ifu.redirect(rob.commit_PC0 + 4);
-                    flush();
                 }
                 else: {
                     // Other instructions which has Dest register field.
@@ -635,12 +639,12 @@ module turboV {
                     conflict will occur for register_status_table, so do not make READY.
                     issue_packet.inst1_rd is only valid on (issue && !stall_issue).
                 */
-                if(rob.commit_Opcode1 != BRANCH) {
+                if((rob.commit_Opcode1 != BRANCH) && (rob.commit_uOp1 != uOP_SYSTEM_MRET) && (rob.commit_Opcode1 != STORE)) {
                     // Branch instruction has no Dest register.
                     register_status_table[rob.commit_Dest1] := READY;
                 }
             }
-            if(!((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)))) {
+            if(!((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)) || (rob.commit_uOp0 == uOP_SYSTEM_MRET))) {
                 // If older instruction is taken branch, this instruction will be flushed.
                 any {
                     ((rob.commit_Opcode1 == JAL) || (rob.commit_Opcode1 == JALR)): {
@@ -661,9 +665,12 @@ module turboV {
                         if(rob.commit_uOp1[6:5] == 2'b11) {
                             csr.write(rob.commit_CSR_num, rob.commit_Value1);
                             gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
+                            ifu.redirect(rob.commit_PC1 + 4);
+                            flush();
+                        } else if(rob.commit_uOp1 == uOP_SYSTEM_MRET) {
+                            ifu.redirect(csr.mret());
+                            flush();
                         }
-                        ifu.redirect(rob.commit_PC1 + 4);
-                        flush();
                     }
                     else: {
                         // Other instructions which has Dest register field.

@@ -20,5 +20,9 @@
 #define SYSTEM_CSRRWI   3'b101
 #define SYSTEM_CSRRSI   3'b110
 #define SYSTEM_CSRRCI   3'b111
+#define SYSTEM_PRIV     3'b000 
+#define SYSTEM_MRET     12'b0011_0000_0010
+#define SYSTEM_ECALL    12'b0000_0000_0000
+#define SYSTEM_EBREAK   12'b0000_0000_0001
 
 #endif
