@@ -305,6 +305,8 @@ module turboV {
         wire issue_inst1_Qk[ROB_TAG_SIZE];
         wire issue_inst1_Vj[32];
         wire issue_inst1_Vk[32];
+        func_self issue_inst0_illegal_instruction();
+        func_self issue_inst1_illegal_instruction();
 
         if(!rob.full && !alu_rs0.full && !alu_rs1.full && !bru_rs0.full && !lsu_rs0.full && !flush) {
             /* TODO: Optimize RSs free entry check */
@@ -368,10 +370,16 @@ module turboV {
                     (issue_packet.inst0_rs2_sel == RS2_SEL_CSR): {
                         issue_inst0_Vk = csr.read(issue_packet.csr_num);
                         issue_inst0_Qk = 0;
+                        if(csr.csr_read_illegal_instruction) {
+                            issue_inst0_illegal_instruction();
+                        }
                     }
                     (issue_packet.inst0_rs2_sel == RS2_SEL_NOT_CSR): {
                         issue_inst0_Vk = ~csr.read(issue_packet.csr_num);
                         issue_inst0_Qk = 0;
+                        if(csr.csr_read_illegal_instruction) {
+                            issue_inst0_illegal_instruction();
+                        }
                     }
                 }
                 /* inst0 rd mapping */
@@ -464,10 +472,16 @@ module turboV {
                     (issue_packet.inst1_rs2_sel == RS2_SEL_CSR): {
                         issue_inst1_Vk = csr.read(issue_packet.csr_num);
                         issue_inst1_Qk = 0;
+                        if(csr.csr_read_illegal_instruction) {
+                            issue_inst1_illegal_instruction();
+                        }
                     }
                     (issue_packet.inst1_rs2_sel == RS2_SEL_NOT_CSR): {
                         issue_inst1_Vk = ~csr.read(issue_packet.csr_num);
                         issue_inst1_Qk = 0;
+                        if(csr.csr_read_illegal_instruction) {
+                            issue_inst1_illegal_instruction();
+                        }
                     }
                 }
                 /* inst1 rd mapping */
@@ -492,8 +506,8 @@ module turboV {
                 }
             }
             rob.issue(
-                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode, issue_packet.inst0_uop, issue_packet.inst0_cause,
-                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode, issue_packet.inst1_uop, issue_packet.inst1_cause,
+                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode, issue_packet.inst0_uop, (issue_packet.inst0_cause | issue_inst0_illegal_instruction << 2),
+                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode, issue_packet.inst1_uop, (issue_packet.inst1_cause | issue_inst1_illegal_instruction << 2),
                 issue_packet.csr_num, csr.csr_rdata
             );
             finish();
@@ -642,7 +656,7 @@ module turboV {
         } else {
             commit_inst0_cause = {0x0000, rob.commit_Cause0};
             alt {
-                commit_inst0_cause.illegal_instruction: {
+                commit_inst0_cause.illegal_instruction | csr.csr_write_illegal_instruction: {
                     flush();
                     ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC0, rob.commit_Inst0));
                 }
@@ -702,7 +716,7 @@ module turboV {
         } else {
             commit_inst1_cause = {0x0000, rob.commit_Cause1};
             alt {
-                commit_inst1_cause.illegal_instruction: {
+                commit_inst1_cause.illegal_instruction | csr.csr_write_illegal_instruction: {
                     flush();
                     ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC1, rob.commit_Inst1));
                 }

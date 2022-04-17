@@ -146,7 +146,7 @@ module control_status_register {
                 return mtval;
             }
             else: {
-                csr_illegal_instruction();
+                csr_read_illegal_instruction();
             }
         }
     }
@@ -155,101 +155,99 @@ module control_status_register {
         mtvec_t wire xtvec;
         mie_t wire xie;
 
-        if(!trap && !mret) {
-            any {
-                (mode >= MACHINE) && (csr_wnum == MISA): {
-                    // nop
-                }
-                (mode >= MACHINE) && (csr_wnum == MVENDORID): {
-                    // nop
-                }
-                (mode >= MACHINE) && (csr_wnum == MARCHID): {
-                    // nop
-                }
-                (mode >= MACHINE) && (csr_wnum == MIMPID): {
-                    // nop
-                }
-                (mode >= MACHINE) && (csr_wnum == MHARTID): {
-                    // nop
-                }
-                (mode >= MACHINE) && (csr_wnum == MSTATUSH): {
-                    /*
-                        MBE is always 0
-                        SBE is always 0
-                    */
-                }
-                (mode >= MACHINE) && (csr_wnum == MSTATUS): {
-                    xstatus = csr_wdata;
-                    /*
-                        UBE is always 0
-                        TVM is always 0
-                        TW is always 0
-                        TSR is always 0
-                        SPIE is always 0
-                        SIE is always 0
-                        MPP takes MACHINE
-                        SPP is always 0
-                        MPRV is always 0
-                        MXR is always 0
-                        SUM is always 0
-                        FS is always 0
-                        XS is always 0
-                        VS is always 0
-                        SD is always 0
-                    */
-                    mstatus.mie     := xstatus.mie;
-                    mstatus.mpie    := xstatus.mpie;
-                    mstatus.mpp     := MACHINE;
-                }
-                (mode >= MACHINE) && (csr_wnum == MTVEC): {
-                    xtvec = csr_wdata;
+        any {
+            (mode >= MACHINE) && (csr_wnum == MISA): {
+                // nop
+            }
+            (mode >= MACHINE) && (csr_wnum == MVENDORID): {
+                // nop
+            }
+            (mode >= MACHINE) && (csr_wnum == MARCHID): {
+                // nop
+            }
+            (mode >= MACHINE) && (csr_wnum == MIMPID): {
+                // nop
+            }
+            (mode >= MACHINE) && (csr_wnum == MHARTID): {
+                // nop
+            }
+            (mode >= MACHINE) && (csr_wnum == MSTATUSH): {
+                /*
+                    MBE is always 0
+                    SBE is always 0
+                */
+            }
+            (mode >= MACHINE) && (csr_wnum == MSTATUS): {
+                xstatus = csr_wdata;
+                /*
+                    UBE is always 0
+                    TVM is always 0
+                    TW is always 0
+                    TSR is always 0
+                    SPIE is always 0
+                    SIE is always 0
+                    MPP takes MACHINE
+                    SPP is always 0
+                    MPRV is always 0
+                    MXR is always 0
+                    SUM is always 0
+                    FS is always 0
+                    XS is always 0
+                    VS is always 0
+                    SD is always 0
+                */
+                mstatus.mie     := xstatus.mie;
+                mstatus.mpie    := xstatus.mpie;
+                mstatus.mpp     := MACHINE;
+            }
+            (mode >= MACHINE) && (csr_wnum == MTVEC): {
+                xtvec = csr_wdata;
 
-                    mtvec.base := xtvec.base;
-                    any {
-                        xtvec.mode == MTVEC_MODE_DIRECT: mtvec.mode := xtvec.mode;
-                        xtvec.mode == MTVEC_MODE_VECTORED: mtvec.mode := xtvec.mode;
-                    }
+                mtvec.base := xtvec.base;
+                any {
+                    xtvec.mode == MTVEC_MODE_DIRECT: mtvec.mode := xtvec.mode;
+                    xtvec.mode == MTVEC_MODE_VECTORED: mtvec.mode := xtvec.mode;
                 }
-                (mode >= MACHINE) && (csr_wnum == MIP): {
-                    /*
-                        read-only and written through memory-mapped interrupt controller.
-                        - MEIP
-                        - MTIP
-                        - MSIP
+            }
+            (mode >= MACHINE) && (csr_wnum == MIP): {
+                /*
+                    read-only and written through memory-mapped interrupt controller.
+                    - MEIP
+                    - MTIP
+                    - MSIP
 
-                        always 0
-                        - SEIP
-                        - STIP
-                        - SSIP
-                    */
-                }
-                (mode >= MACHINE) && (csr_wnum == MIE): {
-                    xie = csr_wdata;
-                    mie.meie := xie.meie;
-                    mie.mtie := xie.mtie;
-                    mie.msie := xie.msie;
-                    /*
-                        always 0
-                        - SEIP
-                        - STIP
-                        - SSIP
-                    */
-                }
-                (mode >= MACHINE) && (csr_wnum == MSCRATCH): {
-                    mscratch := csr_wdata;
-                }
-                (mode >= MACHINE) && (csr_wnum == MEPC): {
-                    mepc := csr_wdata;
-                }
-                (mode >= MACHINE) && (csr_wnum == MCAUSE): {
-                    mcause := csr_wdata;
-                }
-                (mode >= MACHINE) && (csr_wnum == MTVAL): {
-                    mtval := csr_wdata;
-                }
-                else: {
-                    csr_illegal_instruction();
-                }
+                    always 0
+                    - SEIP
+                    - STIP
+                    - SSIP
+                */
+            }
+            (mode >= MACHINE) && (csr_wnum == MIE): {
+                xie = csr_wdata;
+                mie.meie := xie.meie;
+                mie.mtie := xie.mtie;
+                mie.msie := xie.msie;
+                /*
+                    always 0
+                    - SEIP
+                    - STIP
+                    - SSIP
+                */
+            }
+            (mode >= MACHINE) && (csr_wnum == MSCRATCH): {
+                mscratch := csr_wdata;
+            }
+            (mode >= MACHINE) && (csr_wnum == MEPC): {
+                mepc := csr_wdata;
+            }
+            (mode >= MACHINE) && (csr_wnum == MCAUSE): {
+                mcause := csr_wdata;
+            }
+            (mode >= MACHINE) && (csr_wnum == MTVAL): {
+                mtval := csr_wdata;
+            }
+            else: {
+                csr_write_illegal_instruction();
             }
         }
     }
