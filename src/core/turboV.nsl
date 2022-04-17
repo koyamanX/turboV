@@ -311,10 +311,6 @@ module turboV {
             /* inst0 rs1 read */
             if(issue_packet.inst0_valid) {
                 any {
-                    (issue_packet.inst0_rs1_sel == RS1_SEL_ZERO): {
-                        issue_inst0_Vj = 0;
-                        issue_inst0_Qj = 0;
-                    }
                     (issue_packet.inst0_rs1_sel == RS1_SEL_PC): {
                         issue_inst0_Vj = issue_packet.inst0_pc;
                         issue_inst0_Qj = 0;
@@ -398,10 +394,6 @@ module turboV {
             if(issue_packet.inst1_valid) {
                 /* inst1 rs1 read */
                 any {
-                    (issue_packet.inst1_rs1_sel == RS1_SEL_ZERO): {
-                        issue_inst1_Vj = 0;
-                        issue_inst1_Qj = 0;
-                    }
                     (issue_packet.inst1_rs1_sel == RS1_SEL_PC): {
                         issue_inst1_Vj = issue_packet.inst1_pc;
                         issue_inst1_Qj = 0;
