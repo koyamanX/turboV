@@ -623,7 +623,9 @@ module turboV {
                 }
                 (rob.commit_Opcode0 == SYSTEM): {
                     if(rob.commit_uOp0[6:5] == 2'b11) {
-                        csr.write(rob.commit_CSR_num, rob.commit_Value0);
+                        if(rob.commit_CSR_num != 0) {
+                            csr.write(rob.commit_CSR_num, rob.commit_Value0);
+                        }
                         gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
                         ifu.redirect(rob.commit_PC0 + 4);
                         flush();
@@ -680,7 +682,9 @@ module turboV {
                     }
                     (rob.commit_Opcode1 == SYSTEM): {
                         if(rob.commit_uOp1[6:5] == 2'b11) {
-                            csr.write(rob.commit_CSR_num, rob.commit_Value1);
+                            if(rob.commit_CSR_num != 0) {
+                                csr.write(rob.commit_CSR_num, rob.commit_Value1);
+                            }
                             gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
                             ifu.redirect(rob.commit_PC1 + 4);
                             flush();
