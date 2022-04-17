@@ -1,12 +1,13 @@
 #ifndef INSTRUCTION_DECODER_H
 #define INSTRUCTION_DECODER_H
 
-#define RS1_SEL_REG     2'b01
+#define RS1_SEL_REG     2'b00
+#define RS1_SEL_IMM     2'b01
 #define RS1_SEL_PC      2'b10
 #define RS1_SEL_NOT_CSR 2'b11
 
-#define RS2_SEL_REG     2'b01
-#define RS2_SEL_IMM     2'b10
+#define RS2_SEL_REG     2'b00
+#define RS2_SEL_IMM     2'b01
 #define RS2_SEL_CSR     2'b11
 
 declare instruction_decoder {
