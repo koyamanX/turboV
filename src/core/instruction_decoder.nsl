@@ -109,6 +109,30 @@ module instruction_decoder {
                         uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_REG, 0, 0);
                     }
 
+                    (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd != 0): {
+                        inst_fn = uOP_SYSTEM_CSRRW;
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd == 0): {
+                        inst_fn = uOP_SYSTEM_CSRRW;
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_REG, 0, inst_itype.imm0);
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRSI) && (inst_itype.rs1 != 0): {
+                        inst_fn = uOP_SYSTEM_CSRRS;
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRSI) && (inst_itype.rs1 == 0): {
+                        inst_fn = uOP_SYSTEM_CSRRS;
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_REG, 0, 0);
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 != 0): {
+                        inst_fn = uOP_SYSTEM_CSRRC;
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_NOT_CSR, 0, inst_itype.imm0);
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 == 0): {
+                        inst_fn = uOP_SYSTEM_CSRRC;
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_REG, 0, 0);
+                    }
                     inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_MRET && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
                         inst_fn = uOP_SYSTEM_MRET;
                         uop_system(inst_opcode, inst_fn, 0, RS1_SEL_REG, 0, RS2_SEL_REG, 0, 0);

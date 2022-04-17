@@ -335,6 +335,10 @@ module turboV {
                             issue_inst0_Qj = 0;
                         }
                     }
+                    (issue_packet.inst0_rs1_sel == RS1_SEL_UIMM): {
+                        issue_inst0_Vj = 32'(issue_packet.inst0_rs1);
+                        issue_inst0_Qj = 0;
+                    }
                 }
                 /* inst0 rs2 read */
                 any {
@@ -421,6 +425,10 @@ module turboV {
                                 issue_inst1_Qj = 0;
                             }
                         }
+                    }
+                    (issue_packet.inst1_rs1_sel == RS1_SEL_UIMM): {
+                        issue_inst1_Vj = 32'(issue_packet.inst1_rs1);
+                        issue_inst1_Qj = 0;
                     }
                 }
                 /* inst1 rs2 read */
