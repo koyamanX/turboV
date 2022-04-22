@@ -21,35 +21,52 @@ declare turboVSim simulation {
 module turboVSim {
     turboV core;
 	wishbone_syscon wb_syscon;
-    wishbone_slave wb_slave;
+    wishbone_slave wb_slave_if;
 
     func reset {
         core.reset();
-        wb_slave.reset();
+        wb_slave_if.reset();
     }
 	wb_syscon.CLK_I = m_clock;
 	wb_syscon.RST_I = p_reset;
-	WISHBONE_P2P(core, wb_slave, wb_syscon);
+
+    core.CLK_I = wb_syscon.CLK_O;
+    core.RST_I = wb_syscon.RST_O;
+    wb_slave_if.CLK_I = wb_syscon.CLK_O;
+    wb_slave_if.RST_I = wb_syscon.RST_O;
+    wb_slave_if.ADR_I = core.ADR_O;
+    wb_slave_if.SEL_I = core.SEL_O;
+    wb_slave_if.DAT_I = core.DAT_O;
+    core.DAT_I = wb_slave_if.DAT_O;
+    func core.CYC_O wb_slave_if.CYC_I();
+    func core.STB_O wb_slave_if.STB_I();
+    func core.WE_O wb_slave_if.WE_I();
+    func core.LOCK_O wb_slave_if.LOCK_I();
+    func wb_slave_if.ACK_O core.ACK_I();
+    func wb_slave_if.STALL_O core.STALL_I();
+    func wb_slave_if.ERR_O core.ERR_I();
+    func wb_slave_if.RTY_O core.RTY_I();
+
     
-    func wb_slave.req_read {
-        req_read(wb_slave.req_addr, wb_slave.req_sel);
+    func wb_slave_if.req_read {
+        req_read(wb_slave_if.req_addr, wb_slave_if.req_sel);
     }
-    func wb_slave.req_write {
-        req_write(wb_slave.req_addr, wb_slave.req_sel, wb_slave.req_data);
+    func wb_slave_if.req_write {
+        req_write(wb_slave_if.req_addr, wb_slave_if.req_sel, wb_slave_if.req_data);
     }
-    func wb_slave.req_read_modify_write {
+    func wb_slave_if.req_read_modify_write {
 
     }
     func rsp_valid {
-        wb_slave.rsp_valid(rsp_data);
+        wb_slave_if.rsp_valid(rsp_data);
     }
     func rsp_error {
-        wb_slave.rsp_error();
+        wb_slave_if.rsp_error();
     }
     func rsp_retry {
-        wb_slave.rsp_retry();
+        wb_slave_if.rsp_retry();
     }
     func rsp_stall {
-        wb_slave.rsp_stall();
+        wb_slave_if.rsp_stall();
     }
 }
