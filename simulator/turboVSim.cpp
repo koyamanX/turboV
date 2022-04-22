@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
     }
 
     sim.Reset();
-    for(int i = 0; i < 8192; i++) {
+    while(1) {
         sim.sim->rsp_error = false;
         sim.sim->rsp_retry = false;
         sim.sim->rsp_stall = false;
@@ -122,8 +122,8 @@ int main(int argc, char **argv) {
             assert(sim.sim->req_addr >= 0x80000000);
             *((uint64_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
             sim.sim->rsp_valid = true;
-            if(sim.sim->req_addr == 0x80000000) {
-                exit(sim.sim->req_data);
+            if(sim.sim->req_addr == 0x80001000) {
+                exit(!(sim.sim->req_data == 0x1));
             }
         }
         sim.Tick();
