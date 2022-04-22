@@ -7,6 +7,7 @@ docker run -it --rm \
     -v /sys:/sys:ro \
     -v /opt/intelFPGA_lite/20.1:/opt/intelFPGA_lite/latest \
 	-v $(pwd)/src:/root/src \
+	-v $(pwd)/simulator:/root/simulator \
 	-v $(pwd)/tools:/root/tools \
 	-v $(pwd)/tests:/root/tests \
 	-v $(pwd)/CMakeLists.txt:/root/CMakeLists.txt \

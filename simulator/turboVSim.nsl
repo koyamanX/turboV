@@ -1,0 +1,55 @@
+#include "turboV.h"
+#include "wishbone_syscon.h"
+#include "wishbone_common.h"
+#include "wishbone_slave.h"
+
+declare turboVSim simulation {
+    func_in reset();
+
+    output req_addr[32];
+    output req_data[64];
+    output req_sel[8];
+    func_out req_read(req_addr, req_sel);
+    func_out req_write(req_addr, req_sel, req_data);
+    func_out req_read_modify_write(req_addr, req_sel, req_data);
+    input rsp_data[64];
+    func_in rsp_valid(rsp_data);
+    func_in rsp_error();
+    func_in rsp_retry();
+    func_in rsp_stall();
+}
+module turboVSim {
+    turboV core;
+	wishbone_syscon wb_syscon;
+    wishbone_slave wb_slave;
+
+    func reset {
+        core.reset();
+        wb_slave.reset();
+    }
+	wb_syscon.CLK_I = m_clock;
+	wb_syscon.RST_I = p_reset;
+	WISHBONE_P2P(core, wb_slave, wb_syscon);
+    
+    func wb_slave.req_read {
+        req_read(wb_slave.req_addr, wb_slave.req_sel);
+    }
+    func wb_slave.req_write {
+        req_write(wb_slave.req_addr, wb_slave.req_sel, wb_slave.req_data);
+    }
+    func wb_slave.req_read_modify_write {
+
+    }
+    func rsp_valid {
+        wb_slave.rsp_valid(rsp_data);
+    }
+    func rsp_error {
+        wb_slave.rsp_error();
+    }
+    func rsp_retry {
+        wb_slave.rsp_retry();
+    }
+    func rsp_stall {
+        wb_slave.rsp_stall();
+    }
+}
