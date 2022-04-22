@@ -114,11 +114,13 @@ int main(int argc, char **argv) {
         sim.sim->rsp_stall = false;
         sim.sim->rsp_valid = false;
         if(sim.sim->req_read) {
-            sim.sim->rsp_data = *((uint64_t *)&mem[sim.sim->req_addr]);
+            assert(sim.sim->req_addr >= 0x80000000);
+            sim.sim->rsp_data = *((uint64_t *)&mem[sim.sim->req_addr-0x80000000]);
             sim.sim->rsp_valid = true;
         }
         if(sim.sim->req_write) {
-            *((uint64_t *)&mem[sim.sim->req_addr]) = sim.sim->req_data;
+            assert(sim.sim->req_addr >= 0x80000000);
+            *((uint64_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
             sim.sim->rsp_valid = true;
             if(sim.sim->req_addr == 0x80000000) {
                 exit(sim.sim->req_data);

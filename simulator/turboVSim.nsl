@@ -2,6 +2,7 @@
 #include "wishbone_syscon.h"
 #include "wishbone_common.h"
 #include "wishbone_slave.h"
+#include "rom64x2K.h"
 
 declare turboVSim simulation {
     func_in reset();
@@ -22,31 +23,61 @@ module turboVSim {
     turboV core;
 	wishbone_syscon wb_syscon;
     wishbone_slave wb_slave_if;
+	rom64x2K wb_rom;
 
     func reset {
         core.reset();
         wb_slave_if.reset();
+        wb_rom.reset();
     }
 	wb_syscon.CLK_I = m_clock;
 	wb_syscon.RST_I = p_reset;
 
     core.CLK_I = wb_syscon.CLK_O;
     core.RST_I = wb_syscon.RST_O;
+
     wb_slave_if.CLK_I = wb_syscon.CLK_O;
     wb_slave_if.RST_I = wb_syscon.RST_O;
     wb_slave_if.ADR_I = core.ADR_O;
     wb_slave_if.SEL_I = core.SEL_O;
     wb_slave_if.DAT_I = core.DAT_O;
-    core.DAT_I = wb_slave_if.DAT_O;
     func core.CYC_O wb_slave_if.CYC_I();
-    func core.STB_O wb_slave_if.STB_I();
+    //func core.STB_O wb_slave_if.STB_I();
     func core.WE_O wb_slave_if.WE_I();
     func core.LOCK_O wb_slave_if.LOCK_I();
-    func wb_slave_if.ACK_O core.ACK_I();
+    func wb_slave_if.ACK_O {
+        core.DAT_I = wb_slave_if.DAT_O;
+        core.ACK_I();
+    }
     func wb_slave_if.STALL_O core.STALL_I();
     func wb_slave_if.ERR_O core.ERR_I();
     func wb_slave_if.RTY_O core.RTY_I();
 
+    wb_rom.CLK_I = wb_syscon.CLK_O;
+    wb_rom.RST_I = wb_syscon.RST_O;
+    wb_rom.ADR_I = core.ADR_O;
+    wb_rom.SEL_I = core.SEL_O;
+    wb_rom.DAT_I = core.DAT_O;
+    func core.CYC_O wb_rom.CYC_I();
+    //func core.STB_O wb_rom.STB_I();
+    func core.WE_O wb_rom.WE_I();
+    func core.LOCK_O wb_rom.LOCK_I();
+    func wb_rom.ACK_O { 
+        core.DAT_I = wb_rom.DAT_O;
+        core.ACK_I();
+    }
+    func wb_rom.STALL_O core.STALL_I();
+    func wb_rom.ERR_O core.ERR_I();
+    func wb_rom.RTY_O core.RTY_I();
+
+    any {
+        core.ADR_O <= 0x0000_ffff: {
+           if(core.STB_O) wb_rom.STB_I(); 
+        }
+        0x80000000 <= core.ADR_O && core.ADR_O <= 0x84000000: {
+           if(core.STB_O) wb_slave_if.STB_I(); 
+        }
+    }
     
     func wb_slave_if.req_read {
         req_read(wb_slave_if.req_addr, wb_slave_if.req_sel);
