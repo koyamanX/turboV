@@ -730,7 +730,46 @@ module turboV {
                     }
                 }
             }
-         }
+        }
+        any {
+            rob.commit_Valid0 && rob.commit_Valid1: {
+                if(!(rob.commit_Valid0 && ((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)) || (rob.commit_uOp0 == uOP_SYSTEM_MRET))) && !flush) {
+                    _display("COMMIT: %x: DASM(%x)\nCOMMIT: %x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0, rob.commit_PC1, rob.commit_Inst1);
+                } else {
+                    _display("COMMIT: %x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0);
+                }
+                any {
+                    (commit_inst0_cause.illegal_instruction || commit_inst1_cause.illegal_instruction || csr.csr_write_illegal_instruction): {
+                        _display("ILLEGAL_INSTRUCTION");
+                    }
+                    commit_inst0_cause.environment_call_from_m_mode || commit_inst1_cause.environment_call_from_m_mode: {
+                        _display("ENVIRONMENT_CALL_FROM_M_MODE");
+                    }
+                }
+            }
+            !rob.commit_Valid0 && rob.commit_Valid1: {
+                _display("COMMIT: %x: DASM(%x)", rob.commit_PC1, rob.commit_Inst1);
+                any {
+                    (commit_inst1_cause.illegal_instruction || csr.csr_write_illegal_instruction): {
+                        _display("ILLEGAL_INSTRUCTION");
+                    }
+                    commit_inst1_cause.environment_call_from_m_mode: {
+                        _display("ENVIRONMENT_CALL_FROM_M_MODE");
+                    }
+                }
+            }
+            rob.commit_Valid0 && !rob.commit_Valid1: {
+                _display("COMMIT: %x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0);
+                any {
+                    (commit_inst0_cause.illegal_instruction || csr.csr_write_illegal_instruction): {
+                        _display("ILLEGAL_INSTRUCTION");
+                    }
+                    commit_inst0_cause.environment_call_from_m_mode: {
+                        _display("ENVIRONMENT_CALL_FROM_M_MODE");
+                    }
+                }
+            }
+        }
     }
 
     ifu.CLK_I = CLK_I;
