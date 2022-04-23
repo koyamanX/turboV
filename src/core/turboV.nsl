@@ -609,123 +609,128 @@ module turboV {
         medeleg_t wire commit_inst0_cause;
         medeleg_t wire commit_inst1_cause;
 
-        if(!|rob.commit_Cause0) {
-            if(!flush && !(issue && !stall_issue && (issue_packet.inst0_rd == rob.commit_Dest0))) {
-                /* If rd field of instruction in issue stage has same register destination,
-                    conflict will occur for register_status_table, so do not make READY.
-                    issue_packet.inst0_rd is only valid on (issue && !stall_issue).
-                */
-                if((rob.commit_Opcode0 != BRANCH) && (rob.commit_uOp0 != uOP_SYSTEM_MRET) && (rob.commit_Opcode0 != STORE)) {
-                    // Branch instruction has no Dest register.
-                    register_status_table[rob.commit_Dest0] := READY;
-                }
-            }
-            any {
-                ((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR)): {
-                    // Jump instruction always redirect and flush pipeline.
-                    gpr.writeA(rob.commit_Dest0, rob.commit_PC0+4);
-                    ifu.redirect(rob.commit_Target0);
-                    flush();
-                }
-                ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)): {
-                    // Branch instruction only redirect and flush pipeline if branch is taken.
-                    ifu.redirect(rob.commit_Target0);
-                    flush();
-                }
-                (rob.commit_Opcode0 == STORE): {
-                    lsu.commit(rob.commit_Dest0);
-                }
-                (rob.commit_Opcode0 == SYSTEM): {
-                    if(rob.commit_uOp0[6:5] == 2'b11) {
-                        if(rob.commit_CSR_num != 0) {
-                            csr.write(rob.commit_CSR_num, rob.commit_Value0);
-                        }
-                        gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
-                        ifu.redirect(rob.commit_PC0 + 4);
-                        flush();
-                    } else if(rob.commit_uOp0 == uOP_SYSTEM_MRET) {
-                        ifu.redirect(csr.mret());
-                        flush();
+        if(rob.commit_Valid0) {
+            if(!|rob.commit_Cause0) {
+                if(!flush && !(issue && !stall_issue && (issue_packet.inst0_rd == rob.commit_Dest0))) {
+                    /* If rd field of instruction in issue stage has same register destination,
+                        conflict will occur for register_status_table, so do not make READY.
+                        issue_packet.inst0_rd is only valid on (issue && !stall_issue).
+                    */
+                    if((rob.commit_Opcode0 != BRANCH) && (rob.commit_uOp0 != uOP_SYSTEM_MRET) && (rob.commit_Opcode0 != STORE)) {
+                        // Branch instruction has no Dest register.
+                        register_status_table[rob.commit_Dest0] := READY;
                     }
                 }
-                else: {
-                    // Other instructions which has Dest register field.
-                    gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
-                }
-            }
-        } else {
-            commit_inst0_cause = {0x0000, rob.commit_Cause0};
-            alt {
-                commit_inst0_cause.illegal_instruction | csr.csr_write_illegal_instruction: {
-                    flush();
-                    ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC0, rob.commit_Inst0));
-                }
-                commit_inst0_cause.environment_call_from_m_mode: {
-                    flush();
-                    ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC0, rob.commit_Inst0));
-                }
-            }
-        }
-        if(!|rob.commit_Cause1 && !|rob.commit_Cause0) {
-            if(!flush && !(issue && !stall_issue && (issue_packet.inst1_rd == rob.commit_Dest1))) {
-                /* If rd field of instruction in issue stage has same register destination,
-                    conflict will occur for register_status_table, so do not make READY.
-                    issue_packet.inst1_rd is only valid on (issue && !stall_issue).
-                */
-                if((rob.commit_Opcode1 != BRANCH) && (rob.commit_uOp1 != uOP_SYSTEM_MRET) && (rob.commit_Opcode1 != STORE)) {
-                    // Branch instruction has no Dest register.
-                    register_status_table[rob.commit_Dest1] := READY;
-                }
-            }
-            if(!((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)) || (rob.commit_uOp0 == uOP_SYSTEM_MRET))) {
-                // If older instruction is taken branch, this instruction will be flushed.
                 any {
-                    ((rob.commit_Opcode1 == JAL) || (rob.commit_Opcode1 == JALR)): {
+                    ((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR)): {
                         // Jump instruction always redirect and flush pipeline.
-                        gpr.writeA(rob.commit_Dest0, rob.commit_PC1+4);
-                        ifu.redirect(rob.commit_Target1);
+                        gpr.writeA(rob.commit_Dest0, rob.commit_PC0+4);
+                        ifu.redirect(rob.commit_Target0);
                         flush();
                     }
-                    ((rob.commit_Opcode1 == BRANCH) && (rob.commit_Value1[0] == 1)): {
+                    ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)): {
                         // Branch instruction only redirect and flush pipeline if branch is taken.
-                        ifu.redirect(rob.commit_Target1);
+                        ifu.redirect(rob.commit_Target0);
                         flush();
                     }
-                    (rob.commit_Opcode1 == STORE): {
-                        lsu.commit(rob.commit_Dest1);
+                    (rob.commit_Opcode0 == STORE): {
+                        lsu.commit(rob.commit_Dest0);
                     }
-                    (rob.commit_Opcode1 == SYSTEM): {
-                        if(rob.commit_uOp1[6:5] == 2'b11) {
+                    (rob.commit_Opcode0 == SYSTEM): {
+                        if(rob.commit_uOp0[6:5] == 2'b11) {
                             if(rob.commit_CSR_num != 0) {
-                                csr.write(rob.commit_CSR_num, rob.commit_Value1);
+                                csr.write(rob.commit_CSR_num, rob.commit_Value0);
                             }
-                            gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
-                            ifu.redirect(rob.commit_PC1 + 4);
+                            gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
+                            ifu.redirect(rob.commit_PC0 + 4);
                             flush();
-                        } else if(rob.commit_uOp1 == uOP_SYSTEM_MRET) {
+                        } else if(rob.commit_uOp0 == uOP_SYSTEM_MRET) {
                             ifu.redirect(csr.mret());
                             flush();
                         }
                     }
                     else: {
                         // Other instructions which has Dest register field.
-                        gpr.writeB(rob.commit_Dest1, rob.commit_Value1);
+                        gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
+                    }
+                }
+            } else {
+                commit_inst0_cause = {0x0000, rob.commit_Cause0};
+                alt {
+                    commit_inst0_cause.illegal_instruction | csr.csr_write_illegal_instruction: {
+                        flush();
+                        ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC0, rob.commit_Inst0));
+                    }
+                    commit_inst0_cause.environment_call_from_m_mode: {
+                        flush();
+                        ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC0, rob.commit_Inst0));
                     }
                 }
             }
-        } else {
-            commit_inst1_cause = {0x0000, rob.commit_Cause1};
-            alt {
-                commit_inst1_cause.illegal_instruction | csr.csr_write_illegal_instruction: {
-                    flush();
-                    ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC1, rob.commit_Inst1));
+        }
+       
+       if(rob.commit_Valid1) {
+           if(!|rob.commit_Cause1 && !|rob.commit_Cause0) {
+                if(!flush && !(issue && !stall_issue && (issue_packet.inst1_rd == rob.commit_Dest1))) {
+                    /* If rd field of instruction in issue stage has same register destination,
+                        conflict will occur for register_status_table, so do not make READY.
+                        issue_packet.inst1_rd is only valid on (issue && !stall_issue).
+                    */
+                    if((rob.commit_Opcode1 != BRANCH) && (rob.commit_uOp1 != uOP_SYSTEM_MRET) && (rob.commit_Opcode1 != STORE)) {
+                        // Branch instruction has no Dest register.
+                        register_status_table[rob.commit_Dest1] := READY;
+                    }
                 }
-                commit_inst1_cause.environment_call_from_m_mode: {
-                    flush();
-                    ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC1, rob.commit_Inst1));
+                if(!(rob.commit_Valid0 && ((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)) || (rob.commit_uOp0 == uOP_SYSTEM_MRET)))) {
+                    // If older instruction is taken branch, this instruction will be flushed.
+                    any {
+                        ((rob.commit_Opcode1 == JAL) || (rob.commit_Opcode1 == JALR)): {
+                            // Jump instruction always redirect and flush pipeline.
+                            gpr.writeA(rob.commit_Dest0, rob.commit_PC1+4);
+                            ifu.redirect(rob.commit_Target1);
+                            flush();
+                        }
+                        ((rob.commit_Opcode1 == BRANCH) && (rob.commit_Value1[0] == 1)): {
+                            // Branch instruction only redirect and flush pipeline if branch is taken.
+                            ifu.redirect(rob.commit_Target1);
+                            flush();
+                        }
+                        (rob.commit_Opcode1 == STORE): {
+                            lsu.commit(rob.commit_Dest1);
+                        }
+                        (rob.commit_Opcode1 == SYSTEM): {
+                            if(rob.commit_uOp1[6:5] == 2'b11) {
+                                if(rob.commit_CSR_num != 0) {
+                                    csr.write(rob.commit_CSR_num, rob.commit_Value1);
+                                }
+                                gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
+                                ifu.redirect(rob.commit_PC1 + 4);
+                                flush();
+                            } else if(rob.commit_uOp1 == uOP_SYSTEM_MRET) {
+                                ifu.redirect(csr.mret());
+                                flush();
+                            }
+                        }
+                        else: {
+                            // Other instructions which has Dest register field.
+                            gpr.writeB(rob.commit_Dest1, rob.commit_Value1);
+                        }
+                    }
+                }
+            } else {
+                commit_inst1_cause = {0x0000, rob.commit_Cause1};
+                alt {
+                    commit_inst1_cause.illegal_instruction | csr.csr_write_illegal_instruction: {
+                        flush();
+                        ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC1, rob.commit_Inst1));
+                    }
+                    commit_inst1_cause.environment_call_from_m_mode: {
+                        flush();
+                        ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC1, rob.commit_Inst1));
+                    }
                 }
             }
-        }
+         }
     }
 
     ifu.CLK_I = CLK_I;

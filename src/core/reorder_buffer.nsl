@@ -212,28 +212,11 @@ module reorder_buffer {
             }
             head := next_head;
         }
-        any {
-            commit_entry.Valid0 && commit_entry.Valid1: {
-                commit(
-                    commit_entry.Dest0, commit_entry.Value0, commit_entry.Opcode0, commit_entry.uOp0, commit_entry.PC0, commit_entry.Target0, commit_entry.Cause0, commit_entry.Inst0,
-                    commit_entry.Dest1, commit_entry.Value1, commit_entry.Opcode1, commit_entry.uOp1, commit_entry.PC1, commit_entry.Target1, commit_entry.Cause1, commit_entry.Inst1,
-                    commit_entry.CSR_num, commit_entry.CSR_Value
-                );
-            }
-            !commit_entry.Valid0 && commit_entry.Valid1: {
-                commit(
-                    0, 0, 0, 0, 0, 0, 0, 0,
-                    commit_entry.Dest1, commit_entry.Value1, commit_entry.Opcode1, commit_entry.uOp1, commit_entry.PC1, commit_entry.Target1, commit_entry.Cause1, commit_entry.Inst1,
-                    commit_entry.CSR_num, commit_entry.CSR_Value
-                );
-            }
-            commit_entry.Valid0 && !commit_entry.Valid1: {
-                commit(
-                    commit_entry.Dest0, commit_entry.Value0, commit_entry.Opcode0, commit_entry.uOp0, commit_entry.PC0, commit_entry.Target0, commit_entry.Cause0, commit_entry.Inst0,
-                    0, 0, 0, 0, 0, 0, 0, 0, commit_entry.CSR_num, commit_entry.CSR_Value
-                );
-            }
-        }
+        commit(
+            commit_entry.Valid0, commit_entry.Dest0, commit_entry.Value0, commit_entry.Opcode0, commit_entry.uOp0, commit_entry.PC0, commit_entry.Target0, commit_entry.Cause0, commit_entry.Inst0,
+            commit_entry.Valid1, commit_entry.Dest1, commit_entry.Value1, commit_entry.Opcode1, commit_entry.uOp1, commit_entry.PC1, commit_entry.Target1, commit_entry.Cause1, commit_entry.Inst1,
+            commit_entry.CSR_num, commit_entry.CSR_Value
+        );
     }
     if(!flush) {
         if((tail[LOG2_ROB_NUM_OF_ENTRIES-1:0] == head[LOG2_ROB_NUM_OF_ENTRIES-1:0]) && (tail[LOG2_ROB_NUM_OF_ENTRIES] != head[LOG2_ROB_NUM_OF_ENTRIES])) {
