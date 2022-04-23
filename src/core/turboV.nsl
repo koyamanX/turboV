@@ -686,7 +686,7 @@ module turboV {
                     any {
                         ((rob.commit_Opcode1 == JAL) || (rob.commit_Opcode1 == JALR)): {
                             // Jump instruction always redirect and flush pipeline.
-                            gpr.writeA(rob.commit_Dest0, rob.commit_PC1+4);
+                            gpr.writeA(rob.commit_Dest1, rob.commit_PC1+4);
                             ifu.redirect(rob.commit_Target1);
                             flush();
                         }
