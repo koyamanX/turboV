@@ -733,7 +733,7 @@ module turboV {
         }
         any {
             rob.commit_Valid0 && rob.commit_Valid1: {
-                if(!(rob.commit_Valid0 && ((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)) || (rob.commit_uOp0 == uOP_SYSTEM_MRET))) && !flush) {
+                if(!(rob.commit_Valid0 && ((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)) || (rob.commit_uOp0 == uOP_SYSTEM_MRET)))) {
                     _display("COMMIT: %x: DASM(%x)\nCOMMIT: %x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0, rob.commit_PC1, rob.commit_Inst1);
                 } else {
                     _display("COMMIT: %x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0);
