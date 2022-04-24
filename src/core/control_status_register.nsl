@@ -41,27 +41,23 @@ module control_status_register {
         mtvec_t wire trap_xtvec;
         mtval_t wire trap_xtval;
 
-        if(write && csr_wnum == MSTATUS) {
-            trap_xstatus = csr_wdata;
-        } else {
-            trap_xstatus = mstatus;
-        }
-        if(write && csr_wnum == MTVEC) {
-            trap_xtvec = csr_wdata;
-        } else {
-            trap_xtvec = mtvec;
-        }
-        if(write && csr_wnum == MTVAL) {
-            trap_xtval = csr_wdata;
-        } else {
-            trap_xtval = mtvec;
-        }
         any {
             (mode == MACHINE): {
-                trap_xstatus = mstatus;
-                trap_xtvec = mtvec;
-                trap_xtval = mtval;
-
+                if(write && csr_wnum == MSTATUS) {
+                    trap_xstatus = csr_wdata;
+                } else {
+                    trap_xstatus = mstatus;
+                }
+                if(write && csr_wnum == MTVEC) {
+                    trap_xtvec = csr_wdata;
+                } else {
+                    trap_xtvec = mtvec;
+                }
+                if(write && csr_wnum == MTVAL) {
+                    trap_xtval = csr_wdata;
+                } else {
+                    trap_xtval = mtvec;
+                }
                 mstatus.mpie    := trap_xstatus.mie;
                 mstatus.mie     := 0;
                 mstatus.mpp     := MACHINE;
