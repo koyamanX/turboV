@@ -65,6 +65,7 @@ int main(int argc, char **argv) {
     Elf32_Phdr *phdr;
     struct stat st;
     uint8_t *mem;
+    size_t mem_size = 1*1024*1024;
     Simulator<VturboVSim, VerilatedVcdC> sim;
 
     if(argc != 2) {
@@ -98,10 +99,11 @@ int main(int argc, char **argv) {
     assert(ehdr->e_machine == EM_RISCV);
 
     phdr = (Elf32_Phdr *)(buf + ehdr->e_phoff);
+    mem = (uint8_t *)calloc(mem_size, sizeof(uint8_t));
     for(int i = 0; i < ehdr->e_phnum; i++) {
         if(phdr->p_type == PT_LOAD) {
-            mem = (uint8_t *)calloc(phdr->p_memsz, sizeof(uint8_t));
-            memcpy(mem, buf+phdr->p_offset, phdr->p_filesz);
+            assert(0x80000000 <= phdr->p_vaddr && phdr->p_vaddr+phdr->p_memsz < 0x80000000+mem_size);
+            memcpy((mem+phdr->p_vaddr-0x80000000), buf+phdr->p_offset, phdr->p_filesz);
             break;
         }
         phdr++;
@@ -114,12 +116,12 @@ int main(int argc, char **argv) {
         sim.sim->rsp_stall = false;
         sim.sim->rsp_valid = false;
         if(sim.sim->req_read) {
-            assert(sim.sim->req_addr >= 0x80000000);
+            assert(0x80000000 <= sim.sim->req_addr && sim.sim->req_addr < 0x80000000+mem_size-sizeof(uint64_t));
             sim.sim->rsp_data = *((uint64_t *)&mem[sim.sim->req_addr-0x80000000]);
             sim.sim->rsp_valid = true;
         }
         if(sim.sim->req_write) {
-            assert(sim.sim->req_addr >= 0x80000000);
+            assert(0x80000000 <= sim.sim->req_addr && sim.sim->req_addr < 0x80000000+mem_size-sizeof(uint64_t));
             *((uint64_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
             sim.sim->rsp_valid = true;
             if(sim.sim->req_addr == 0x80001000) {
