@@ -681,7 +681,10 @@ module turboV {
                         register_status_table[rob.commit_Dest1] := READY;
                     }
                 }
-                if(!(rob.commit_Valid0 && ((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)) || (rob.commit_uOp0 == uOP_SYSTEM_MRET)))) {
+                if(!(rob.commit_Valid0 && ((rob.commit_Opcode0 == JAL)
+                    || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1))
+                    || (rob.commit_uOp0 == uOP_SYSTEM_MRET)) || (rob.commit_uOp0 == uOP_SYSTEM_CSRRW)
+                    || (rob.commit_uOp0 == uOP_SYSTEM_CSRRC) || (rob.commit_uOp0 == uOP_SYSTEM_CSRRS))) {
                     // If older instruction is taken branch, this instruction will be flushed.
                     any {
                         ((rob.commit_Opcode1 == JAL) || (rob.commit_Opcode1 == JALR)): {
@@ -733,7 +736,10 @@ module turboV {
         }
         any {
             rob.commit_Valid0 && rob.commit_Valid1: {
-                if(!(rob.commit_Valid0 && ((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)) || (rob.commit_uOp0 == uOP_SYSTEM_MRET)))) {
+                if(!(rob.commit_Valid0 && ((rob.commit_Opcode0 == JAL)
+                    || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1))
+                    || (rob.commit_uOp0 == uOP_SYSTEM_MRET)) || (rob.commit_uOp0 == uOP_SYSTEM_CSRRW)
+                    || (rob.commit_uOp0 == uOP_SYSTEM_CSRRC) || (rob.commit_uOp0 == uOP_SYSTEM_CSRRS))) {
                     _display("COMMIT: %x: DASM(%x)\nCOMMIT: %x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0, rob.commit_PC1, rob.commit_Inst1);
                 } else {
                     _display("COMMIT: %x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0);
