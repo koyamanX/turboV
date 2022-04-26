@@ -28,6 +28,7 @@ int main(int argc, char **argv) {
     while((nread = getline(&line, &len, stream)) != -1) {
         fscanf(stream, "%x: DASM(%x)", &pc, &inst);
         disasm_info.buffer_vma = pc;
+        printf("%08x: ", pc);
         disasm(pc, &disasm_info);
         puts("");
     }
