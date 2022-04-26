@@ -740,9 +740,9 @@ module turboV {
                     || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1))
                     || (rob.commit_uOp0 == uOP_SYSTEM_MRET)) || (rob.commit_uOp0 == uOP_SYSTEM_CSRRW)
                     || (rob.commit_uOp0 == uOP_SYSTEM_CSRRC) || (rob.commit_uOp0 == uOP_SYSTEM_CSRRS))) {
-                    _display("COMMIT: %x: DASM(%x)\nCOMMIT: %x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0, rob.commit_PC1, rob.commit_Inst1);
+                    _display("%x: DASM(%x)\n%x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0, rob.commit_PC1, rob.commit_Inst1);
                 } else {
-                    _display("COMMIT: %x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0);
+                    _display("%x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0);
                 }
                 any {
                     (commit_inst0_cause.illegal_instruction || commit_inst1_cause.illegal_instruction || csr.csr_write_illegal_instruction): {
@@ -754,7 +754,7 @@ module turboV {
                 }
             }
             !rob.commit_Valid0 && rob.commit_Valid1: {
-                _display("COMMIT: %x: DASM(%x)", rob.commit_PC1, rob.commit_Inst1);
+                _display("%x: DASM(%x)", rob.commit_PC1, rob.commit_Inst1);
                 any {
                     (commit_inst1_cause.illegal_instruction || csr.csr_write_illegal_instruction): {
                         _display("ILLEGAL_INSTRUCTION");
@@ -765,7 +765,7 @@ module turboV {
                 }
             }
             rob.commit_Valid0 && !rob.commit_Valid1: {
-                _display("COMMIT: %x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0);
+                _display("%x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0);
                 any {
                     (commit_inst0_cause.illegal_instruction || csr.csr_write_illegal_instruction): {
                         _display("ILLEGAL_INSTRUCTION");
