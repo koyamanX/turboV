@@ -7,8 +7,8 @@ module bru32 {
 
     func exe {
         eq = a == b;
-        lt = (33#(a) - 33#(b))[0];
-        ltu = (33'(a) - 33'(b))[0];
+        lt = (33#(a) - 33#(b))[32];
+        ltu = (33'(a) - 33'(b))[32];
         any {
             fn == BRU_EQ: {
                 return eq;
