@@ -63,7 +63,7 @@ module icache {
             }
             idle(compare_tag_icache_valid, compare_tag_tag, compare_tag_index, compare_tag_icache_data);
         } else if(req_cache_read) {
-            allocate(req_cache_addr, req_cache_addr);
+            allocate({req_cache_addr[31:5], 5'b00000}, {req_cache_addr[31:5], 5'b00000});
         } else {
             idle(idle_icache_hit_valid, idle_icache_hit_tag, idle_icache_hit_index, idle_icache_hit_data);
         }
