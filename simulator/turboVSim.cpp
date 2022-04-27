@@ -109,6 +109,14 @@ int main(int argc, char **argv) {
         phdr++;
     }
 
+#if ELF_TXT_DUMP
+    FILE *fp = fopen("elf.dump", "w");
+    for(size_t i = 0; i < mem_size-4; i+=4) {
+        fprintf(fp, "%08lx: %08x\n", i, *((uint32_t *) &mem[i]));
+    }
+    fclose(fp);
+#endif
+
     sim.Reset();
     while(1) {
         sim.sim->rsp_error = false;
