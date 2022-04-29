@@ -97,16 +97,16 @@ module instruction_decoder {
                         uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRS) && (inst_itype.rs1 == 0): {
-                        inst_fn = uOP_SYSTEM_CSRRS;
-                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_REG, 0, 0);
+                        inst_fn = uOP_SYSTEM_CSRRS_NO_UPDATE_CSR;
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRC) && (inst_itype.rs1 != 0): {
                         inst_fn = uOP_SYSTEM_CSRRC;
                         uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_NOT_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRC) && (inst_itype.rs1 == 0): {
-                        inst_fn = uOP_SYSTEM_CSRRC;
-                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_REG, 0, 0);
+                        inst_fn = uOP_SYSTEM_CSRRC_NO_UPDATE_CSR;
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
 
                     (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd != 0): {
@@ -122,16 +122,16 @@ module instruction_decoder {
                         uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRSI) && (inst_itype.rs1 == 0): {
-                        inst_fn = uOP_SYSTEM_CSRRS;
-                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_REG, 0, 0);
+                        inst_fn = uOP_SYSTEM_CSRRS_NO_UPDATE_CSR;
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 != 0): {
                         inst_fn = uOP_SYSTEM_CSRRC;
                         uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_NOT_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 == 0): {
-                        inst_fn = uOP_SYSTEM_CSRRC;
-                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_REG, 0, 0);
+                        inst_fn = uOP_SYSTEM_CSRRC_NO_UPDATE_CSR;
+                        uop_system(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_MRET && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
                         inst_fn = uOP_SYSTEM_MRET;
