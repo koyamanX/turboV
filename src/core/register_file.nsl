@@ -180,78 +180,78 @@ module register_file {
         }
     }
     func writeA {
-        any {
-            (wnumA == 5'b00000): ;
-            (wnumA == 5'b00001): x1 := wdataA;
-            (wnumA == 5'b00010): x2 := wdataA;
-            (wnumA == 5'b00011): x3 := wdataA;
-            (wnumA == 5'b00100): x4 := wdataA;
-            (wnumA == 5'b00101): x5 := wdataA;
-            (wnumA == 5'b00110): x6 := wdataA;
-            (wnumA == 5'b00111): x7 := wdataA;
-            (wnumA == 5'b01000): x8 := wdataA;
-            (wnumA == 5'b01001): x9 := wdataA;
-            (wnumA == 5'b01010): x10 := wdataA;
-            (wnumA == 5'b01011): x11 := wdataA;
-            (wnumA == 5'b01100): x12 := wdataA;
-            (wnumA == 5'b01101): x13 := wdataA;
-            (wnumA == 5'b01110): x14 := wdataA;
-            (wnumA == 5'b01111): x15 := wdataA;
-            (wnumA == 5'b10000): x16 := wdataA;
-            (wnumA == 5'b10001): x17 := wdataA;
-            (wnumA == 5'b10010): x18 := wdataA;
-            (wnumA == 5'b10011): x19 := wdataA;
-            (wnumA == 5'b10100): x20 := wdataA;
-            (wnumA == 5'b10101): x21 := wdataA;
-            (wnumA == 5'b10110): x22 := wdataA;
-            (wnumA == 5'b10111): x23 := wdataA;
-            (wnumA == 5'b11000): x24 := wdataA;
-            (wnumA == 5'b11001): x25 := wdataA;
-            (wnumA == 5'b11010): x26 := wdataA;
-            (wnumA == 5'b11011): x27 := wdataA;
-            (wnumA == 5'b11100): x28 := wdataA;
-            (wnumA == 5'b11101): x29 := wdataA;
-            (wnumA == 5'b11110): x30 := wdataA;
-            (wnumA == 5'b11111): x31 := wdataA;
+        if(!(writeB && (wnumA == wnumB))) {
+            /* writeB has higher priority, if reg num is same for write, disable writeA */
+            any {
+                (wnumA == 5'b00000): ;
+                (wnumA == 5'b00001): x1 := wdataA;
+                (wnumA == 5'b00010): x2 := wdataA;
+                (wnumA == 5'b00011): x3 := wdataA;
+                (wnumA == 5'b00100): x4 := wdataA;
+                (wnumA == 5'b00101): x5 := wdataA;
+                (wnumA == 5'b00110): x6 := wdataA;
+                (wnumA == 5'b00111): x7 := wdataA;
+                (wnumA == 5'b01000): x8 := wdataA;
+                (wnumA == 5'b01001): x9 := wdataA;
+                (wnumA == 5'b01010): x10 := wdataA;
+                (wnumA == 5'b01011): x11 := wdataA;
+                (wnumA == 5'b01100): x12 := wdataA;
+                (wnumA == 5'b01101): x13 := wdataA;
+                (wnumA == 5'b01110): x14 := wdataA;
+                (wnumA == 5'b01111): x15 := wdataA;
+                (wnumA == 5'b10000): x16 := wdataA;
+                (wnumA == 5'b10001): x17 := wdataA;
+                (wnumA == 5'b10010): x18 := wdataA;
+                (wnumA == 5'b10011): x19 := wdataA;
+                (wnumA == 5'b10100): x20 := wdataA;
+                (wnumA == 5'b10101): x21 := wdataA;
+                (wnumA == 5'b10110): x22 := wdataA;
+                (wnumA == 5'b10111): x23 := wdataA;
+                (wnumA == 5'b11000): x24 := wdataA;
+                (wnumA == 5'b11001): x25 := wdataA;
+                (wnumA == 5'b11010): x26 := wdataA;
+                (wnumA == 5'b11011): x27 := wdataA;
+                (wnumA == 5'b11100): x28 := wdataA;
+                (wnumA == 5'b11101): x29 := wdataA;
+                (wnumA == 5'b11110): x30 := wdataA;
+                (wnumA == 5'b11111): x31 := wdataA;
+            }
         }
     }
     func writeB {
-        if(!(writeA && (wnumA == wnumB))) {
-            /* writeA has higher priority, if reg num is same for write, disable writeB */
-            any {
-                (wnumB == 5'b00000): ;
-                (wnumB == 5'b00001): x1 := wdataB;
-                (wnumB == 5'b00010): x2 := wdataB;
-                (wnumB == 5'b00011): x3 := wdataB;
-                (wnumB == 5'b00100): x4 := wdataB;
-                (wnumB == 5'b00101): x5 := wdataB;
-                (wnumB == 5'b00110): x6 := wdataB;
-                (wnumB == 5'b00111): x7 := wdataB;
-                (wnumB == 5'b01000): x8 := wdataB;
-                (wnumB == 5'b01001): x9 := wdataB;
-                (wnumB == 5'b01010): x10 := wdataB;
-                (wnumB == 5'b01011): x11 := wdataB;
-                (wnumB == 5'b01100): x12 := wdataB;
-                (wnumB == 5'b01101): x13 := wdataB;
-                (wnumB == 5'b01110): x14 := wdataB;
-                (wnumB == 5'b01111): x15 := wdataB;
-                (wnumB == 5'b10000): x16 := wdataB;
-                (wnumB == 5'b10001): x17 := wdataB;
-                (wnumB == 5'b10010): x18 := wdataB;
-                (wnumB == 5'b10011): x19 := wdataB;
-                (wnumB == 5'b10100): x20 := wdataB;
-                (wnumB == 5'b10101): x21 := wdataB;
-                (wnumB == 5'b10110): x22 := wdataB;
-                (wnumB == 5'b10111): x23 := wdataB;
-                (wnumB == 5'b11000): x24 := wdataB;
-                (wnumB == 5'b11001): x25 := wdataB;
-                (wnumB == 5'b11010): x26 := wdataB;
-                (wnumB == 5'b11011): x27 := wdataB;
-                (wnumB == 5'b11100): x28 := wdataB;
-                (wnumB == 5'b11101): x29 := wdataB;
-                (wnumB == 5'b11110): x30 := wdataB;
-                (wnumB == 5'b11111): x31 := wdataB;
-            }
+        any {
+            (wnumB == 5'b00000): ;
+            (wnumB == 5'b00001): x1 := wdataB;
+            (wnumB == 5'b00010): x2 := wdataB;
+            (wnumB == 5'b00011): x3 := wdataB;
+            (wnumB == 5'b00100): x4 := wdataB;
+            (wnumB == 5'b00101): x5 := wdataB;
+            (wnumB == 5'b00110): x6 := wdataB;
+            (wnumB == 5'b00111): x7 := wdataB;
+            (wnumB == 5'b01000): x8 := wdataB;
+            (wnumB == 5'b01001): x9 := wdataB;
+            (wnumB == 5'b01010): x10 := wdataB;
+            (wnumB == 5'b01011): x11 := wdataB;
+            (wnumB == 5'b01100): x12 := wdataB;
+            (wnumB == 5'b01101): x13 := wdataB;
+            (wnumB == 5'b01110): x14 := wdataB;
+            (wnumB == 5'b01111): x15 := wdataB;
+            (wnumB == 5'b10000): x16 := wdataB;
+            (wnumB == 5'b10001): x17 := wdataB;
+            (wnumB == 5'b10010): x18 := wdataB;
+            (wnumB == 5'b10011): x19 := wdataB;
+            (wnumB == 5'b10100): x20 := wdataB;
+            (wnumB == 5'b10101): x21 := wdataB;
+            (wnumB == 5'b10110): x22 := wdataB;
+            (wnumB == 5'b10111): x23 := wdataB;
+            (wnumB == 5'b11000): x24 := wdataB;
+            (wnumB == 5'b11001): x25 := wdataB;
+            (wnumB == 5'b11010): x26 := wdataB;
+            (wnumB == 5'b11011): x27 := wdataB;
+            (wnumB == 5'b11100): x28 := wdataB;
+            (wnumB == 5'b11101): x29 := wdataB;
+            (wnumB == 5'b11110): x30 := wdataB;
+            (wnumB == 5'b11111): x31 := wdataB;
         }
     }
 }
