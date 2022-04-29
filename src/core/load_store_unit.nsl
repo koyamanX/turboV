@@ -15,7 +15,7 @@ module load_store_unit {
     func issue {
         if(issue_uOp == uOP_LOAD_WORD) {
             memory(issue_A, 0, issue_uOp, issue_RobId);
-        } else {
+        } else if(issue_uOp == uOP_STORE_WORD) {
             stqV := 1;
             memory_A := issue_A;
             memory_Data := issue_Vj;
@@ -32,7 +32,7 @@ module load_store_unit {
         state memory_req {
             if(memory_uOp == uOP_LOAD_WORD) {
                 wb_master_if.req_read(memory_A, 0xff);
-            } else {
+            } else if(memory_uOp == uOP_STORE_WORD) {
                 wb_master_if.req_write(memory_A, 0xff, memory_Data);
             }
             if(wb_master_if.rsp_valid) {
@@ -57,10 +57,9 @@ module load_store_unit {
         stqV := 0;
     }
     func commit {
-        if(!flush) {
-            stqV := 0;
-            memory(memory_A, memory_Data, memory_uOp, memory_RobId);
-        }
+        /* Do not check if(!flush) here, if flush is needed, do not assert commit */
+        stqV := 0;
+        memory(memory_A, memory_Data, memory_uOp, memory_RobId);
     }
     WISHBONE_MASTER_IF(wb_master_if);
 }
