@@ -67,6 +67,9 @@ int main(int argc, char **argv) {
     uint8_t *mem;
     size_t mem_size = 1*1024*1024;
     Simulator<VturboVSim, VerilatedVcdC> sim;
+    bool sim_done = false;
+    uint32_t sim_done_cnt = 0;
+    uint32_t sim_done_result = 0;
 
     if(argc != 2) {
         fprintf(stderr, "Insufficient arguments\n");
@@ -129,15 +132,24 @@ int main(int argc, char **argv) {
             sim.sim->rsp_valid = true;
         }
         if(sim.sim->req_write) {
+            assert("a");
             assert(0x80000000 <= sim.sim->req_addr && sim.sim->req_addr < 0x80000000+mem_size-sizeof(uint64_t));
             *((uint64_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
             sim.sim->rsp_valid = true;
             if(sim.sim->req_addr == 0x80001000) {
-                exit(!(sim.sim->req_data == 0x1));
+                sim_done = true;
+                sim_done_result = sim.sim->req_data;
+            }
+        }
+        if(sim_done) {
+            if(sim_done_cnt >= 64) {
+                break;
+            } else {
+                sim_done_cnt++;
             }
         }
         sim.Tick();
     }
 
-    return 0;
+    return sim_done_result;
 }
