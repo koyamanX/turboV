@@ -21,18 +21,22 @@ module reservation_station {
             new_entry.Op = Op;
             any {
                 CDB0 && (Qj == CDB0Id) && Valid: {new_entry.Vj = CDB0Val; new_entry.Qj = 0;}
-                CDB0 && (Qk == CDB0Id) && Valid: {new_entry.Vk = CDB0Val; new_entry.Qk = 0;}
                 CDB1 && (Qj == CDB1Id) && Valid: {new_entry.Vj = CDB1Val; new_entry.Qj = 0;}
-                CDB1 && (Qk == CDB1Id) && Valid: {new_entry.Vk = CDB1Val; new_entry.Qk = 0;}
                 CDB2 && (Qj == CDB2Id) && Valid: {new_entry.Vj = CDB2Val; new_entry.Qj = 0;}
-                CDB2 && (Qk == CDB2Id) && Valid: {new_entry.Vk = CDB2Val; new_entry.Qk = 0;}
                 CDB3 && (Qj == CDB3Id) && Valid: {new_entry.Vj = CDB3Val; new_entry.Qj = 0;}
+                else: {
+                    new_entry.Qj = Qj;
+                    new_entry.Vj = Vj;
+                }
+            }
+            any {
+                CDB0 && (Qk == CDB0Id) && Valid: {new_entry.Vk = CDB0Val; new_entry.Qk = 0;}
+                CDB1 && (Qk == CDB1Id) && Valid: {new_entry.Vk = CDB1Val; new_entry.Qk = 0;}
+                CDB2 && (Qk == CDB2Id) && Valid: {new_entry.Vk = CDB2Val; new_entry.Qk = 0;}
                 CDB3 && (Qk == CDB3Id) && Valid: {new_entry.Vk = CDB3Val; new_entry.Qk = 0;}
                 else: {
-                    new_entry.Vj = Vj;
-                    new_entry.Vk = Vk;
-                    new_entry.Qj = Qj;
                     new_entry.Qk = Qk;
+                    new_entry.Vk = Vk;
                 }
             }
             new_entry.Dest = Dest;

@@ -72,7 +72,9 @@ declare reorder_buffer {
     output commit_Inst1[32];
     output commit_CSR_num[12];
     output commit_CSR_Value[32];
-    func_out commit(commit_Valid0, commit_Dest0, commit_Value0, commit_Opcode0, commit_uOp0, commit_PC0, commit_Target0, commit_Cause0, commit_Inst0,
+    output commit_Id[ROB_TAG_SIZE];
+    func_out commit(commit_Id,
+                    commit_Valid0, commit_Dest0, commit_Value0, commit_Opcode0, commit_uOp0, commit_PC0, commit_Target0, commit_Cause0, commit_Inst0,
                     commit_Valid1, commit_Dest1, commit_Value1, commit_Opcode1, commit_uOp1, commit_PC1, commit_Target1, commit_Cause1, commit_Inst1,
                     commit_CSR_num, commit_CSR_Value);
     input CDB0Id[ROB_TAG_SIZE];

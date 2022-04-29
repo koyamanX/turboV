@@ -14,6 +14,7 @@ module reorder_buffer {
     reg head[LOG2_ROB_NUM_OF_ENTRIES+1] = 0;
     wire next_tail[LOG2_ROB_NUM_OF_ENTRIES+1];
     wire next_head[LOG2_ROB_NUM_OF_ENTRIES+1];
+    wire commit_id[ROB_TAG_SIZE];
     reorder_buffer_t wire commit_entry;
     integer i_;
 
@@ -210,9 +211,15 @@ module reorder_buffer {
                 head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 2: rob2 := 0;
                 head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 3: rob3 := 0;
             }
+            any {
+                head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 0: commit_id = 1;
+                head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 1: commit_id = 3;
+                head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 2: commit_id = 5;
+                head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 3: commit_id = 7;
+            }
             head := next_head;
         }
-        commit(
+        commit(commit_id,
             commit_entry.Valid0, commit_entry.Dest0, commit_entry.Value0, commit_entry.Opcode0, commit_entry.uOp0, commit_entry.PC0, commit_entry.Target0, commit_entry.Cause0, commit_entry.Inst0,
             commit_entry.Valid1, commit_entry.Dest1, commit_entry.Value1, commit_entry.Opcode1, commit_entry.uOp1, commit_entry.PC1, commit_entry.Target1, commit_entry.Cause1, commit_entry.Inst1,
             commit_entry.CSR_num, commit_entry.CSR_Value
