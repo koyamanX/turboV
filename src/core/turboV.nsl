@@ -359,7 +359,7 @@ module turboV {
                                 issue_inst0_Qk = 0;
                             }
                         } else {
-                            issue_inst0_Vk = gpr.readB(issue_packet.inst0_rs1);
+                            issue_inst0_Vk = gpr.readB(issue_packet.inst0_rs2);
                             issue_inst0_Qk = 0;
                         }
                     }
@@ -460,7 +460,7 @@ module turboV {
                                     issue_inst1_Qk = 0;
                                 }
                             } else {
-                                issue_inst1_Vk = gpr.readD(issue_packet.inst1_rs1);
+                                issue_inst1_Vk = gpr.readD(issue_packet.inst1_rs2);
                                 issue_inst1_Qk = 0;
                             }
                         }
