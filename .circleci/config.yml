@@ -46,7 +46,7 @@ jobs:
           command: "make -C riscv-tests/isa XLEN=32"
       - run:
           name: "Run riscv-tests"
-          command: "export SIMULATOR_PATH=/root/build/Debug/turboVSim/./turboVSim RISCV_TESTS_PATH=/root/tests/riscv-tests/isa build/Debug/tools/./run_riscv_tests.sh"
+          command: "SIMULATOR_PATH=/root/build/Debug/turboVSim/./turboVSim RISCV_TESTS_PATH=/root/tests/riscv-tests/isa build/Debug/tools/./run_riscv_tests.sh"
       - store_test_results:
           path: test-results
 # Invoke jobs via workflows
