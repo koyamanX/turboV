@@ -14,6 +14,7 @@ fi
 
 test_variants=("rv32ui-p")
 ret=0
+rm -r logs/result.txt
 for test_variant in ${test_variants[@]}; do
     test_name_list=$(find $test_dir -name "$test_variant-*" -not -name "$test_variant-*.dump")
     for test_name in $test_name_list; do
