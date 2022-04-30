@@ -4,23 +4,22 @@
 
 module rom64x2K {
     wishbone_slave wb_slave_if;
-    mem rom0[2048][8];
-    mem rom1[2048][8];
-    mem rom2[2048][8];
-    mem rom3[2048][8];
-    mem rom4[2048][8];
-    mem rom5[2048][8];
-    mem rom6[2048][8];
-    mem rom7[2048][8];
-
-    _readmemh("./rom0.hex", rom0);
-    _readmemh("./rom1.hex", rom1);
-    _readmemh("./rom2.hex", rom2);
-    _readmemh("./rom3.hex", rom3);
-    _readmemh("./rom4.hex", rom4);
-    _readmemh("./rom5.hex", rom5);
-    _readmemh("./rom6.hex", rom6);
-    _readmemh("./rom7.hex", rom7);
+    mem rom0[2048][32] = {
+        0x300272f3,               //0x00: csrrci  t0,mstatus,4
+        0x02830313,               //0x08: addi    t1,t1,40 # 2c <_trap>
+        0x3051f073,               //0x10: csrci   mtvec,3
+        0x34131073,               //0x18: csrw    mepc,t1
+        0x00000293,               //0x20: li      t0,0
+        0x30200073                //0x28: mret
+    };
+    mem rom1[2048][32] = {
+        0x00000317,               //0x04: auipc   t1,0x0
+        0x30531073,               //0x0c: csrw    mtvec,t1
+        0x80000337,               //0x14: lui     t1,0x80000
+        0x30029073,               //0x1c: csrw    mstatus,t0
+        0x00000313,               //0x24: li      t1,0
+        0x0x00006f                //0x2c: j       2c <_trap>
+    };
 
     func reset {
         wb_slave_if.reset();
@@ -36,14 +35,14 @@ module rom64x2K {
         wire b0[8];
 
         any {
-            wb_slave_if.req_sel[7]: b7 = rom7[wb_slave_if.req_addr[13:3]];
-            wb_slave_if.req_sel[6]: b6 = rom6[wb_slave_if.req_addr[13:3]];
-            wb_slave_if.req_sel[5]: b5 = rom5[wb_slave_if.req_addr[13:3]];
-            wb_slave_if.req_sel[4]: b4 = rom4[wb_slave_if.req_addr[13:3]];
-            wb_slave_if.req_sel[3]: b3 = rom3[wb_slave_if.req_addr[13:3]];
-            wb_slave_if.req_sel[2]: b2 = rom2[wb_slave_if.req_addr[13:3]];
-            wb_slave_if.req_sel[1]: b1 = rom1[wb_slave_if.req_addr[13:3]];
-            wb_slave_if.req_sel[0]: b0 = rom0[wb_slave_if.req_addr[13:3]];
+            wb_slave_if.req_sel[7]: b7 = rom1[wb_slave_if.req_addr[13:3]][31:24];
+            wb_slave_if.req_sel[6]: b6 = rom1[wb_slave_if.req_addr[13:3]][23:16];
+            wb_slave_if.req_sel[5]: b5 = rom1[wb_slave_if.req_addr[13:3]][15:8];
+            wb_slave_if.req_sel[4]: b4 = rom1[wb_slave_if.req_addr[13:3]][7:0];
+            wb_slave_if.req_sel[3]: b3 = rom0[wb_slave_if.req_addr[13:3]][31:24];
+            wb_slave_if.req_sel[2]: b2 = rom0[wb_slave_if.req_addr[13:3]][23:16];
+            wb_slave_if.req_sel[1]: b1 = rom0[wb_slave_if.req_addr[13:3]][15:8];
+            wb_slave_if.req_sel[0]: b0 = rom0[wb_slave_if.req_addr[13:3]][7:0];
         }
 
         wb_slave_if.rsp_valid ({
