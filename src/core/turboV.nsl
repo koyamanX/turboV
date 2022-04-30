@@ -260,10 +260,10 @@ module turboV {
                 goto decode1;
             } else if(!stall_issue && !flush) {
                 // Send second instruction to issue.
-                decode_issue_packet.inst0_valid     = decode_fetch_packet2.valid0;
-                decode_issue_packet.inst0_pred      = decode_fetch_packet2.pred0;
-                decode_issue_packet.inst0_pc        = decode_fetch_packet2.pc0;
-                decode_issue_packet.inst0           = decode_fetch_packet2.inst0;
+                decode_issue_packet.inst0_valid     = decode_fetch_packet2.valid1;
+                decode_issue_packet.inst0_pred      = decode_fetch_packet2.pred1;
+                decode_issue_packet.inst0_pc        = decode_fetch_packet2.pc1;
+                decode_issue_packet.inst0           = decode_fetch_packet2.inst1;
                 decode_issue_packet.inst0_opcode    = idec0.opcode;
                 decode_issue_packet.inst0_uop       = idec0.uop;
                 decode_issue_packet.inst0_rd        = idec0.uop_rd;
@@ -276,8 +276,8 @@ module turboV {
                 decode_issue_packet.inst0_cause     = decode_inst0_exception[15:0];
                 decode_issue_packet.inst1_valid     = 0;
                 decode_issue_packet.inst1_pred      = 0;
-                decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc1;
-                decode_issue_packet.inst1_npc       = decode_fetch_packet1.npc1;
+                decode_issue_packet.inst1_pc        = decode_fetch_packet2.pc1;
+                decode_issue_packet.inst1_npc       = decode_fetch_packet2.npc1;
                 decode_issue_packet.inst1           = 0;
                 decode_issue_packet.inst1_opcode    = 0;
                 decode_issue_packet.inst1_uop       = 0;
