@@ -13,6 +13,7 @@ if [ ! -d "$test_dir" ]; then
 fi
 
 test_variants=("rv32ui-p")
+ret=0
 for test_variant in ${test_variants[@]}; do
     test_name_list=$(find $test_dir -name "$test_variant-*" -not -name "$test_variant-*.dump")
     for test_name in $test_name_list; do
@@ -24,6 +25,8 @@ for test_variant in ${test_variants[@]}; do
             echo "$test_name passed"
         else
             echo "$test_name failed"
+            ret=$((ret+1))
         fi
     done
 done
+exit $ret
