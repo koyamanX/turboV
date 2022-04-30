@@ -19,6 +19,7 @@
 #define uOP_BRU_BGE 4'b0101
 #define uOP_BRU_BLTU    4'b0110
 #define uOP_BRU_BGEU    4'b0111
+#define uOP_BRU_JALR    4'b1111
 
 #define uOP_SYSTEM_CSRRW  7'b110_0110
 #define uOP_SYSTEM_CSRRS  7'b110_0110

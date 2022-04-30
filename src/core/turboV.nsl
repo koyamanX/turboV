@@ -527,7 +527,11 @@ module turboV {
     }
     func bru_rs0.dispatch {
         if(!flush) {
-            execute_bru0.invoke(bru_rs0.dispatch_Op, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_A);
+            if(bru_rs0.dispatch_Op == uOP_BRU_JALR) {
+                execute_bru0.invoke(bru_rs0.dispatch_Op, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_Vj + bru_rs0.dispatch_Vk);
+            } else {
+                execute_bru0.invoke(bru_rs0.dispatch_Op, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_A);
+            }
         }
     }
     if(lsu.full) {

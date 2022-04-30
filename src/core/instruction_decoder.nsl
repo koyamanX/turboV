@@ -58,7 +58,7 @@ module instruction_decoder {
             }
             inst_opcode == JALR: {
                 imm_gen0.i_type(inst);
-                inst_fn = ALU_ADD;
+                inst_fn = uOP_BRU_JALR;
                 uop_bru(inst_opcode, inst_fn, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_IMM, 0, imm_gen0.imm);
                 jump();
             }
