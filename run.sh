@@ -10,6 +10,7 @@ docker run -it --rm \
 	-v $(pwd)/simulator:/root/simulator \
 	-v $(pwd)/tools:/root/tools \
 	-v $(pwd)/tests:/root/tests \
+    -v $(pwd)/image/scripts/env.sh:/root/.env.sh \
 	-v $(pwd)/CMakeLists.txt:/root/CMakeLists.txt \
 	-v $(pwd)/build:/root/build \
 	storm_dev:v1.0 $1

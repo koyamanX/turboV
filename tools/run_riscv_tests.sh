@@ -1,11 +1,11 @@
 #!/bin/bash
 
-if [ $# -ne 2 ]; then
-    echo "Insufficent arguments"
-    exit 1
-fi
-simulator=$1
-test_dir=$2
+source /root/.env.sh
+simulator=$SIMULATOR_PATH
+test_dir=$RISCV_TESTS_PATH
+
+echo $simulator
+echo $test_dir
 
 if [ ! -d "$test_dir" ]; then
     echo "riscv-tests is not found"
@@ -20,13 +20,17 @@ for test_variant in ${test_variants[@]}; do
         if [ ! -d "logs" ]; then
             mkdir logs
         fi
-        timeout 8 ./$simulator $test_name > logs/$(basename $test_name).log
+        timeout 8 $simulator $test_name > logs/$(basename $test_name).log
         if [ $? -eq 1 ]; then
             echo "$test_name passed"
+            echo "$test_name passed" >> logs/result.txt
         else
             echo "$test_name failed"
+            echo "$test_name failed" >> logs/result.txt
             ret=$((ret+1))
         fi
+        cp $test_name.dump logs
+        cp turboVSim.vcd logs/$(basename $test_name).vcd
     done
 done
 exit $ret
