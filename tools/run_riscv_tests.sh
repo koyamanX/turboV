@@ -1,8 +1,15 @@
 #!/bin/bash
 
-source /root/.env.sh
-simulator=$SIMULATOR_PATH
-test_dir=$RISCV_TESTS_PATH
+if [ -v SIMULATOR_PATH ]; then
+    simulator=$SIMULATOR_PATH
+else
+    simulator=/root/build/Debug/turboVSim/./turboVSim
+fi
+if [ -v RISCV_TESTS_PATH ]; then
+    test_dir=$RISCV_TESTS_PATH
+else
+    test_dir=/root/tests/riscv-tests/isa
+fi
 
 echo $simulator
 echo $test_dir
