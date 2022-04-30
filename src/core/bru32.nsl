@@ -23,7 +23,7 @@ module bru32 {
                 return ltu;
             }
             fn == BRU_GE: {
-                return lt;
+                return !lt;
             }
             fn == BRU_GEU: {
                 return !ltu;
