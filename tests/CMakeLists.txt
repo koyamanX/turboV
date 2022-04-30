@@ -1,7 +1,7 @@
 #add_subdirectory(register_file_test)
 #add_subdirectory(ifetch_unit_test)
 add_subdirectory(inst_buffer_test)
-add_subdirectory(rom_test)
+#add_subdirectory(rom_test)
 #add_subdirectory(instruction_decoder_test)
 add_subdirectory(alu32_test)
 add_subdirectory(turboV_test)
