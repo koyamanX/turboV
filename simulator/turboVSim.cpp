@@ -107,7 +107,6 @@ int main(int argc, char **argv) {
         if(phdr->p_type == PT_LOAD) {
             assert(0x80000000 <= phdr->p_vaddr && phdr->p_vaddr+phdr->p_memsz < 0x80000000+mem_size);
             memcpy((mem+phdr->p_vaddr-0x80000000), buf+phdr->p_offset, phdr->p_filesz);
-            break;
         }
         phdr++;
     }
