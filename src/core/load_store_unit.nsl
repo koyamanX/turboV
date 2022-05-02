@@ -13,9 +13,9 @@ module load_store_unit {
     proc_name memory(memory_A, memory_Data, memory_uOp, memory_RobId);
 
     func issue {
-        if(issue_uOp == uOP_LOAD_WORD) {
+        if(issue_uOp == uOP_LSU_LOAD_WORD) {
             memory(issue_A, 0, issue_uOp, issue_RobId);
-        } else if(issue_uOp == uOP_STORE_WORD) {
+        } else if(issue_uOp == uOP_LSU_STORE_WORD) {
             stqV := 1;
             memory_A := issue_A;
             memory_Data := issue_Vj;
@@ -30,13 +30,13 @@ module load_store_unit {
         state_name memory_req, memory_wait;
 
         state memory_req {
-            if(memory_uOp == uOP_LOAD_WORD) {
+            if(memory_uOp == uOP_LSU_LOAD_WORD) {
                 wb_master_if.req_read(memory_A, 0xff);
-            } else if(memory_uOp == uOP_STORE_WORD) {
+            } else if(memory_uOp == uOP_LSU_STORE_WORD) {
                 wb_master_if.req_write(memory_A, 0xff, memory_Data);
             }
             if(wb_master_if.rsp_valid) {
-                if(memory_uOp == uOP_LOAD_WORD) {
+                if(memory_uOp == uOP_LSU_LOAD_WORD) {
                     CDBOut(memory_RobId, wb_master_if.rsp_data);
                 }
                 finish();
@@ -46,7 +46,7 @@ module load_store_unit {
         }
         state memory_wait {
             if(wb_master_if.rsp_valid) {
-                if(memory_uOp == uOP_LOAD_WORD) {
+                if(memory_uOp == uOP_LSU_LOAD_WORD) {
                     CDBOut(memory_RobId, wb_master_if.rsp_data);
                 }
                 finish();
