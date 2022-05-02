@@ -131,7 +131,6 @@ int main(int argc, char **argv) {
             sim.sim->rsp_valid = true;
         }
         if(sim.sim->req_write) {
-            assert("a");
             assert(0x80000000 <= sim.sim->req_addr && sim.sim->req_addr < 0x80000000+mem_size-sizeof(uint64_t));
             *((uint64_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
             sim.sim->rsp_valid = true;
