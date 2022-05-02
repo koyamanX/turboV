@@ -13,7 +13,8 @@ module load_store_unit {
     proc_name memory(memory_A, memory_Data, memory_uOp, memory_RobId);
 
     func issue {
-        if((issue_uOp == uOP_LSU_LOAD_WORD) || (issue_uOp == uOP_LSU_LOAD_HALFWORD) || (issue_uOp == uOP_LSU_LOAD_BYTE)) {
+        if((issue_uOp == uOP_LSU_LOAD_WORD) || (issue_uOp == uOP_LSU_LOAD_HALFWORD) || (issue_uOp == uOP_LSU_LOAD_BYTE)
+            || (issue_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED) || (issue_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED)) {
             memory(issue_A, 0, issue_uOp, issue_RobId);
         } else if(issue_uOp == uOP_LSU_STORE_WORD) {
             stqV := 1;
@@ -34,6 +35,10 @@ module load_store_unit {
                 wb_master_if.req_read(memory_A, 0x0f);
             } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD)) {
                 wb_master_if.req_read({memory_A[31:1], 1'b0}, 0x03);
+            } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED)) {
+                wb_master_if.req_read({memory_A[31:1], 1'b0}, 0x03);
+            } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED)) {
+                wb_master_if.req_read(memory_A[31:0], 0x01);
             } else if((memory_uOp == uOP_LSU_LOAD_BYTE)) {
                 wb_master_if.req_read(memory_A[31:0], 0x01);
             } else if(memory_uOp == uOP_LSU_STORE_WORD) {
@@ -54,6 +59,18 @@ module load_store_unit {
                     CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[7:0]));
                 } else if((memory_uOp == uOP_LSU_LOAD_BYTE) && (memory_A[1:0] == 3)) {
                     CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[7:0]));
+                } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED) && (memory_A[1] == 0)) {
+                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[15:0]));
+                } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED) && (memory_A[1] == 1)) {
+                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[15:0]));
+                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 0)) {
+                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
+                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 1)) {
+                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
+                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 2)) {
+                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
+                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 3)) {
+                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
                 }
                 finish();
             } else {
@@ -76,6 +93,18 @@ module load_store_unit {
                     CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[7:0]));
                 } else if((memory_uOp == uOP_LSU_LOAD_BYTE) && (memory_A[1:0] == 3)) {
                     CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[7:0]));
+                } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED) && (memory_A[1] == 0)) {
+                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[15:0]));
+                } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED) && (memory_A[1] == 1)) {
+                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[15:0]));
+                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 0)) {
+                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
+                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 1)) {
+                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
+                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 2)) {
+                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
+                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 3)) {
+                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
                 }
                 finish();
                 goto memory_req;
