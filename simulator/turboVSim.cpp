@@ -140,7 +140,15 @@ int main(int argc, char **argv) {
         }
         if(sim.sim->req_write) {
             assert(0x80000000 <= sim.sim->req_addr && sim.sim->req_addr < 0x80000000+mem_size-sizeof(uint64_t));
-            *((uint64_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
+            if(sim.sim->req_sel == 0xff) {
+                *((uint64_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
+            } else if(sim.sim->req_sel == 0x0f) {
+                *((uint32_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
+            } else if(sim.sim->req_sel == 0x03) {
+                *((uint16_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
+            } else if(sim.sim->req_sel == 0x01) {
+                *((uint8_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
+            }
             sim.sim->rsp_valid = true;
             if(sim.sim->req_addr == 0x80001000) {
                 sim_done = true;

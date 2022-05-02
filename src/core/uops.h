@@ -37,5 +37,7 @@
 #define uOP_LSU_LOAD_BYTE_UNSIGNED   4'b0100
 
 #define uOP_LSU_STORE_WORD  4'b1010
+#define uOP_LSU_STORE_HALFWORD  4'b1001
+#define uOP_LSU_STORE_BYTE  4'b1000
 
 #endif

@@ -540,7 +540,7 @@ module turboV {
     func lsu_rs0.dispatch {
         wire lsu_rs0_dispatch_Addr[32];
         if(!flush && !lsu.full) {
-            if(lsu_rs0.dispatch_Op == uOP_LSU_STORE_WORD) {
+            if((lsu_rs0.dispatch_Op == uOP_LSU_STORE_WORD) || (lsu_rs0.dispatch_Op == uOP_LSU_STORE_HALFWORD) || (lsu_rs0.dispatch_Op == uOP_LSU_STORE_BYTE)) {
                 rob.Store(lsu_rs0.dispatch_Dest);
             }
             lsu_rs0_dispatch_Addr = lsu_rs0.dispatch_Vj + lsu_rs0.dispatch_A;
