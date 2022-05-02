@@ -19,7 +19,7 @@ if [ ! -d "$test_dir" ]; then
     exit 1
 fi
 
-test_variants=("rv32ui-p")
+test_variants=("rv32ui-p" "rv32mi-p")
 ret=0
 rm -r logs/result.txt
 for test_variant in ${test_variants[@]}; do
