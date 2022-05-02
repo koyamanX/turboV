@@ -146,6 +146,12 @@ module instruction_decoder {
                     }
                 }
             }
+            inst_opcode == MISC_MEM: {
+
+            }
+            else: {
+                uop_illegal_instruction();
+            }
         }
     }
 }
