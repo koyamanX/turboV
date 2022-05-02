@@ -46,7 +46,9 @@ module load_store_unit {
         }
         state memory_wait {
             if(wb_master_if.rsp_valid) {
-                CDBOut(memory_RobId, wb_master_if.rsp_data);
+                if(memory_uOp == uOP_LOAD_WORD) {
+                    CDBOut(memory_RobId, wb_master_if.rsp_data);
+                }
                 finish();
                 goto memory_req;
             }
