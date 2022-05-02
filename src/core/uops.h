@@ -31,6 +31,11 @@
 #define uOP_SYSTEM_ECALL    7'b001_1100
 
 #define uOP_LSU_LOAD_WORD   4'b0010
+#define uOP_LSU_LOAD_HALFWORD   4'b0001
+#define uOP_LSU_LOAD_BYTE   4'b0000
+#define uOP_LSU_LOAD_HALFWORD_UNSIGNED   4'b0101
+#define uOP_LSU_LOAD_BYTE_UNSIGNED   4'b0100
+
 #define uOP_LSU_STORE_WORD  4'b1010
 
 #endif
