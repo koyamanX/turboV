@@ -629,11 +629,9 @@ module turboV {
                         conflict will occur for register_status_table, so do not make READY.
                         issue_packet.inst0_rd is only valid on (issue && !stall_issue).
                     */
-                    if((rob.commit_Opcode0 != BRANCH) && (rob.commit_uOp0 != uOP_SYSTEM_MRET) && (rob.commit_Opcode0 != STORE)) {
-                        if((rob.commit_Id == register_map_table[rob.commit_Dest0])) {
-                            // Branch instruction has no Dest register.
-                            register_status_table[rob.commit_Dest0] := READY;
-                        }
+                    if((rob.commit_Id == register_map_table[rob.commit_Dest0])) {
+                        // Branch instruction has no Dest register.
+                        register_status_table[rob.commit_Dest0] := READY;
                     }
                 }
                 any {
@@ -707,11 +705,9 @@ module turboV {
                         conflict will occur for register_status_table, so do not make READY.
                         issue_packet.inst1_rd is only valid on (issue && !stall_issue).
                     */
-                    if((rob.commit_Opcode1 != BRANCH) && (rob.commit_uOp1 != uOP_SYSTEM_MRET) && (rob.commit_Opcode1 != STORE)) {
-                        if((rob.commit_Id+1 == register_map_table[rob.commit_Dest1])) {
-                            // Branch instruction has no Dest register.
-                            register_status_table[rob.commit_Dest1] := READY;
-                        }
+                    if((rob.commit_Id+1 == register_map_table[rob.commit_Dest1])) {
+                        // Branch instruction has no Dest register.
+                        register_status_table[rob.commit_Dest1] := READY;
                     }
                 }
                 if(!(rob.commit_Valid0 && ((rob.commit_Opcode0 == JAL)
