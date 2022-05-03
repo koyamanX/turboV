@@ -19,6 +19,7 @@ list(APPEND NSL_INCLUDE
 )
 list(APPEND NSL_FLAGS
 	"-O2"
+    "-DENABLE_DEBUG"
 )
 list(APPEND IVERILOG_FLAGS
 	""
@@ -30,7 +31,8 @@ list(APPEND GTKWAVE_FLAGS
 	""
 )
 list(APPEND CMAKE_CXX_FLAGS
-	""
+	"-DENABLE_DEBUG"
+    "-O3"
 )
 # add_nsl_target("src" "out")
 # or

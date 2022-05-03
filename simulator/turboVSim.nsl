@@ -18,6 +18,16 @@ declare turboVSim simulation {
     func_in rsp_error();
     func_in rsp_retry();
     func_in rsp_stall();
+#ifdef ENABLE_DEBUG
+    output debug_commit_pc0[32];
+    output debug_commit_inst0[32];
+    output debug_commit_cause0[16];
+    func_out debug_commit0(debug_commit_pc0, debug_commit_inst0, debug_commit_cause0);
+    output debug_commit_pc1[32];
+    output debug_commit_inst1[32];
+    output debug_commit_cause1[16];
+    func_out debug_commit1(debug_commit_pc1, debug_commit_inst1, debug_commit_cause1);
+#endif
 }
 module turboVSim {
     turboV core;
@@ -100,4 +110,12 @@ module turboVSim {
     func rsp_stall {
         wb_slave_if.rsp_stall();
     }
+#ifdef ENABLE_DEBUG
+    func core.debug_commit0 {
+        debug_commit0(core.debug_commit_pc0, core.debug_commit_inst0, core.debug_commit_cause0);
+    }
+    func core.debug_commit1 {
+        debug_commit1(core.debug_commit_pc1, core.debug_commit_inst1, core.debug_commit_cause1);
+    }
+#endif
 }

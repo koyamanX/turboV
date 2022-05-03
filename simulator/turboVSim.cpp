@@ -12,6 +12,8 @@
 #include "verilated_vcd_c.h"
 #include "VturboVSim.h"
 
+#define ENABLE_DEBUG
+
 template <typename Sim_t, typename Trace_t>
 class Simulator {
 public:
@@ -155,6 +157,21 @@ int main(int argc, char **argv) {
                 sim_done_result = sim.sim->req_data;
             }
         }
+#ifdef ENABLE_DEBUG
+        if(sim.sim->debug_commit0) {
+            if(sim.sim->debug_commit_cause0 == 0) {
+                fprintf(stdout, "%08x: DASM(%08x)\n", sim.sim->debug_commit_pc0, sim.sim->debug_commit_inst0);
+            } else {
+            }
+        }
+        if(sim.sim->debug_commit1) {
+            if(sim.sim->debug_commit_cause1 == 0) {
+                fprintf(stdout, "%08x: DASM(%08x)\n", sim.sim->debug_commit_pc1, sim.sim->debug_commit_inst1);
+            } else {
+            }
+        }
+
+#endif
         if(sim_done) {
             if(sim_done_cnt >= 64) {
                 break;

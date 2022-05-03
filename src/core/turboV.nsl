@@ -674,6 +674,9 @@ module turboV {
                         gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
                     }
                 }
+#ifdef ENABLE_DEBUG
+                debug_commit0(rob.commit_PC0, rob.commit_Inst0, rob.commit_Cause0);
+#endif
             }
             commit_inst0_cause = {0x0000, rob.commit_Cause0};
             alt {
@@ -755,6 +758,9 @@ module turboV {
                         }
                     }
                 }
+#ifdef ENABLE_DEBUG
+                debug_commit1(rob.commit_PC1, rob.commit_Inst1, rob.commit_Cause1);
+#endif
             }
            if(!commit_kill_inst0) {
                 commit_inst1_cause = {0x0000, rob.commit_Cause1};
@@ -776,57 +782,6 @@ module turboV {
                     }
                 }
            }
-        }
-        any {
-            rob.commit_Valid0 && rob.commit_Valid1: {
-                if(!(rob.commit_Valid0 && ((rob.commit_Opcode0 == JAL)
-                    || (rob.commit_Opcode0 == JALR) || ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1))
-                    || (rob.commit_uOp0 == uOP_SYSTEM_MRET)) || (rob.commit_uOp0 == uOP_SYSTEM_CSRRW)
-                    || (rob.commit_uOp0 == uOP_SYSTEM_CSRRC) || (rob.commit_uOp0 == uOP_SYSTEM_CSRRS))) {
-                    _display("%x: DASM(%x)\n%x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0, rob.commit_PC1, rob.commit_Inst1);
-                } else {
-                    _display("%x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0);
-                }
-                any {
-                    (commit_inst0_cause.illegal_instruction || commit_inst1_cause.illegal_instruction || csr.csr_write_illegal_instruction): {
-                        _display("ILLEGAL_INSTRUCTION");
-                    }
-                    commit_inst0_cause.environment_call_from_m_mode || commit_inst1_cause.environment_call_from_m_mode: {
-                        _display("ENVIRONMENT_CALL_FROM_M_MODE");
-                    }
-                    commit_inst0_cause.breakpoint: {
-                        _display("BREAKPOINT");
-                    }
-                }
-            }
-            !rob.commit_Valid0 && rob.commit_Valid1: {
-                _display("%x: DASM(%x)", rob.commit_PC1, rob.commit_Inst1);
-                any {
-                    (commit_inst1_cause.illegal_instruction || csr.csr_write_illegal_instruction): {
-                        _display("ILLEGAL_INSTRUCTION");
-                    }
-                    commit_inst1_cause.environment_call_from_m_mode: {
-                        _display("ENVIRONMENT_CALL_FROM_M_MODE");
-                    }
-                    commit_inst1_cause.breakpoint: {
-                        _display("BREAKPOINT");
-                    }
-                }
-            }
-            rob.commit_Valid0 && !rob.commit_Valid1: {
-                _display("%x: DASM(%x)", rob.commit_PC0, rob.commit_Inst0);
-                any {
-                    (commit_inst0_cause.illegal_instruction || csr.csr_write_illegal_instruction): {
-                        _display("ILLEGAL_INSTRUCTION");
-                    }
-                    commit_inst0_cause.environment_call_from_m_mode: {
-                        _display("ENVIRONMENT_CALL_FROM_M_MODE");
-                    }
-                    commit_inst0_cause.breakpoint: {
-                        _display("BREAKPOINT");
-                    }
-                }
-            }
         }
     }
 
