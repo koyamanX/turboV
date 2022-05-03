@@ -33,6 +33,9 @@ module instruction_decoder {
             inst_opcode == OP_IMM: {
                 imm_gen0.i_type(inst);
                 if((inst_itype.funct3 == ALU_SLL) || (inst_itype.funct3 == ALU_SRA) || (inst_itype.funct3 == ALU_SRL)) {
+                    if(imm_gen0.imm[5] != 0) {
+                        uop_illegal_instruction();
+                    }
                     /* use rtype field for funct7 */
                     inst_fn = {inst_rtype.funct7[5], inst_itype.funct3};
                 } else {
