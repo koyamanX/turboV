@@ -144,6 +144,10 @@ module instruction_decoder {
                         inst_fn = uOP_SYSTEM_ECALL;
                         uop_system(inst_opcode, inst_fn, 0, RS1_SEL_REG, 0, RS2_SEL_REG, 0, 0);
                     }
+                    inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_EBREAK && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
+                        inst_fn = uOP_SYSTEM_EBREAK;
+                        uop_system(inst_opcode, inst_fn, 0, RS1_SEL_REG, 0, RS2_SEL_REG, 0, 0);
+                    }
                     else: {
                         uop_illegal_instruction();
                     }

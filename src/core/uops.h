@@ -29,6 +29,7 @@
 
 #define uOP_SYSTEM_MRET     7'b001_1111
 #define uOP_SYSTEM_ECALL    7'b001_1100
+#define uOP_SYSTEM_EBREAK    7'b001_1110
 
 #define uOP_LSU_LOAD_WORD   4'b0010
 #define uOP_LSU_LOAD_HALFWORD   4'b0001
