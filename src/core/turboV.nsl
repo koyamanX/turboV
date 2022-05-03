@@ -617,9 +617,11 @@ module turboV {
     func rob.commit {
         medeleg_t wire commit_inst0_cause;
         medeleg_t wire commit_inst1_cause;
+        func_self commit_kill_inst0;
+        func_self commit_kill_inst1;
 
         if(rob.commit_Valid0) {
-            if(!|rob.commit_Cause0) {
+            if(!commit_kill_inst0) {
                 if(!flush && !(issue && !stall_issue && (issue_packet.inst0_valid && issue_packet.inst0_rd == rob.commit_Dest0)
                     && (issue_packet.inst1_valid && issue_packet.inst1_rd == rob.commit_Dest0)
                     && (rob.commit_Valid1 && rob.commit_Dest0 == rob.commit_Dest1))) {
@@ -672,27 +674,29 @@ module turboV {
                         gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
                     }
                 }
-            } else {
-                commit_inst0_cause = {0x0000, rob.commit_Cause0};
-                alt {
-                    commit_inst0_cause.illegal_instruction: {
-                        flush();
-                        ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC0, rob.commit_Inst0));
-                    }
-                    commit_inst0_cause.environment_call_from_m_mode: {
-                        flush();
-                        ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC0, rob.commit_Inst0));
-                    }
-                    commit_inst0_cause.breakpoint: {
-                        flush();
-                        ifu.redirect(csr.trap(BREAKPOINT, rob.commit_PC0, rob.commit_Inst0));
-                    }
+            }
+            commit_inst0_cause = {0x0000, rob.commit_Cause0};
+            alt {
+                commit_inst0_cause.illegal_instruction: {
+                    flush();
+                    commit_kill_inst0();
+                    ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC0, rob.commit_Inst0));
+                }
+                commit_inst0_cause.environment_call_from_m_mode: {
+                    flush();
+                    commit_kill_inst0();
+                    ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC0, rob.commit_Inst0));
+                }
+                commit_inst0_cause.breakpoint: {
+                    flush();
+                    commit_kill_inst0();
+                    ifu.redirect(csr.trap(BREAKPOINT, rob.commit_PC0, rob.commit_Inst0));
                 }
             }
         }
        
        if(rob.commit_Valid1) {
-           if(!|rob.commit_Cause1 && !|rob.commit_Cause0) {
+           if(!commit_kill_inst0 && !commit_kill_inst1) {
                 if(!flush && !(issue && !stall_issue && (issue_packet.inst0_valid && issue_packet.inst0_rd == rob.commit_Dest1)
                     && (issue_packet.inst1_valid && issue_packet.inst1_rd == rob.commit_Dest1)
                     && (rob.commit_Valid0 && rob.commit_Dest0 == rob.commit_Dest1))) {
@@ -751,25 +755,27 @@ module turboV {
                         }
                     }
                 }
-            } else {
-               if(!|rob.commit_Cause0) {
-                    commit_inst1_cause = {0x0000, rob.commit_Cause1};
-                    alt {
-                        commit_inst1_cause.illegal_instruction: {
-                            flush();
-                            ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC1, rob.commit_Inst1));
-                        }
-                        commit_inst1_cause.environment_call_from_m_mode: {
-                            flush();
-                            ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC1, rob.commit_Inst1));
-                        }
-                        commit_inst1_cause.breakpoint: {
-                            flush();
-                            ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC1, rob.commit_Inst1));
-                        }
-                    }
-               }
             }
+           if(!commit_kill_inst0) {
+                commit_inst1_cause = {0x0000, rob.commit_Cause1};
+                alt {
+                    commit_inst1_cause.illegal_instruction: {
+                        flush();
+                        commit_kill_inst1();
+                        ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC1, rob.commit_Inst1));
+                    }
+                    commit_inst1_cause.environment_call_from_m_mode: {
+                        flush();
+                        commit_kill_inst1();
+                        ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC1, rob.commit_Inst1));
+                    }
+                    commit_inst1_cause.breakpoint: {
+                        flush();
+                        commit_kill_inst1();
+                        ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC1, rob.commit_Inst1));
+                    }
+                }
+           }
         }
         any {
             rob.commit_Valid0 && rob.commit_Valid1: {
