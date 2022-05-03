@@ -23,7 +23,7 @@ module control_status_register {
     */
     wire ialign[2];
 
-    ialign = if(misa.extensions & MISA_EXTENSIONS_C) 2'b00 else 2'b11;
+    ialign = if(misa.extensions & MISA_EXTENSIONS_C) 2'b01 else 2'b11;
     func reset {
         /* TODO: */
         mode                := MACHINE;
