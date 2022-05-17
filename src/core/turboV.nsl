@@ -738,9 +738,14 @@ module turboV {
                                 if((rob.commit_uOp1 != uOP_SYSTEM_CSRRS_NO_UPDATE_CSR) && (rob.commit_uOp1 != uOP_SYSTEM_CSRRC_NO_UPDATE_CSR)) {
                                     csr.write(rob.commit_CSR_num, rob.commit_Value1);
                                 }
-                                gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
-                                ifu.redirect(rob.commit_PC1 + 4);
-                                flush();
+                                if(csr.csr_write_illegal_instruction) {
+                                    flush();
+                                    ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC1, rob.commit_Inst1));
+                                } else {
+                                    gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
+                                    ifu.redirect(rob.commit_PC1 + 4);
+                                    flush();
+                                }
                             }
                         }
                         else: {
