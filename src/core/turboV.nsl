@@ -170,18 +170,14 @@ module turboV {
                 // Decode two instructions.
                 idec0.decode(decode_fetch_packet1.inst0);
                 idec1.decode(decode_fetch_packet1.inst1);
-                decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction;
-                decode_inst0_exception.environment_call_from_m_mode = (idec0.uop == uOP_SYSTEM_ECALL);
-                decode_inst0_exception.breakpoint = (idec0.uop == uOP_SYSTEM_EBREAK);
-                decode_inst1_exception.illegal_instruction = idec1.uop_illegal_instruction;
-                decode_inst1_exception.environment_call_from_m_mode = (idec1.uop == uOP_SYSTEM_ECALL);
-                decode_inst1_exception.breakpoint = (idec1.uop == uOP_SYSTEM_EBREAK);
                 // Check if structural hazard occurs for FUs.
                 if(((idec0.uop_bru && decode_fetch_packet1.valid0) && (idec1.uop_bru && decode_fetch_packet1.valid1))
                     || (((idec0.load || idec0.store) && decode_fetch_packet1.valid0) && ((idec1.load || idec1.store) && decode_fetch_packet1.valid1))
                     || ((idec0.uop_system && decode_fetch_packet1.valid0) && (idec1.uop_system && decode_fetch_packet1.valid1))) {
                     // If hazard occurs, send first instructions to issue.
-
+                    decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction;
+                    decode_inst0_exception.environment_call_from_m_mode = (idec0.uop == uOP_SYSTEM_ECALL);
+                    decode_inst0_exception.breakpoint = (idec0.uop == uOP_SYSTEM_EBREAK);
                     decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
                     decode_issue_packet.inst0_pred      = decode_fetch_packet1.pred0;
                     decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc0;
@@ -217,6 +213,12 @@ module turboV {
                     goto decode2;
                 } else {
                     // No structual hazard for FUs.
+                    decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction;
+                    decode_inst0_exception.environment_call_from_m_mode = (idec0.uop == uOP_SYSTEM_ECALL);
+                    decode_inst0_exception.breakpoint = (idec0.uop == uOP_SYSTEM_EBREAK);
+                    decode_inst1_exception.illegal_instruction = idec1.uop_illegal_instruction;
+                    decode_inst1_exception.environment_call_from_m_mode = (idec1.uop == uOP_SYSTEM_ECALL);
+                    decode_inst1_exception.breakpoint = (idec1.uop == uOP_SYSTEM_EBREAK);
                     decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
                     decode_issue_packet.inst0_pred      = decode_fetch_packet1.pred0;
                     decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc0;
@@ -255,14 +257,14 @@ module turboV {
         state decode2 {
             // Decode second instrction again.
             idec0.decode(decode_fetch_packet2.inst1);
-            decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction;
-            decode_inst0_exception.environment_call_from_m_mode = (idec0.uop == uOP_SYSTEM_ECALL);
-            decode_inst0_exception.breakpoint = (idec0.uop == uOP_SYSTEM_EBREAK);
             if(flush) {
                 decode();
                 goto decode1;
             } else if(!stall_issue && !flush) {
                 // Send second instruction to issue.
+                decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction;
+                decode_inst0_exception.environment_call_from_m_mode = (idec0.uop == uOP_SYSTEM_ECALL);
+                decode_inst0_exception.breakpoint = (idec0.uop == uOP_SYSTEM_EBREAK);
                 decode_issue_packet.inst0_valid     = decode_fetch_packet2.valid1;
                 decode_issue_packet.inst0_pred      = decode_fetch_packet2.pred1;
                 decode_issue_packet.inst0_pc        = decode_fetch_packet2.pc1;
