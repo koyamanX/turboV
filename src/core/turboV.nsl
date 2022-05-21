@@ -175,7 +175,9 @@ module turboV {
                     || (((idec0.load || idec0.store) && decode_fetch_packet1.valid0) && ((idec1.load || idec1.store) && decode_fetch_packet1.valid1))
                     || ((idec0.uop_system && decode_fetch_packet1.valid0) && (idec1.uop_system && decode_fetch_packet1.valid1))) {
                     // If hazard occurs, send first instructions to issue.
-                    decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction;
+                    csr.has_mapped(idec0.uop_imm);
+                    decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction
+                        || ((idec0.uop_system_csr_read || idec0.uop_system_csr_write) && !(idec0.uop_system_csr_read && csr.has_mapped_ok) && !(idec0.uop_system_csr_write && csr.has_mapped_ok && !csr.has_mapped_readonly));
                     decode_inst0_exception.environment_call_from_m_mode = (idec0.uop == uOP_SYSTEM_ECALL);
                     decode_inst0_exception.breakpoint = (idec0.uop == uOP_SYSTEM_EBREAK);
                     decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
@@ -213,10 +215,17 @@ module turboV {
                     goto decode2;
                 } else {
                     // No structual hazard for FUs.
-                    decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction;
+                    if(idec0.uop_system) {
+                        csr.has_mapped(idec0.uop_imm);
+                    } else {
+                        csr.has_mapped(idec1.uop_imm);
+                    }
+                    decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction
+                        || ((idec0.uop_system_csr_read || idec0.uop_system_csr_write) && !(idec0.uop_system_csr_read && csr.has_mapped_ok) && !(idec0.uop_system_csr_write && csr.has_mapped_ok && !csr.has_mapped_readonly));
                     decode_inst0_exception.environment_call_from_m_mode = (idec0.uop == uOP_SYSTEM_ECALL);
                     decode_inst0_exception.breakpoint = (idec0.uop == uOP_SYSTEM_EBREAK);
-                    decode_inst1_exception.illegal_instruction = idec1.uop_illegal_instruction;
+                    decode_inst1_exception.illegal_instruction = idec1.uop_illegal_instruction
+                        || ((idec1.uop_system_csr_read || idec1.uop_system_csr_write) && !(idec1.uop_system_csr_read && csr.has_mapped_ok) && !(idec1.uop_system_csr_write && csr.has_mapped_ok && !csr.has_mapped_readonly));
                     decode_inst1_exception.environment_call_from_m_mode = (idec1.uop == uOP_SYSTEM_ECALL);
                     decode_inst1_exception.breakpoint = (idec1.uop == uOP_SYSTEM_EBREAK);
                     decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
@@ -262,7 +271,8 @@ module turboV {
                 goto decode1;
             } else if(!stall_issue && !flush) {
                 // Send second instruction to issue.
-                decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction;
+                decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction
+                    || ((idec0.uop_system_csr_read || idec0.uop_system_csr_write) && !(idec0.uop_system_csr_read && csr.has_mapped_ok) && !(idec0.uop_system_csr_write && csr.has_mapped_ok && !csr.has_mapped_readonly));
                 decode_inst0_exception.environment_call_from_m_mode = (idec0.uop == uOP_SYSTEM_ECALL);
                 decode_inst0_exception.breakpoint = (idec0.uop == uOP_SYSTEM_EBREAK);
                 decode_issue_packet.inst0_valid     = decode_fetch_packet2.valid1;
@@ -310,8 +320,6 @@ module turboV {
         wire issue_inst1_Qk[ROB_TAG_SIZE];
         wire issue_inst1_Vj[32];
         wire issue_inst1_Vk[32];
-        func_self issue_inst0_illegal_instruction();
-        func_self issue_inst1_illegal_instruction();
 
         if(!rob.full && !alu_rs0.full && !alu_rs1.full && !bru_rs0.full && !lsu_rs0.full && !flush) {
             /* TODO: Optimize RSs free entry check */
@@ -375,16 +383,10 @@ module turboV {
                     (issue_packet.inst0_rs2_sel == RS2_SEL_CSR): {
                         issue_inst0_Vk = csr.read(issue_packet.csr_num);
                         issue_inst0_Qk = 0;
-                        if(csr.csr_read_illegal_instruction) {
-                            issue_inst0_illegal_instruction();
-                        }
                     }
                     (issue_packet.inst0_rs2_sel == RS2_SEL_NOT_CSR): {
                         issue_inst0_Vk = ~csr.read(issue_packet.csr_num);
                         issue_inst0_Qk = 0;
-                        if(csr.csr_read_illegal_instruction) {
-                            issue_inst0_illegal_instruction();
-                        }
                     }
                 }
                 /* inst0 rd mapping */
@@ -477,16 +479,10 @@ module turboV {
                     (issue_packet.inst1_rs2_sel == RS2_SEL_CSR): {
                         issue_inst1_Vk = csr.read(issue_packet.csr_num);
                         issue_inst1_Qk = 0;
-                        if(csr.csr_read_illegal_instruction) {
-                            issue_inst1_illegal_instruction();
-                        }
                     }
                     (issue_packet.inst1_rs2_sel == RS2_SEL_NOT_CSR): {
                         issue_inst1_Vk = ~csr.read(issue_packet.csr_num);
                         issue_inst1_Qk = 0;
-                        if(csr.csr_read_illegal_instruction) {
-                            issue_inst1_illegal_instruction();
-                        }
                     }
                 }
                 /* inst1 rd mapping */
@@ -511,8 +507,8 @@ module turboV {
                 }
             }
             rob.issue(
-                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode, issue_packet.inst0_uop, (issue_packet.inst0_cause | issue_inst0_illegal_instruction << 2),
-                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode, issue_packet.inst1_uop, (issue_packet.inst1_cause | issue_inst1_illegal_instruction << 2),
+                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode, issue_packet.inst0_uop, issue_packet.inst0_cause,
+                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode, issue_packet.inst1_uop, issue_packet.inst1_cause,
                 issue_packet.csr_num, csr.csr_rdata
             );
             finish();
@@ -659,14 +655,9 @@ module turboV {
                             if((rob.commit_uOp0 != uOP_SYSTEM_CSRRS_NO_UPDATE_CSR) && (rob.commit_uOp0 != uOP_SYSTEM_CSRRC_NO_UPDATE_CSR)) {
                                 csr.write(rob.commit_CSR_num, rob.commit_Value0);
                             }
-                            if(csr.csr_write_illegal_instruction) {
-                                flush();
-                                ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC0, rob.commit_Inst0));
-                            } else {
-                                gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
-                                ifu.redirect(rob.commit_PC0 + 4);
-                                flush();
-                            }
+                            gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
+                            ifu.redirect(rob.commit_PC0 + 4);
+                            flush();
                         }
                     }
                     else: {
@@ -740,14 +731,9 @@ module turboV {
                                 if((rob.commit_uOp1 != uOP_SYSTEM_CSRRS_NO_UPDATE_CSR) && (rob.commit_uOp1 != uOP_SYSTEM_CSRRC_NO_UPDATE_CSR)) {
                                     csr.write(rob.commit_CSR_num, rob.commit_Value1);
                                 }
-                                if(csr.csr_write_illegal_instruction) {
-                                    flush();
-                                    ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC1, rob.commit_Inst1));
-                                } else {
-                                    gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
-                                    ifu.redirect(rob.commit_PC1 + 4);
-                                    flush();
-                                }
+                                gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
+                                ifu.redirect(rob.commit_PC1 + 4);
+                                flush();
                             }
                         }
                         else: {

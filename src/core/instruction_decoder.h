@@ -25,6 +25,8 @@ declare instruction_decoder {
     func_out uop_bru(opcode, uop, uop_rd, uop_rs1_sel, uop_rs1, uop_rs2_sel, uop_rs2, uop_imm);
     func_out uop_lsu(opcode, uop, uop_rd, uop_rs1_sel, uop_rs1, uop_rs2_sel, uop_rs2, uop_imm);
     func_out uop_system(opcode, uop, uop_rd, uop_rs1_sel, uop_rs1, uop_rs2_sel, uop_rs2, uop_imm);
+    func_out uop_system_csr_write();
+    func_out uop_system_csr_read();
     func_out uop_illegal_instruction();
     func_out jump();
     func_out load();

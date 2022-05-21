@@ -15,6 +15,11 @@ declare control_status_register {
     func_out csr_write_illegal_instruction();
     func_in reset();
 
+    input has_mapped_csr_addr[12];
+    output has_mapped_ok;
+    func_in has_mapped(has_mapped_csr_addr): has_mapped_ok;
+    func_out has_mapped_readonly();
+
     input trap_cause[32];
     input trap_pc[32];
     input trap_val[32];

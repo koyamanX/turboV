@@ -146,6 +146,57 @@ module control_status_register {
             }
         }
     }
+    func has_mapped {
+        if(has_mapped_csr_addr[11:10] == 2'b11) has_mapped_readonly();
+        any {
+            (mode >= MACHINE) && (has_mapped_csr_addr == MISA): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MVENDORID): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MARCHID): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MIMPID): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MHARTID): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MSTATUSH): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MSTATUS): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MTVEC): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MIP): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MIE): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MSCRATCH): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MEPC): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MCAUSE): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MTVAL): {
+                return 1;
+            }
+            else: {
+                return 0;
+            }
+        }
+    }
+
     func write {
         mstatus_t wire xstatus;
         mtvec_t wire xtvec;
