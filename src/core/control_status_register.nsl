@@ -141,9 +141,6 @@ module control_status_register {
             (mode >= MACHINE) && (csr_rnum == MTVAL): {
                 return mtval;
             }
-            else: {
-                csr_read_illegal_instruction();
-            }
         }
     }
     func has_mapped {
@@ -292,9 +289,6 @@ module control_status_register {
             }
             (mode >= MACHINE) && (csr_wnum == MTVAL): {
                 mtval := csr_wdata;
-            }
-            else: {
-                csr_write_illegal_instruction();
             }
         }
     }
