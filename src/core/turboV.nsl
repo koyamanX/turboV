@@ -53,6 +53,7 @@ module turboV {
     func_self stall_issue();
     /* Issue stage */
     issue_packet_t reg issue_packet;
+    wire is_issue;
     proc_name issue(issue_packet);
     /* Execute stage */
     reg execute_alu0_fn[4];
@@ -311,6 +312,7 @@ module turboV {
             }
         }
     }
+    is_issue = (issue && !stall_issue);
     proc issue {
         wire issue_inst0_Qj[ROB_TAG_SIZE];
         wire issue_inst0_Qk[ROB_TAG_SIZE];
@@ -674,7 +676,7 @@ module turboV {
 #ifdef ENABLE_DEBUG
             debug_commit0(rob.commit_PC0, rob.commit_Inst0, rob.commit_Cause0);
 #endif
-            if(!flush && !(issue && !stall_issue && (issue_packet.inst0_valid && issue_packet.inst0_rd == rob.commit_Dest0)
+            if(!flush && !(is_issue && (issue_packet.inst0_valid && issue_packet.inst0_rd == rob.commit_Dest0)
                 && (issue_packet.inst1_valid && issue_packet.inst1_rd == rob.commit_Dest0)
                 && (rob.commit_Valid1 && rob.commit_Dest0 == rob.commit_Dest1))) {
                 /* If rd field of instruction in issue stage has same register destination,
@@ -738,7 +740,7 @@ module turboV {
 #ifdef ENABLE_DEBUG
             debug_commit1(rob.commit_PC1, rob.commit_Inst1, rob.commit_Cause1);
 #endif
-            if(!flush && !(issue && !stall_issue && (issue_packet.inst0_valid && issue_packet.inst0_rd == rob.commit_Dest1)
+            if(!flush && !(is_issue && (issue_packet.inst0_valid && issue_packet.inst0_rd == rob.commit_Dest1)
                 && (issue_packet.inst1_valid && issue_packet.inst1_rd == rob.commit_Dest1)
                 && (rob.commit_Valid0 && rob.commit_Dest0 == rob.commit_Dest1))) {
                 /* If rd field of instruction in issue stage has same register destination,
