@@ -3,6 +3,7 @@
 #include "wishbone_common.h"
 #include "wishbone_slave.h"
 #include "rom64x2K.h"
+#include "clint.h"
 
 declare turboVSim simulation {
     func_in reset();
@@ -34,11 +35,13 @@ module turboVSim {
 	wishbone_syscon wb_syscon;
     wishbone_slave wb_slave_if;
 	rom64x2K wb_rom;
+    clint wb_clint;
 
     func reset {
         core.reset();
         wb_slave_if.reset();
         wb_rom.reset();
+        wb_clint.reset();
     }
 	wb_syscon.CLK_I = m_clock;
 	wb_syscon.RST_I = p_reset;
@@ -72,7 +75,7 @@ module turboVSim {
     //func core.STB_O wb_rom.STB_I();
     func core.WE_O wb_rom.WE_I();
     func core.LOCK_O wb_rom.LOCK_I();
-    func wb_rom.ACK_O { 
+    func wb_rom.ACK_O {
         core.DAT_I = wb_rom.DAT_O;
         core.ACK_I();
     }
@@ -80,15 +83,35 @@ module turboVSim {
     func wb_rom.ERR_O core.ERR_I();
     func wb_rom.RTY_O core.RTY_I();
 
+    wb_clint.CLK_I = wb_syscon.CLK_O;
+    wb_clint.RST_I = wb_syscon.RST_O;
+    wb_clint.ADR_I = core.ADR_O;
+    wb_clint.SEL_I = core.SEL_O;
+    wb_clint.DAT_I = core.DAT_O;
+    func core.CYC_O wb_clint.CYC_I();
+    //func core.STB_O wb_clint.STB_I();
+    func core.WE_O wb_clint.WE_I();
+    func core.LOCK_O wb_clint.LOCK_I();
+    func wb_clint.ACK_O {
+        core.DAT_I = wb_clint.DAT_O;
+        core.ACK_I();
+    }
+    func wb_clint.STALL_O core.STALL_I();
+    func wb_clint.ERR_O core.ERR_I();
+    func wb_clint.RTY_O core.RTY_I();
+
     any {
         core.ADR_O <= 0x0000_ffff: {
-           if(core.STB_O) wb_rom.STB_I(); 
+           if(core.STB_O) wb_rom.STB_I();
         }
         0x80000000 <= core.ADR_O && core.ADR_O <= 0x84000000: {
-           if(core.STB_O) wb_slave_if.STB_I(); 
+           if(core.STB_O) wb_slave_if.STB_I();
+        }
+        CLINT_BASE <= core.ADR_O && core.ADR_O <= CLINT_BASE+CLINT_LENGTH: {
+           if(core.STB_O) wb_slave_if.STB_I();
         }
     }
-    
+
     func wb_slave_if.req_read {
         req_read(wb_slave_if.req_addr, wb_slave_if.req_sel);
     }
