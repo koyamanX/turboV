@@ -676,20 +676,7 @@ module turboV {
 #ifdef ENABLE_DEBUG
             debug_commit0(rob.commit_PC0, rob.commit_Inst0, rob.commit_Cause0);
 #endif
-            if(!flush && !(is_issue && (issue_packet.inst0_valid && issue_packet.inst0_rd == rob.commit_Dest0)
-                && (issue_packet.inst1_valid && issue_packet.inst1_rd == rob.commit_Dest0)
-                && (rob.commit_Valid1 && rob.commit_Dest0 == rob.commit_Dest1))) {
-                /* If rd field of instruction in issue stage has same register destination,
-                    conflict will occur for register_status_table, so do not make READY.
-                    issue_packet.inst0_rd is only valid on (issue && !stall_issue).
-                */
-                if((rob.commit_Id == register_map_table[rob.commit_Dest0])) {
-                    // Branch instruction has no Dest register.
-                    register_status_table[rob.commit_Dest0] := READY;
-                }
-            }
-        }
-       
+       }
        if(rob.commit_Valid1 && !commit_kill_inst1) {
             commit_inst1_cause = {0x0000, rob.commit_Cause1};
             alt {
@@ -740,17 +727,32 @@ module turboV {
 #ifdef ENABLE_DEBUG
             debug_commit1(rob.commit_PC1, rob.commit_Inst1, rob.commit_Cause1);
 #endif
-            if(!flush && !(is_issue && (issue_packet.inst0_valid && issue_packet.inst0_rd == rob.commit_Dest1)
-                && (issue_packet.inst1_valid && issue_packet.inst1_rd == rob.commit_Dest1)
-                && (rob.commit_Valid0 && rob.commit_Dest0 == rob.commit_Dest1))) {
-                /* If rd field of instruction in issue stage has same register destination,
-                    conflict will occur for register_status_table, so do not make READY.
-                    issue_packet.inst1_rd is only valid on (issue && !stall_issue).
-                */
-                if((rob.commit_Id+1 == register_map_table[rob.commit_Dest1])) {
-                    // Branch instruction has no Dest register.
-                    register_status_table[rob.commit_Dest1] := READY;
-                }
+        }
+        if(!flush && rob.commit_Valid0 && !(is_issue
+            && (issue_packet.inst0_valid && issue_packet.inst0_rd == rob.commit_Dest0)
+            && (issue_packet.inst1_valid && issue_packet.inst1_rd == rob.commit_Dest0)
+            && (rob.commit_Valid1 && rob.commit_Dest0 == rob.commit_Dest1))) {
+            /* If rd field of instruction in issue stage has same register destination,
+                conflict will occur for register_status_table, so do not make READY.
+                issue_packet.inst0_rd is only valid on is_issue.
+                if ROB.Dest0 == ROB.Dest1, do not make READY here, it will be handled
+                in ROB.Dest1 side
+            */
+            if((rob.commit_Id == register_map_table[rob.commit_Dest0])) {
+                // Branch instruction has no Dest register.
+                register_status_table[rob.commit_Dest0] := READY;
+            }
+        }
+        if(!flush && rob.commit_Valid1 && !(is_issue
+            && (issue_packet.inst0_valid && issue_packet.inst0_rd == rob.commit_Dest1)
+            && (issue_packet.inst1_valid && issue_packet.inst1_rd == rob.commit_Dest1))) {
+            /* If rd field of instruction in issue stage has same register destination,
+                conflict will occur for register_status_table, so do not make READY.
+                issue_packet.inst1_rd is only valid on is_issue.
+            */
+            if((rob.commit_Id+1 == register_map_table[rob.commit_Dest1])) {
+                // Branch instruction has no Dest register.
+                register_status_table[rob.commit_Dest1] := READY;
             }
         }
     }
