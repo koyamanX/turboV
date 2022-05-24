@@ -100,6 +100,13 @@ module turboVSim {
     func wb_clint.ERR_O core.ERR_I();
     func wb_clint.RTY_O core.RTY_I();
 
+    func wb_clint.software_interrupt_hart0 {
+        core.software_interrupt_req_hart0();
+    }
+    func wb_clint.timer_interrupt_hart0 {
+        core.timer_interrupt_req_hart0();
+    }
+
     any {
         core.ADR_O <= 0x0000_ffff: {
            if(core.STB_O) wb_rom.STB_I();

@@ -8,6 +8,8 @@
 
 declare turboV {
     func_in reset();
+    func_in timer_interrupt_req_hart0();
+    func_in software_interrupt_req_hart0();
 
     WISHBONE_GEN_MASTER_IF(32, 64, 8)
 #ifdef ENABLE_DEBUG

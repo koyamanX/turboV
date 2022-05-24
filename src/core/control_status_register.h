@@ -12,6 +12,17 @@ declare control_status_register {
     input csr_wdata[32];
     func_in write(csr_wnum, csr_wdata);
     func_in reset();
+    func_in timer_interrupt_req_hart0();
+    func_in software_interrupt_req_hart0();
+
+    output meip;
+    output msip;
+    output mtip;
+    output meie;
+    output msie;
+    output mtie;
+    output mstatus_mie;
+    output priv_mode[2];
 
     input has_mapped_csr_addr[12];
     output has_mapped_ok;

@@ -680,6 +680,14 @@ module turboV {
        if(rob.commit_Valid1 && !commit_kill_inst1) {
             commit_inst1_cause = {0x0000, rob.commit_Cause1};
             alt {
+                csr.msip && csr.msie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
+                    flush();
+                    ifu.redirect(csr.trap(MACHINE_SOFTWARE_INTERRUPT, rob.commit_PC1, rob.commit_Inst1));
+                }
+                csr.mtip && csr.mtie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
+                    flush();
+                    ifu.redirect(csr.trap(MACHINE_TIMER_INTERRUPT, rob.commit_PC1, rob.commit_Inst1));
+                }
                 commit_inst1_cause.illegal_instruction: {
                     flush();
                     ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC1, rob.commit_Inst1));
@@ -755,6 +763,12 @@ module turboV {
                 register_status_table[rob.commit_Dest1] := READY;
             }
         }
+    }
+    func timer_interrupt_req_hart0 {
+        csr.timer_interrupt_req_hart0();
+    }
+    func software_interrupt_req_hart0 {
+        csr.software_interrupt_req_hart0();
     }
 
     ifu.CLK_I = CLK_I;

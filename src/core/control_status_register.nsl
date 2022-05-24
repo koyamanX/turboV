@@ -24,6 +24,14 @@ module control_status_register {
     wire ialign[2];
 
     ialign = if(misa.extensions & MISA_EXTENSIONS_C) 2'b01 else 2'b11;
+    meip = mip.meip;
+    msip = mip.msip;
+    mtip = mip.mtip;
+    meie = mie.meie;
+    msie = mie.msie;
+    mtie = mie.mtie;
+    mstatus_mie  = mstatus.mie;
+    priv_mode = mode;
     func reset {
         /* TODO: */
         mode                := MACHINE;
@@ -124,7 +132,7 @@ module control_status_register {
                 return mtvec;
             }
             (mode >= MACHINE) && (csr_rnum == MIP): {
-                return mip;
+                return mip | (timer_interrupt_req_hart0 << 7) | (software_interrupt_req_hart0 << 3);
             }
             (mode >= MACHINE) && (csr_rnum == MIE): {
                 return mie;
