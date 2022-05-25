@@ -182,5 +182,5 @@ int main(int argc, char **argv) {
         sim.Tick();
     }
 
-    return sim_done_result;
+    return (sim_done_result == 1) ? 0 : sim_done_result;
 }

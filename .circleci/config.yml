@@ -33,20 +33,9 @@ jobs:
           working_directory: build
           command: "make install"
       - run:
-          name: "Unit Test"
+          name: "Run Tests"
           working_directory: build
           command: "make test"
-      - run:
-          name: "Clone riscv-tests"
-          working_directory: tests
-          command: "git clone --recursive https://github.com/riscv-software-src/riscv-tests"
-      - run:
-          name: "Build riscv-tests"
-          working_directory: tests
-          command: "make -C riscv-tests/isa XLEN=32"
-      - run:
-          name: "Run riscv-tests"
-          command: "SIMULATOR_PATH=build/Debug/turboVSim/./turboVSim RISCV_TESTS_PATH=tests/riscv-tests/isa build/Debug/tools/./run_riscv_tests.sh"
       - store_test_results:
           path: test-results
 # Invoke jobs via workflows
