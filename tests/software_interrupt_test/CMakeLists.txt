@@ -16,6 +16,7 @@ set_target_properties(${test_name}.elf PROPERTIES LINKER_LANGUAGE C)
 add_test(NAME ${test_name}
 	COMMAND ${CMAKE_BINARY_DIR}/Debug/turboVSim/turboVSim ${CMAKE_CURRENT_BINARY_DIR}/${test_name}.elf
 )
+set_property(TEST ${test_name} PROPERTY TIMEOUT 10)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${test_name}.elf
 	PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 	CONFIGURATIONS Debug
