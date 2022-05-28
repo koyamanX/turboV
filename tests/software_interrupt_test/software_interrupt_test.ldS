@@ -1,21 +1,27 @@
 OUTPUT_ARCH( "riscv" )
-ENTRY(_boot)
-MEMORY {
-	ROM(rx): ORIGIN = 0x80000000, LENGTH = 2K
-}
+ENTRY(_start)
 
 SECTIONS
 {
   . = 0x80000000;
-  .text.init : { *(.text.init) } > ROM
-  .text : { *(.text) } > ROM
+  .text.init : { *(.text.init) }
+  .text : { *(.text) }
   . = ALIGN(0x4);
-  __data_start = .;
-  .data : { *(.data) } > ROM
+  .rodata : { *(.rodata) }
+  .sdata : { *(.sdata) }
+  .data : { *(.data) }
   . = ALIGN(0x4);
-  __data_end = .;
-  __bss_start = .;
-  .bss : { *(.bss) } > ROM
+  _bss_start = .;
+  .bss : { *(.bss) }
+  .sbss : { *(.sbss) }
   . = ALIGN(0x4);
-  __bss_end = .;
+  _bss_end = .;
+  _heap_start = .;
+  . = . + 0x02000000;
+  . = ALIGN(0x4);
+  _heap_end = .;
+  . = 0x84008000;
+  . = ALIGN(0x10);
+  _stack_top = .;
 }
+

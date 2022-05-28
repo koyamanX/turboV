@@ -1,7 +1,7 @@
-.globl _boot
-_boot:
+.globl _start
+_start:
     li x1, 0x80001000
     li x2, 0
     sw x2, 0(x1)
-    j _boot
+    j _start
 
