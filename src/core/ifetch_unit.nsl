@@ -60,6 +60,7 @@ module ifetch_unit {
         flush_st0();
         flush_st1();
         flush_st2();
+        stall_ifetch.finish();
         ibuf.flush();
     }
     func stall {
