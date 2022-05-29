@@ -20,8 +20,7 @@ SECTIONS
   . = . + 0x02000000;
   . = ALIGN(0x4);
   _heap_end = .;
-  . = 0x84008000;
-  . = ALIGN(0x10);
+  . = 0x84000000;
   _stack_top = .;
 }
 

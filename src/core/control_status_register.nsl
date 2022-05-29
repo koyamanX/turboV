@@ -25,8 +25,8 @@ module control_status_register {
 
     ialign = if(misa.extensions & MISA_EXTENSIONS_C) 2'b01 else 2'b11;
     meip = mip.meip;
-    msip = mip.msip;
-    mtip = mip.mtip;
+    msip = software_interrupt_req_hart0;
+    mtip = timer_interrupt_req_hart0;
     meie = mie.meie;
     msie = mie.msie;
     mtie = mie.mtie;

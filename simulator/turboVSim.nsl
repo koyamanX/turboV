@@ -115,7 +115,7 @@ module turboVSim {
            if(core.STB_O) wb_slave_if.STB_I();
         }
         CLINT_BASE <= core.ADR_O && core.ADR_O <= CLINT_BASE+CLINT_LENGTH: {
-           if(core.STB_O) wb_slave_if.STB_I();
+           if(core.STB_O) wb_clint.STB_I();
         }
     }
 

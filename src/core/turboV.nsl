@@ -622,22 +622,41 @@ module turboV {
         if(rob.commit_Valid0) {
             commit_inst0_cause = {0x0000, rob.commit_Cause0};
             alt {
+                csr.msip && csr.msie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
+                    flush();
+                    commit_kill_inst1();
+                    ifu.redirect(csr.trap(MACHINE_SOFTWARE_INTERRUPT, rob.commit_PC0, rob.commit_Inst0));
+                }
+                csr.mtip && csr.mtie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
+                    flush();
+                    commit_kill_inst1();
+                    ifu.redirect(csr.trap(MACHINE_TIMER_INTERRUPT, rob.commit_PC0, rob.commit_Inst0));
+                }
                 commit_inst0_cause.illegal_instruction: {
                     flush();
                     commit_kill_inst1();
                     ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC0, rob.commit_Inst0));
                 }
                 commit_inst0_cause.environment_call_from_m_mode: {
+#ifdef ENABLE_DEBUG
+            debug_commit0(rob.commit_PC0, rob.commit_Inst0, rob.commit_Cause0);
+#endif
                     flush();
                     commit_kill_inst1();
                     ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC0, rob.commit_Inst0));
                 }
                 commit_inst0_cause.breakpoint: {
+#ifdef ENABLE_DEBUG
+            debug_commit0(rob.commit_PC0, rob.commit_Inst0, rob.commit_Cause0);
+#endif
                     flush();
                     commit_kill_inst1();
                     ifu.redirect(csr.trap(BREAKPOINT, rob.commit_PC0, rob.commit_Inst0));
                 }
                 ((rob.commit_Opcode0 == JAL) || (rob.commit_Opcode0 == JALR)): {
+#ifdef ENABLE_DEBUG
+            debug_commit0(rob.commit_PC0, rob.commit_Inst0, rob.commit_Cause0);
+#endif
                     // Jump instruction always redirect and flush pipeline.
                     gpr.writeA(rob.commit_Dest0, rob.commit_PC0+4);
                     ifu.redirect(rob.commit_Target0);
@@ -645,15 +664,24 @@ module turboV {
                     flush();
                 }
                 ((rob.commit_Opcode0 == BRANCH) && (rob.commit_Value0[0] == 1)): {
+#ifdef ENABLE_DEBUG
+            debug_commit0(rob.commit_PC0, rob.commit_Inst0, rob.commit_Cause0);
+#endif
                     // Branch instruction only redirect and flush pipeline if branch is taken.
                     ifu.redirect(rob.commit_Target0);
                     commit_kill_inst1();
                     flush();
                 }
                 (rob.commit_Opcode0 == STORE): {
+#ifdef ENABLE_DEBUG
+            debug_commit0(rob.commit_PC0, rob.commit_Inst0, rob.commit_Cause0);
+#endif
                     lsu.commit(rob.commit_Dest0);
                 }
                 (rob.commit_Opcode0 == SYSTEM): {
+#ifdef ENABLE_DEBUG
+            debug_commit0(rob.commit_PC0, rob.commit_Inst0, rob.commit_Cause0);
+#endif
                     if(rob.commit_uOp0 == uOP_SYSTEM_MRET) {
                         ifu.redirect(csr.mret());
                         commit_kill_inst1();
@@ -669,13 +697,13 @@ module turboV {
                     }
                 }
                 else: {
+#ifdef ENABLE_DEBUG
+            debug_commit0(rob.commit_PC0, rob.commit_Inst0, rob.commit_Cause0);
+#endif
                     // Other instructions which has Dest register field.
                     gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
                 }
             }
-#ifdef ENABLE_DEBUG
-            debug_commit0(rob.commit_PC0, rob.commit_Inst0, rob.commit_Cause0);
-#endif
        }
        if(rob.commit_Valid1 && !commit_kill_inst1) {
             commit_inst1_cause = {0x0000, rob.commit_Cause1};
@@ -693,28 +721,46 @@ module turboV {
                     ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC1, rob.commit_Inst1));
                 }
                 commit_inst1_cause.environment_call_from_m_mode: {
+#ifdef ENABLE_DEBUG
+                    debug_commit1(rob.commit_PC1, rob.commit_Inst1, rob.commit_Cause1);
+#endif
                     flush();
                     ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC1, rob.commit_Inst1));
                 }
                 commit_inst1_cause.breakpoint: {
+#ifdef ENABLE_DEBUG
+                    debug_commit1(rob.commit_PC1, rob.commit_Inst1, rob.commit_Cause1);
+#endif
                     flush();
                     ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC1, rob.commit_Inst1));
                 }
                 ((rob.commit_Opcode1 == JAL) || (rob.commit_Opcode1 == JALR)): {
+#ifdef ENABLE_DEBUG
+                    debug_commit1(rob.commit_PC1, rob.commit_Inst1, rob.commit_Cause1);
+#endif
                     // Jump instruction always redirect and flush pipeline.
                     gpr.writeB(rob.commit_Dest1, rob.commit_PC1+4);
                     ifu.redirect(rob.commit_Target1);
                     flush();
                 }
                 ((rob.commit_Opcode1 == BRANCH) && (rob.commit_Value1[0] == 1)): {
+#ifdef ENABLE_DEBUG
+                    debug_commit1(rob.commit_PC1, rob.commit_Inst1, rob.commit_Cause1);
+#endif
                     // Branch instruction only redirect and flush pipeline if branch is taken.
                     ifu.redirect(rob.commit_Target1);
                     flush();
                 }
                 (rob.commit_Opcode1 == STORE): {
+#ifdef ENABLE_DEBUG
+                    debug_commit1(rob.commit_PC1, rob.commit_Inst1, rob.commit_Cause1);
+#endif
                     lsu.commit(rob.commit_Dest1);
                 }
                 (rob.commit_Opcode1 == SYSTEM): {
+#ifdef ENABLE_DEBUG
+                    debug_commit1(rob.commit_PC1, rob.commit_Inst1, rob.commit_Cause1);
+#endif
                     if(rob.commit_uOp1 == uOP_SYSTEM_MRET) {
                         ifu.redirect(csr.mret());
                         flush();
@@ -728,13 +774,13 @@ module turboV {
                     }
                 }
                 else: {
+#ifdef ENABLE_DEBUG
+                    debug_commit1(rob.commit_PC1, rob.commit_Inst1, rob.commit_Cause1);
+#endif
                     // Other instructions which has Dest register field.
                     gpr.writeB(rob.commit_Dest1, rob.commit_Value1);
                 }
             }
-#ifdef ENABLE_DEBUG
-            debug_commit1(rob.commit_PC1, rob.commit_Inst1, rob.commit_Cause1);
-#endif
         }
         if(!flush && rob.commit_Valid0 && !(is_issue
             && (issue_packet.inst0_valid && issue_packet.inst0_rd == rob.commit_Dest0)
