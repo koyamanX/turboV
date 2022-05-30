@@ -1,7 +1,6 @@
 #include "csr.h"
 #include "sim_exit.h"
-
-typedef unsigned int uint32_t;
+#include "types.h"
 
 #define CLINT_MSIP ((volatile unsigned int *)0x02000000)
 #define SOFTWARE_INTERRUPT 0x80000003
