@@ -386,10 +386,6 @@ module turboV {
                         issue_inst0_Vk = csr.read(issue_packet.csr_num);
                         issue_inst0_Qk = 0;
                     }
-                    (issue_packet.inst0_rs2_sel == RS2_SEL_NOT_CSR): {
-                        issue_inst0_Vk = ~csr.read(issue_packet.csr_num);
-                        issue_inst0_Qk = 0;
-                    }
                 }
                 /* inst0 rd mapping */
                 if((issue_packet.inst0_rd != 0) && !(issue_packet.inst1_valid && (issue_packet.inst0_rd == issue_packet.inst1_rd))) {
@@ -480,10 +476,6 @@ module turboV {
                     }
                     (issue_packet.inst1_rs2_sel == RS2_SEL_CSR): {
                         issue_inst1_Vk = csr.read(issue_packet.csr_num);
-                        issue_inst1_Qk = 0;
-                    }
-                    (issue_packet.inst1_rs2_sel == RS2_SEL_NOT_CSR): {
-                        issue_inst1_Vk = ~csr.read(issue_packet.csr_num);
                         issue_inst1_Qk = 0;
                     }
                 }
