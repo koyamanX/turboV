@@ -16,6 +16,12 @@ module control_status_register {
     mepc_t reg mepc = 0;
     mtval_t reg mtval = 0;
     mcause_t reg mcause = 0;
+    csr64_t reg mcycle = 0;
+    func_self stop_mcycle();
+    csr64_t reg minstret = 0;
+    func_self stop_minstret();
+    csr64_t reg mtime = 0;
+    func_self stop_mtime();
     reg mode[2] = MACHINE;
     /*
         SXLEN=32
@@ -149,6 +155,36 @@ module control_status_register {
             (mode >= MACHINE) && (csr_rnum == MTVAL): {
                 return mtval;
             }
+            (mode >= MACHINE) && (csr_rnum == MCYCLEH): {
+                return mcycle.hi;
+            }
+            (mode >= MACHINE) && (csr_rnum == MCYCLE): {
+                return mcycle.lo;
+            }
+            (mode >= MACHINE) && (csr_rnum == MINSTRETH): {
+                return minstret.hi;
+            }
+            (mode >= MACHINE) && (csr_rnum == MINSTRET): {
+                return minstret.lo;
+            }
+            (mode >= USER) && (csr_rnum == CYCLEH): {
+                return mcycle.hi;
+            }
+            (mode >= USER) && (csr_rnum == CYCLE): {
+                return mcycle.lo;
+            }
+            (mode >= USER) && (csr_rnum == INSTRETH): {
+                return minstret.hi;
+            }
+            (mode >= USER) && (csr_rnum == INSTRET): {
+                return minstret.lo;
+            }
+            (mode >= USER) && (csr_rnum == TIMEH): {
+                return mtime.hi;
+            }
+            (mode >= USER) && (csr_rnum == TIME): {
+                return mtime.lo;
+            }
         }
     }
     func has_mapped {
@@ -194,6 +230,36 @@ module control_status_register {
                 return 1;
             }
             (mode >= MACHINE) && (has_mapped_csr_addr == MTVAL): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MCYCLEH): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MCYCLE): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MINSTRETH): {
+                return 1;
+            }
+            (mode >= MACHINE) && (has_mapped_csr_addr == MINSTRET): {
+                return 1;
+            }
+            (mode >= USER) && (has_mapped_csr_addr == CYCLEH): {
+                return 1;
+            }
+            (mode >= USER) && (has_mapped_csr_addr == CYCLE): {
+                return 1;
+            }
+            (mode >= USER) && (has_mapped_csr_addr == INSTRETH): {
+                return 1;
+            }
+            (mode >= USER) && (has_mapped_csr_addr == INSTRET): {
+                return 1;
+            }
+            (mode >= USER) && (has_mapped_csr_addr == TIMEH): {
+                return 1;
+            }
+            (mode >= USER) && (has_mapped_csr_addr == TIME): {
                 return 1;
             }
             else: {
@@ -298,6 +364,31 @@ module control_status_register {
             (mode >= MACHINE) && (csr_wnum == MTVAL): {
                 mtval := csr_wdata;
             }
+            (mode >= MACHINE) && (csr_wnum == MCYCLEH): {
+                mcycle.hi := csr_wdata;
+                stop_mcycle();
+            }
+            (mode >= MACHINE) && (csr_wnum == MCYCLE): {
+                mcycle.lo := csr_wdata;
+                stop_mcycle();
+            }
+            (mode >= MACHINE) && (csr_wnum == MINSTRETH): {
+                minstret.hi := csr_wdata;
+                stop_minstret();
+            }
+            (mode >= MACHINE) && (csr_wnum == MINSTRET): {
+                minstret.lo := csr_wdata;
+                stop_minstret();
+            }
         }
     }
+    func update_instret {
+        if(!stop_minstret) {
+            minstret := minstret + 2;
+        }
+    }
+    if(!stop_mcycle) {
+        mcycle++;
+    }
+    mtime++;
 }

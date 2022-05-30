@@ -36,6 +36,8 @@ declare control_status_register {
     func_in trap(trap_cause, trap_pc, trap_val): trap_vector;
     output mret_pc[32];
     func_in mret(): mret_pc;
+
+    func_in update_instret();
 }
 
 #endif

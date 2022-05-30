@@ -1,6 +1,13 @@
 #ifndef CSR_H
 #define CSR_H
 
+#define CYCLE               0xc00
+#define TIME                0xc01
+#define INSTRET             0xc02
+#define CYCLEH              0xc80
+#define TIMEH               0xc81
+#define INSTRETH            0xc82
+
 #define MVENDORID           0xf11
 #define MARCHID             0xf12
 #define MIMPID              0xf13
@@ -354,6 +361,10 @@ struct mie_t {
 
 struct csr32_t {
     v[32];
+};
+struct csr64_t {
+    hi[32];
+    lo[32];
 };
 
 #define mscratch_t csr32_t
