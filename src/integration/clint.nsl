@@ -22,16 +22,16 @@ module clint {
             req_read_addr == MSIP_HART0: {
                 wb_slave_if.rsp_valid(msip);
             }
-            req_read_addr == MTIMECMP_HART0: {
+            req_read_addr == MTIMECMP_HART0+4: {
                 wb_slave_if.rsp_valid(mtimecmp.hi);
             }
-            req_read_addr == MTIMECMP_HART0+4: {
+            req_read_addr == MTIMECMP_HART0: {
                 wb_slave_if.rsp_valid(mtimecmp.lo);
             }
-            req_read_addr == MTIME: {
+            req_read_addr == MTIME+4: {
                 wb_slave_if.rsp_valid(mtime.hi);
             }
-            req_read_addr == MTIME+4: {
+            req_read_addr == MTIME: {
                 wb_slave_if.rsp_valid(mtime.lo);
             }
         }
@@ -45,17 +45,17 @@ module clint {
             req_write_addr == MSIP_HART0: {
                 msip := wb_slave_if.req_data[0];
             }
-            req_write_addr == MTIMECMP_HART0: {
+            req_write_addr == MTIMECMP_HART0+4: {
                 mtimecmp.hi := wb_slave_if.req_data[31:0];
             }
-            req_write_addr == MTIMECMP_HART0+4: {
+            req_write_addr == MTIMECMP_HART0: {
                 mtimecmp.lo := wb_slave_if.req_data[31:0];
             }
-            req_write_addr == MTIME: {
+            req_write_addr == MTIME+4: {
                 mtime.hi := wb_slave_if.req_data[31:0];
                 stop_increment();
             }
-            req_write_addr == MTIME+4: {
+            req_write_addr == MTIME: {
                 mtime.lo := wb_slave_if.req_data[31:0];
                 stop_increment();
             }
@@ -65,7 +65,7 @@ module clint {
     if(!stop_increment) {
         mtime++;
     }
-    if(mtime >= mtimecmp) {
+    if({mtime.hi, mtime.lo} >= {mtimecmp.hi, mtimecmp.lo}) {
         timer_interrupt_hart0();
     }
     if(msip) {
