@@ -3,7 +3,7 @@ _start:
     csrwi mstatus, 0
     la t0, _early_trap_vector
     csrw mtvec, t0
-    csrsi mtvec, 1
+#    csrsi mtvec, 1
     la t0, _bss_start
     la t1, _bss_end
 _clear_bss:
