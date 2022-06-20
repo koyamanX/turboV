@@ -2,6 +2,7 @@ include(ExternalProject)
 ExternalProject_Add(
     riscv-tests
     GIT_REPOSITORY https://github.com/riscv-software-src/riscv-tests
+    GIT_TAG 7530d52174988076c182a9e6cd43eca7a574925f
     INSTALL_DIR ${CMAKE_BINARY_DIR}/Debug/
     CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
     BUILD_COMMAND make XLEN=32
