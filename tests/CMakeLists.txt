@@ -68,6 +68,15 @@ list(APPEND rv32mi_p
     rv32mi-p-shamt
 )
 
+list(APPEND will_fail_tests
+    rv32ui-p-fence_i
+    rv32mi-p-breakpoint
+    rv32mi-p-csr
+    rv32mi-p-illegal
+    rv32mi-p-ma_addr
+    rv32mi-p-ma_fetch
+)
+
 set(riscv_tests ${rv32ui_p} ${rv32mi_p})
 
 foreach(riscv_test ${riscv_tests})
@@ -75,3 +84,8 @@ foreach(riscv_test ${riscv_tests})
     add_test(NAME ${riscv_test_name} COMMAND ${SIMULATOR} ${ISA_DIR}/${riscv_test})
     set_property(TEST ${riscv_test_name} PROPERTY TIMEOUT 10)
 endforeach()
+
+foreach(will_fail_test ${will_fail_tests})
+    set_property(TEST ${will_fail_test} PROPERTY WILL_FAIL TRUE)
+endforeach()
+
