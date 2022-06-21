@@ -1,6 +1,8 @@
 #ifndef UOPS_H
 #define UOPS_H
 
+#define uOP_SIZE                        7
+
 /* uOps for ALU */
 #define uOP_ALU_ADD                     7'b000_0000
 #define uOP_ALU_SUB                     7'b000_1000
