@@ -4,6 +4,7 @@ add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/inst_buffer.nsl ${CMAKE_CURRENT_BINAR
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/register_file.nsl ${CMAKE_CURRENT_BINARY_DIR}/register_file.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/imm_gen.nsl ${CMAKE_CURRENT_BINARY_DIR}/imm_gen.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/instruction_decoder.nsl ${CMAKE_CURRENT_BINARY_DIR}/instruction_decoder.v)
+add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/uop_decoder.nsl ${CMAKE_CURRENT_BINARY_DIR}/uop_decoder.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/alu32.nsl ${CMAKE_CURRENT_BINARY_DIR}/alu32.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/turboV.nsl ${CMAKE_CURRENT_BINARY_DIR}/turboV.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reorder_buffer.nsl ${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v)
@@ -23,6 +24,7 @@ add_custom_target(core
 		${CMAKE_CURRENT_BINARY_DIR}/register_file.v
 		${CMAKE_CURRENT_BINARY_DIR}/imm_gen.v
 		${CMAKE_CURRENT_BINARY_DIR}/instruction_decoder.v
+		${CMAKE_CURRENT_BINARY_DIR}/uop_decoder.v
 		${CMAKE_CURRENT_BINARY_DIR}/alu32.v
 		${CMAKE_CURRENT_BINARY_DIR}/turboV.v
 		${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v
