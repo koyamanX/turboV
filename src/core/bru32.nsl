@@ -28,6 +28,9 @@ module bru32 {
             fn == BRU_GEU: {
                 return !ltu;
             }
+            fn == BRU_JALR: {
+                return 1;
+            }
         }
     }
 }

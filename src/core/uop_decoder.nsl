@@ -3,153 +3,254 @@
 #include "opcode_map.h"
 #include "imm_gen.h"
 #include "uops.h"
+#include "bru32.h"
 #include "alu32.h"
 
 module uop_decoder {
     imm_gen imm_gen0;
 
     func decode {
-        wire inst_opcode[7];
-        wire inst_fn[4];
+        wire opcode[7];
+        wire fn[4];
         r_type_t wire inst_rtype;
         i_type_t wire inst_itype;
         u_type_t wire inst_utype;
         j_type_t wire inst_jtype;
         b_type_t wire inst_btype;
         s_type_t wire inst_stype;
+        uop_t wire decode_uop;
+        func_self jump;
+        func_self branch;
+        func_self load;
+        func_self store;
 
-        inst_opcode = inst[6:0];
+        opcode = inst[6:0];
         inst_rtype = inst;
         inst_itype = inst;
         inst_utype = inst;
         inst_jtype = inst;
         inst_btype = inst;
         inst_stype = inst;
+
+        decode_uop.jump = jump;
+        decode_uop.branch = branch;
+        decode_uop.load = load;
+        decode_uop.store = store;
         any {
-            inst_opcode == OP: {
-                inst_fn = {inst_rtype.funct7[5], inst_rtype.funct3};
-                uop_alu(inst_opcode, {uOP_ALU, inst_fn}, inst_rtype.rd, RS1_SEL_REG, inst_rtype.rs1, RS2_SEL_REG, inst_rtype.rs2, 0);
+            opcode == OP: {
+                fn = {inst_rtype.funct7[5], inst_rtype.funct3};
+
+                decode_uop.opcode = opcode;
+                decode_uop.uop = {uOP_ALU, fn};
+                decode_uop.fn = fn;
+                decode_uop.lrd = inst_rtype.rd;
+                decode_uop.rs1_sel = RS1_SEL_REG;
+                decode_uop.lrs1 = inst_rtype.rs1;
+                decode_uop.rs2_sel = RS2_SEL_REG;
+                decode_uop.lrs2 = inst_rtype.rs2;
+                decode_uop.imm = 0;
+                uop_alu(decode_uop);
             }
-            inst_opcode == OP_IMM: {
+            opcode == OP_IMM: {
                 imm_gen0.i_type(inst);
-                if((inst_itype.funct3 == ALU_SLL) || (inst_itype.funct3 == ALU_SRA) || (inst_itype.funct3 == ALU_SRL)) {
-                    if(imm_gen0.imm[5] != 0) {
-                        uop_illegal_instruction();
-                    }
-                    /* use rtype field for funct7 */
-                    inst_fn = {inst_rtype.funct7[5], inst_itype.funct3};
-                } else {
-                    inst_fn = {1'b0, inst_itype.funct3};
-                }
-                uop_alu(inst_opcode, {uOP_ALU, inst_fn}, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_IMM, 0, imm_gen0.imm);
+                fn = if((inst_itype.funct3 == ALU_SLL) || (inst_itype.funct3 == ALU_SRA) || (inst_itype.funct3 == ALU_SRL)) {inst_rtype.funct7[5], inst_itype.funct3} else {1'b0, inst_itype.funct3};
+                if(((inst_itype.funct3 == ALU_SLL) || (inst_itype.funct3 == ALU_SRA) || (inst_itype.funct3 == ALU_SRL)) && (imm_gen0.imm[5] != 0)) uop_illegal_instruction();
+
+                decode_uop.opcode = opcode;
+                decode_uop.uop = {uOP_ALU, fn};
+                decode_uop.fn = fn;
+                decode_uop.lrd = inst_itype.rd;
+                decode_uop.rs1_sel = RS1_SEL_REG;
+                decode_uop.lrs1 = inst_itype.rs1;
+                decode_uop.rs2_sel = RS2_SEL_IMM;
+                decode_uop.lrs2 = 0;
+                decode_uop.imm = imm_gen0.imm;
+                uop_alu(decode_uop);
             }
-            inst_opcode == LUI: {
+            opcode == LUI: {
                 imm_gen0.u_type(inst);
-                uop_alu(inst_opcode, uOP_ALU_OR, inst_utype.rd, RS1_SEL_REG, 0, RS2_SEL_IMM, 0, imm_gen0.imm);
+
+                decode_uop.opcode = opcode;
+                decode_uop.uop = uOP_ALU_OR;
+                decode_uop.fn = ALU_OR;
+                decode_uop.lrd = inst_utype.rd;
+                decode_uop.rs1_sel = RS1_SEL_REG;
+                decode_uop.lrs1 = 0;
+                decode_uop.rs2_sel = RS2_SEL_IMM;
+                decode_uop.lrs2 = 0;
+                decode_uop.imm = imm_gen0.imm;
+                uop_alu(decode_uop);
             }
-            inst_opcode == AUIPC: {
+            opcode == AUIPC: {
                 imm_gen0.u_type(inst);
-                uop_alu(inst_opcode, uOP_ALU_ADD, inst_utype.rd, RS1_SEL_PC, 0, RS2_SEL_IMM, 0, imm_gen0.imm);
+
+                decode_uop.opcode = opcode;
+                decode_uop.uop = uOP_ALU_ADD;
+                decode_uop.fn = ALU_ADD;
+                decode_uop.lrd = inst_utype.rd;
+                decode_uop.rs1_sel = RS1_SEL_PC;
+                decode_uop.lrs1 = 0;
+                decode_uop.rs2_sel = RS2_SEL_IMM;
+                decode_uop.lrs2 = 0;
+                decode_uop.imm = imm_gen0.imm;
+                uop_alu(decode_uop);
             }
-            inst_opcode == JAL: {
+            opcode == JAL: {
                 imm_gen0.j_type(inst);
-                uop_bru(inst_opcode, uOP_ALU_ADD, inst_jtype.rd, RS1_SEL_PC, 0, RS2_SEL_IMM, 0, imm_gen0.imm);
+
+                decode_uop.opcode = opcode;
+                decode_uop.uop = uOP_ALU_ADD;
+                decode_uop.fn = ALU_ADD;
+                decode_uop.lrd = inst_jtype.rd;
+                decode_uop.rs1_sel = RS1_SEL_PC;
+                decode_uop.lrs1 = 0;
+                decode_uop.rs2_sel = RS2_SEL_IMM;
+                decode_uop.lrs2 = 0;
+                decode_uop.imm = imm_gen0.imm;
                 jump();
+
+                uop_bru(decode_uop);
             }
-            inst_opcode == JALR: {
+            opcode == JALR: {
                 imm_gen0.i_type(inst);
-                uop_bru(inst_opcode, uOP_BRU_JALR, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_IMM, 0, imm_gen0.imm);
+
+                decode_uop.opcode = opcode;
+                decode_uop.uop = uOP_BRU_JALR;
+                decode_uop.fn = BRU_JALR;
+                decode_uop.lrd = inst_itype.rd;
+                decode_uop.rs1_sel = RS1_SEL_REG;
+                decode_uop.lrs1 = inst_itype.rs1;
+                decode_uop.rs2_sel = RS2_SEL_IMM;
+                decode_uop.lrs2 = 0;
+                decode_uop.imm = imm_gen0.imm;
                 jump();
+
+                uop_bru(decode_uop);
             }
-            inst_opcode == BRANCH: {
+            opcode == BRANCH: {
                 imm_gen0.b_type(inst);
-                inst_fn = {1'b0, inst_btype.funct3};
-                uop_bru(inst_opcode, {uOP_BRU, inst_fn}, 0, RS1_SEL_REG, inst_btype.rs1, RS2_SEL_REG, inst_btype.rs2, imm_gen0.imm);
+                fn = {1'b0, inst_btype.funct3};
+
+                decode_uop.opcode = opcode;
+                decode_uop.uop = {uOP_BRU, fn};
+                decode_uop.fn = fn;
+                decode_uop.lrd = 0;
+                decode_uop.rs1_sel = RS1_SEL_REG;
+                decode_uop.lrs1 = inst_btype.rs1;
+                decode_uop.rs2_sel = RS2_SEL_REG;
+                decode_uop.lrs2 = inst_btype.rs2;
+                decode_uop.imm = imm_gen0.imm;
                 branch();
+
+                uop_bru(decode_uop);
             }
-            inst_opcode == LOAD: {
+            opcode == LOAD: {
                 imm_gen0.i_type(inst);
-                inst_fn = {1'b0, inst_itype.funct3};
-                uop_lsu(inst_opcode, {uOP_LSU, inst_fn}, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_IMM, 0, imm_gen0.imm);
+                fn = {1'b0, inst_itype.funct3};
+
+                decode_uop.opcode = opcode;
+                decode_uop.uop = {uOP_LSU, fn};
+                decode_uop.fn = fn;
+                decode_uop.lrd = inst_itype.rd;
+                decode_uop.rs1_sel = RS1_SEL_REG;
+                decode_uop.lrs1 = inst_itype.rs1;
+                decode_uop.rs2_sel = RS2_SEL_IMM;
+                decode_uop.lrs2 = 0;
+                decode_uop.imm = imm_gen0.imm;
                 load();
+
+                uop_lsu(decode_uop);
             }
-            inst_opcode == STORE: {
+            opcode == STORE: {
                 imm_gen0.s_type(inst);
-                inst_fn = {1'b1, inst_stype.funct3};
-                uop_lsu(inst_opcode, {uOP_LSU, inst_fn}, 0, RS1_SEL_REG, inst_stype.rs1, RS2_SEL_REG, inst_stype.rs2, imm_gen0.imm);
+                fn = {1'b1, inst_stype.funct3};
+
+                decode_uop.opcode = opcode;
+                decode_uop.uop = {uOP_LSU, fn};
+                decode_uop.fn = fn;
+                decode_uop.lrd = 0;
+                decode_uop.rs1_sel = RS1_SEL_REG;
+                decode_uop.lrs1 = inst_stype.rs1;
+                decode_uop.rs2_sel = RS2_SEL_REG;
+                decode_uop.lrs2 = inst_stype.rs2;
+                decode_uop.imm = imm_gen0.imm;
                 store();
+
+                uop_lsu(decode_uop);
             }
-            inst_opcode == SYSTEM: {
+#if 0
+            opcode == SYSTEM: {
                 any {
                     (inst_itype.funct3 == SYSTEM_CSRRW) && (inst_itype.rd != 0): {
                         uop_system_csr_read();
                         uop_system_csr_write();
-                        uop_system(inst_opcode, uOP_SYSTEM_CSRRW, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        uop_system(opcode, uOP_SYSTEM_CSRRW, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRW) && (inst_itype.rd == 0): {
                         uop_system_csr_write();
-                        uop_system(inst_opcode, uOP_SYSTEM_CSRRW, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_REG, 0, inst_itype.imm0);
+                        uop_system(opcode, uOP_SYSTEM_CSRRW, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_REG, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRS) && (inst_itype.rs1 != 0): {
                         uop_system_csr_read();
                         uop_system_csr_write();
-                        uop_system(inst_opcode, uOP_SYSTEM_CSRRS, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        uop_system(opcode, uOP_SYSTEM_CSRRS, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRS) && (inst_itype.rs1 == 0): {
                         uop_system_csr_read();
-                        uop_system(inst_opcode, uOP_SYSTEM_CSRRS_NO_UPDATE_CSR, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        uop_system(opcode, uOP_SYSTEM_CSRRS_NO_UPDATE_CSR, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRC) && (inst_itype.rs1 != 0): {
                         uop_system_csr_read();
                         uop_system_csr_write();
-                        uop_system(inst_opcode, uOP_SYSTEM_CSRRC, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        uop_system(opcode, uOP_SYSTEM_CSRRC, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRC) && (inst_itype.rs1 == 0): {
                         uop_system_csr_read();
-                        uop_system(inst_opcode, uOP_SYSTEM_CSRRC_NO_UPDATE_CSR, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        uop_system(opcode, uOP_SYSTEM_CSRRC_NO_UPDATE_CSR, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd != 0): {
                         uop_system_csr_read();
                         uop_system_csr_write();
-                        uop_system(inst_opcode, uOP_SYSTEM_CSRRW, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        uop_system(opcode, uOP_SYSTEM_CSRRW, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd == 0): {
                         uop_system_csr_write();
-                        uop_system(inst_opcode, uOP_SYSTEM_CSRRW, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_REG, 0, inst_itype.imm0);
+                        uop_system(opcode, uOP_SYSTEM_CSRRW, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_REG, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRSI) && (inst_itype.rs1 != 0): {
                         uop_system_csr_read();
                         uop_system_csr_write();
-                        uop_system(inst_opcode, uOP_SYSTEM_CSRRS, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        uop_system(opcode, uOP_SYSTEM_CSRRS, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRSI) && (inst_itype.rs1 == 0): {
                         uop_system_csr_read();
-                        uop_system(inst_opcode, uOP_SYSTEM_CSRRS_NO_UPDATE_CSR, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        uop_system(opcode, uOP_SYSTEM_CSRRS_NO_UPDATE_CSR, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 != 0): {
                         uop_system_csr_read();
                         uop_system_csr_write();
-                        uop_system(inst_opcode, uOP_SYSTEM_CSRRC, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        uop_system(opcode, uOP_SYSTEM_CSRRC, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 == 0): {
                         uop_system_csr_read();
-                        uop_system(inst_opcode, uOP_SYSTEM_CSRRC_NO_UPDATE_CSR, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        uop_system(opcode, uOP_SYSTEM_CSRRC_NO_UPDATE_CSR, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
                     }
                     inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_MRET && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
-                        uop_system(inst_opcode, uOP_SYSTEM_MRET, 0, RS1_SEL_REG, 0, RS2_SEL_REG, 0, 0);
+                        uop_system(opcode, uOP_SYSTEM_MRET, 0, RS1_SEL_REG, 0, RS2_SEL_REG, 0, 0);
                     }
                     inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_ECALL && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
-                        uop_system(inst_opcode, uOP_SYSTEM_ECALL, 0, RS1_SEL_REG, 0, RS2_SEL_REG, 0, 0);
+                        uop_system(opcode, uOP_SYSTEM_ECALL, 0, RS1_SEL_REG, 0, RS2_SEL_REG, 0, 0);
                     }
                     inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_EBREAK && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
-                        uop_system(inst_opcode, uOP_SYSTEM_EBREAK, 0, RS1_SEL_REG, 0, RS2_SEL_REG, 0, 0);
+                        uop_system(opcode, uOP_SYSTEM_EBREAK, 0, RS1_SEL_REG, 0, RS2_SEL_REG, 0, 0);
                     }
                     else: {
                         uop_illegal_instruction();
                     }
                 }
             }
-            inst_opcode == MISC_MEM: {
+#endif
+            opcode == MISC_MEM: {
 
             }
             else: {
