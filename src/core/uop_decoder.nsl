@@ -23,6 +23,11 @@ module uop_decoder {
         func_self branch;
         func_self load;
         func_self store;
+        func_self csr_read;
+        func_self csr_write;
+        func_self mret;
+        func_self ecall;
+        func_self ebreak;
 
         opcode = inst[6:0];
         inst_rtype = inst;
@@ -36,6 +41,11 @@ module uop_decoder {
         decode_uop.branch = branch;
         decode_uop.load = load;
         decode_uop.store = store;
+        decode_uop.csr_read = csr_read;
+        decode_uop.csr_write = csr_write;
+        decode_uop.mret = mret;
+        decode_uop.ecall = ecall;
+        decode_uop.ebreak = ebreak;
         any {
             opcode == OP: {
                 fn = {inst_rtype.funct7[5], inst_rtype.funct3};
@@ -178,78 +188,244 @@ module uop_decoder {
 
                 uop_lsu(decode_uop);
             }
-#if 0
             opcode == SYSTEM: {
                 any {
                     (inst_itype.funct3 == SYSTEM_CSRRW) && (inst_itype.rd != 0): {
-                        uop_system_csr_read();
-                        uop_system_csr_write();
-                        uop_system(opcode, uOP_SYSTEM_CSRRW, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_CSRRW;
+                        decode_uop.fn = {1'b0, inst_itype.funct3};
+                        decode_uop.lrd = inst_itype.rd;
+                        decode_uop.rs1_sel = RS1_SEL_REG;
+                        decode_uop.lrs1 = inst_itype.rs1;
+                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = inst_itype.imm0;
+                        csr_read();
+                        csr_write();
+
+                        uop_system(decode_uop);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRW) && (inst_itype.rd == 0): {
-                        uop_system_csr_write();
-                        uop_system(opcode, uOP_SYSTEM_CSRRW, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_REG, 0, inst_itype.imm0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_CSRRW;
+                        decode_uop.fn = {1'b0, inst_itype.funct3};
+                        decode_uop.lrd = inst_itype.rd;
+                        decode_uop.rs1_sel = RS1_SEL_REG;
+                        decode_uop.lrs1 = inst_itype.rs1;
+                        decode_uop.rs2_sel = RS2_SEL_REG;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = inst_itype.imm0;
+                        csr_write();
+
+                        uop_system(decode_uop);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRS) && (inst_itype.rs1 != 0): {
-                        uop_system_csr_read();
-                        uop_system_csr_write();
-                        uop_system(opcode, uOP_SYSTEM_CSRRS, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_CSRRS;
+                        decode_uop.fn = {1'b0, inst_itype.funct3};
+                        decode_uop.lrd = inst_itype.rd;
+                        decode_uop.rs1_sel = RS1_SEL_REG;
+                        decode_uop.lrs1 = inst_itype.rs1;
+                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = inst_itype.imm0;
+                        csr_read();
+                        csr_write();
+
+                        uop_system(decode_uop);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRS) && (inst_itype.rs1 == 0): {
-                        uop_system_csr_read();
-                        uop_system(opcode, uOP_SYSTEM_CSRRS_NO_UPDATE_CSR, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_CSRRS;
+                        decode_uop.fn = {1'b0, inst_itype.funct3};
+                        decode_uop.lrd = inst_itype.rd;
+                        decode_uop.rs1_sel = RS1_SEL_REG;
+                        decode_uop.lrs1 = inst_itype.rs1;
+                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = inst_itype.imm0;
+                        csr_read();
+
+                        uop_system(decode_uop);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRC) && (inst_itype.rs1 != 0): {
-                        uop_system_csr_read();
-                        uop_system_csr_write();
-                        uop_system(opcode, uOP_SYSTEM_CSRRC, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_CSRRC;
+                        decode_uop.fn = {1'b0, inst_itype.funct3};
+                        decode_uop.lrd = inst_itype.rd;
+                        decode_uop.rs1_sel = RS1_SEL_REG;
+                        decode_uop.lrs1 = inst_itype.rs1;
+                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = inst_itype.imm0;
+                        csr_read();
+                        csr_write();
+
+                        uop_system(decode_uop);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRC) && (inst_itype.rs1 == 0): {
-                        uop_system_csr_read();
-                        uop_system(opcode, uOP_SYSTEM_CSRRC_NO_UPDATE_CSR, inst_itype.rd, RS1_SEL_REG, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_CSRRC;
+                        decode_uop.fn = {1'b0, inst_itype.funct3};
+                        decode_uop.lrd = inst_itype.rd;
+                        decode_uop.rs1_sel = RS1_SEL_REG;
+                        decode_uop.lrs1 = inst_itype.rs1;
+                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = inst_itype.imm0;
+                        csr_read();
+
+                        uop_system(decode_uop);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd != 0): {
-                        uop_system_csr_read();
-                        uop_system_csr_write();
-                        uop_system(opcode, uOP_SYSTEM_CSRRW, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_CSRRW;
+                        decode_uop.fn = {1'b0, inst_itype.funct3};
+                        decode_uop.lrd = inst_itype.rd;
+                        decode_uop.rs1_sel = RS1_SEL_UIMM;
+                        decode_uop.lrs1 = inst_itype.rs1;
+                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = inst_itype.imm0;
+                        csr_read();
+                        csr_write();
+
+                        uop_system(decode_uop);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd == 0): {
-                        uop_system_csr_write();
-                        uop_system(opcode, uOP_SYSTEM_CSRRW, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_REG, 0, inst_itype.imm0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_CSRRW;
+                        decode_uop.fn = {1'b0, inst_itype.funct3};
+                        decode_uop.lrd = inst_itype.rd;
+                        decode_uop.rs1_sel = RS1_SEL_UIMM;
+                        decode_uop.lrs1 = inst_itype.rs1;
+                        decode_uop.rs2_sel = RS2_SEL_REG;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = inst_itype.imm0;
+                        csr_write();
+
+                        uop_system(decode_uop);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRSI) && (inst_itype.rs1 != 0): {
-                        uop_system_csr_read();
-                        uop_system_csr_write();
-                        uop_system(opcode, uOP_SYSTEM_CSRRS, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_CSRRS;
+                        decode_uop.fn = {1'b0, inst_itype.funct3};
+                        decode_uop.lrd = inst_itype.rd;
+                        decode_uop.rs1_sel = RS1_SEL_UIMM;
+                        decode_uop.lrs1 = inst_itype.rs1;
+                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = inst_itype.imm0;
+                        csr_read();
+                        csr_write();
+
+                        uop_system(decode_uop);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRSI) && (inst_itype.rs1 == 0): {
-                        uop_system_csr_read();
-                        uop_system(opcode, uOP_SYSTEM_CSRRS_NO_UPDATE_CSR, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_CSRRS;
+                        decode_uop.fn = {1'b0, inst_itype.funct3};
+                        decode_uop.lrd = inst_itype.rd;
+                        decode_uop.rs1_sel = RS1_SEL_UIMM;
+                        decode_uop.lrs1 = inst_itype.rs1;
+                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = inst_itype.imm0;
+                        csr_read();
+
+                        uop_system(decode_uop);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 != 0): {
-                        uop_system_csr_read();
-                        uop_system_csr_write();
-                        uop_system(opcode, uOP_SYSTEM_CSRRC, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_CSRRC;
+                        decode_uop.fn = {1'b0, inst_itype.funct3};
+                        decode_uop.lrd = inst_itype.rd;
+                        decode_uop.rs1_sel = RS1_SEL_UIMM;
+                        decode_uop.lrs1 = inst_itype.rs1;
+                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = inst_itype.imm0;
+                        csr_read();
+                        csr_write();
+
+                        uop_system(decode_uop);
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 == 0): {
-                        uop_system_csr_read();
-                        uop_system(opcode, uOP_SYSTEM_CSRRC_NO_UPDATE_CSR, inst_itype.rd, RS1_SEL_UIMM, inst_itype.rs1, RS2_SEL_CSR, 0, inst_itype.imm0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_CSRRC;
+                        decode_uop.fn = {1'b0, inst_itype.funct3};
+                        decode_uop.lrd = inst_itype.rd;
+                        decode_uop.rs1_sel = RS1_SEL_UIMM;
+                        decode_uop.lrs1 = inst_itype.rs1;
+                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = inst_itype.imm0;
+                        csr_read();
+
+                        uop_system(decode_uop);
                     }
                     inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_MRET && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
-                        uop_system(opcode, uOP_SYSTEM_MRET, 0, RS1_SEL_REG, 0, RS2_SEL_REG, 0, 0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_MRET;
+                        decode_uop.fn = 0;
+                        decode_uop.lrd = 0;
+                        decode_uop.rs1_sel = RS1_SEL_REG;
+                        decode_uop.lrs1 = 0;
+                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = 0;
+                        mret();
+
+                        uop_system(decode_uop);
                     }
                     inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_ECALL && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
-                        uop_system(opcode, uOP_SYSTEM_ECALL, 0, RS1_SEL_REG, 0, RS2_SEL_REG, 0, 0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_ECALL;
+                        decode_uop.fn = 0;
+                        decode_uop.lrd = 0;
+                        decode_uop.rs1_sel = RS1_SEL_REG;
+                        decode_uop.lrs1 = 0;
+                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = 0;
+                        ecall();
+
+                        uop_system(decode_uop);
                     }
                     inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_EBREAK && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
-                        uop_system(opcode, uOP_SYSTEM_EBREAK, 0, RS1_SEL_REG, 0, RS2_SEL_REG, 0, 0);
+                        decode_uop.opcode = opcode;
+                        decode_uop.uop = uOP_SYSTEM_EBREAK;
+                        decode_uop.fn = 0;
+                        decode_uop.lrd = 0;
+                        decode_uop.rs1_sel = RS1_SEL_REG;
+                        decode_uop.lrs1 = 0;
+                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.lrs2 = 0;
+                        decode_uop.imm = 0;
+                        decode_uop.csr_addr = 0;
+                        ebreak();
+
+                        uop_system(decode_uop);
                     }
                     else: {
                         uop_illegal_instruction();
                     }
                 }
             }
-#endif
             opcode == MISC_MEM: {
 
             }

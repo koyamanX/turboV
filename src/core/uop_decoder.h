@@ -26,7 +26,10 @@ struct uop_t {
     csr_write;
     csr_read;
     csr_addr[12];
-#define SIZEOF_UOP_T 87
+    mret;
+    ecall;
+    ebreak;
+#define SIZEOF_UOP_T 90
 };
 
 declare uop_decoder {
