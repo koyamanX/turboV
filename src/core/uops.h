@@ -44,4 +44,48 @@
 #define uOP_SYSTEM_ECALL                7'b001_1100
 #define uOP_SYSTEM_EBREAK               7'b001_1110
 
+struct cause_t {
+	store_amo_page_fault;
+	reserved1[1];
+	load_page_fault;
+	instruction_page_fault;
+	environment_call_from_m_mode;
+	reserved2[1];
+	environment_call_from_s_mode;
+	environment_call_from_u_mode;
+	store_amo_access_fault;
+	store_amo_address_misaligned;
+	load_access_fault;
+	load_address_misaligned;
+	breakpoint;
+	illegal_instruction;
+	instruction_access_fault;
+	instruction_address_misaligned;
+#define SIZEOF_CAUSE_T 16
+};
+
+struct uop_t {
+    opcode[7];
+    uop[7];
+    fn[4];
+    lrd[5];
+    lrs1[5];
+    rs1_sel[2];
+    lrs2[5];
+    rs2_sel[2];
+    imm[32];
+    jump;
+    load;
+    store;
+    branch;
+    csr_write;
+    csr_read;
+    csr_addr[12];
+    mret;
+    ecall;
+    ebreak;
+    cause[16];
+#define SIZEOF_UOP_T 106
+};
+
 #endif
