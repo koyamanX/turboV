@@ -9,6 +9,26 @@
 #define RS2_SEL_IMM     2'b01
 #define RS2_SEL_CSR     2'b10
 
+struct cause_t {
+	store_amo_page_fault;
+	reserved1[1];
+	load_page_fault;
+	instruction_page_fault;
+	environment_call_from_m_mode;
+	reserved2[1];
+	environment_call_from_s_mode;
+	environment_call_from_u_mode;
+	store_amo_access_fault;
+	store_amo_address_misaligned;
+	load_access_fault;
+	load_address_misaligned;
+	breakpoint;
+	illegal_instruction;
+	instruction_access_fault;
+	instruction_address_misaligned;
+#define SIZEOF_CAUSE_T 16
+};
+
 struct uop_t {
     opcode[7];
     uop[7];
@@ -29,7 +49,8 @@ struct uop_t {
     mret;
     ecall;
     ebreak;
-#define SIZEOF_UOP_T 90
+    cause[16];
+#define SIZEOF_UOP_T 106
 };
 
 declare uop_decoder {
@@ -40,7 +61,6 @@ declare uop_decoder {
     func_out uop_bru(uop);
     func_out uop_lsu(uop);
     func_out uop_system(uop);
-    func_out uop_illegal_instruction();
 }
 
 #endif

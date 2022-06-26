@@ -5,6 +5,7 @@
 #include "uops.h"
 #include "bru32.h"
 #include "alu32.h"
+#include "csr.h"
 
 module uop_decoder {
     imm_gen imm_gen0;
@@ -28,6 +29,7 @@ module uop_decoder {
         func_self mret;
         func_self ecall;
         func_self ebreak;
+        func_self illegal_instruction();
 
         opcode = inst[6:0];
         inst_rtype = inst;
@@ -46,6 +48,8 @@ module uop_decoder {
         decode_uop.mret = mret;
         decode_uop.ecall = ecall;
         decode_uop.ebreak = ebreak;
+        decode_uop.cause = SET_EXCEPTION(ENVIRONMENT_CALL_FROM_M_MODE, ecall) | SET_EXCEPTION(BREAKPOINT, ebreak) | SET_EXCEPTION(ILLEGAL_INSTRUCTION, illegal_instruction);
+
         any {
             opcode == OP: {
                 fn = {inst_rtype.funct7[5], inst_rtype.funct3};
@@ -64,7 +68,7 @@ module uop_decoder {
             opcode == OP_IMM: {
                 imm_gen0.i_type(inst);
                 fn = if((inst_itype.funct3 == ALU_SLL) || (inst_itype.funct3 == ALU_SRA) || (inst_itype.funct3 == ALU_SRL)) {inst_rtype.funct7[5], inst_itype.funct3} else {1'b0, inst_itype.funct3};
-                if(((inst_itype.funct3 == ALU_SLL) || (inst_itype.funct3 == ALU_SRA) || (inst_itype.funct3 == ALU_SRL)) && (imm_gen0.imm[5] != 0)) uop_illegal_instruction();
+                if(((inst_itype.funct3 == ALU_SLL) || (inst_itype.funct3 == ALU_SRA) || (inst_itype.funct3 == ALU_SRL)) && (imm_gen0.imm[5] != 0)) illegal_instruction();
 
                 decode_uop.opcode = opcode;
                 decode_uop.uop = {uOP_ALU, fn};
@@ -422,7 +426,7 @@ module uop_decoder {
                         uop_system(decode_uop);
                     }
                     else: {
-                        uop_illegal_instruction();
+                        illegal_instruction();
                     }
                 }
             }
@@ -430,7 +434,7 @@ module uop_decoder {
 
             }
             else: {
-                uop_illegal_instruction();
+                illegal_instruction();
             }
         }
     }
