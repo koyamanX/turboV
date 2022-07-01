@@ -74,7 +74,8 @@ struct uop_t {
     lrs2[5];
     rs2_sel[2];
     imm[32];
-    jump;
+    jal;
+    jalr;
     load;
     store;
     branch;
@@ -85,7 +86,7 @@ struct uop_t {
     ecall;
     ebreak;
     cause[16];
-#define SIZEOF_UOP_T 106
+#define SIZEOF_UOP_T 107
 };
 
 #endif

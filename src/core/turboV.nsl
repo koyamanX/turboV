@@ -667,7 +667,7 @@ module turboV {
                     ifu.redirect(csr.trap(BREAKPOINT, rob.commit_PC0, rob.commit_Inst0));
                     DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
                 }
-                ((commit_uop0.opcode == JAL) || (commit_uop0.opcode == JALR)): {
+                (commit_uop0.jal || commit_uop0.jalr): {
                     // Jump instruction always redirect and flush pipeline.
                     gpr.writeA(rob.commit_Dest0, rob.commit_PC0+4);
                     ifu.redirect(rob.commit_Target0);
@@ -740,7 +740,7 @@ module turboV {
                     ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC1, rob.commit_Inst1));
                     DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
                 }
-                ((commit_uop1.opcode == JAL) || (commit_uop1.opcode == JALR)): {
+                (commit_uop1.jal || commit_uop1.jalr): {
                     // Jump instruction always redirect and flush pipeline.
                     gpr.writeB(rob.commit_Dest1, rob.commit_PC1+4);
                     ifu.redirect(rob.commit_Target1);

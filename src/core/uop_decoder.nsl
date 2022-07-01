@@ -20,7 +20,8 @@ module uop_decoder {
         b_type_t wire inst_btype;
         s_type_t wire inst_stype;
         uop_t wire decode_uop;
-        func_self jump;
+        func_self jal;
+        func_self jalr;
         func_self branch;
         func_self load;
         func_self store;
@@ -39,7 +40,8 @@ module uop_decoder {
         inst_btype = inst;
         inst_stype = inst;
 
-        decode_uop.jump = jump;
+        decode_uop.jal = jal;
+        decode_uop.jalr = jalr;
         decode_uop.branch = branch;
         decode_uop.load = load;
         decode_uop.store = store;
@@ -122,7 +124,7 @@ module uop_decoder {
                 decode_uop.rs2_sel = RS2_SEL_IMM;
                 decode_uop.lrs2 = 0;
                 decode_uop.imm = imm_gen0.imm;
-                jump();
+                jal();
 
                 uop_bru(decode_uop);
             }
@@ -138,7 +140,7 @@ module uop_decoder {
                 decode_uop.rs2_sel = RS2_SEL_IMM;
                 decode_uop.lrs2 = 0;
                 decode_uop.imm = imm_gen0.imm;
-                jump();
+                jalr();
 
                 uop_bru(decode_uop);
             }
