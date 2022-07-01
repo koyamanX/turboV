@@ -675,14 +675,14 @@ module turboV {
                     flush();
                     DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
                 }
-                ((commit_uop0.opcode == BRANCH) && (rob.commit_Value0[0] == 1)): {
+                (commit_uop0.branch && (rob.commit_Value0[0] == 1)): {
                     // Branch instruction only redirect and flush pipeline if branch is taken.
                     ifu.redirect(rob.commit_Target0);
                     commit_kill_inst1();
                     flush();
                     DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
                 }
-                (commit_uop0.opcode == STORE): {
+                (commit_uop0.store): {
                     lsu.commit(rob.commit_Dest0);
                     DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
                 }
@@ -742,13 +742,13 @@ module turboV {
                     flush();
                     DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
                 }
-                ((commit_uop1.opcode == BRANCH) && (rob.commit_Value1[0] == 1)): {
+                (commit_uop1.branch && (rob.commit_Value1[0] == 1)): {
                     // Branch instruction only redirect and flush pipeline if branch is taken.
                     ifu.redirect(rob.commit_Target1);
                     flush();
                     DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
                 }
-                (commit_uop1.opcode == STORE): {
+                (commit_uop1.store): {
                     lsu.commit(rob.commit_Dest1);
                     DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
                 }
