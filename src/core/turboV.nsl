@@ -55,7 +55,9 @@ module turboV {
     /* Issue stage */
     issue_packet_t reg issue_packet;
     wire is_issue;
-    proc_name issue(issue_packet);
+    uop_t reg issue_uop0;
+    uop_t reg issue_uop1;
+    proc_name issue(issue_packet, issue_uop0, issue_uop1);
     /* Execute stage */
     reg execute_alu0_fn[4];
     reg execute_alu0_dest[ROB_TAG_SIZE];
@@ -216,7 +218,7 @@ module turboV {
                     decode_issue_packet.inst1_jump      = 0;
                     decode_issue_packet.inst1_cause     = 0;
                     decode_issue_packet.csr_num         = idec0.uop_imm;
-                    issue.invoke(decode_issue_packet);
+                    issue.invoke(decode_issue_packet, udec0.uop, 0);
                     // Handle remaining instructions in next cycle.
                     goto decode2;
                 } else {
@@ -265,7 +267,7 @@ module turboV {
                     decode_issue_packet.inst1_cause     = decode_inst1_exception[15:0];
                     decode_issue_packet.csr_num         = if(idec0.uop_system) idec0.uop_imm else idec1.uop_imm;
                     decode();
-                    issue(decode_issue_packet);
+                    issue(decode_issue_packet, udec0.uop, udec1.uop);
                 }
             }
         }
@@ -313,7 +315,7 @@ module turboV {
                 decode_issue_packet.inst1_cause     = 0;
                 decode_issue_packet.csr_num         = idec0.uop_imm;
 
-                issue.invoke(decode_issue_packet);
+                issue.invoke(decode_issue_packet, udec0.uop, 0);
                 goto decode1;
             }
         }
@@ -402,15 +404,15 @@ module turboV {
                 alt {
                     ((issue_packet.inst0_opcode == JALR) || (issue_packet.inst0_opcode == JAL) || (issue_packet.inst0_opcode == BRANCH)): {
                         bru_rs0.issue(
-                            issue_packet.inst0_valid, issue_packet.inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_pc + issue_packet.inst0_imm
+                            issue_packet.inst0_valid, issue_uop0, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_pc + issue_packet.inst0_imm
                         );
                     }
                     (issue_packet.inst0_opcode == LOAD) || (issue_packet.inst0_opcode == STORE): {
-                        lsu_rs0.issue(issue_packet.inst0_valid, issue_packet.inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_imm);
+                        lsu_rs0.issue(issue_packet.inst0_valid, issue_uop0, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_imm);
                     }
                     else: {
                         alu_rs0.issue(
-                            issue_packet.inst0_valid, issue_packet.inst0_uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0);
+                            issue_packet.inst0_valid, issue_uop0, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0);
                     }
                 }
             }
@@ -494,21 +496,21 @@ module turboV {
                 alt {
                     ((issue_packet.inst1_opcode == JALR) || (issue_packet.inst1_opcode == JAL) || (issue_packet.inst1_opcode == BRANCH)): {
                         bru_rs0.issue(
-                            issue_packet.inst1_valid, issue_packet.inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_pc + issue_packet.inst1_imm
+                            issue_packet.inst1_valid, issue_uop1, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_pc + issue_packet.inst1_imm
                         );
                     }
                     (issue_packet.inst1_opcode == LOAD) || (issue_packet.inst1_opcode == STORE): {
-                        lsu_rs0.issue(issue_packet.inst1_valid, issue_packet.inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_imm);
+                        lsu_rs0.issue(issue_packet.inst1_valid, issue_uop1, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_imm);
                     }
                     else: {
                         alu_rs1.issue(
-                            issue_packet.inst1_valid, issue_packet.inst1_uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0);
+                            issue_packet.inst1_valid, issue_uop1, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0);
                     }
                 }
             }
             rob.issue(
-                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode, issue_packet.inst0_uop, issue_packet.inst0_cause,
-                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode, issue_packet.inst1_uop, issue_packet.inst1_cause,
+                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode, issue_uop0, issue_packet.inst0_cause,
+                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode, issue_uop1, issue_packet.inst1_cause,
                 issue_packet.csr_num, csr.csr_rdata
             );
             finish();
@@ -517,21 +519,30 @@ module turboV {
         }
     }
     func alu_rs0.dispatch {
+        uop_t wire alu_rs0_uop;
+
+        alu_rs0_uop = alu_rs0.dispatch_Op;
         if(!flush) {
-            execute_alu0.invoke(alu_rs0.dispatch_Op, alu_rs0.dispatch_Dest, alu_rs0.dispatch_Vj, alu_rs0.dispatch_Vk);
+            execute_alu0.invoke(alu_rs0_uop.fn, alu_rs0.dispatch_Dest, alu_rs0.dispatch_Vj, alu_rs0.dispatch_Vk);
         }
     }
     func alu_rs1.dispatch {
+        uop_t wire alu_rs1_uop;
+
+        alu_rs1_uop = alu_rs1.dispatch_Op;
         if(!flush) {
-            execute_alu1.invoke(alu_rs1.dispatch_Op, alu_rs1.dispatch_Dest, alu_rs1.dispatch_Vj, alu_rs1.dispatch_Vk);
+            execute_alu1.invoke(alu_rs1_uop.fn, alu_rs1.dispatch_Dest, alu_rs1.dispatch_Vj, alu_rs1.dispatch_Vk);
         }
     }
     func bru_rs0.dispatch {
+        uop_t wire bru_rs0_uop;
+
+        bru_rs0_uop = bru_rs0.dispatch_Op;
         if(!flush) {
-            if(bru_rs0.dispatch_Op == uOP_BRU_JALR) {
-                execute_bru0.invoke(bru_rs0.dispatch_Op, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_Vj + bru_rs0.dispatch_Vk);
+            if(bru_rs0_uop.uop == uOP_BRU_JALR) {
+                execute_bru0.invoke(bru_rs0_uop.fn, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_Vj + bru_rs0.dispatch_Vk);
             } else {
-                execute_bru0.invoke(bru_rs0.dispatch_Op, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_A);
+                execute_bru0.invoke(bru_rs0_uop.fn, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_A);
             }
         }
     }
@@ -540,12 +551,15 @@ module turboV {
     }
     func lsu_rs0.dispatch {
         wire lsu_rs0_dispatch_Addr[32];
+        uop_t wire lsu_rs0_uop;
+
+        lsu_rs0_uop = lsu_rs0.dispatch_Op;
         if(!flush && !lsu.full) {
-            if((lsu_rs0.dispatch_Op == uOP_LSU_STORE_WORD) || (lsu_rs0.dispatch_Op == uOP_LSU_STORE_HALFWORD) || (lsu_rs0.dispatch_Op == uOP_LSU_STORE_BYTE)) {
+            if((lsu_rs0_uop.uop == uOP_LSU_STORE_WORD) || (lsu_rs0_uop.uop == uOP_LSU_STORE_HALFWORD) || (lsu_rs0_uop.uop == uOP_LSU_STORE_BYTE)) {
                 rob.Store(lsu_rs0.dispatch_Dest);
             }
             lsu_rs0_dispatch_Addr = lsu_rs0.dispatch_Vj + lsu_rs0.dispatch_A;
-            lsu.issue(lsu_rs0_dispatch_Addr, lsu_rs0.dispatch_Op, lsu_rs0.dispatch_Vk, lsu_rs0.dispatch_Dest);
+            lsu.issue(lsu_rs0_dispatch_Addr, lsu_rs0_uop.uop, lsu_rs0.dispatch_Vk, lsu_rs0.dispatch_Dest);
         }
     }
     proc execute_alu0 {
@@ -616,9 +630,12 @@ module turboV {
         medeleg_t wire commit_inst0_cause;
         medeleg_t wire commit_inst1_cause;
         func_self commit_kill_inst1;
+        uop_t wire rob_commit_uop0;
+        uop_t wire rob_commit_uop1;
         
         csr.update_instret();
         if(rob.commit_Valid0) {
+            rob_commit_uop0 = rob.commit_uOp0;
             commit_inst0_cause = {0x0000, rob.commit_Cause0};
             alt {
                 csr.msip && csr.msie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
@@ -681,12 +698,12 @@ module turboV {
 #ifdef ENABLE_DEBUG
             debug_commit0(rob.commit_PC0, rob.commit_Inst0, rob.commit_Cause0);
 #endif
-                    if(rob.commit_uOp0 == uOP_SYSTEM_MRET) {
+                    if(rob_commit_uop0.uop == uOP_SYSTEM_MRET) {
                         ifu.redirect(csr.mret());
                         commit_kill_inst1();
                         flush();
                     } else {
-                        if((rob.commit_uOp0 != uOP_SYSTEM_CSRRS_NO_UPDATE_CSR) && (rob.commit_uOp0 != uOP_SYSTEM_CSRRC_NO_UPDATE_CSR)) {
+                        if((rob_commit_uop0.uop != uOP_SYSTEM_CSRRS_NO_UPDATE_CSR) && (rob_commit_uop0.uop != uOP_SYSTEM_CSRRC_NO_UPDATE_CSR)) {
                             csr.write(rob.commit_CSR_num, rob.commit_Value0);
                         }
                         gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
@@ -705,6 +722,7 @@ module turboV {
             }
        }
        if(rob.commit_Valid1 && !commit_kill_inst1) {
+            rob_commit_uop1 = rob.commit_uOp1;
             commit_inst1_cause = {0x0000, rob.commit_Cause1};
             alt {
                 csr.msip && csr.msie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
@@ -760,11 +778,11 @@ module turboV {
 #ifdef ENABLE_DEBUG
                     debug_commit1(rob.commit_PC1, rob.commit_Inst1, rob.commit_Cause1);
 #endif
-                    if(rob.commit_uOp1 == uOP_SYSTEM_MRET) {
+                    if(rob_commit_uop1.uop == uOP_SYSTEM_MRET) {
                         ifu.redirect(csr.mret());
                         flush();
                     } else {
-                        if((rob.commit_uOp1 != uOP_SYSTEM_CSRRS_NO_UPDATE_CSR) && (rob.commit_uOp1 != uOP_SYSTEM_CSRRC_NO_UPDATE_CSR)) {
+                        if((rob_commit_uop1.uop != uOP_SYSTEM_CSRRS_NO_UPDATE_CSR) && (rob_commit_uop1.uop != uOP_SYSTEM_CSRRC_NO_UPDATE_CSR)) {
                             csr.write(rob.commit_CSR_num, rob.commit_Value1);
                         }
                         gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);

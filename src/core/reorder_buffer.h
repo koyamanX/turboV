@@ -1,6 +1,7 @@
 #ifndef REORDER_BUFFER_H
 #define REORDER_BUFFER_H
 
+#include "uops.h"
 #define ROB_NUM_OF_ENTRIES 4.0
 #define LOG2_ROB_NUM_OF_ENTRIES _int(_log10(ROB_NUM_OF_ENTRIES)/_log10(2.0))
 #define ROB_TAG_SIZE LOG2_ROB_NUM_OF_ENTRIES+2
@@ -13,7 +14,7 @@ struct reorder_buffer_t {
     Dest0[5];
     Value0[32];
     Opcode0[7];
-    uOp0[7];
+    uOp0[SIZEOF_UOP_T];
     Target0[32];
     Cause0[16];
     Valid1;
@@ -23,12 +24,12 @@ struct reorder_buffer_t {
     Dest1[5];
     Value1[32];
     Opcode1[7];
-    uOp1[7];
+    uOp1[SIZEOF_UOP_T];
     Target1[32];
     Cause1[16];
     CSR_num[12];
     CSR_Value[32];
-#define SIZEOF_REORDER_BUFFER_T 374
+#define SIZEOF_REORDER_BUFFER_T 360+SIZEOF_UOP_T+SIZEOF_UOP_T
 };
 declare reorder_buffer {
     input valid0;
@@ -36,14 +37,14 @@ declare reorder_buffer {
     input inst0[32];
     input dest0[5];
     input opcode0[7];
-    input uop0[7];
+    input uop0[SIZEOF_UOP_T];
     input cause0[16];
     input valid1;
     input pc1[32];
     input inst1[32];
     input dest1[5];
     input opcode1[7];
-    input uop1[7];
+    input uop1[SIZEOF_UOP_T];
     input cause1[16];
     input csr_num[12];
     input csr_value[32];
@@ -56,7 +57,7 @@ declare reorder_buffer {
     output commit_Dest0[5];
     output commit_Value0[32];
     output commit_Opcode0[7];
-    output commit_uOp0[7];
+    output commit_uOp0[SIZEOF_UOP_T];
     output commit_PC0[32];
     output commit_Target0[32];
     output commit_Cause0[16];
@@ -65,7 +66,7 @@ declare reorder_buffer {
     output commit_Dest1[5];
     output commit_Value1[32];
     output commit_Opcode1[7];
-    output commit_uOp1[7];
+    output commit_uOp1[SIZEOF_UOP_T];
     output commit_PC1[32];
     output commit_Target1[32];
     output commit_Cause1[16];

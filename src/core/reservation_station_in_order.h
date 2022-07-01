@@ -3,13 +3,14 @@
 
 #include "reorder_buffer.h"
 #include "reservation_station.h"
+#include "uops.h"
 
 #define RS_IN_ORDER_NUM_OF_ENTRIES 4.0
 #define LOG2_RS_IN_ORDER_NUM_OF_ENTRIES _int(_log10(RS_IN_ORDER_NUM_OF_ENTRIES)/_log10(2.0))
 
 declare reservation_station_in_order {
     input Valid;
-    input Op[7];
+    input Op[SIZEOF_UOP_T];
     input Vj[32];
     input Vk[32];
     input Qj[ROB_TAG_SIZE];
@@ -20,7 +21,7 @@ declare reservation_station_in_order {
     func_in flush();
     func_out full();
     func_in stall();
-    output dispatch_Op[7];
+    output dispatch_Op[SIZEOF_UOP_T];
     output dispatch_Dest[ROB_TAG_SIZE];
     output dispatch_Vj[32];
     output dispatch_Qk[ROB_TAG_SIZE];
