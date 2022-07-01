@@ -623,12 +623,12 @@ module turboV {
         medeleg_t wire commit_inst0_cause;
         medeleg_t wire commit_inst1_cause;
         func_self commit_kill_inst1;
-        uop_t wire rob_commit_uop0;
-        uop_t wire rob_commit_uop1;
+        uop_t wire commit_uop0;
+        uop_t wire commit_uop1;
         
         csr.update_instret();
         if(rob.commit_Valid0) {
-            rob_commit_uop0 = rob.commit_uOp0;
+            commit_uop0 = rob.commit_uOp0;
             commit_inst0_cause = {0x0000, rob.commit_Cause0};
             alt {
                 csr.msip && csr.msie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
@@ -691,12 +691,12 @@ module turboV {
 #ifdef ENABLE_DEBUG
             debug_commit0(rob.commit_PC0, rob.commit_Inst0, rob.commit_Cause0);
 #endif
-                    if(rob_commit_uop0.uop == uOP_SYSTEM_MRET) {
+                    if(commit_uop0.uop == uOP_SYSTEM_MRET) {
                         ifu.redirect(csr.mret());
                         commit_kill_inst1();
                         flush();
                     } else {
-                        if(rob_commit_uop0.csr_write) {
+                        if(commit_uop0.csr_write) {
                             csr.write(rob.commit_CSR_num, rob.commit_Value0);
                         }
                         gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
@@ -715,7 +715,7 @@ module turboV {
             }
        }
        if(rob.commit_Valid1 && !commit_kill_inst1) {
-            rob_commit_uop1 = rob.commit_uOp1;
+            commit_uop1 = rob.commit_uOp1;
             commit_inst1_cause = {0x0000, rob.commit_Cause1};
             alt {
                 csr.msip && csr.msie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
@@ -771,11 +771,11 @@ module turboV {
 #ifdef ENABLE_DEBUG
                     debug_commit1(rob.commit_PC1, rob.commit_Inst1, rob.commit_Cause1);
 #endif
-                    if(rob_commit_uop1.uop == uOP_SYSTEM_MRET) {
+                    if(commit_uop1.uop == uOP_SYSTEM_MRET) {
                         ifu.redirect(csr.mret());
                         flush();
                     } else {
-                        if(rob_commit_uop1.csr_write) {
+                        if(commit_uop1.csr_write) {
                             csr.write(rob.commit_CSR_num, rob.commit_Value1);
                         }
                         gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
