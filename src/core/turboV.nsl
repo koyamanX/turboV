@@ -686,20 +686,25 @@ module turboV {
                     lsu.commit(rob.commit_Dest0);
                     DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
                 }
-                (commit_uop0.opcode == SYSTEM): {
-                    if(commit_uop0.uop == uOP_SYSTEM_MRET) {
-                        ifu.redirect(csr.mret());
-                        commit_kill_inst1();
-                        flush();
-                    } else {
-                        if(commit_uop0.csr_write) {
-                            csr.write(rob.commit_CSR_num, rob.commit_Value0);
-                        }
-                        gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
-                        ifu.redirect(rob.commit_PC0 + 4);
-                        commit_kill_inst1();
-                        flush();
-                    }
+                (commit_uop0.mret): {
+                    ifu.redirect(csr.mret());
+                    commit_kill_inst1();
+                    flush();
+                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
+                }
+                (commit_uop0.ecall || commit_uop0.ebreak): {
+                    gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
+                    ifu.redirect(rob.commit_PC0 + 4);
+                    commit_kill_inst1();
+                    flush();
+                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
+                }
+                (commit_uop0.csr_write): {
+                    csr.write(rob.commit_CSR_num, rob.commit_Value0);
+                    gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
+                    ifu.redirect(rob.commit_PC0 + 4);
+                    commit_kill_inst1();
+                    flush();
                     DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
                 }
                 else: {
@@ -752,18 +757,22 @@ module turboV {
                     lsu.commit(rob.commit_Dest1);
                     DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
                 }
-                (commit_uop1.opcode == SYSTEM): {
-                    if(commit_uop1.uop == uOP_SYSTEM_MRET) {
-                        ifu.redirect(csr.mret());
-                        flush();
-                    } else {
-                        if(commit_uop1.csr_write) {
-                            csr.write(rob.commit_CSR_num, rob.commit_Value1);
-                        }
-                        gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
-                        ifu.redirect(rob.commit_PC1 + 4);
-                        flush();
-                    }
+                (commit_uop1.mret): {
+                    ifu.redirect(csr.mret());
+                    flush();
+                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
+                }
+                (commit_uop1.ecall || commit_uop1.ebreak): {
+                    gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
+                    ifu.redirect(rob.commit_PC1 + 4);
+                    flush();
+                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
+                }
+                (commit_uop1.csr_write): {
+                    csr.write(rob.commit_CSR_num, rob.commit_Value1);
+                    gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
+                    ifu.redirect(rob.commit_PC1 + 4);
+                    flush();
                     DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
                 }
                 else: {
