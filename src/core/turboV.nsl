@@ -783,8 +783,8 @@ module turboV {
             }
         }
         if(!flush && rob.commit_Valid0 && !(is_issue
-            && (issue_packet.inst0_valid && issue_packet.inst0_rd == rob.commit_Dest0)
-            && (issue_packet.inst1_valid && issue_packet.inst1_rd == rob.commit_Dest0)
+            && (issue_packet.inst0_valid && issue_uop0.lrd == rob.commit_Dest0)
+            && (issue_packet.inst1_valid && issue_uop1.lrd == rob.commit_Dest0)
             && (rob.commit_Valid1 && rob.commit_Dest0 == rob.commit_Dest1))) {
             /* If rd field of instruction in issue stage has same register destination,
                 conflict will occur for register_status_table, so do not make READY.
@@ -798,8 +798,8 @@ module turboV {
             }
         }
         if(!flush && rob.commit_Valid1 && !(is_issue
-            && (issue_packet.inst0_valid && issue_packet.inst0_rd == rob.commit_Dest1)
-            && (issue_packet.inst1_valid && issue_packet.inst1_rd == rob.commit_Dest1))) {
+            && (issue_packet.inst0_valid && issue_uop0.lrd == rob.commit_Dest1)
+            && (issue_packet.inst1_valid && issue_uop1.lrd == rob.commit_Dest1))) {
             /* If rd field of instruction in issue stage has same register destination,
                 conflict will occur for register_status_table, so do not make READY.
                 issue_packet.inst1_rd is only valid on is_issue.
