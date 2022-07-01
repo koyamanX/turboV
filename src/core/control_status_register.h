@@ -4,6 +4,10 @@
 #include "priv.h"
 #include "csr.h"
 
+#define DECODE_CSR_RW   2'b11
+#define DECODE_CSR_RO   2'b01
+#define DECODE_CSR_WO   2'b10
+
 declare control_status_register {
     input csr_rnum[12];
     output csr_rdata[32];
@@ -24,10 +28,10 @@ declare control_status_register {
     output mstatus_mie;
     output priv_mode[2];
 
-    input has_mapped_csr_addr[12];
-    output has_mapped_ok;
-    func_in has_mapped(has_mapped_csr_addr): has_mapped_ok;
-    func_out has_mapped_readonly();
+    input decode_csr_rw[2];
+    input decode_csr_addr[12];
+    func_in decode_csr(decode_csr_rw, decode_csr_addr);
+    func_out decode_csr_illegal();
 
     input trap_cause[32];
     input trap_pc[32];

@@ -159,8 +159,8 @@ module turboV {
         fetch_packet_t reg decode_fetch_packet2;
         issue_packet_t wire decode_issue_packet;
         state_name decode1, decode2;
-        medeleg_t wire decode_inst0_exception;
-        medeleg_t wire decode_inst1_exception;
+        uop_t wire decode_uop0;
+        uop_t wire decode_uop1;
 
         /*
             Decode two instructions, if structual hazard for FUs occurs,
@@ -178,16 +178,19 @@ module turboV {
                 idec1.decode(decode_fetch_packet1.inst1);
                 udec0.decode(decode_fetch_packet1.inst0);
                 udec1.decode(decode_fetch_packet1.inst1);
+                decode_uop0 = udec0.uop;
+                decode_uop1 = udec1.uop;
                 // Check if structural hazard occurs for FUs.
                 if(((idec0.uop_bru && decode_fetch_packet1.valid0) && (idec1.uop_bru && decode_fetch_packet1.valid1))
                     || (((idec0.load || idec0.store) && decode_fetch_packet1.valid0) && ((idec1.load || idec1.store) && decode_fetch_packet1.valid1))
-                    || ((idec0.uop_system && decode_fetch_packet1.valid0) && (idec1.uop_system && decode_fetch_packet1.valid1))) {
+                    || (idec1.uop_system && decode_fetch_packet1.valid1)) {
                     // If hazard occurs, send first instructions to issue.
-                    csr.has_mapped(idec0.uop_imm);
-                    decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction
-                        || ((idec0.uop_system_csr_read || idec0.uop_system_csr_write) && !(idec0.uop_system_csr_read && csr.has_mapped_ok) && !(idec0.uop_system_csr_write && csr.has_mapped_ok && !csr.has_mapped_readonly));
-                    decode_inst0_exception.environment_call_from_m_mode = (idec0.uop == uOP_SYSTEM_ECALL);
-                    decode_inst0_exception.breakpoint = (idec0.uop == uOP_SYSTEM_EBREAK);
+                    if(udec0.decode_csr) {
+                        csr.decode_csr(udec0.decode_csr_rw, udec0.decode_csr_addr);
+                    }
+                    if(csr.decode_csr_illegal) {
+                        udec0.decode_csr_illegal();
+                    }
                     decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
                     decode_issue_packet.inst0_pred      = decode_fetch_packet1.pred0;
                     decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc0;
@@ -201,7 +204,7 @@ module turboV {
                     decode_issue_packet.inst0_rs2       = idec0.uop_rs2;
                     decode_issue_packet.inst0_imm       = idec0.uop_imm;
                     decode_issue_packet.inst0_jump      = idec0.jump;
-                    decode_issue_packet.inst0_cause     = decode_inst0_exception[15:0];
+                    decode_issue_packet.inst0_cause     = decode_uop0.cause;
                     decode_issue_packet.inst1_valid     = 0;
                     decode_issue_packet.inst1_pred      = 0;
                     decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc1;
@@ -223,19 +226,6 @@ module turboV {
                     goto decode2;
                 } else {
                     // No structual hazard for FUs.
-                    if(idec0.uop_system) {
-                        csr.has_mapped(idec0.uop_imm);
-                    } else {
-                        csr.has_mapped(idec1.uop_imm);
-                    }
-                    decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction
-                        || ((idec0.uop_system_csr_read || idec0.uop_system_csr_write) && !(idec0.uop_system_csr_read && csr.has_mapped_ok) && !(idec0.uop_system_csr_write && csr.has_mapped_ok && !csr.has_mapped_readonly));
-                    decode_inst0_exception.environment_call_from_m_mode = (idec0.uop == uOP_SYSTEM_ECALL);
-                    decode_inst0_exception.breakpoint = (idec0.uop == uOP_SYSTEM_EBREAK);
-                    decode_inst1_exception.illegal_instruction = idec1.uop_illegal_instruction
-                        || ((idec1.uop_system_csr_read || idec1.uop_system_csr_write) && !(idec1.uop_system_csr_read && csr.has_mapped_ok) && !(idec1.uop_system_csr_write && csr.has_mapped_ok && !csr.has_mapped_readonly));
-                    decode_inst1_exception.environment_call_from_m_mode = (idec1.uop == uOP_SYSTEM_ECALL);
-                    decode_inst1_exception.breakpoint = (idec1.uop == uOP_SYSTEM_EBREAK);
                     decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
                     decode_issue_packet.inst0_pred      = decode_fetch_packet1.pred0;
                     decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc0;
@@ -249,7 +239,7 @@ module turboV {
                     decode_issue_packet.inst0_rs2       = idec0.uop_rs2;
                     decode_issue_packet.inst0_imm       = idec0.uop_imm;
                     decode_issue_packet.inst0_jump      = idec0.jump;
-                    decode_issue_packet.inst0_cause     = decode_inst0_exception[15:0];
+                    decode_issue_packet.inst0_cause     = decode_uop0.cause;
                     decode_issue_packet.inst1_valid     = decode_fetch_packet1.valid1;
                     decode_issue_packet.inst1_pred      = decode_fetch_packet1.pred1;
                     decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc1;
@@ -264,7 +254,7 @@ module turboV {
                     decode_issue_packet.inst1_rs2       = idec1.uop_rs2;
                     decode_issue_packet.inst1_imm       = idec1.uop_imm;
                     decode_issue_packet.inst1_jump      = idec1.jump;
-                    decode_issue_packet.inst1_cause     = decode_inst1_exception[15:0];
+                    decode_issue_packet.inst1_cause     = decode_uop1.cause;
                     decode_issue_packet.csr_num         = if(idec0.uop_system) idec0.uop_imm else idec1.uop_imm;
                     decode();
                     issue(decode_issue_packet, udec0.uop, udec1.uop);
@@ -275,15 +265,18 @@ module turboV {
             // Decode second instrction again.
             idec0.decode(decode_fetch_packet2.inst1);
             udec0.decode(decode_fetch_packet2.inst1);
+            decode_uop0 = udec0.uop;
             if(flush) {
                 decode();
                 goto decode1;
             } else if(!stall_issue && !flush) {
                 // Send second instruction to issue.
-                decode_inst0_exception.illegal_instruction = idec0.uop_illegal_instruction
-                    || ((idec0.uop_system_csr_read || idec0.uop_system_csr_write) && !(idec0.uop_system_csr_read && csr.has_mapped_ok) && !(idec0.uop_system_csr_write && csr.has_mapped_ok && !csr.has_mapped_readonly));
-                decode_inst0_exception.environment_call_from_m_mode = (idec0.uop == uOP_SYSTEM_ECALL);
-                decode_inst0_exception.breakpoint = (idec0.uop == uOP_SYSTEM_EBREAK);
+                if(udec0.decode_csr) {
+                    csr.decode_csr(udec0.decode_csr_rw, udec0.decode_csr_addr);
+                }
+                if(csr.decode_csr_illegal) {
+                    udec0.decode_csr_illegal();
+                }
                 decode_issue_packet.inst0_valid     = decode_fetch_packet2.valid1;
                 decode_issue_packet.inst0_pred      = decode_fetch_packet2.pred1;
                 decode_issue_packet.inst0_pc        = decode_fetch_packet2.pc1;
@@ -297,7 +290,7 @@ module turboV {
                 decode_issue_packet.inst0_rs2       = idec0.uop_rs2;
                 decode_issue_packet.inst0_imm       = idec0.uop_imm;
                 decode_issue_packet.inst0_jump      = idec0.jump;
-                decode_issue_packet.inst0_cause     = decode_inst0_exception[15:0];
+                decode_issue_packet.inst0_cause     = decode_uop0.cause;
                 decode_issue_packet.inst1_valid     = 0;
                 decode_issue_packet.inst1_pred      = 0;
                 decode_issue_packet.inst1_pc        = decode_fetch_packet2.pc1;

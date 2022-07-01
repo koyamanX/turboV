@@ -187,83 +187,95 @@ module control_status_register {
             }
         }
     }
-    func has_mapped {
-        if(has_mapped_csr_addr[11:10] == 2'b11) has_mapped_readonly();
+    func decode_csr {
+        func_self decode_csr_mapped;
+        func_self decode_csr_readonly();
+
         any {
-            (mode >= MACHINE) && (has_mapped_csr_addr == MISA): {
-                return 1;
+            ((decode_csr_rw == DECODE_CSR_RW) && (decode_csr_readonly || !decode_csr_mapped)): {
+                decode_csr_illegal();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MVENDORID): {
-                return 1;
+            ((decode_csr_rw == DECODE_CSR_WO) && (decode_csr_readonly || !decode_csr_mapped)): {
+                decode_csr_illegal();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MARCHID): {
-                return 1;
+            ((decode_csr_rw == DECODE_CSR_RO) && !decode_csr_mapped): {
+                decode_csr_illegal();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MIMPID): {
-                return 1;
+        }
+
+        if(decode_csr_addr[11:10] == 2'b11) decode_csr_readonly();
+        any {
+            (mode >= MACHINE) && (decode_csr_addr == MISA): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MHARTID): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MVENDORID): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MSTATUSH): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MARCHID): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MSTATUS): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MIMPID): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MTVEC): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MHARTID): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MIP): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MSTATUSH): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MIE): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MSTATUS): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MSCRATCH): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MTVEC): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MEPC): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MIP): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MCAUSE): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MIE): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MTVAL): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MSCRATCH): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MCYCLEH): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MEPC): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MCYCLE): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MCAUSE): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MINSTRETH): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MTVAL): {
+                decode_csr_mapped();
             }
-            (mode >= MACHINE) && (has_mapped_csr_addr == MINSTRET): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MCYCLEH): {
+                decode_csr_mapped();
             }
-            (mode >= USER) && (has_mapped_csr_addr == CYCLEH): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MCYCLE): {
+                decode_csr_mapped();
             }
-            (mode >= USER) && (has_mapped_csr_addr == CYCLE): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MINSTRETH): {
+                decode_csr_mapped();
             }
-            (mode >= USER) && (has_mapped_csr_addr == INSTRETH): {
-                return 1;
+            (mode >= MACHINE) && (decode_csr_addr == MINSTRET): {
+                decode_csr_mapped();
             }
-            (mode >= USER) && (has_mapped_csr_addr == INSTRET): {
-                return 1;
+            (mode >= USER) && (decode_csr_addr == CYCLEH): {
+                decode_csr_mapped();
             }
-            (mode >= USER) && (has_mapped_csr_addr == TIMEH): {
-                return 1;
+            (mode >= USER) && (decode_csr_addr == CYCLE): {
+                decode_csr_mapped();
             }
-            (mode >= USER) && (has_mapped_csr_addr == TIME): {
-                return 1;
+            (mode >= USER) && (decode_csr_addr == INSTRETH): {
+                decode_csr_mapped();
             }
-            else: {
-                return 0;
+            (mode >= USER) && (decode_csr_addr == INSTRET): {
+                decode_csr_mapped();
+            }
+            (mode >= USER) && (decode_csr_addr == TIMEH): {
+                decode_csr_mapped();
+            }
+            (mode >= USER) && (decode_csr_addr == TIME): {
+                decode_csr_mapped();
             }
         }
     }

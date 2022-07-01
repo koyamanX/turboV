@@ -48,7 +48,8 @@ module uop_decoder {
         decode_uop.mret = mret;
         decode_uop.ecall = ecall;
         decode_uop.ebreak = ebreak;
-        decode_uop.cause = SET_EXCEPTION(ENVIRONMENT_CALL_FROM_M_MODE, ecall) | SET_EXCEPTION(BREAKPOINT, ebreak) | SET_EXCEPTION(ILLEGAL_INSTRUCTION, illegal_instruction);
+        decode_uop.cause = SET_EXCEPTION(ENVIRONMENT_CALL_FROM_M_MODE, ecall) | SET_EXCEPTION(BREAKPOINT, ebreak)
+            | SET_EXCEPTION(ILLEGAL_INSTRUCTION, illegal_instruction) | SET_EXCEPTION(ILLEGAL_INSTRUCTION, decode_csr_illegal);
 
         any {
             opcode == OP: {
@@ -205,6 +206,7 @@ module uop_decoder {
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = inst_itype.imm0;
+                        decode_csr(DECODE_CSR_RW, decode_uop.csr_addr);
                         csr_read();
                         csr_write();
 
@@ -221,6 +223,7 @@ module uop_decoder {
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = inst_itype.imm0;
+                        decode_csr(DECODE_CSR_WO, decode_uop.csr_addr);
                         csr_write();
 
                         uop_system(decode_uop);
@@ -236,6 +239,7 @@ module uop_decoder {
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = inst_itype.imm0;
+                        decode_csr(DECODE_CSR_RW, decode_uop.csr_addr);
                         csr_read();
                         csr_write();
 
@@ -252,6 +256,7 @@ module uop_decoder {
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = inst_itype.imm0;
+                        decode_csr(DECODE_CSR_RO, decode_uop.csr_addr);
                         csr_read();
 
                         uop_system(decode_uop);
@@ -268,6 +273,7 @@ module uop_decoder {
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = inst_itype.imm0;
+                        decode_csr(DECODE_CSR_RW, decode_uop.csr_addr);
                         csr_read();
                         csr_write();
 
@@ -285,6 +291,7 @@ module uop_decoder {
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = inst_itype.imm0;
+                        decode_csr(DECODE_CSR_RO, decode_uop.csr_addr);
                         csr_read();
 
                         uop_system(decode_uop);
@@ -300,6 +307,7 @@ module uop_decoder {
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = inst_itype.imm0;
+                        decode_csr(DECODE_CSR_RW, decode_uop.csr_addr);
                         csr_read();
                         csr_write();
 
@@ -316,6 +324,7 @@ module uop_decoder {
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = inst_itype.imm0;
+                        decode_csr(DECODE_CSR_WO, decode_uop.csr_addr);
                         csr_write();
 
                         uop_system(decode_uop);
@@ -331,6 +340,7 @@ module uop_decoder {
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = inst_itype.imm0;
+                        decode_csr(DECODE_CSR_RW, decode_uop.csr_addr);
                         csr_read();
                         csr_write();
 
@@ -347,6 +357,7 @@ module uop_decoder {
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = inst_itype.imm0;
+                        decode_csr(DECODE_CSR_RO, decode_uop.csr_addr);
                         csr_read();
 
                         uop_system(decode_uop);
@@ -363,6 +374,7 @@ module uop_decoder {
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = inst_itype.imm0;
+                        decode_csr(DECODE_CSR_RW, decode_uop.csr_addr);
                         csr_read();
                         csr_write();
 
@@ -380,6 +392,7 @@ module uop_decoder {
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = inst_itype.imm0;
+                        decode_csr(DECODE_CSR_RO, decode_uop.csr_addr);
                         csr_read();
 
                         uop_system(decode_uop);

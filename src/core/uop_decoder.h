@@ -10,6 +10,7 @@
 #define RS2_SEL_CSR     2'b10
 
 #include "uops.h"
+#include "control_status_register.h"
 
 declare uop_decoder {
     input inst[32];
@@ -19,6 +20,10 @@ declare uop_decoder {
     func_out uop_bru(uop);
     func_out uop_lsu(uop);
     func_out uop_system(uop);
+    output decode_csr_rw[2];
+    output decode_csr_addr[12];
+    func_out decode_csr(decode_csr_rw, decode_csr_addr);
+    func_in decode_csr_illegal();
 }
 
 #endif
