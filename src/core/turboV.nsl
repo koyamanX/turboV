@@ -703,7 +703,7 @@ module turboV {
                         commit_kill_inst1();
                         flush();
                     } else {
-                        if((rob_commit_uop0.uop != uOP_SYSTEM_CSRRS_NO_UPDATE_CSR) && (rob_commit_uop0.uop != uOP_SYSTEM_CSRRC_NO_UPDATE_CSR)) {
+                        if(rob_commit_uop0.csr_write) {
                             csr.write(rob.commit_CSR_num, rob.commit_Value0);
                         }
                         gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
@@ -782,7 +782,7 @@ module turboV {
                         ifu.redirect(csr.mret());
                         flush();
                     } else {
-                        if((rob_commit_uop1.uop != uOP_SYSTEM_CSRRS_NO_UPDATE_CSR) && (rob_commit_uop1.uop != uOP_SYSTEM_CSRRC_NO_UPDATE_CSR)) {
+                        if(rob_commit_uop1.csr_write) {
                             csr.write(rob.commit_CSR_num, rob.commit_Value1);
                         }
                         gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
