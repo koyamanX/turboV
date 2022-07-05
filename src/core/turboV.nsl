@@ -389,7 +389,7 @@ module turboV {
                         }
                     }
                     (issue_uop0.rs2_sel == RS2_SEL_IMM): {
-                        issue_inst0_Vk = issue_packet.inst0_imm;
+                        issue_inst0_Vk = issue_uop0.imm;
                         issue_inst0_Qk = 0;
                     }
                     (issue_uop0.rs2_sel == RS2_SEL_CSR): {
@@ -406,11 +406,11 @@ module turboV {
                 alt {
                     issue_uop0.jalr || issue_uop0.jal || issue_uop0.branch: {
                         bru_rs0.issue(
-                            issue_packet.inst0_valid, issue_uop0, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_pc + issue_packet.inst0_imm
+                            issue_packet.inst0_valid, issue_uop0, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_pc + issue_uop0.imm
                         );
                     }
                     issue_uop0.load || issue_uop0.store: {
-                        lsu_rs0.issue(issue_packet.inst0_valid, issue_uop0, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_imm);
+                        lsu_rs0.issue(issue_packet.inst0_valid, issue_uop0, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_uop0.imm);
                     }
                     else: {
                         alu_rs0.issue(
@@ -480,7 +480,7 @@ module turboV {
                         }
                     }
                     (issue_uop1.rs2_sel == RS2_SEL_IMM): {
-                        issue_inst1_Vk = issue_packet.inst1_imm;
+                        issue_inst1_Vk = issue_uop1.imm;
                         issue_inst1_Qk = 0;
                     }
                     (issue_uop1.rs2_sel == RS2_SEL_CSR): {
@@ -497,11 +497,11 @@ module turboV {
                 alt {
                     issue_uop1.jalr || issue_uop1.jal || issue_uop1.branch: {
                         bru_rs0.issue(
-                            issue_packet.inst1_valid, issue_uop1, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_pc + issue_packet.inst1_imm
+                            issue_packet.inst1_valid, issue_uop1, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_pc + issue_uop1.imm
                         );
                     }
                     issue_uop1.load || issue_uop1.store: {
-                        lsu_rs0.issue(issue_packet.inst1_valid, issue_uop1, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_imm);
+                        lsu_rs0.issue(issue_packet.inst1_valid, issue_uop1, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_uop1.imm);
                     }
                     else: {
                         alu_rs1.issue(
