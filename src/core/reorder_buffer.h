@@ -1,81 +1,62 @@
 #ifndef REORDER_BUFFER_H
 #define REORDER_BUFFER_H
 
-#define ROB_NUM_OF_ENTRIES 4.0
-#define LOG2_ROB_NUM_OF_ENTRIES _int(_log10(ROB_NUM_OF_ENTRIES)/_log10(2.0))
-#define ROB_TAG_SIZE LOG2_ROB_NUM_OF_ENTRIES+2
+#include "consts.h"
+#include "uops.h"
 
 struct reorder_buffer_t {
     Valid0;
     Busy0;
     PC0[32];
     Inst0[32];
-    Dest0[5];
     Value0[32];
-    Opcode0[7];
-    uOp0[7];
+    uOp0[SIZEOF_UOP_T];
     Target0[32];
-    Cause0[16];
     Valid1;
     Busy1;
     PC1[32];
     Inst1[32];
-    Dest1[5];
     Value1[32];
-    Opcode1[7];
-    uOp1[7];
+    uOp1[SIZEOF_UOP_T];
     Target1[32];
-    Cause1[16];
     CSR_num[12];
     CSR_Value[32];
-#define SIZEOF_REORDER_BUFFER_T 374
+#define SIZEOF_REORDER_BUFFER_T 304+SIZEOF_UOP_T+SIZEOF_UOP_T
 };
 declare reorder_buffer {
     input valid0;
     input pc0[32];
     input inst0[32];
-    input dest0[5];
-    input opcode0[7];
-    input uop0[7];
-    input cause0[16];
+    input uop0[SIZEOF_UOP_T];
     input valid1;
     input pc1[32];
     input inst1[32];
-    input dest1[5];
-    input opcode1[7];
-    input uop1[7];
-    input cause1[16];
+    input uop1[SIZEOF_UOP_T];
     input csr_num[12];
     input csr_value[32];
     output tag[ROB_TAG_SIZE];
-    func_in issue(valid0, pc0, inst0, dest0, opcode0, uop0, cause0, valid1, pc1, inst1, dest1, opcode1, uop1, cause1, csr_num, csr_value): tag;
+    func_in issue(valid0, pc0, inst0, uop0, valid1, pc1, inst1, uop1, csr_num, csr_value): tag;
     func_in flush();
     func_out full();
     func_in commit_stall();
     output commit_Valid0;
-    output commit_Dest0[5];
     output commit_Value0[32];
-    output commit_Opcode0[7];
-    output commit_uOp0[7];
+    output commit_uOp0[SIZEOF_UOP_T];
     output commit_PC0[32];
     output commit_Target0[32];
-    output commit_Cause0[16];
     output commit_Inst0[32];
     output commit_Valid1;
-    output commit_Dest1[5];
     output commit_Value1[32];
-    output commit_Opcode1[7];
-    output commit_uOp1[7];
+    output commit_uOp1[SIZEOF_UOP_T];
     output commit_PC1[32];
     output commit_Target1[32];
-    output commit_Cause1[16];
     output commit_Inst1[32];
     output commit_CSR_num[12];
     output commit_CSR_Value[32];
     output commit_Id[ROB_TAG_SIZE];
     func_out commit(commit_Id,
-                    commit_Valid0, commit_Dest0, commit_Value0, commit_Opcode0, commit_uOp0, commit_PC0, commit_Target0, commit_Cause0, commit_Inst0,
-                    commit_Valid1, commit_Dest1, commit_Value1, commit_Opcode1, commit_uOp1, commit_PC1, commit_Target1, commit_Cause1, commit_Inst1,
+                    commit_Valid0, commit_Value0, commit_uOp0, commit_PC0, commit_Target0, commit_Inst0,
+                    commit_Valid1, commit_Value1, commit_uOp1, commit_PC1, commit_Target1, commit_Inst1,
                     commit_CSR_num, commit_CSR_Value);
     input CDB0Id[ROB_TAG_SIZE];
     input CDB0Val[32];

@@ -401,4 +401,6 @@ struct mcause_t {
 #define LOAD_PAGE_FAULT                 13
 #define STORE_AMO_PAGE_FAULT            15
 
+#define SET_EXCEPTION(ty, mask) (((mask)&1)<<ty)
+
 #endif
