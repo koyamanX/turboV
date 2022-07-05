@@ -88,6 +88,7 @@ struct uop_t {
     ecall;
     ebreak;
     cause[16];
+    // TODO: Not set
     prd[ROB_TAG_SIZE];
     prs1[ROB_TAG_SIZE];
     prs2[ROB_TAG_SIZE];
