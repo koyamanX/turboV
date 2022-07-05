@@ -343,14 +343,14 @@ module turboV {
                         issue_inst0_Qj = 0;
                     }
                     (issue_uop0.rs1_sel == RS1_SEL_REG): {
-                        if(issue_packet.inst0_rs1 == 5'b00000) {
+                        if(issue_uop0.lrs1 == 5'b00000) {
                             issue_inst0_Vj = 0;
                             issue_inst0_Qj = 0;
-                        } else if(register_status_table[issue_packet.inst0_rs1] == BUSY) {
-                            if(rob.read_operandA(register_map_table[issue_packet.inst0_rs1]) == BUSY) {
+                        } else if(register_status_table[issue_uop0.lrs1] == BUSY) {
+                            if(rob.read_operandA(register_map_table[issue_uop0.lrs1]) == BUSY) {
                                 /* Wait for inst in ROB to produce value */
                                 issue_inst0_Vj = 0;
-                                issue_inst0_Qj = register_map_table[issue_packet.inst0_rs1];
+                                issue_inst0_Qj = register_map_table[issue_uop0.lrs1];
                             } else {
                                 /* Use value inside ROB */
                                 issue_inst0_Vj = rob.read_operandA_val;
@@ -358,33 +358,33 @@ module turboV {
                             }
                         } else {
                             // Operand is in register file.
-                            issue_inst0_Vj = gpr.readA(issue_packet.inst0_rs1);
+                            issue_inst0_Vj = gpr.readA(issue_uop0.lrs1);
                             issue_inst0_Qj = 0;
                         }
                     }
                     (issue_uop0.rs1_sel == RS1_SEL_UIMM): {
-                        issue_inst0_Vj = 32'(issue_packet.inst0_rs1);
+                        issue_inst0_Vj = 32'(issue_uop0.lrs1);
                         issue_inst0_Qj = 0;
                     }
                 }
                 /* inst0 rs2 read */
                 any {
                     (issue_uop0.rs2_sel == RS2_SEL_REG): {
-                        if(issue_packet.inst0_rs2 == 5'b00000) {
+                        if(issue_uop0.lrs2 == 5'b00000) {
                             issue_inst0_Vk = 0;
                             issue_inst0_Qk = 0;
-                        } else if(register_status_table[issue_packet.inst0_rs2] == BUSY) {
-                            if(rob.read_operandB(register_map_table[issue_packet.inst0_rs2]) == BUSY) {
+                        } else if(register_status_table[issue_uop0.lrs2] == BUSY) {
+                            if(rob.read_operandB(register_map_table[issue_uop0.lrs2]) == BUSY) {
                                 /* Wait for inst in ROB to produce value */
                                 issue_inst0_Vk = 0;
-                                issue_inst0_Qk = register_map_table[issue_packet.inst0_rs2];
+                                issue_inst0_Qk = register_map_table[issue_uop0.lrs2];
                             } else {
                                 /* Use value inside ROB */
                                 issue_inst0_Vk = rob.read_operandB_val;
                                 issue_inst0_Qk = 0;
                             }
                         } else {
-                            issue_inst0_Vk = gpr.readB(issue_packet.inst0_rs2);
+                            issue_inst0_Vk = gpr.readB(issue_uop0.lrs2);
                             issue_inst0_Qk = 0;
                         }
                     }
@@ -398,9 +398,9 @@ module turboV {
                     }
                 }
                 /* inst0 rd mapping */
-                if((issue_packet.inst0_rd != 0) && !(issue_packet.inst1_valid && (issue_packet.inst0_rd == issue_packet.inst1_rd))) {
-                    register_map_table[issue_packet.inst0_rd] := rob.tag;
-                    register_status_table[issue_packet.inst0_rd] := BUSY;
+                if((issue_uop0.lrd != 0) && !(issue_packet.inst1_valid && (issue_uop0.lrd == issue_uop1.lrd))) {
+                    register_map_table[issue_uop0.lrd] := rob.tag;
+                    register_status_table[issue_uop0.lrd] := BUSY;
                 }
                 /* Issue inst0 to RSs */
                 alt {
@@ -418,64 +418,63 @@ module turboV {
                     }
                 }
             }
-            if(issue_packet.inst1_valid) {
-                /* inst1 rs1 read */
+            if(issue_packet.inst1_valid) { /* inst1 rs1 read */
                 any {
                     (issue_uop1.rs1_sel == RS1_SEL_PC): {
                         issue_inst1_Vj = issue_packet.inst1_pc;
                         issue_inst1_Qj = 0;
                     }
                     (issue_uop1.rs1_sel == RS1_SEL_REG): {
-                        if(issue_packet.inst1_rs1 == 5'b00000) {
+                        if(issue_uop1.lrs1 == 5'b00000) {
                             issue_inst1_Vj = 0;
                             issue_inst1_Qj = 0;
-                        } else if((issue_packet.inst0_rd == issue_packet.inst1_rs1) && issue_packet.inst0_valid) {
+                        } else if((issue_uop0.lrd == issue_uop1.lrs1) && issue_packet.inst0_valid) {
                             issue_inst1_Vj = 0;
                             issue_inst1_Qj = rob.tag;
                         } else {
-                            if(register_status_table[issue_packet.inst1_rs1] == BUSY) {
-                                if(rob.read_operandC(register_map_table[issue_packet.inst1_rs1]) == BUSY) {
+                            if(register_status_table[issue_uop1.lrs1] == BUSY) {
+                                if(rob.read_operandC(register_map_table[issue_uop1.lrs1]) == BUSY) {
                                     /* Wait for inst in ROB to produce value */
                                     issue_inst1_Vj = 0;
-                                    issue_inst1_Qj = register_map_table[issue_packet.inst1_rs1];
+                                    issue_inst1_Qj = register_map_table[issue_uop1.lrs1];
                                 } else {
                                     /* Use value inside ROB */
                                     issue_inst1_Vj = rob.read_operandC_val;
                                     issue_inst1_Qj = 0;
                                 }
                             } else {
-                                issue_inst1_Vj = gpr.readC(issue_packet.inst1_rs1);
+                                issue_inst1_Vj = gpr.readC(issue_uop1.lrs1);
                                 issue_inst1_Qj = 0;
                             }
                         }
                     }
                     (issue_uop1.rs1_sel == RS1_SEL_UIMM): {
-                        issue_inst1_Vj = 32'(issue_packet.inst1_rs1);
+                        issue_inst1_Vj = 32'(issue_uop1.lrs1);
                         issue_inst1_Qj = 0;
                     }
                 }
                 /* inst1 rs2 read */
                 any {
                     (issue_uop1.rs2_sel == RS2_SEL_REG): {
-                        if(issue_packet.inst1_rs2 == 5'b00000) {
+                        if(issue_uop1.lrs2 == 5'b00000) {
                             issue_inst1_Vk = 0;
                             issue_inst1_Qk = 0;
-                        } else if((issue_packet.inst0_rd == issue_packet.inst1_rs2) && issue_packet.inst0_valid) {
+                        } else if((issue_uop0.lrd == issue_uop1.lrs2) && issue_packet.inst0_valid) {
                             issue_inst1_Vk = 0;
                             issue_inst1_Qk = rob.tag;
                         } else {
-                            if(register_status_table[issue_packet.inst1_rs2] == BUSY) {
-                                if(rob.read_operandD(register_map_table[issue_packet.inst1_rs2]) == BUSY) {
+                            if(register_status_table[issue_uop1.lrs2] == BUSY) {
+                                if(rob.read_operandD(register_map_table[issue_uop1.lrs2]) == BUSY) {
                                     /* Wait for inst in ROB to produce value */
                                     issue_inst1_Vk = 0;
-                                    issue_inst1_Qk = register_map_table[issue_packet.inst1_rs2];
+                                    issue_inst1_Qk = register_map_table[issue_uop1.lrs2];
                                 } else {
                                     /* Use value inside ROB */
                                     issue_inst1_Vk = rob.read_operandD_val;
                                     issue_inst1_Qk = 0;
                                 }
                             } else {
-                                issue_inst1_Vk = gpr.readD(issue_packet.inst1_rs2);
+                                issue_inst1_Vk = gpr.readD(issue_uop1.lrs2);
                                 issue_inst1_Qk = 0;
                             }
                         }
@@ -490,9 +489,9 @@ module turboV {
                     }
                 }
                 /* inst1 rd mapping */
-                if((issue_packet.inst1_rd != 0)) {
-                    register_map_table[issue_packet.inst1_rd] := rob.tag+1;
-                    register_status_table[issue_packet.inst1_rd] := BUSY;
+                if((issue_uop1.lrd != 0)) {
+                    register_map_table[issue_uop1.lrd] := rob.tag+1;
+                    register_status_table[issue_uop1.lrd] := BUSY;
                 }
                 /* Issue inst1 to RSs */
                 alt {
@@ -788,7 +787,7 @@ module turboV {
             && (rob.commit_Valid1 && commit_uop0.lrd == commit_uop1.lrd))) {
             /* If rd field of instruction in issue stage has same register destination,
                 conflict will occur for register_status_table, so do not make READY.
-                issue_packet.inst0_rd is only valid on is_issue.
+                issue_uop0.lrd is only valid on is_issue.
                 if ROB.Dest0 == ROB.Dest1, do not make READY here, it will be handled
                 in ROB.Dest1 side
             */
@@ -802,7 +801,7 @@ module turboV {
             && (issue_packet.inst1_valid && issue_uop1.lrd == commit_uop1.lrd))) {
             /* If rd field of instruction in issue stage has same register destination,
                 conflict will occur for register_status_table, so do not make READY.
-                issue_packet.inst1_rd is only valid on is_issue.
+                issue_uop1.lrd is only valid on is_issue.
             */
             if((rob.commit_Id+1 == register_map_table[commit_uop1.lrd])) {
                 // Branch instruction has no Dest register.
