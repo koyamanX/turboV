@@ -393,7 +393,7 @@ module turboV {
                         issue_inst0_Qk = 0;
                     }
                     (issue_uop0.rs2_sel == RS2_SEL_CSR): {
-                        issue_inst0_Vk = csr.read(issue_packet.csr_num);
+                        issue_inst0_Vk = csr.read(issue_uop0.csr_addr);
                         issue_inst0_Qk = 0;
                     }
                 }
@@ -484,7 +484,8 @@ module turboV {
                         issue_inst1_Qk = 0;
                     }
                     (issue_uop1.rs2_sel == RS2_SEL_CSR): {
-                        issue_inst1_Vk = csr.read(issue_packet.csr_num);
+                        // TODO: for now, csr is not decoded in this slot
+                        issue_inst1_Vk = csr.read(issue_uop1.csr_addr);
                         issue_inst1_Qk = 0;
                     }
                 }
@@ -512,7 +513,7 @@ module turboV {
             rob.issue(
                 issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_uop0,
                 issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_uop1,
-                issue_packet.csr_num, csr.csr_rdata
+                issue_uop0.csr_addr, csr.csr_rdata
             );
             finish();
         } else {
