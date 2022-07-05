@@ -511,8 +511,8 @@ module turboV {
                 }
             }
             rob.issue(
-                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_packet.inst0_rd, issue_packet.inst0_opcode, issue_uop0, issue_packet.inst0_cause,
-                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_packet.inst1_rd, issue_packet.inst1_opcode, issue_uop1, issue_packet.inst1_cause,
+                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_uop0,
+                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_uop1,
                 issue_packet.csr_num, csr.csr_rdata
             );
             finish();
@@ -669,7 +669,7 @@ module turboV {
                 }
                 (commit_uop0.jal || commit_uop0.jalr): {
                     // Jump instruction always redirect and flush pipeline.
-                    gpr.writeA(rob.commit_Dest0, rob.commit_PC0+4);
+                    gpr.writeA(commit_uop0.lrd, rob.commit_PC0+4);
                     ifu.redirect(rob.commit_Target0);
                     commit_kill_inst1();
                     flush();
@@ -683,7 +683,7 @@ module turboV {
                     DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
                 }
                 (commit_uop0.store): {
-                    lsu.commit(rob.commit_Dest0);
+                    lsu.commit(commit_uop0.lrd);
                     DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
                 }
                 (commit_uop0.mret): {
@@ -693,7 +693,7 @@ module turboV {
                     DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
                 }
                 (commit_uop0.ecall || commit_uop0.ebreak): {
-                    gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
+                    gpr.writeB(commit_uop0.lrd, rob.commit_CSR_Value);
                     ifu.redirect(rob.commit_PC0 + 4);
                     commit_kill_inst1();
                     flush();
@@ -701,7 +701,7 @@ module turboV {
                 }
                 (commit_uop0.csr_write): {
                     csr.write(rob.commit_CSR_num, rob.commit_Value0);
-                    gpr.writeB(rob.commit_Dest0, rob.commit_CSR_Value);
+                    gpr.writeB(commit_uop0.lrd, rob.commit_CSR_Value);
                     ifu.redirect(rob.commit_PC0 + 4);
                     commit_kill_inst1();
                     flush();
@@ -709,7 +709,7 @@ module turboV {
                 }
                 else: {
                     // Other instructions which has Dest register field.
-                    gpr.writeA(rob.commit_Dest0, rob.commit_Value0);
+                    gpr.writeA(commit_uop0.lrd, rob.commit_Value0);
                     DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
                 }
             }
@@ -742,7 +742,7 @@ module turboV {
                 }
                 (commit_uop1.jal || commit_uop1.jalr): {
                     // Jump instruction always redirect and flush pipeline.
-                    gpr.writeB(rob.commit_Dest1, rob.commit_PC1+4);
+                    gpr.writeB(commit_uop1.lrd, rob.commit_PC1+4);
                     ifu.redirect(rob.commit_Target1);
                     flush();
                     DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
@@ -754,7 +754,7 @@ module turboV {
                     DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
                 }
                 (commit_uop1.store): {
-                    lsu.commit(rob.commit_Dest1);
+                    lsu.commit(commit_uop1.lrd);
                     DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
                 }
                 (commit_uop1.mret): {
@@ -763,50 +763,50 @@ module turboV {
                     DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
                 }
                 (commit_uop1.ecall || commit_uop1.ebreak): {
-                    gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
+                    gpr.writeB(commit_uop1.lrd, rob.commit_CSR_Value);
                     ifu.redirect(rob.commit_PC1 + 4);
                     flush();
                     DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
                 }
                 (commit_uop1.csr_write): {
                     csr.write(rob.commit_CSR_num, rob.commit_Value1);
-                    gpr.writeB(rob.commit_Dest1, rob.commit_CSR_Value);
+                    gpr.writeB(commit_uop1.lrd, rob.commit_CSR_Value);
                     ifu.redirect(rob.commit_PC1 + 4);
                     flush();
                     DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
                 }
                 else: {
                     // Other instructions which has Dest register field.
-                    gpr.writeB(rob.commit_Dest1, rob.commit_Value1);
+                    gpr.writeB(commit_uop1.lrd, rob.commit_Value1);
                     DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
                 }
             }
         }
         if(!flush && rob.commit_Valid0 && !(is_issue
-            && (issue_packet.inst0_valid && issue_uop0.lrd == rob.commit_Dest0)
-            && (issue_packet.inst1_valid && issue_uop1.lrd == rob.commit_Dest0)
-            && (rob.commit_Valid1 && rob.commit_Dest0 == rob.commit_Dest1))) {
+            && (issue_packet.inst0_valid && issue_uop0.lrd == commit_uop0.lrd)
+            && (issue_packet.inst1_valid && issue_uop1.lrd == commit_uop0.lrd)
+            && (rob.commit_Valid1 && commit_uop0.lrd == commit_uop1.lrd))) {
             /* If rd field of instruction in issue stage has same register destination,
                 conflict will occur for register_status_table, so do not make READY.
                 issue_packet.inst0_rd is only valid on is_issue.
                 if ROB.Dest0 == ROB.Dest1, do not make READY here, it will be handled
                 in ROB.Dest1 side
             */
-            if((rob.commit_Id == register_map_table[rob.commit_Dest0])) {
+            if((rob.commit_Id == register_map_table[commit_uop0.lrd])) {
                 // Branch instruction has no Dest register.
-                register_status_table[rob.commit_Dest0] := READY;
+                register_status_table[commit_uop0.lrd] := READY;
             }
         }
         if(!flush && rob.commit_Valid1 && !(is_issue
-            && (issue_packet.inst0_valid && issue_uop0.lrd == rob.commit_Dest1)
-            && (issue_packet.inst1_valid && issue_uop1.lrd == rob.commit_Dest1))) {
+            && (issue_packet.inst0_valid && issue_uop0.lrd == commit_uop1.lrd)
+            && (issue_packet.inst1_valid && issue_uop1.lrd == commit_uop1.lrd))) {
             /* If rd field of instruction in issue stage has same register destination,
                 conflict will occur for register_status_table, so do not make READY.
                 issue_packet.inst1_rd is only valid on is_issue.
             */
-            if((rob.commit_Id+1 == register_map_table[rob.commit_Dest1])) {
+            if((rob.commit_Id+1 == register_map_table[commit_uop1.lrd])) {
                 // Branch instruction has no Dest register.
-                register_status_table[rob.commit_Dest1] := READY;
+                register_status_table[commit_uop1.lrd] := READY;
             }
         }
     }
