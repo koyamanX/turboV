@@ -3,7 +3,6 @@
 #include "alu32.h"
 #include "wishbone_common.h"
 #include "reorder_buffer.h"
-#include "instruction_decoder.h"
 #include "uop_decoder.h"
 #include "reservation_station.h"
 #include "reservation_station_in_order.h"
@@ -79,8 +78,6 @@ module turboV {
     /* Instruction Fetch Unit */
     ifetch_unit ifu;
     /* Instruction decoder */
-    instruction_decoder idec0;
-    instruction_decoder idec1;
     uop_decoder udec0;
     uop_decoder udec1;
     /* Reorder Buffer */
@@ -162,16 +159,14 @@ module turboV {
                 // Save fetch packet for decode2.
                 decode_fetch_packet2 := decode_fetch_packet1;
                 // Decode two instructions.
-                idec0.decode(decode_fetch_packet1.inst0);
-                idec1.decode(decode_fetch_packet1.inst1);
                 udec0.decode(decode_fetch_packet1.inst0);
                 udec1.decode(decode_fetch_packet1.inst1);
                 decode_uop0 = udec0.uop;
                 decode_uop1 = udec1.uop;
                 // Check if structural hazard occurs for FUs.
-                if(((idec0.uop_bru && decode_fetch_packet1.valid0) && (idec1.uop_bru && decode_fetch_packet1.valid1))
-                    || (((idec0.load || idec0.store) && decode_fetch_packet1.valid0) && ((idec1.load || idec1.store) && decode_fetch_packet1.valid1))
-                    || (idec1.uop_system && decode_fetch_packet1.valid1)) {
+                if(((udec0.uop_bru && decode_fetch_packet1.valid0) && (udec1.uop_bru && decode_fetch_packet1.valid1))
+                    || ((udec0.uop_lsu && decode_fetch_packet1.valid0) && (udec1.uop_lsu && decode_fetch_packet1.valid1))
+                    || (udec1.uop_system && decode_fetch_packet1.valid1)) {
                     // If hazard occurs, send first instructions to issue.
                     if(udec0.decode_csr) {
                         csr.decode_csr(udec0.decode_csr_rw, udec0.decode_csr_addr);
@@ -209,7 +204,6 @@ module turboV {
         }
         state decode2 {
             // Decode second instrction again.
-            idec0.decode(decode_fetch_packet2.inst1);
             udec0.decode(decode_fetch_packet2.inst1);
             decode_uop0 = udec0.uop;
             if(flush) {
