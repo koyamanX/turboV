@@ -1,5 +1,4 @@
 #include "load_store_unit.h"
-#include "load_queue.h"
 #include "wishbone_master.h"
 #include "uops.h"
 
