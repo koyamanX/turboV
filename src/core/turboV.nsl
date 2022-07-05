@@ -404,12 +404,12 @@ module turboV {
                 }
                 /* Issue inst0 to RSs */
                 alt {
-                    ((issue_packet.inst0_opcode == JALR) || (issue_packet.inst0_opcode == JAL) || (issue_packet.inst0_opcode == BRANCH)): {
+                    issue_uop0.jalr || issue_uop0.jal || issue_uop0.branch: {
                         bru_rs0.issue(
                             issue_packet.inst0_valid, issue_uop0, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_pc + issue_packet.inst0_imm
                         );
                     }
-                    (issue_packet.inst0_opcode == LOAD) || (issue_packet.inst0_opcode == STORE): {
+                    issue_uop0.load || issue_uop0.store: {
                         lsu_rs0.issue(issue_packet.inst0_valid, issue_uop0, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_imm);
                     }
                     else: {
@@ -496,12 +496,12 @@ module turboV {
                 }
                 /* Issue inst1 to RSs */
                 alt {
-                    ((issue_packet.inst1_opcode == JALR) || (issue_packet.inst1_opcode == JAL) || (issue_packet.inst1_opcode == BRANCH)): {
+                    issue_uop1.jalr || issue_uop1.jal || issue_uop1.branch: {
                         bru_rs0.issue(
                             issue_packet.inst1_valid, issue_uop1, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_pc + issue_packet.inst1_imm
                         );
                     }
-                    (issue_packet.inst1_opcode == LOAD) || (issue_packet.inst1_opcode == STORE): {
+                    issue_uop1.load || issue_uop1.store: {
                         lsu_rs0.issue(issue_packet.inst1_valid, issue_uop1, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_imm);
                     }
                     else: {
