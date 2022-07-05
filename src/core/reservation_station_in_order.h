@@ -1,12 +1,10 @@
 #ifndef RESERVATION_STATION_IN_ORDER_H
 #define RESERVATION_STATION_IN_ORDER_H
 
+#include "consts.h"
 #include "reorder_buffer.h"
 #include "reservation_station.h"
 #include "uops.h"
-
-#define RS_IN_ORDER_NUM_OF_ENTRIES 4.0
-#define LOG2_RS_IN_ORDER_NUM_OF_ENTRIES _int(_log10(RS_IN_ORDER_NUM_OF_ENTRIES)/_log10(2.0))
 
 declare reservation_station_in_order {
     input Valid;

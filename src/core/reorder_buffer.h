@@ -1,10 +1,8 @@
 #ifndef REORDER_BUFFER_H
 #define REORDER_BUFFER_H
 
+#include "consts.h"
 #include "uops.h"
-#define ROB_NUM_OF_ENTRIES 4.0
-#define LOG2_ROB_NUM_OF_ENTRIES _int(_log10(ROB_NUM_OF_ENTRIES)/_log10(2.0))
-#define ROB_TAG_SIZE LOG2_ROB_NUM_OF_ENTRIES+2
 
 struct reorder_buffer_t {
     Valid0;

@@ -52,6 +52,9 @@ module uop_decoder {
         decode_uop.ebreak = ebreak;
         decode_uop.cause = SET_EXCEPTION(ENVIRONMENT_CALL_FROM_M_MODE, ecall) | SET_EXCEPTION(BREAKPOINT, ebreak)
             | SET_EXCEPTION(ILLEGAL_INSTRUCTION, illegal_instruction) | SET_EXCEPTION(ILLEGAL_INSTRUCTION, decode_csr_illegal);
+        decode_uop.prd = 0;
+        decode_uop.prs1 = 0;
+        decode_uop.prs2 = 0;
 
         any {
             opcode == OP: {

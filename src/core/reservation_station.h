@@ -1,11 +1,9 @@
 #ifndef RESERVATION_STATION_H
 #define RESERVATION_STATION_H
 
+#include "consts.h"
 #include "reorder_buffer.h"
 #include "uops.h"
-
-#define RS_NUM_OF_ENTRIES 4.0
-#define LOG2_RS_NUM_OF_ENTRIES _int(_log10(RS_NUM_OF_ENTRIES)/_log10(2.0))
 
 struct reservation_station_t {
     Busy;

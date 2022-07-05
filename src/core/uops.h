@@ -1,6 +1,8 @@
 #ifndef UOPS_H
 #define UOPS_H
 
+#include "consts.h"
+
 #define uOP_SIZE                        7
 
 #define uOP_ALU                         3'b000
@@ -86,7 +88,10 @@ struct uop_t {
     ecall;
     ebreak;
     cause[16];
-#define SIZEOF_UOP_T 107
+    prd[ROB_TAG_SIZE];
+    prs1[ROB_TAG_SIZE];
+    prs2[ROB_TAG_SIZE];
+#define SIZEOF_UOP_T 107+ROB_TAG_SIZE+ROB_TAG_SIZE+ROB_TAG_SIZE
 };
 
 #endif
