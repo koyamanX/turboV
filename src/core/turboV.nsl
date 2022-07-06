@@ -14,7 +14,7 @@
 #include "priv.h"
 #include "uops.h"
 
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 #define DEBUG_COMMIT0(pc, inst, cause) debug_commit0(pc, inst, cause)
 #define DEBUG_COMMIT1(pc, inst, cause) debug_commit1(pc, inst, cause)
 #else
