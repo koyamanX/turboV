@@ -603,7 +603,7 @@ module turboV {
                     DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
                 }
                 (commit_uop0.ecall || commit_uop0.ebreak): {
-                    gpr.writeB(commit_uop0.lrd, rob.commit_CSR_Value);
+                    gpr.writeA(commit_uop0.lrd, rob.commit_CSR_Value);
                     ifu.redirect(rob.commit_PC0 + 4);
                     commit_kill_inst1();
                     flush();
@@ -611,7 +611,7 @@ module turboV {
                 }
                 (commit_uop0.csr_write): {
                     csr.write(rob.commit_CSR_num, rob.commit_Value0);
-                    gpr.writeB(commit_uop0.lrd, rob.commit_CSR_Value);
+                    gpr.writeA(commit_uop0.lrd, rob.commit_CSR_Value);
                     ifu.redirect(rob.commit_PC0 + 4);
                     commit_kill_inst1();
                     flush();
