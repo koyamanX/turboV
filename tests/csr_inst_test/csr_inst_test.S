@@ -130,6 +130,44 @@ Notes:
 test8:
     csrrc x0, mhartid, x0
 
+/*
+Test case 9:
+    Test CSRRS with rs1 == x?(which holds zero value), works correctly
+Steps:
+    - Writes 0x5555aaaa to mscratch.
+    - Writes zero value to x1
+    - Mask mscratch with x1.
+    - Reads mscratch, compare read value is unmodified value of CSR(0x5555aaaa)
+Notes:
+*/
+test9:
+    li x1, 0x5555aaaa
+    csrrw x0, mscratch, x1
+    mv x1, zero
+    csrrs x0, mscratch, x1
+    csrr x2, mscratch
+    li x1, 0x5555aaaa
+    bne x2, x1, fail
+
+/*
+Test case 10:
+    Test CSRRC with rs1 == x?(which holds zero value), works correctly
+Steps:
+    - Writes 0x5555aaaa to mscratch.
+    - Writes zero value to x1
+    - Mask mscratch with x1.
+    - Reads mscratch, compare read value is unmodified value of CSR(0x5555aaaa)
+Notes:
+*/
+test10:
+    li x1, 0x5555aaaa
+    csrrw x0, mscratch, x1
+    mv x1, zero
+    csrrc x0, mscratch, x1
+    csrr x2, mscratch
+    li x1, 0x5555aaaa
+    bne x2, x1, fail
+
     j pass
 pass:
     li x1, 0x80001000
