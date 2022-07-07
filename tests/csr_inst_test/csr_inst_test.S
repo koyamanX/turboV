@@ -49,7 +49,7 @@ test3:
     csrrw x0, mscratch, x1
     li x1, 0xaaaa5555
     csrrs x0, mscratch, x1
-    csrr x2, mscratch
+    csrrw x2, mscratch, zero
     li x1, 0xffffffff
     bne x2, x1, fail
 
@@ -67,7 +67,7 @@ test4:
     li x1, 0x5555aaaa
     csrrw x0, mscratch, x1
     csrrs x0, mscratch, x0
-    csrr x2, mscratch
+    csrrw x2, mscratch, zero
     bne x2, x1, fail
 
 /*
@@ -97,7 +97,7 @@ test6:
     csrrw x0, mscratch, x1
     li x1, 0x5555aaaa
     csrrc x0, mscratch, x1
-    csrr x2, mscratch
+    csrrw x2, mscratch, zero
     li x1, 0xaaaa5555
     bne x2, x1, fail
 
@@ -115,7 +115,7 @@ test7:
     li x1, 0x5555aaaa
     csrrw x0, mscratch, x1
     csrrc x0, mscratch, x0
-    csrr x2, mscratch
+    csrrw x2, mscratch, zero
     bne x2, x1, fail
 
 /*
@@ -145,7 +145,7 @@ test9:
     csrrw x0, mscratch, x1
     mv x1, zero
     csrrs x0, mscratch, x1
-    csrr x2, mscratch
+    csrrw x2, mscratch, zero
     li x1, 0x5555aaaa
     bne x2, x1, fail
 
@@ -164,8 +164,25 @@ test10:
     csrrw x0, mscratch, x1
     mv x1, zero
     csrrc x0, mscratch, x1
-    csrr x2, mscratch
+    csrrw x2, mscratch, zero
     li x1, 0x5555aaaa
+    bne x2, x1, fail
+
+/*
+Test case 11:
+    Test CSRRWI works correctly
+Steps:
+    - Writes 0xffffffe0 to mscratch.
+    - Writes 0x1f with csrrwi to mscratch
+    - Reads mscratch, compare read value is 0xffffffff
+Notes:
+*/
+test11:
+    li x1, 0xffffffe0
+    csrrw x0, mscratch, x1
+    csrrwi x0, mscratch, 0x1f
+    csrrw x2, mscratch, zero
+    li x1, 0xffffffff
     bne x2, x1, fail
 
     j pass
