@@ -170,7 +170,7 @@ test10:
 
 /*
 Test case 11:
-    Test CSRRWI works correctly
+    Test CSRRWI works correctly on rd == x0
 Steps:
     - Writes 0xffffffe0 to mscratch.
     - Writes 0x1f with csrrwi to mscratch
@@ -183,6 +183,26 @@ test11:
     csrrwi x0, mscratch, 0x1f
     csrrw x2, mscratch, zero
     li x1, 0xffffffff
+    bne x2, x1, fail
+
+/*
+Test case 12:
+    Test CSRRWI with rd != x0, works correctly
+Steps:
+    - Writes 0x5555aaaa to mscratch.
+    - Write 0x0 to mscratch with csrrwi inst.
+    - Reads mscratch, compare read value to written value.
+Notes:
+    CSR is not read in this case, but no way to find out
+    that CSR is not read.
+*/
+test12:
+    li x1, 0x5555aaaa
+    csrrw x0, mscratch, x1
+    csrrwi x2, mscratch, 0x10
+    bne x2, x1, fail
+    csrr x2, mscratch
+    li x1, 0x5555aaa0
     bne x2, x1, fail
 
     j pass
