@@ -205,6 +205,54 @@ test12:
     li x1, 0xffffffff
     bne x2, x1, fail
 
+test13:
+    li x1, 0xfffffffa
+    csrrw x0, mscratch, x1
+    csrrsi x0, mscratch, 0x5
+    csrr x2, mscratch
+    li x1, 0xffffffff
+    bne x2, x1, fail
+
+test14:
+    li x1, 0x5555aaaa
+    csrrw x0, mscratch, x1
+    csrrsi x0, mscratch, 0x5
+    csrrw x2, mscratch, x0
+    li x1, 0x5555aaaf
+    bne x2, x1, fail
+
+test15:
+    li x1, 0x5555aaaa
+    csrrw x0, mscratch, x1
+    csrrsi x0, mscratch, 0x0
+    csrrw x2, mscratch, x0
+    li x1, 0x5555aaaa
+    bne x2, x1, fail
+
+test16:
+    li x1, 0xffffffff
+    csrrw x0, mscratch, x1
+    csrrci x0, mscratch, 0xf
+    csrrw x2, mscratch, x0
+    li x1, 0xfffffff0
+    bne x2, x1, fail
+
+test17:
+    li x1, 0x5555aaaf
+    csrrw x0, mscratch, x1
+    csrrci x0, mscratch, 0x5
+    csrrw x2, mscratch, x0
+    li x1, 0x5555aaaa
+    bne x2, x1, fail
+
+test18:
+    li x1, 0x5555aaaf
+    csrrw x0, mscratch, x1
+    csrrci x0, mscratch, 0x0
+    csrrw x2, mscratch, x0
+    li x1, 0x5555aaaf
+    bne x2, x1, fail
+
     j pass
 pass:
     li x1, 0x80001000
