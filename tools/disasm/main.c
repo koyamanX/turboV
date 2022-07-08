@@ -14,6 +14,9 @@ int main(int argc, char **argv) {
     char *line;
     ssize_t nread = 0;
     size_t len = 0;
+    uint32_t prd;
+    uint32_t prs1;
+    uint32_t prs2;
 
     init_disassemble_info(&disasm_info, stdout, (fprintf_ftype) fprintf);
     disasm_info.arch = bfd_arch_riscv;
@@ -26,10 +29,12 @@ int main(int argc, char **argv) {
 
     line = malloc(sizeof(char) * BUFSIZ);
     while((nread = getline(&line, &len, stream)) != -1) {
-        fscanf(stream, "%x: DASM(%x)", &pc, &inst);
+        sscanf(line, "%x: DASM(%x) (prd: %x, prs1: %x, prs2: %x)", &pc, &inst, &prd, &prs1, &prs2);
         disasm_info.buffer_vma = pc;
         printf("%08x: ", pc);
         disasm(pc, &disasm_info);
+        puts("");
+        printf("prd: %02x, prs1: %02x, prs2: %02x", prd, prs1, prs2);
         puts("");
     }
     fclose(stream);

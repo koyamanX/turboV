@@ -15,11 +15,11 @@
 #include "uops.h"
 
 #ifdef ENABLE_DEBUG
-#define DEBUG_COMMIT0(pc, inst, cause) debug_commit0(pc, inst, cause)
-#define DEBUG_COMMIT1(pc, inst, cause) debug_commit1(pc, inst, cause)
+#define DEBUG_COMMIT0(pc, inst, cause, prd, prs1, prs2) debug_commit0(pc, inst, cause, prd, prs1, prs2)
+#define DEBUG_COMMIT1(pc, inst, cause, prd, prs1, prs2) debug_commit1(pc, inst, cause, prd, prs1, prs2)
 #else
-#define DEBUG_COMMIT0(pc, inst, cause)
-#define DEBUG_COMMIT1(pc, inst, cause)
+#define DEBUG_COMMIT0(pc, inst, cause, prd, prs1, prs2)
+#define DEBUG_COMMIT1(pc, inst, cause, prd, prs1, prs2)
 #endif
 
 
@@ -234,10 +234,12 @@ module turboV {
     }
     is_issue = (issue && !stall_issue);
     proc issue {
+        wire issue_inst0_Dest[ROB_TAG_SIZE];
         wire issue_inst0_Qj[ROB_TAG_SIZE];
         wire issue_inst0_Qk[ROB_TAG_SIZE];
         wire issue_inst0_Vj[32];
         wire issue_inst0_Vk[32];
+        wire issue_inst1_Dest[ROB_TAG_SIZE];
         wire issue_inst1_Qj[ROB_TAG_SIZE];
         wire issue_inst1_Qk[ROB_TAG_SIZE];
         wire issue_inst1_Vj[32];
@@ -313,8 +315,11 @@ module turboV {
                 }
                 /* inst0 rd mapping */
                 if((issue_uop0.lrd != 0) && !(issue_packet.inst1_valid && (issue_uop0.lrd == issue_uop1.lrd))) {
+                    issue_inst0_Dest = rob.tag;
                     register_map_table[issue_uop0.lrd] := rob.tag;
                     register_status_table[issue_uop0.lrd] := BUSY;
+                } else {
+                    issue_inst0_Dest = 0;
                 }
                 /* Issue inst0 to RSs */
                 alt {
@@ -410,8 +415,11 @@ module turboV {
                 }
                 /* inst1 rd mapping */
                 if((issue_uop1.lrd != 0)) {
+                    issue_inst1_Dest = rob.tag+1;
                     register_map_table[issue_uop1.lrd] := rob.tag+1;
                     register_status_table[issue_uop1.lrd] := BUSY;
+                } else {
+                    issue_inst0_Dest = 0;
                 }
                 /* Issue inst1 to RSs */
                 alt {
@@ -430,8 +438,8 @@ module turboV {
                 }
             }
             rob.issue(
-                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_uop0,
-                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_uop1,
+                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_uop0|{issue_inst0_Dest, issue_inst0_Qj, issue_inst0_Qk},
+                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_uop1|{issue_inst1_Dest, issue_inst1_Qj, issue_inst1_Qk},
                 issue_uop0.csr_addr, csr.csr_rdata
             );
             finish();
@@ -578,13 +586,13 @@ module turboV {
                     flush();
                     commit_kill_inst1();
                     ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC0, rob.commit_Inst0));
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
+                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause, commit_uop0.prd, commit_uop0.prs1, commit_uop0.prs2);
                 }
                 commit_inst0_cause.breakpoint: {
                     flush();
                     commit_kill_inst1();
                     ifu.redirect(csr.trap(BREAKPOINT, rob.commit_PC0, rob.commit_Inst0));
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
+                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause, commit_uop0.prd, commit_uop0.prs1, commit_uop0.prs2);
                 }
                 (commit_uop0.jal || commit_uop0.jalr): {
                     // Jump instruction always redirect and flush pipeline.
@@ -592,31 +600,31 @@ module turboV {
                     ifu.redirect(rob.commit_Target0);
                     commit_kill_inst1();
                     flush();
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
+                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause, commit_uop0.prd, commit_uop0.prs1, commit_uop0.prs2);
                 }
                 (commit_uop0.branch && (rob.commit_Value0[0] == 1)): {
                     // Branch instruction only redirect and flush pipeline if branch is taken.
                     ifu.redirect(rob.commit_Target0);
                     commit_kill_inst1();
                     flush();
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
+                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause, commit_uop0.prd, commit_uop0.prs1, commit_uop0.prs2);
                 }
                 (commit_uop0.store): {
                     lsu.commit(commit_uop0.lrd);
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
+                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause, commit_uop0.prd, commit_uop0.prs1, commit_uop0.prs2);
                 }
                 (commit_uop0.mret): {
                     ifu.redirect(csr.mret());
                     commit_kill_inst1();
                     flush();
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
+                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause, commit_uop0.prd, commit_uop0.prs1, commit_uop0.prs2);
                 }
                 (commit_uop0.ecall || commit_uop0.ebreak): {
                     gpr.writeA(commit_uop0.lrd, rob.commit_CSR_Value);
                     ifu.redirect(rob.commit_PC0 + 4);
                     commit_kill_inst1();
                     flush();
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
+                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause, commit_uop0.prd, commit_uop0.prs1, commit_uop0.prs2);
                 }
                 (commit_uop0.csr_write): {
                     csr.write(rob.commit_CSR_num, rob.commit_Value0);
@@ -624,12 +632,12 @@ module turboV {
                     ifu.redirect(rob.commit_PC0 + 4);
                     commit_kill_inst1();
                     flush();
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
+                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause, commit_uop0.prd, commit_uop0.prs1, commit_uop0.prs2);
                 }
                 else: {
                     // Other instructions which has Dest register field.
                     gpr.writeA(commit_uop0.lrd, rob.commit_Value0);
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause);
+                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_uop0.cause, commit_uop0.prd, commit_uop0.prs1, commit_uop0.prs2);
                 }
             }
        }
@@ -652,52 +660,52 @@ module turboV {
                 commit_inst1_cause.environment_call_from_m_mode: {
                     flush();
                     ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC1, rob.commit_Inst1));
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
+                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause, commit_uop1.prd, commit_uop1.prs1, commit_uop1.prs2);
                 }
                 commit_inst1_cause.breakpoint: {
                     flush();
                     ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC1, rob.commit_Inst1));
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
+                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause, commit_uop1.prd, commit_uop1.prs1, commit_uop1.prs2);
                 }
                 (commit_uop1.jal || commit_uop1.jalr): {
                     // Jump instruction always redirect and flush pipeline.
                     gpr.writeB(commit_uop1.lrd, rob.commit_PC1+4);
                     ifu.redirect(rob.commit_Target1);
                     flush();
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
+                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause, commit_uop1.prd, commit_uop1.prs1, commit_uop1.prs2);
                 }
                 (commit_uop1.branch && (rob.commit_Value1[0] == 1)): {
                     // Branch instruction only redirect and flush pipeline if branch is taken.
                     ifu.redirect(rob.commit_Target1);
                     flush();
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
+                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause, commit_uop1.prd, commit_uop1.prs1, commit_uop1.prs2);
                 }
                 (commit_uop1.store): {
                     lsu.commit(commit_uop1.lrd);
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
+                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause, commit_uop1.prd, commit_uop1.prs1, commit_uop1.prs2);
                 }
                 (commit_uop1.mret): {
                     ifu.redirect(csr.mret());
                     flush();
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
+                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause, commit_uop1.prd, commit_uop1.prs1, commit_uop1.prs2);
                 }
                 (commit_uop1.ecall || commit_uop1.ebreak): {
                     gpr.writeB(commit_uop1.lrd, rob.commit_CSR_Value);
                     ifu.redirect(rob.commit_PC1 + 4);
                     flush();
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
+                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause, commit_uop1.prd, commit_uop1.prs1, commit_uop1.prs2);
                 }
                 (commit_uop1.csr_write): {
                     csr.write(rob.commit_CSR_num, rob.commit_Value1);
                     gpr.writeB(commit_uop1.lrd, rob.commit_CSR_Value);
                     ifu.redirect(rob.commit_PC1 + 4);
                     flush();
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
+                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause, commit_uop1.prd, commit_uop1.prs1, commit_uop1.prs2);
                 }
                 else: {
                     // Other instructions which has Dest register field.
                     gpr.writeB(commit_uop1.lrd, rob.commit_Value1);
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause);
+                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_uop1.cause, commit_uop1.prd, commit_uop1.prs1, commit_uop1.prs2);
                 }
             }
         }

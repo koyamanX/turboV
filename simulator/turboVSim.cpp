@@ -160,13 +160,13 @@ int main(int argc, char **argv) {
 #ifdef ENABLE_DEBUG
         if(sim.sim->debug_commit0) {
             if(sim.sim->debug_commit_cause0 == 0) {
-                fprintf(stdout, "%08x: DASM(%08x)\n", sim.sim->debug_commit_pc0, sim.sim->debug_commit_inst0);
+                fprintf(stdout, "%08x: DASM(%08x) (prd: %x, prs1: %x, prs2: %x)\n", sim.sim->debug_commit_pc0, sim.sim->debug_commit_inst0, sim.sim->debug_commit0_prd, sim.sim->debug_commit0_prs1, sim.sim->debug_commit0_prs2);
             } else {
             }
         }
         if(sim.sim->debug_commit1) {
             if(sim.sim->debug_commit_cause1 == 0) {
-                fprintf(stdout, "%08x: DASM(%08x)\n", sim.sim->debug_commit_pc1, sim.sim->debug_commit_inst1);
+                fprintf(stdout, "%08x: DASM(%08x) (prd: %x, prs1: %x, prs2: %x)\n", sim.sim->debug_commit_pc1, sim.sim->debug_commit_inst1, sim.sim->debug_commit1_prd, sim.sim->debug_commit1_prs1, sim.sim->debug_commit1_prs2);
             } else {
             }
         }
