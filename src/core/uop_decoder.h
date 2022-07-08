@@ -1,13 +1,14 @@
 #ifndef UOP_DECODER_H
 #define UOP_DECODER_H
 
-#define RS1_SEL_REG     2'b00
-#define RS1_SEL_UIMM    2'b01
-#define RS1_SEL_PC      2'b10
+#define RS1_SEL_REG         2'b00
+#define RS1_SEL_UIMM        2'b01
+#define RS1_SEL_PC          2'b10
 
-#define RS2_SEL_REG     2'b00
-#define RS2_SEL_IMM     2'b01
-#define RS2_SEL_CSR     2'b10
+#define RS2_SEL_REG         2'b00
+#define RS2_SEL_IMM         2'b01
+#define RS2_SEL_CSR         2'b10
+#define RS2_SEL_CSR_UIMM    2'b11
 
 #include "uops.h"
 #include "control_status_register.h"
