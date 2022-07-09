@@ -409,7 +409,7 @@ module uop_decoder {
                         decode_uop.lrd = 0;
                         decode_uop.rs1_sel = RS1_SEL_REG;
                         decode_uop.lrs1 = 0;
-                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.rs2_sel = RS2_SEL_REG;
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = 0;
@@ -424,7 +424,7 @@ module uop_decoder {
                         decode_uop.lrd = 0;
                         decode_uop.rs1_sel = RS1_SEL_REG;
                         decode_uop.lrs1 = 0;
-                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.rs2_sel = RS2_SEL_REG;
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = 0;
@@ -439,7 +439,7 @@ module uop_decoder {
                         decode_uop.lrd = 0;
                         decode_uop.rs1_sel = RS1_SEL_REG;
                         decode_uop.lrs1 = 0;
-                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.rs2_sel = RS2_SEL_REG;
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = 0;
