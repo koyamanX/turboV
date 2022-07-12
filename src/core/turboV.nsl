@@ -430,8 +430,8 @@ module turboV {
                 }
             }
             rob.issue(
-                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, issue_uop0,
-                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, issue_uop1,
+                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, (issue_uop0|{rob.tag, issue_inst0_Qj, issue_inst0_Qk}),
+                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, (issue_uop1|{rob.tag+1, issue_inst1_Qj, issue_inst1_Qk}),
                 issue_uop0.csr_addr, csr.csr_rdata
             );
             finish();
