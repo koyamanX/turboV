@@ -4,7 +4,6 @@
 #include "wishbone_slave.h"
 #include "rom64x2K.h"
 #include "clint.h"
-#include "consts.h"
 
 declare turboVSim simulation {
     func_in reset();
@@ -24,17 +23,11 @@ declare turboVSim simulation {
     output debug_commit_pc0[32];
     output debug_commit_inst0[32];
     output debug_commit_cause0[16];
-    output debug_commit0_prd[ROB_TAG_SIZE];
-    output debug_commit0_prs1[ROB_TAG_SIZE];
-    output debug_commit0_prs2[ROB_TAG_SIZE];
-    func_out debug_commit0(debug_commit_pc0, debug_commit_inst0, debug_commit_cause0, debug_commit0_prd, debug_commit0_prs1, debug_commit0_prs2);
+    func_out debug_commit0(debug_commit_pc0, debug_commit_inst0, debug_commit_cause0);
     output debug_commit_pc1[32];
     output debug_commit_inst1[32];
     output debug_commit_cause1[16];
-    output debug_commit1_prd[ROB_TAG_SIZE];
-    output debug_commit1_prs1[ROB_TAG_SIZE];
-    output debug_commit1_prs2[ROB_TAG_SIZE];
-    func_out debug_commit1(debug_commit_pc1, debug_commit_inst1, debug_commit_cause1, debug_commit1_prd, debug_commit1_prs1, debug_commit1_prs2);
+    func_out debug_commit1(debug_commit_pc1, debug_commit_inst1, debug_commit_cause1);
 #endif
 }
 module turboVSim {
@@ -149,10 +142,10 @@ module turboVSim {
     }
 #ifdef ENABLE_DEBUG
     func core.debug_commit0 {
-        debug_commit0(core.debug_commit_pc0, core.debug_commit_inst0, core.debug_commit_cause0, core.debug_commit0_prd, core.debug_commit0_prs1, core.debug_commit0_prs2);
+        debug_commit0(core.debug_commit_pc0, core.debug_commit_inst0, core.debug_commit_cause0);
     }
     func core.debug_commit1 {
-        debug_commit1(core.debug_commit_pc1, core.debug_commit_inst1, core.debug_commit_cause1, core.debug_commit1_prd, core.debug_commit1_prs1, core.debug_commit1_prs2);
+        debug_commit1(core.debug_commit_pc1, core.debug_commit_inst1, core.debug_commit_cause1);
     }
 #endif
 }
