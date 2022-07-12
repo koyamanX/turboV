@@ -207,7 +207,7 @@ module uop_decoder {
                         decode_uop.lrd = inst_itype.rd;
                         decode_uop.rs1_sel = RS1_SEL_REG;
                         decode_uop.lrs1 = inst_itype.rs1;
-                        decode_uop.rs2_sel = RS2_SEL_CSR;
+                        decode_uop.rs2_sel = RS2_SEL_REG;
                         decode_uop.lrs2 = 0;
                         decode_uop.imm = 0;
                         decode_uop.csr_addr = inst_itype.imm0;

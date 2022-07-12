@@ -247,6 +247,9 @@ module turboV {
             /* TODO: Optimize RSs free entry check */
             /* inst0 rs1 read */
             if(issue_packet.inst0_valid) {
+                if(issue_uop0.csr_read) {
+                    csr.read(issue_uop0.csr_addr);
+                }
                 any {
                     (issue_uop0.rs1_sel == RS1_SEL_PC): {
                         issue_inst0_Vj = issue_packet.inst0_pc;
@@ -303,11 +306,11 @@ module turboV {
                         issue_inst0_Qk = 0;
                     }
                     (issue_uop0.rs2_sel == RS2_SEL_CSR): {
-                        issue_inst0_Vk = csr.read(issue_uop0.csr_addr);
+                        issue_inst0_Vk = csr.csr_rdata;
                         issue_inst0_Qk = 0;
                     }
                     (issue_uop0.rs2_sel == RS2_SEL_CSR_UIMM): {
-                        issue_inst0_Vk = csr.read(issue_uop0.csr_addr) & 0xffffffe0;
+                        issue_inst0_Vk = csr.csr_rdata & 0xffffffe0;
                         issue_inst0_Qk = 0;
                     }
                 }
@@ -333,6 +336,9 @@ module turboV {
                 }
             }
             if(issue_packet.inst1_valid) { /* inst1 rs1 read */
+                if(issue_uop1.csr_read) {
+                    csr.read(issue_uop1.csr_addr);
+                }
                 any {
                     (issue_uop1.rs1_sel == RS1_SEL_PC): {
                         issue_inst1_Vj = issue_packet.inst1_pc;
@@ -399,12 +405,12 @@ module turboV {
                     }
                     (issue_uop1.rs2_sel == RS2_SEL_CSR): {
                         // TODO: for now, csr is not decoded in this slot
-                        issue_inst1_Vk = csr.read(issue_uop1.csr_addr);
+                        issue_inst1_Vk = csr.csr_rdata;
                         issue_inst1_Qk = 0;
                     }
                     (issue_uop1.rs2_sel == RS2_SEL_CSR_UIMM): {
                         // TODO: for now, csr is not decoded in this slot
-                        issue_inst1_Vk = csr.read(issue_uop1.csr_addr) & 0xffffffe0;
+                        issue_inst1_Vk = csr.csr_rdata & 0xffffffe0;
                         issue_inst1_Qk = 0;
                     }
                 }
