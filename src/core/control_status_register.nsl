@@ -70,7 +70,7 @@ module control_status_register {
                 if(write && csr_wnum == MTVAL) {
                     trap_xtval = csr_wdata;
                 } else {
-                    trap_xtval = mtvec;
+                    trap_xtval = mtval;
                 }
                 mstatus.mpie    := trap_xstatus.mie;
                 mstatus.mie     := 0;
