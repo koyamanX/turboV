@@ -554,8 +554,8 @@ module turboV {
         }
     }
     func rob.commit {
-        medeleg_t wire commit_inst0_cause;
-        medeleg_t wire commit_inst1_cause;
+        cause_t wire commit_inst0_cause;
+        cause_t wire commit_inst1_cause;
         func_self commit_kill_inst1;
         uop_t wire commit_uop0;
         uop_t wire commit_uop1;
@@ -563,7 +563,7 @@ module turboV {
         csr.update_instret();
         if(rob.commit_Valid0) {
             commit_uop0 = rob.commit_uOp0;
-            commit_inst0_cause = {0x0000, commit_uop0.cause};
+            commit_inst0_cause = commit_uop0.cause;
             alt {
                 csr.msip && csr.msie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
                     flush();
@@ -641,7 +641,7 @@ module turboV {
        }
        if(rob.commit_Valid1 && !commit_kill_inst1) {
             commit_uop1 = rob.commit_uOp1;
-            commit_inst1_cause = {0x0000, commit_uop1.cause};
+            commit_inst1_cause = commit_uop1.cause;
             alt {
                 csr.msip && csr.msie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
                     flush();
