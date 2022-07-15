@@ -8,6 +8,8 @@
 #define DECODE_CSR_RO   2'b01
 #define DECODE_CSR_WO   2'b10
 
+#define IALIGN 2'b11    //'
+
 declare control_status_register {
     input csr_rnum[12];
     output csr_rdata[32];
@@ -40,6 +42,7 @@ declare control_status_register {
     func_in trap(trap_cause, trap_pc, trap_val): trap_vector;
     output mret_pc[32];
     func_in mret(): mret_pc;
+    output ialign[2];
 
     func_in update_instret();
 }

@@ -13,4 +13,4 @@ docker run -it --rm \
     -v $(pwd)/image/scripts/env.sh:/root/.env.sh \
 	-v $(pwd)/CMakeLists.txt:/root/CMakeLists.txt \
 	-v $(pwd)/build:/root/build \
-	storm_dev:v1.0 $1
+	storm_dev:v1.1 $1

@@ -4,7 +4,7 @@
  #!/bin/bash
  NSLCORE=nslc.exe
  NSLPP=nslpp.exe
-+NSLPP=cpp
++NSLPP=chibicc
  sname=`basename $0` 
  if [ $# -lt 1 ]; then
  ${NSLCORE} -v
@@ -13,9 +13,9 @@
  if [ $supout -eq 0 ]; then
  echo "${NSLPP} $nestcomment $pparg $name | ${NSLCORE} $exearg -o $outname"
 -${NSLPP} $nestcomment $pparg $name | ${NSLCORE} $exearg -o $outname
-+${NSLPP} $nestcomment $pparg $name | sed '/^\s*$/d' | ${NSLCORE} $exearg -o $outname
++${NSLPP} $nestcomment $pparg $name -E | sed '/^\s*$/d' | ${NSLCORE} $exearg -o $outname
  else
 -${NSLPP} $nestcomment $pparg $name | ${NSLCORE} $exearg
-+${NSLPP} $nestcomment $pparg $name | sed '/^\s*$/d' | ${NSLCORE} $exearg
++${NSLPP} $nestcomment $pparg $name -E | sed '/^\s*$/d' | ${NSLCORE} $exearg
  fi
  exit $?

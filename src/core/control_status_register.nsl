@@ -27,9 +27,8 @@ module control_status_register {
         SXLEN=32
         UXLEN=32
     */
-    wire ialign[2];
 
-    ialign = if(misa.extensions & MISA_EXTENSIONS_C) 2'b01 else 2'b11;
+    ialign = IALIGN;
     meip = mip.meip;
     msip = software_interrupt_req_hart0;
     mtip = timer_interrupt_req_hart0;
@@ -81,9 +80,9 @@ module control_status_register {
                 mtval           := trap_xtval;
 
                 any {
-                    (mtvec.mode == MTVEC_MODE_DIRECT): return {trap_xtvec.base, 2'b00} & ~ialign;
-                    (mtvec.mode == MTVEC_MODE_VECTORED) && !trap_cause[31]: return {trap_xtvec.base, 2'b00} & ~ialign;
-                    (mtvec.mode == MTVEC_MODE_VECTORED) && trap_cause[31]: return {trap_xtvec.base, 2'b00} + 32'({trap_cause[9:0], 2'b00}) & ~ialign;
+                    (mtvec.mode == MTVEC_MODE_DIRECT): return {trap_xtvec.base, 2'b00} & ~IALIGN;
+                    (mtvec.mode == MTVEC_MODE_VECTORED) && !trap_cause[31]: return {trap_xtvec.base, 2'b00} & ~IALIGN;
+                    (mtvec.mode == MTVEC_MODE_VECTORED) && trap_cause[31]: return {trap_xtvec.base, 2'b00} + 32'({trap_cause[9:0], 2'b00}) & ~IALIGN;
                 }
             }
         }
@@ -109,7 +108,7 @@ module control_status_register {
         mstatus.mprv    := 0;
         mode            := mret_mstatus.mpp;
 
-        return mret_mepc & ~ialign;
+        return mret_mepc & ~IALIGN;
     }
     func read {
         any {
@@ -147,7 +146,7 @@ module control_status_register {
                 return mscratch;
             }
             (mode >= MACHINE) && (csr_rnum == MEPC): {
-                return mepc & ~ialign;
+                return mepc & ~IALIGN;
             }
             (mode >= MACHINE) && (csr_rnum == MCAUSE): {
                 return mcause;
