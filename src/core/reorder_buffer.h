@@ -12,6 +12,8 @@ struct reorder_buffer_t {
     Value0[32];
     uOp0[SIZEOF_UOP_T];
     Target0[32];
+    // copy of uop.cause
+    Cause0[16];
     Valid1;
     Busy1;
     PC1[32];
@@ -19,9 +21,11 @@ struct reorder_buffer_t {
     Value1[32];
     uOp1[SIZEOF_UOP_T];
     Target1[32];
+    // copy of uop.cause
+    Cause1[16];
     CSR_num[12];
     CSR_Value[32];
-#define SIZEOF_REORDER_BUFFER_T 304+SIZEOF_UOP_T+SIZEOF_UOP_T
+#define SIZEOF_REORDER_BUFFER_T 336+SIZEOF_UOP_T+SIZEOF_UOP_T
 };
 declare reorder_buffer {
     input valid0;
@@ -45,18 +49,20 @@ declare reorder_buffer {
     output commit_PC0[32];
     output commit_Target0[32];
     output commit_Inst0[32];
+    output commit_Cause0[16];
     output commit_Valid1;
     output commit_Value1[32];
     output commit_uOp1[SIZEOF_UOP_T];
     output commit_PC1[32];
     output commit_Target1[32];
     output commit_Inst1[32];
+    output commit_Cause1[16];
     output commit_CSR_num[12];
     output commit_CSR_Value[32];
     output commit_Id[ROB_TAG_SIZE];
     func_out commit(commit_Id,
-                    commit_Valid0, commit_Value0, commit_uOp0, commit_PC0, commit_Target0, commit_Inst0,
-                    commit_Valid1, commit_Value1, commit_uOp1, commit_PC1, commit_Target1, commit_Inst1,
+                    commit_Valid0, commit_Value0, commit_uOp0, commit_PC0, commit_Target0, commit_Inst0, commit_Cause0,
+                    commit_Valid1, commit_Value1, commit_uOp1, commit_PC1, commit_Target1, commit_Inst1, commit_Cause1,
                     commit_CSR_num, commit_CSR_Value);
     input CDB0Id[ROB_TAG_SIZE];
     input CDB0Val[32];

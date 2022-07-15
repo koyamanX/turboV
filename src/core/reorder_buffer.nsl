@@ -1,4 +1,5 @@
 #include "reorder_buffer.h"
+#include "uops.h"
 
 module reorder_buffer {
     /* TODO: increase number of entries, for ease of debugging
@@ -21,6 +22,11 @@ module reorder_buffer {
     next_tail = tail + 1;
     next_head = head + 1;
     func issue {
+        uop_t wire issue_uop0;
+        uop_t wire issue_uop1;
+
+        issue_uop0 = uop0;
+        issue_uop1 = uop1;
         if(!flush) {
             reorder_buffer_t wire new_entry;
 
@@ -29,15 +35,17 @@ module reorder_buffer {
             new_entry.PC0 = pc0;
             new_entry.Inst0 = inst0;
             new_entry.Value0 = 0;
-            new_entry.uOp0 = uop0;
+            new_entry.uOp0 = issue_uop0;
             new_entry.Target0 = 0;
+            new_entry.Cause0 = issue_uop0.cause;
             new_entry.Valid1 = valid1;
             new_entry.Busy1 = valid1;
             new_entry.PC1 = pc1;
             new_entry.Inst1 = inst1;
             new_entry.Value1 = 0;
-            new_entry.uOp1 = uop1;
+            new_entry.uOp1 = issue_uop1;
             new_entry.Target1 = 0;
+            new_entry.Cause1 = issue_uop1.cause;
             new_entry.CSR_num = csr_num;
             new_entry.CSR_Value = csr_value;
 
@@ -214,8 +222,8 @@ module reorder_buffer {
             head := next_head;
         }
         commit(commit_id,
-            commit_entry.Valid0, commit_entry.Value0, commit_entry.uOp0, commit_entry.PC0, commit_entry.Target0, commit_entry.Inst0,
-            commit_entry.Valid1, commit_entry.Value1, commit_entry.uOp1, commit_entry.PC1, commit_entry.Target1, commit_entry.Inst1,
+            commit_entry.Valid0, commit_entry.Value0, commit_entry.uOp0, commit_entry.PC0, commit_entry.Target0, commit_entry.Inst0, commit_entry.Cause0,
+            commit_entry.Valid1, commit_entry.Value1, commit_entry.uOp1, commit_entry.PC1, commit_entry.Target1, commit_entry.Inst1, commit_entry.Cause1,
             commit_entry.CSR_num, commit_entry.CSR_Value
         );
     }
