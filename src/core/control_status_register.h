@@ -8,7 +8,7 @@
 #define DECODE_CSR_RO   2'b01
 #define DECODE_CSR_WO   2'b10
 
-#define IALIGN 2'b11    //'
+#define IALIGN (if(misa.extensions & MISA_EXTENSIONS_C) 2'b01 else 2'b11)
 
 declare control_status_register {
     input csr_rnum[12];
