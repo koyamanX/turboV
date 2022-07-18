@@ -35,7 +35,7 @@ jobs:
       - run:
           name: "Run Tests"
           working_directory: build
-          command: "make test"
+          command: "ctest -j8"
       - store_test_results:
           path: test-results
 # Invoke jobs via workflows
