@@ -25,6 +25,7 @@
 #define uOP_BRU_BLTU                    7'b001_0110
 #define uOP_BRU_BGEU                    7'b001_0111
 #define uOP_BRU_JALR                    7'b001_1111
+#define uOP_BRU_JAL                     7'b001_1000
 
 #define uOP_LSU                         3'b010
 #define uOP_LSU_LOAD_WORD               7'b010_0010

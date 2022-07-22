@@ -31,6 +31,9 @@ module bru32 {
             fn == BRU_JALR: {
                 return 1;
             }
+            fn == BRU_JAL: {
+                return 1;
+            }
         }
     }
 }

@@ -3,6 +3,7 @@
 
 #include "consts.h"
 #include "uops.h"
+#include "csr.h"
 
 struct reorder_buffer_t {
     Valid0;
@@ -73,7 +74,8 @@ declare reorder_buffer {
     input CDB2Id[ROB_TAG_SIZE];
     input CDB2Val[32];
     input CDB2Target[32];
-    func_in CDB2(CDB2Id, CDB2Val, CDB2Target);
+    input CDB2InstructionAddressMisaligned;
+    func_in CDB2(CDB2Id, CDB2Val, CDB2Target, CDB2InstructionAddressMisaligned);
     input CDB3Id[ROB_TAG_SIZE];
     input CDB3Val[32];
     func_in CDB3(CDB3Id, CDB3Val);

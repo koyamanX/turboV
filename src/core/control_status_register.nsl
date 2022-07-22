@@ -52,7 +52,6 @@ module control_status_register {
     func trap {
         mstatus_t wire trap_xstatus;
         mtvec_t wire trap_xtvec;
-        mtval_t wire trap_xtval;
 
         any {
             (mode == MACHINE): {
@@ -66,18 +65,13 @@ module control_status_register {
                 } else {
                     trap_xtvec = mtvec;
                 }
-                if(write && csr_wnum == MTVAL) {
-                    trap_xtval = csr_wdata;
-                } else {
-                    trap_xtval = mtval;
-                }
                 mstatus.mpie    := trap_xstatus.mie;
                 mstatus.mie     := 0;
                 mstatus.mpp     := MACHINE;
                 mode            := MACHINE;
                 mcause          := trap_cause;
                 mepc            := trap_pc;
-                mtval           := trap_xtval;
+                mtval           := trap_val;
 
                 any {
                     (mtvec.mode == MTVEC_MODE_DIRECT): return {trap_xtvec.base, 2'b00} & ~IALIGN;

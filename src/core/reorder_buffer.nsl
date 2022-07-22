@@ -159,14 +159,14 @@ module reorder_buffer {
     func CDB2 {
         if(!flush) {
             any {
-                CDB2Id == 1: {rob0.Value0 := CDB2Val; rob0.Target0 := CDB2Target; rob0.Busy0 := 0;}
-                CDB2Id == 2: {rob0.Value1 := CDB2Val; rob0.Target1 := CDB2Target; rob0.Busy1 := 0;}
-                CDB2Id == 3: {rob1.Value0 := CDB2Val; rob1.Target0 := CDB2Target; rob1.Busy0 := 0;}
-                CDB2Id == 4: {rob1.Value1 := CDB2Val; rob1.Target1 := CDB2Target; rob1.Busy1 := 0;}
-                CDB2Id == 5: {rob2.Value0 := CDB2Val; rob2.Target0 := CDB2Target; rob2.Busy0 := 0;}
-                CDB2Id == 6: {rob2.Value1 := CDB2Val; rob2.Target1 := CDB2Target; rob2.Busy1 := 0;}
-                CDB2Id == 7: {rob3.Value0 := CDB2Val; rob3.Target0 := CDB2Target; rob3.Busy0 := 0;}
-                CDB2Id == 8: {rob3.Value1 := CDB2Val; rob3.Target1 := CDB2Target; rob3.Busy1 := 0;}
+                CDB2Id == 1: {rob0.Value0 := CDB2Val; rob0.Target0 := CDB2Target; rob0.Busy0 := 0; rob0.Cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, CDB2InstructionAddressMisaligned);}
+                CDB2Id == 2: {rob0.Value1 := CDB2Val; rob0.Target1 := CDB2Target; rob0.Busy1 := 0; rob0.Cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, CDB2InstructionAddressMisaligned);}
+                CDB2Id == 3: {rob1.Value0 := CDB2Val; rob1.Target0 := CDB2Target; rob1.Busy0 := 0; rob1.Cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, CDB2InstructionAddressMisaligned);}
+                CDB2Id == 4: {rob1.Value1 := CDB2Val; rob1.Target1 := CDB2Target; rob1.Busy1 := 0; rob1.Cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, CDB2InstructionAddressMisaligned);}
+                CDB2Id == 5: {rob2.Value0 := CDB2Val; rob2.Target0 := CDB2Target; rob2.Busy0 := 0; rob2.Cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, CDB2InstructionAddressMisaligned);}
+                CDB2Id == 6: {rob2.Value1 := CDB2Val; rob2.Target1 := CDB2Target; rob2.Busy1 := 0; rob2.Cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, CDB2InstructionAddressMisaligned);}
+                CDB2Id == 7: {rob3.Value0 := CDB2Val; rob3.Target0 := CDB2Target; rob3.Busy0 := 0; rob3.Cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, CDB2InstructionAddressMisaligned);}
+                CDB2Id == 8: {rob3.Value1 := CDB2Val; rob3.Target1 := CDB2Target; rob3.Busy1 := 0; rob3.Cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, CDB2InstructionAddressMisaligned);}
             }
         }
     }

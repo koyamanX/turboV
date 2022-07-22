@@ -9,6 +9,7 @@
 #define BRU_GEU 4'b0111
 
 #define BRU_JALR 4'b1111
+#define BRU_JAL  4'b1000
 
 declare bru32 {
     input a[32];

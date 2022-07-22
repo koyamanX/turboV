@@ -119,8 +119,8 @@ module uop_decoder {
                 imm_gen0.j_type(inst);
 
                 decode_uop.opcode = opcode;
-                decode_uop.uop = uOP_ALU_ADD;
-                decode_uop.fn = ALU_ADD;
+                decode_uop.uop = uOP_BRU_JAL;
+                decode_uop.fn = BRU_JAL;
                 decode_uop.lrd = inst_jtype.rd;
                 decode_uop.rs1_sel = RS1_SEL_PC;
                 decode_uop.lrs1 = 0;
