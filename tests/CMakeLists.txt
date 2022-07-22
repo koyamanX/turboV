@@ -11,6 +11,7 @@ ExternalProject_Add(
 add_subdirectory(software_interrupt_test)
 add_subdirectory(timer_interrupt_test)
 add_subdirectory(csr_inst_test)
+add_subdirectory(instruction_address_misaligned_test)
 
 set(ISA_DIR ${CMAKE_BINARY_DIR}/Debug/share/riscv-tests/isa)
 set(SIMULATOR ${CMAKE_BINARY_DIR}/Debug/turboVSim/turboVSim)
