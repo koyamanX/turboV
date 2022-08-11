@@ -81,7 +81,7 @@ module reservation_station_in_order {
         generate(i_ = 0; i_ < NUMBER_OF_RS_IN_ORDER; i_++) {
             if((head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == i_) && rs[i_].dispatchable) {
                 dispatch_entry = rs[i_].dispatch();
-                dispatch(dispatch_entry.Op, dispatch_entry.Dest, dispatch_entry.Vj, dispatch_entry.Qk, dispatch_entry.Vk, dispatch_entry.A);
+                dispatch(dispatch_entry.Op, dispatch_entry.Dest, dispatch_entry.Vj, dispatch_entry.Vk, dispatch_entry.A);
                 head := next_head;
             }
         }

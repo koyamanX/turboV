@@ -22,10 +22,9 @@ declare reservation_station_in_order {
     output dispatch_Op[SIZEOF_UOP_T];
     output dispatch_Dest[ROB_TAG_SIZE];
     output dispatch_Vj[32];
-    output dispatch_Qk[ROB_TAG_SIZE];
     output dispatch_Vk[32];
     output dispatch_A[32];
-    func_out dispatch(dispatch_Op, dispatch_Dest, dispatch_Vj, dispatch_Qk, dispatch_Vk, dispatch_A);
+    func_out dispatch(dispatch_Op, dispatch_Dest, dispatch_Vj, dispatch_Vk, dispatch_A);
     input CDB0Id[ROB_TAG_SIZE];
     input CDB0Val[32];
     func_in CDB0(CDB0Id, CDB0Val);
