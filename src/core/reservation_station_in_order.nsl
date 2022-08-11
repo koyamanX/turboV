@@ -1,136 +1,94 @@
 #include "reservation_station_in_order.h"
+#include "reservation_station_entry.h"
 
 module reservation_station_in_order {
-    reservation_station_t reg rs0 = 0;
-    reservation_station_t reg rs1 = 0;
-    reservation_station_t reg rs2 = 0;
-    reservation_station_t reg rs3 = 0;
+    reservation_station_entry rs[NUMBER_OF_RS_IN_ORDER];
     reg tail[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES+1] = 0;
     reg head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES+1] = 0;
     wire next_tail[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES+1];
     wire next_head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES+1];
-    reservation_station_t wire dispatch_entry;
-    reservation_station_t wire new_entry;
+    integer i_;
+    reservation_station_entry_t wire dispatch_entry;
 
     next_tail = tail + 1;
     next_head = head + 1;
 
     func issue {
-        if(!flush) {
-            new_entry.Busy = Valid;
-            new_entry.Op = Op;
-            /* Bypass */
-            any {
-                CDB0 && (Qj == CDB0Id) && Valid: {new_entry.Vj = CDB0Val; new_entry.Qj = 0;}
-                CDB0 && (Qk == CDB0Id) && Valid: {new_entry.Vk = CDB0Val; new_entry.Qk = 0;}
-                CDB1 && (Qj == CDB1Id) && Valid: {new_entry.Vj = CDB1Val; new_entry.Qj = 0;}
-                CDB1 && (Qk == CDB1Id) && Valid: {new_entry.Vk = CDB1Val; new_entry.Qk = 0;}
-                CDB2 && (Qj == CDB2Id) && Valid: {new_entry.Vj = CDB2Val; new_entry.Qj = 0;}
-                CDB2 && (Qk == CDB2Id) && Valid: {new_entry.Vk = CDB2Val; new_entry.Qk = 0;}
-                CDB3 && (Qj == CDB3Id) && Valid: {new_entry.Vj = CDB3Val; new_entry.Qj = 0;}
-                CDB3 && (Qk == CDB3Id) && Valid: {new_entry.Vk = CDB3Val; new_entry.Qk = 0;}
-                else: {
-                    new_entry.Vj = Vj;
-                    new_entry.Vk = Vk;
-                    new_entry.Qj = Qj;
-                    new_entry.Qk = Qk;
-                }
+        wire issue_Qj[ROB_TAG_SIZE];
+        wire issue_Qk[ROB_TAG_SIZE];
+        wire issue_Vj[32];
+        wire issue_Vk[32];
+
+        /* Bypass */
+        any {
+            CDB0 && (Qj == CDB0Id) && Valid: {issue_Vj = CDB0Val; issue_Qj = 0;}
+            CDB1 && (Qj == CDB1Id) && Valid: {issue_Vj = CDB1Val; issue_Qj = 0;}
+            CDB2 && (Qj == CDB2Id) && Valid: {issue_Vj = CDB2Val; issue_Qj = 0;}
+            CDB3 && (Qj == CDB3Id) && Valid: {issue_Vj = CDB3Val; issue_Qj = 0;}
+            else: {
+                issue_Qj = Qj;
+                issue_Vj = Vj;
             }
-            new_entry.Dest = Dest;
-            new_entry.A = A;
-            any {
-                tail[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 0: rs0 := new_entry;
-                tail[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 1: rs1 := new_entry;
-                tail[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 2: rs2 := new_entry;
-                tail[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 3: rs3 := new_entry;
+        }
+        any {
+            CDB0 && (Qk == CDB0Id) && Valid: {issue_Vk = CDB0Val; issue_Qk = 0;}
+            CDB1 && (Qk == CDB1Id) && Valid: {issue_Vk = CDB1Val; issue_Qk = 0;}
+            CDB2 && (Qk == CDB2Id) && Valid: {issue_Vk = CDB2Val; issue_Qk = 0;}
+            CDB3 && (Qk == CDB3Id) && Valid: {issue_Vk = CDB3Val; issue_Qk = 0;}
+            else: {
+                issue_Qk = Qk;
+                issue_Vk = Vk;
+            }
+        }
+        if(!flush) {
+            generate(i_ = 0; i_ < NUMBER_OF_RS_IN_ORDER; i_++) {
+                if(tail[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == i_) rs[i_].issue(Valid, Op, issue_Vj, issue_Vk, issue_Qj, issue_Qk, Dest, A);
             }
             tail := next_tail;
         }
     }
     func flush {
-        rs0 := 0;
-        rs1 := 0;
-        rs2 := 0;
-        rs3 := 0;
+        generate(i_ = 0; i_ < NUMBER_OF_RS_IN_ORDER; i_++) {
+            rs[i_].flush();
+        }
         head := 0;
         tail := 0;
     }
     func CDB0 {
         if(!flush) {
-            any {
-                (rs3.Qj == CDB0Id) && rs3.Busy: {rs3.Vj := CDB0Val; rs3.Qj := 0;}
-                (rs3.Qk == CDB0Id) && rs3.Busy: {rs3.Vk := CDB0Val; rs3.Qk := 0;}
-                (rs2.Qj == CDB0Id) && rs2.Busy: {rs2.Vj := CDB0Val; rs2.Qj := 0;}
-                (rs2.Qk == CDB0Id) && rs2.Busy: {rs2.Vk := CDB0Val; rs2.Qk := 0;}
-                (rs1.Qj == CDB0Id) && rs1.Busy: {rs1.Vj := CDB0Val; rs1.Qj := 0;}
-                (rs1.Qk == CDB0Id) && rs1.Busy: {rs1.Vk := CDB0Val; rs1.Qk := 0;}
-                (rs0.Qj == CDB0Id) && rs0.Busy: {rs0.Vj := CDB0Val; rs0.Qj := 0;}
-                (rs0.Qk == CDB0Id) && rs0.Busy: {rs0.Vk := CDB0Val; rs0.Qk := 0;}
+            generate(i_ = 0; i_ < NUMBER_OF_RS_IN_ORDER; i_++) {
+                rs[i_].CDB0(CDB0Id, CDB0Val);
             }
         }
     }
     func CDB1 {
         if(!flush) {
-            any {
-                (rs3.Qj == CDB1Id) && rs3.Busy: {rs3.Vj := CDB1Val; rs3.Qj := 0;}
-                (rs3.Qk == CDB1Id) && rs3.Busy: {rs3.Vk := CDB1Val; rs3.Qk := 0;}
-                (rs2.Qj == CDB1Id) && rs2.Busy: {rs2.Vj := CDB1Val; rs2.Qj := 0;}
-                (rs2.Qk == CDB1Id) && rs2.Busy: {rs2.Vk := CDB1Val; rs2.Qk := 0;}
-                (rs1.Qj == CDB1Id) && rs1.Busy: {rs1.Vj := CDB1Val; rs1.Qj := 0;}
-                (rs1.Qk == CDB1Id) && rs1.Busy: {rs1.Vk := CDB1Val; rs1.Qk := 0;}
-                (rs0.Qj == CDB1Id) && rs0.Busy: {rs0.Vj := CDB1Val; rs0.Qj := 0;}
-                (rs0.Qk == CDB1Id) && rs0.Busy: {rs0.Vk := CDB1Val; rs0.Qk := 0;}
+            generate(i_ = 0; i_ < NUMBER_OF_RS_IN_ORDER; i_++) {
+                rs[i_].CDB1(CDB1Id, CDB1Val);
             }
         }
     }
     func CDB2 {
         if(!flush) {
-            any {
-                (rs3.Qj == CDB2Id) && rs3.Busy: {rs3.Vj := CDB2Val; rs3.Qj := 0;}
-                (rs3.Qk == CDB2Id) && rs3.Busy: {rs3.Vk := CDB2Val; rs3.Qk := 0;}
-                (rs2.Qj == CDB2Id) && rs2.Busy: {rs2.Vj := CDB2Val; rs2.Qj := 0;}
-                (rs2.Qk == CDB2Id) && rs2.Busy: {rs2.Vk := CDB2Val; rs2.Qk := 0;}
-                (rs1.Qj == CDB2Id) && rs1.Busy: {rs1.Vj := CDB2Val; rs1.Qj := 0;}
-                (rs1.Qk == CDB2Id) && rs1.Busy: {rs1.Vk := CDB2Val; rs1.Qk := 0;}
-                (rs0.Qj == CDB2Id) && rs0.Busy: {rs0.Vj := CDB2Val; rs0.Qj := 0;}
-                (rs0.Qk == CDB2Id) && rs0.Busy: {rs0.Vk := CDB2Val; rs0.Qk := 0;}
+            generate(i_ = 0; i_ < NUMBER_OF_RS_IN_ORDER; i_++) {
+                rs[i_].CDB2(CDB2Id, CDB2Val);
             }
         }
     }
     func CDB3 {
         if(!flush) {
-            any {
-                (rs3.Qj == CDB3Id) && rs3.Busy: {rs3.Vj := CDB3Val; rs3.Qj := 0;}
-                (rs3.Qk == CDB3Id) && rs3.Busy: {rs3.Vk := CDB3Val; rs3.Qk := 0;}
-                (rs2.Qj == CDB3Id) && rs2.Busy: {rs2.Vj := CDB3Val; rs2.Qj := 0;}
-                (rs2.Qk == CDB3Id) && rs2.Busy: {rs2.Vk := CDB3Val; rs2.Qk := 0;}
-                (rs1.Qj == CDB3Id) && rs1.Busy: {rs1.Vj := CDB3Val; rs1.Qj := 0;}
-                (rs1.Qk == CDB3Id) && rs1.Busy: {rs1.Vk := CDB3Val; rs1.Qk := 0;}
-                (rs0.Qj == CDB3Id) && rs0.Busy: {rs0.Vj := CDB3Val; rs0.Qj := 0;}
-                (rs0.Qk == CDB3Id) && rs0.Busy: {rs0.Vk := CDB3Val; rs0.Qk := 0;}
+            generate(i_ = 0; i_ < NUMBER_OF_RS_IN_ORDER; i_++) {
+                rs[i_].CDB3(CDB3Id, CDB3Val);
             }
         }
     }
-    any {
-        head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 0: dispatch_entry = rs0;
-        head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 1: dispatch_entry = rs1;
-        head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 2: dispatch_entry = rs2;
-        head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 3: dispatch_entry = rs3;
-    }
-    if((dispatch_entry.Busy) && (dispatch_entry.Qj == 0) && (dispatch_entry.Qk == 0)) {
-        if(!flush && !stall) {
-            any {
-                dispatch_entry.Busy: {
-                    dispatch(dispatch_entry.Op, dispatch_entry.Dest, dispatch_entry.Vj, dispatch_entry.Qk, dispatch_entry.Vk, dispatch_entry.A);
-                }
+    if(!flush && !stall) {
+        generate(i_ = 0; i_ < NUMBER_OF_RS_IN_ORDER; i_++) {
+            if((head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == i_) && rs[i_].dispatchable) {
+                dispatch_entry = rs[i_].dispatch();
+                dispatch(dispatch_entry.Op, dispatch_entry.Dest, dispatch_entry.Vj, dispatch_entry.Vk, dispatch_entry.A);
+                head := next_head;
             }
-            any {
-                head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 0: rs0 := 0;
-                head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 1: rs1 := 0;
-                head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 2: rs2 := 0;
-                head[LOG2_RS_IN_ORDER_NUM_OF_ENTRIES-1:0] == 3: rs3 := 0;
-            }
-            head := next_head;
         }
     }
     if(!flush) {
