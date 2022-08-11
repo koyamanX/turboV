@@ -18,21 +18,26 @@ module reservation_station_in_order {
         wire issue_Qk[ROB_TAG_SIZE];
         wire issue_Vj[32];
         wire issue_Vk[32];
+
+        /* Bypass */
         any {
-            /* Bypass */
             CDB0 && (Qj == CDB0Id) && Valid: {issue_Vj = CDB0Val; issue_Qj = 0;}
-            CDB0 && (Qk == CDB0Id) && Valid: {issue_Vk = CDB0Val; issue_Qk = 0;}
             CDB1 && (Qj == CDB1Id) && Valid: {issue_Vj = CDB1Val; issue_Qj = 0;}
-            CDB1 && (Qk == CDB1Id) && Valid: {issue_Vk = CDB1Val; issue_Qk = 0;}
             CDB2 && (Qj == CDB2Id) && Valid: {issue_Vj = CDB2Val; issue_Qj = 0;}
-            CDB2 && (Qk == CDB2Id) && Valid: {issue_Vk = CDB2Val; issue_Qk = 0;}
             CDB3 && (Qj == CDB3Id) && Valid: {issue_Vj = CDB3Val; issue_Qj = 0;}
+            else: {
+                issue_Qj = Qj;
+                issue_Vj = Vj;
+            }
+        }
+        any {
+            CDB0 && (Qk == CDB0Id) && Valid: {issue_Vk = CDB0Val; issue_Qk = 0;}
+            CDB1 && (Qk == CDB1Id) && Valid: {issue_Vk = CDB1Val; issue_Qk = 0;}
+            CDB2 && (Qk == CDB2Id) && Valid: {issue_Vk = CDB2Val; issue_Qk = 0;}
             CDB3 && (Qk == CDB3Id) && Valid: {issue_Vk = CDB3Val; issue_Qk = 0;}
             else: {
-                issue_Vj = Vj;
-                issue_Vk = Vk;
-                issue_Qj = Qj;
                 issue_Qk = Qk;
+                issue_Vk = Vk;
             }
         }
         if(!flush) {
