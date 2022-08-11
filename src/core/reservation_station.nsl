@@ -1,8 +1,6 @@
 #include "reservation_station.h"
 #include "reservation_station_entry.h"
 
-#define NUMBER_OF_RS 1
-
 module reservation_station {
     reservation_station_entry rs[NUMBER_OF_RS];
     variable isFull;
