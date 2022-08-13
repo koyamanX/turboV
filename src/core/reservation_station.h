@@ -5,18 +5,6 @@
 #include "reorder_buffer.h"
 #include "uops.h"
 
-struct reservation_station_t {
-    Busy;
-    Op[SIZEOF_UOP_T];
-    Vj[32];
-    Vk[32];
-    Qj[ROB_TAG_SIZE];
-    Qk[ROB_TAG_SIZE];
-    Dest[ROB_TAG_SIZE];
-    A[32];
-    #define SIZEOF_RESERVATION_STATION_T 109+SIZEOF_UOP_T
-};
-
 declare reservation_station {
     input Valid;
     input Op[SIZEOF_UOP_T];
