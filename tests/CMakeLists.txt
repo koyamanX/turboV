@@ -62,6 +62,7 @@ list(APPEND rv32mi_p
     rv32mi-p-csr
     rv32mi-p-illegal
     rv32mi-p-ma_fetch
+    rv32mi-p-ma_addr
     rv32mi-p-mcsr
     rv32mi-p-sbreak
     rv32mi-p-scall
