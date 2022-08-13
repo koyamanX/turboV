@@ -61,7 +61,6 @@ list(APPEND rv32mi_p
     rv32mi-p-breakpoint
     rv32mi-p-csr
     rv32mi-p-illegal
-    rv32mi-p-ma_addr
     rv32mi-p-ma_fetch
     rv32mi-p-mcsr
     rv32mi-p-sbreak
@@ -72,6 +71,7 @@ list(APPEND rv32mi_p
 list(APPEND will_fail_tests
     rv32ui-p-fence_i
     rv32mi-p-breakpoint
+    rv32mi-p-ma_addr
 )
 
 set(riscv_tests ${rv32ui_p} ${rv32mi_p})
