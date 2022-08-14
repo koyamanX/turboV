@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build -t storm_dev:v1.1 .
+docker build -t koyamanx/turbov_dev:v1.2 .
