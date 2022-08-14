@@ -26,7 +26,7 @@ struct reorder_buffer_t {
     // copy of uop.cause
     Cause1[16];
     CSR_Value1[32];
-#define SIZEOF_REORDER_BUFFER_T 336+SIZEOF_UOP_T+SIZEOF_UOP_T
+#define SIZEOF_REORDER_BUFFER_T 356+SIZEOF_UOP_T+SIZEOF_UOP_T
 };
 declare reorder_buffer {
     input valid0;
