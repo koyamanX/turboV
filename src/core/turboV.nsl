@@ -485,9 +485,6 @@ module turboV {
 
         lsu_rs0_uop = lsu_rs0.dispatch_Op;
         if(!flush && !lsu.full) {
-            if((lsu_rs0_uop.uop == uOP_LSU_STORE_WORD) || (lsu_rs0_uop.uop == uOP_LSU_STORE_HALFWORD) || (lsu_rs0_uop.uop == uOP_LSU_STORE_BYTE)) {
-                rob.Store(lsu_rs0.dispatch_Dest);
-            }
             lsu_rs0_dispatch_Addr = lsu_rs0.dispatch_Vj + lsu_rs0.dispatch_A;
             lsu.issue(lsu_rs0_dispatch_Addr, lsu_rs0_uop.uop, lsu_rs0.dispatch_Vk, lsu_rs0.dispatch_Dest);
         }

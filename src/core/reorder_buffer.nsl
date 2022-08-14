@@ -184,20 +184,6 @@ module reorder_buffer {
             }
         }
     }
-    func Store {
-        if(!flush) {
-            any {
-                StqId == 1: {rob0.Busy0 := 0;}
-                StqId == 2: {rob0.Busy1 := 0;}
-                StqId == 3: {rob1.Busy0 := 0;}
-                StqId == 4: {rob1.Busy1 := 0;}
-                StqId == 5: {rob2.Busy0 := 0;}
-                StqId == 6: {rob2.Busy1 := 0;}
-                StqId == 7: {rob3.Busy0 := 0;}
-                StqId == 8: {rob3.Busy1 := 0;}
-            }
-        }
-    }
     any {
         head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 0: commit_entry = rob0;
         head[LOG2_ROB_NUM_OF_ENTRIES-1:0] == 1: commit_entry = rob1;

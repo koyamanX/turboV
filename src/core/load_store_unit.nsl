@@ -21,6 +21,7 @@ module load_store_unit {
             memory_Data := issue_Vj;
             memory_uOp := issue_uOp;
             memory_RobId := issue_RobId;
+            CDBOut(issue_RobId, issue_Vj);
         }
     }
     if(!flush && (memory || stqV)) {
