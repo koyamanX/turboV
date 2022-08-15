@@ -21,33 +21,33 @@ module reservation_station_entry {
     }
     func CDB0 {
         any {
-            (rs_entry.Qj == CDB0Id) && rs_entry.Busy: {rs_entry.Vj := CDB0Val; rs_entry.Qj := 0;}
-            (rs_entry.Qk == CDB0Id) && rs_entry.Busy: {rs_entry.Vk := CDB0Val; rs_entry.Qk := 0;}
+            (rs_entry.Qj == CDB0Id) && rs_entry.Busy: {rs_entry.Vj := CDB0Val; rs_entry.Qj := -1;}
+            (rs_entry.Qk == CDB0Id) && rs_entry.Busy: {rs_entry.Vk := CDB0Val; rs_entry.Qk := -1;}
         }
     }
     func CDB1 {
         any {
-            (rs_entry.Qj == CDB1Id) && rs_entry.Busy: {rs_entry.Vj := CDB1Val; rs_entry.Qj := 0;}
-            (rs_entry.Qk == CDB1Id) && rs_entry.Busy: {rs_entry.Vk := CDB1Val; rs_entry.Qk := 0;}
+            (rs_entry.Qj == CDB1Id) && rs_entry.Busy: {rs_entry.Vj := CDB1Val; rs_entry.Qj := -1;}
+            (rs_entry.Qk == CDB1Id) && rs_entry.Busy: {rs_entry.Vk := CDB1Val; rs_entry.Qk := -1;}
         }
     }
     func CDB2 {
         any {
-            (rs_entry.Qj == CDB2Id) && rs_entry.Busy: {rs_entry.Vj := CDB2Val; rs_entry.Qj := 0;}
-            (rs_entry.Qk == CDB2Id) && rs_entry.Busy: {rs_entry.Vk := CDB2Val; rs_entry.Qk := 0;}
+            (rs_entry.Qj == CDB2Id) && rs_entry.Busy: {rs_entry.Vj := CDB2Val; rs_entry.Qj := -1;}
+            (rs_entry.Qk == CDB2Id) && rs_entry.Busy: {rs_entry.Vk := CDB2Val; rs_entry.Qk := -1;}
         }
     }
     func CDB3 {
         any {
-            (rs_entry.Qj == CDB3Id) && rs_entry.Busy: {rs_entry.Vj := CDB3Val; rs_entry.Qj := 0;}
-            (rs_entry.Qk == CDB3Id) && rs_entry.Busy: {rs_entry.Vk := CDB3Val; rs_entry.Qk := 0;}
+            (rs_entry.Qj == CDB3Id) && rs_entry.Busy: {rs_entry.Vj := CDB3Val; rs_entry.Qj := -1;}
+            (rs_entry.Qk == CDB3Id) && rs_entry.Busy: {rs_entry.Vk := CDB3Val; rs_entry.Qk := -1;}
         }
     }
     func dispatch {
         rs_entry := 0;
         return rs_entry;
     }
-    if(rs_entry.Busy && (rs_entry.Qj == 0) && (rs_entry.Qk == 0)) {
+    if(rs_entry.Busy && (rs_entry.Qj == -1) && (rs_entry.Qk == -1)) {
         dispatchable();
     }
 }
