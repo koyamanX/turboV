@@ -12,7 +12,7 @@ struct reservation_station_entry_t {
     Qk[ROB_TAG_SIZE];
     Dest[ROB_TAG_SIZE];
     A[32];
-    #define SIZEOF_RESERVATION_STATION_ENTRY_T 109+SIZEOF_UOP_T
+    #define SIZEOF_RESERVATION_STATION_ENTRY_T 97+SIZEOF_UOP_T+ROB_TAG_SIZE+ROB_TAG_SIZE+ROB_TAG_SIZE
 };
 
 declare reservation_station_entry {
