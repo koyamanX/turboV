@@ -1,0 +1,57 @@
+#include "reorder_buffer_entry.h"
+
+module reorder_buffer_entry {
+    reorder_buffer_entry_t reg rob;
+
+    func issue {
+        rob.Valid := valid;
+        rob.Busy := valid;
+        rob.PC := pc;
+        rob.Inst := inst;
+        rob.Value := 0;
+        rob.uOp := uop;
+        rob.Target := 0;
+        rob.Cause := cause;
+        rob.CSRAddr := csr_addr;
+        rob.CSRValue := csr_value;
+    }
+    func flush {
+        rob := 0;
+    }
+    func commit {
+        return rob;
+    }
+    if(rob.Busy && rob.Valid) {
+        busy();
+    }
+    func read_operandA {
+        return rob.Value;
+    }
+    func read_operandB {
+        return rob.Value;
+    }
+    func read_operandC {
+        return rob.Value;
+    }
+    func read_operandD {
+        return rob.Value;
+    }
+    func CDB0 {
+        rob.Busy := 0;
+        rob.Value := CDB0Val;
+    }
+    func CDB1 {
+        rob.Busy := 0;
+        rob.Value := CDB1Val;
+    }
+    func CDB2 {
+        rob.Busy := 0;
+        rob.Value := CDB2Val;
+        rob.Target := CDB2Target;
+        rob.Cause := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, CDB2InstructionAddressMisaligned);
+    }
+    func CDB3 {
+        rob.Busy := 0;
+        rob.Value := CDB3Val;
+    }
+}

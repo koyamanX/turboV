@@ -31,7 +31,6 @@ struct issue_packet_t {
     inst1_valid;
     inst1_pred;
     inst1_pc[XLEN];
-    inst1_npc[XLEN];
     inst1[ILEN];
 };
 
@@ -177,12 +176,11 @@ module turboV {
                     }
                     decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
                     decode_issue_packet.inst0_pred      = decode_fetch_packet1.pred0;
-                    decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc0;
+                    decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc;
                     decode_issue_packet.inst0           = decode_fetch_packet1.inst0;
                     decode_issue_packet.inst1_valid     = 0;
                     decode_issue_packet.inst1_pred      = 0;
-                    decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc1;
-                    decode_issue_packet.inst1_npc       = decode_fetch_packet1.npc1;
+                    decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc + 4;
                     decode_issue_packet.inst1           = 0;
                     issue.invoke(decode_issue_packet, udec0.uop, 0);
                     // Handle remaining instructions in next cycle.
@@ -191,12 +189,11 @@ module turboV {
                     // No structual hazard for FUs.
                     decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
                     decode_issue_packet.inst0_pred      = decode_fetch_packet1.pred0;
-                    decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc0;
+                    decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc;
                     decode_issue_packet.inst0           = decode_fetch_packet1.inst0;
                     decode_issue_packet.inst1_valid     = decode_fetch_packet1.valid1;
                     decode_issue_packet.inst1_pred      = decode_fetch_packet1.pred1;
-                    decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc1;
-                    decode_issue_packet.inst1_npc       = decode_fetch_packet1.npc1;
+                    decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc + 4;
                     decode_issue_packet.inst1           = decode_fetch_packet1.inst1;
                     decode();
                     issue(decode_issue_packet, udec0.uop, udec1.uop);
@@ -220,12 +217,11 @@ module turboV {
                 }
                 decode_issue_packet.inst0_valid     = decode_fetch_packet2.valid1;
                 decode_issue_packet.inst0_pred      = decode_fetch_packet2.pred1;
-                decode_issue_packet.inst0_pc        = decode_fetch_packet2.pc1;
+                decode_issue_packet.inst0_pc        = decode_fetch_packet2.pc + 4;
                 decode_issue_packet.inst0           = decode_fetch_packet2.inst1;
                 decode_issue_packet.inst1_valid     = 0;
                 decode_issue_packet.inst1_pred      = 0;
-                decode_issue_packet.inst1_pc        = decode_fetch_packet2.pc1;
-                decode_issue_packet.inst1_npc       = decode_fetch_packet2.npc1;
+                decode_issue_packet.inst1_pc        = decode_fetch_packet2.pc + 4;
                 decode_issue_packet.inst1           = 0;
 
                 issue.invoke(decode_issue_packet, udec0.uop, 0);
