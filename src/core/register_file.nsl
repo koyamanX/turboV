@@ -1,257 +1,58 @@
 #include "register_file.h"
 #include "riscv.h"
 
+// Implement LVT based multi ported RAM
+// Efficient Multi-Ported Memories for FPGAs
+// Charles Eric LaForest and J. Gregory Steffan
 module register_file {
-    // reg x0[XLEN];
-    reg x1[XLEN];
-    reg x2[XLEN];
-    reg x3[XLEN];
-    reg x4[XLEN];
-    reg x5[XLEN];
-    reg x6[XLEN];
-    reg x7[XLEN];
-    reg x8[XLEN];
-    reg x9[XLEN];
-    reg x10[XLEN];
-    reg x11[XLEN];
-    reg x12[XLEN];
-    reg x13[XLEN];
-    reg x14[XLEN];
-    reg x15[XLEN];
-    reg x16[XLEN];
-    reg x17[XLEN];
-    reg x18[XLEN];
-    reg x19[XLEN];
-    reg x20[XLEN];
-    reg x21[XLEN];
-    reg x22[XLEN];
-    reg x23[XLEN];
-    reg x24[XLEN];
-    reg x25[XLEN];
-    reg x26[XLEN];
-    reg x27[XLEN];
-    reg x28[XLEN];
-    reg x29[XLEN];
-    reg x30[XLEN];
-    reg x31[XLEN];
+    mem bank_w0_r0[32][XLEN] = {0};
+    mem bank_w0_r1[32][XLEN] = {0};
+    mem bank_w0_r2[32][XLEN] = {0};
+    mem bank_w0_r3[32][XLEN] = {0};
+    mem bank_w1_r0[32][XLEN] = {0};
+    mem bank_w1_r1[32][XLEN] = {0};
+    mem bank_w1_r2[32][XLEN] = {0};
+    mem bank_w1_r3[32][XLEN] = {0};
+    mem lvt[32] = {0};
 
     func readA {
         any {
-            (rnumA == 5'b00000): return 32'b0;
-            (rnumA == 5'b00001): return x1;
-            (rnumA == 5'b00010): return x2;
-            (rnumA == 5'b00011): return x3;
-            (rnumA == 5'b00100): return x4;
-            (rnumA == 5'b00101): return x5;
-            (rnumA == 5'b00110): return x6;
-            (rnumA == 5'b00111): return x7;
-            (rnumA == 5'b01000): return x8;
-            (rnumA == 5'b01001): return x9;
-            (rnumA == 5'b01010): return x10;
-            (rnumA == 5'b01011): return x11;
-            (rnumA == 5'b01100): return x12;
-            (rnumA == 5'b01101): return x13;
-            (rnumA == 5'b01110): return x14;
-            (rnumA == 5'b01111): return x15;
-            (rnumA == 5'b10000): return x16;
-            (rnumA == 5'b10001): return x17;
-            (rnumA == 5'b10010): return x18;
-            (rnumA == 5'b10011): return x19;
-            (rnumA == 5'b10100): return x20;
-            (rnumA == 5'b10101): return x21;
-            (rnumA == 5'b10110): return x22;
-            (rnumA == 5'b10111): return x23;
-            (rnumA == 5'b11000): return x24;
-            (rnumA == 5'b11001): return x25;
-            (rnumA == 5'b11010): return x26;
-            (rnumA == 5'b11011): return x27;
-            (rnumA == 5'b11100): return x28;
-            (rnumA == 5'b11101): return x29;
-            (rnumA == 5'b11110): return x30;
-            (rnumA == 5'b11111): return x31;
+            lvt[rnumA] == 0: return bank_w0_r0[rnumA];
+            lvt[rnumA] == 1: return bank_w1_r0[rnumA];
         }
     }
     func readB {
         any {
-            (rnumB == 5'b00000): return 32'b0;
-            (rnumB == 5'b00001): return x1;
-            (rnumB == 5'b00010): return x2;
-            (rnumB == 5'b00011): return x3;
-            (rnumB == 5'b00100): return x4;
-            (rnumB == 5'b00101): return x5;
-            (rnumB == 5'b00110): return x6;
-            (rnumB == 5'b00111): return x7;
-            (rnumB == 5'b01000): return x8;
-            (rnumB == 5'b01001): return x9;
-            (rnumB == 5'b01010): return x10;
-            (rnumB == 5'b01011): return x11;
-            (rnumB == 5'b01100): return x12;
-            (rnumB == 5'b01101): return x13;
-            (rnumB == 5'b01110): return x14;
-            (rnumB == 5'b01111): return x15;
-            (rnumB == 5'b10000): return x16;
-            (rnumB == 5'b10001): return x17;
-            (rnumB == 5'b10010): return x18;
-            (rnumB == 5'b10011): return x19;
-            (rnumB == 5'b10100): return x20;
-            (rnumB == 5'b10101): return x21;
-            (rnumB == 5'b10110): return x22;
-            (rnumB == 5'b10111): return x23;
-            (rnumB == 5'b11000): return x24;
-            (rnumB == 5'b11001): return x25;
-            (rnumB == 5'b11010): return x26;
-            (rnumB == 5'b11011): return x27;
-            (rnumB == 5'b11100): return x28;
-            (rnumB == 5'b11101): return x29;
-            (rnumB == 5'b11110): return x30;
-            (rnumB == 5'b11111): return x31;
+            lvt[rnumB] == 0: return bank_w0_r1[rnumB];
+            lvt[rnumB] == 1: return bank_w1_r1[rnumB];
         }
     }
     func readC {
         any {
-            (rnumC == 5'b00000): return 32'b0;
-            (rnumC == 5'b00001): return x1;
-            (rnumC == 5'b00010): return x2;
-            (rnumC == 5'b00011): return x3;
-            (rnumC == 5'b00100): return x4;
-            (rnumC == 5'b00101): return x5;
-            (rnumC == 5'b00110): return x6;
-            (rnumC == 5'b00111): return x7;
-            (rnumC == 5'b01000): return x8;
-            (rnumC == 5'b01001): return x9;
-            (rnumC == 5'b01010): return x10;
-            (rnumC == 5'b01011): return x11;
-            (rnumC == 5'b01100): return x12;
-            (rnumC == 5'b01101): return x13;
-            (rnumC == 5'b01110): return x14;
-            (rnumC == 5'b01111): return x15;
-            (rnumC == 5'b10000): return x16;
-            (rnumC == 5'b10001): return x17;
-            (rnumC == 5'b10010): return x18;
-            (rnumC == 5'b10011): return x19;
-            (rnumC == 5'b10100): return x20;
-            (rnumC == 5'b10101): return x21;
-            (rnumC == 5'b10110): return x22;
-            (rnumC == 5'b10111): return x23;
-            (rnumC == 5'b11000): return x24;
-            (rnumC == 5'b11001): return x25;
-            (rnumC == 5'b11010): return x26;
-            (rnumC == 5'b11011): return x27;
-            (rnumC == 5'b11100): return x28;
-            (rnumC == 5'b11101): return x29;
-            (rnumC == 5'b11110): return x30;
-            (rnumC == 5'b11111): return x31;
+            lvt[rnumC] == 0: return bank_w0_r2[rnumC];
+            lvt[rnumC] == 1: return bank_w1_r2[rnumC];
         }
     }
     func readD {
         any {
-            (rnumD == 5'b00000): return 32'b0;
-            (rnumD == 5'b00001): return x1;
-            (rnumD == 5'b00010): return x2;
-            (rnumD == 5'b00011): return x3;
-            (rnumD == 5'b00100): return x4;
-            (rnumD == 5'b00101): return x5;
-            (rnumD == 5'b00110): return x6;
-            (rnumD == 5'b00111): return x7;
-            (rnumD == 5'b01000): return x8;
-            (rnumD == 5'b01001): return x9;
-            (rnumD == 5'b01010): return x10;
-            (rnumD == 5'b01011): return x11;
-            (rnumD == 5'b01100): return x12;
-            (rnumD == 5'b01101): return x13;
-            (rnumD == 5'b01110): return x14;
-            (rnumD == 5'b01111): return x15;
-            (rnumD == 5'b10000): return x16;
-            (rnumD == 5'b10001): return x17;
-            (rnumD == 5'b10010): return x18;
-            (rnumD == 5'b10011): return x19;
-            (rnumD == 5'b10100): return x20;
-            (rnumD == 5'b10101): return x21;
-            (rnumD == 5'b10110): return x22;
-            (rnumD == 5'b10111): return x23;
-            (rnumD == 5'b11000): return x24;
-            (rnumD == 5'b11001): return x25;
-            (rnumD == 5'b11010): return x26;
-            (rnumD == 5'b11011): return x27;
-            (rnumD == 5'b11100): return x28;
-            (rnumD == 5'b11101): return x29;
-            (rnumD == 5'b11110): return x30;
-            (rnumD == 5'b11111): return x31;
+            lvt[rnumD] == 0: return bank_w0_r3[rnumD];
+            lvt[rnumD] == 1: return bank_w1_r3[rnumD];
         }
     }
     func writeA {
         if(!(writeB && (wnumA == wnumB))) {
-            /* writeB has higher priority, if reg num is same for write, disable writeA */
-            any {
-                (wnumA == 5'b00000): ;
-                (wnumA == 5'b00001): x1 := wdataA;
-                (wnumA == 5'b00010): x2 := wdataA;
-                (wnumA == 5'b00011): x3 := wdataA;
-                (wnumA == 5'b00100): x4 := wdataA;
-                (wnumA == 5'b00101): x5 := wdataA;
-                (wnumA == 5'b00110): x6 := wdataA;
-                (wnumA == 5'b00111): x7 := wdataA;
-                (wnumA == 5'b01000): x8 := wdataA;
-                (wnumA == 5'b01001): x9 := wdataA;
-                (wnumA == 5'b01010): x10 := wdataA;
-                (wnumA == 5'b01011): x11 := wdataA;
-                (wnumA == 5'b01100): x12 := wdataA;
-                (wnumA == 5'b01101): x13 := wdataA;
-                (wnumA == 5'b01110): x14 := wdataA;
-                (wnumA == 5'b01111): x15 := wdataA;
-                (wnumA == 5'b10000): x16 := wdataA;
-                (wnumA == 5'b10001): x17 := wdataA;
-                (wnumA == 5'b10010): x18 := wdataA;
-                (wnumA == 5'b10011): x19 := wdataA;
-                (wnumA == 5'b10100): x20 := wdataA;
-                (wnumA == 5'b10101): x21 := wdataA;
-                (wnumA == 5'b10110): x22 := wdataA;
-                (wnumA == 5'b10111): x23 := wdataA;
-                (wnumA == 5'b11000): x24 := wdataA;
-                (wnumA == 5'b11001): x25 := wdataA;
-                (wnumA == 5'b11010): x26 := wdataA;
-                (wnumA == 5'b11011): x27 := wdataA;
-                (wnumA == 5'b11100): x28 := wdataA;
-                (wnumA == 5'b11101): x29 := wdataA;
-                (wnumA == 5'b11110): x30 := wdataA;
-                (wnumA == 5'b11111): x31 := wdataA;
-            }
+            lvt[wnumA] := 0;
+            bank_w0_r0[wnumA] := wdataA;
+            bank_w0_r1[wnumA] := wdataA;
+            bank_w0_r2[wnumA] := wdataA;
+            bank_w0_r3[wnumA] := wdataA;
         }
     }
     func writeB {
-        any {
-            (wnumB == 5'b00000): ;
-            (wnumB == 5'b00001): x1 := wdataB;
-            (wnumB == 5'b00010): x2 := wdataB;
-            (wnumB == 5'b00011): x3 := wdataB;
-            (wnumB == 5'b00100): x4 := wdataB;
-            (wnumB == 5'b00101): x5 := wdataB;
-            (wnumB == 5'b00110): x6 := wdataB;
-            (wnumB == 5'b00111): x7 := wdataB;
-            (wnumB == 5'b01000): x8 := wdataB;
-            (wnumB == 5'b01001): x9 := wdataB;
-            (wnumB == 5'b01010): x10 := wdataB;
-            (wnumB == 5'b01011): x11 := wdataB;
-            (wnumB == 5'b01100): x12 := wdataB;
-            (wnumB == 5'b01101): x13 := wdataB;
-            (wnumB == 5'b01110): x14 := wdataB;
-            (wnumB == 5'b01111): x15 := wdataB;
-            (wnumB == 5'b10000): x16 := wdataB;
-            (wnumB == 5'b10001): x17 := wdataB;
-            (wnumB == 5'b10010): x18 := wdataB;
-            (wnumB == 5'b10011): x19 := wdataB;
-            (wnumB == 5'b10100): x20 := wdataB;
-            (wnumB == 5'b10101): x21 := wdataB;
-            (wnumB == 5'b10110): x22 := wdataB;
-            (wnumB == 5'b10111): x23 := wdataB;
-            (wnumB == 5'b11000): x24 := wdataB;
-            (wnumB == 5'b11001): x25 := wdataB;
-            (wnumB == 5'b11010): x26 := wdataB;
-            (wnumB == 5'b11011): x27 := wdataB;
-            (wnumB == 5'b11100): x28 := wdataB;
-            (wnumB == 5'b11101): x29 := wdataB;
-            (wnumB == 5'b11110): x30 := wdataB;
-            (wnumB == 5'b11111): x31 := wdataB;
-        }
+        lvt[wnumB] := 1;
+        bank_w1_r0[wnumB] := wdataB;
+        bank_w1_r1[wnumB] := wdataB;
+        bank_w1_r2[wnumB] := wdataB;
+        bank_w1_r3[wnumB] := wdataB;
     }
 }
