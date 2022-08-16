@@ -13,7 +13,6 @@ struct reorder_buffer_t {
     Value0[32];
     uOp0[SIZEOF_UOP_T];
     Target0[32];
-    // copy of uop.cause
     Cause0[16];
     CSR_Value0[32];
     Valid1;
@@ -23,7 +22,6 @@ struct reorder_buffer_t {
     Value1[32];
     uOp1[SIZEOF_UOP_T];
     Target1[32];
-    // copy of uop.cause
     Cause1[16];
     CSR_Value1[32];
 #define SIZEOF_REORDER_BUFFER_T 356+SIZEOF_UOP_T+SIZEOF_UOP_T
