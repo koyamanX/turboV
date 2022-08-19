@@ -6,26 +6,17 @@
 #include "csr.h"
 
 struct reorder_buffer_t {
-    Valid0;
-    Busy0;
     PC0[32];
     Inst0[32];
-    Value0[32];
     uOp0[SIZEOF_UOP_T];
-    Target0[32];
-    Cause0[16];
     CSR_Value0[32];
-    Valid1;
-    Busy1;
     PC1[32];
     Inst1[32];
-    Value1[32];
     uOp1[SIZEOF_UOP_T];
-    Target1[32];
-    Cause1[16];
     CSR_Value1[32];
-#define SIZEOF_REORDER_BUFFER_T 356+SIZEOF_UOP_T+SIZEOF_UOP_T
+#define SIZEOF_REORDER_BUFFER_T 192+SIZEOF_UOP_T+SIZEOF_UOP_T
 };
+
 declare reorder_buffer {
     input valid0;
     input pc0[32];
