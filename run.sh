@@ -5,7 +5,7 @@ docker run -it --rm \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     --privileged \
     -v /sys:/sys:ro \
-    -v /opt/intelFPGA_lite/20.1:/opt/intelFPGA_lite/latest \
+    -v /opt/intelFPGA_lite/21.1:/opt/intelFPGA_lite/latest \
 	-v $(pwd)/src:/root/src \
 	-v $(pwd)/simulator:/root/simulator \
 	-v $(pwd)/tools:/root/tools \
