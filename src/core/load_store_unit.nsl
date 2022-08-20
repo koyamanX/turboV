@@ -31,53 +31,21 @@ module load_store_unit {
     }
     proc memory {
         state_name memory_req, memory_wait;
+        func_self rsp_valid();
 
         state memory_req {
-            if((memory_uOp == uOP_LSU_LOAD_WORD)) {
-                wb_master_if.req_read(memory_A, 0x0f);
-            } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD)) {
-                wb_master_if.req_read({memory_A[31:1], 1'b0}, 0x03);
-            } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED)) {
-                wb_master_if.req_read({memory_A[31:1], 1'b0}, 0x03);
-            } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED)) {
-                wb_master_if.req_read(memory_A[31:0], 0x01);
-            } else if((memory_uOp == uOP_LSU_LOAD_BYTE)) {
-                wb_master_if.req_read(memory_A[31:0], 0x01);
-            } else if(memory_uOp == uOP_LSU_STORE_WORD) {
-                wb_master_if.req_write(memory_A, 0x0f, memory_Data);
-            } else if(memory_uOp == uOP_LSU_STORE_HALFWORD) {
-                wb_master_if.req_write({memory_A[31:1], 1'b0}, 0x3, memory_Data);
-            } else if(memory_uOp == uOP_LSU_STORE_BYTE) {
-                wb_master_if.req_write(memory_A, 0x1, memory_Data);
+            any {
+                (memory_uOp == uOP_LSU_LOAD_WORD):              wb_master_if.req_read(memory_A, 0x0f);
+                (memory_uOp == uOP_LSU_LOAD_HALFWORD):          wb_master_if.req_read({memory_A[31:1], 1'b0}, 0x03);
+                (memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED): wb_master_if.req_read({memory_A[31:1], 1'b0}, 0x03);
+                (memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED):     wb_master_if.req_read(memory_A[31:0], 0x01);
+                (memory_uOp == uOP_LSU_LOAD_BYTE):              wb_master_if.req_read(memory_A[31:0], 0x01);
+                (memory_uOp == uOP_LSU_STORE_WORD):             wb_master_if.req_write(memory_A, 0x0f, memory_Data);
+                (memory_uOp == uOP_LSU_STORE_HALFWORD):         wb_master_if.req_write({memory_A[31:1], 1'b0}, 0x3, memory_Data);
+                (memory_uOp == uOP_LSU_STORE_BYTE):             wb_master_if.req_write(memory_A, 0x1, memory_Data);
             }
             if(wb_master_if.rsp_valid) {
-                if((memory_uOp == uOP_LSU_LOAD_WORD)) {
-                    CDBOut(memory_RobId, wb_master_if.rsp_data[31:0]);
-                } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD) && (memory_A[1] == 0)) {
-                    CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[15:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD) && (memory_A[1] == 1)) {
-                    CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[15:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE) && (memory_A[1:0] == 0)) {
-                    CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE) && (memory_A[1:0] == 1)) {
-                    CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE) && (memory_A[1:0] == 2)) {
-                    CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE) && (memory_A[1:0] == 3)) {
-                    CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED) && (memory_A[1] == 0)) {
-                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[15:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED) && (memory_A[1] == 1)) {
-                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[15:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 0)) {
-                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 1)) {
-                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 2)) {
-                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 3)) {
-                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
-                }
+                rsp_valid();
                 finish();
             } else {
                 goto memory_wait;
@@ -85,44 +53,30 @@ module load_store_unit {
         }
         state memory_wait {
             if(wb_master_if.rsp_valid) {
-                if((memory_uOp == uOP_LSU_LOAD_WORD)) {
-                    CDBOut(memory_RobId, wb_master_if.rsp_data[31:0]);
-                } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD) && (memory_A[1] == 0)) {
-                    CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[15:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD) && (memory_A[1] == 1)) {
-                    CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[15:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE) && (memory_A[1:0] == 0)) {
-                    CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE) && (memory_A[1:0] == 1)) {
-                    CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE) && (memory_A[1:0] == 2)) {
-                    CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE) && (memory_A[1:0] == 3)) {
-                    CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED) && (memory_A[1] == 0)) {
-                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[15:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED) && (memory_A[1] == 1)) {
-                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[15:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 0)) {
-                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 1)) {
-                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 2)) {
-                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
-                } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED) && (memory_A[1:0] == 3)) {
-                    CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
-                }
+                rsp_valid();
                 finish();
                 goto memory_req;
             }
         }
         stall();
     }
+    func rsp_valid {
+        if((memory_uOp == uOP_LSU_LOAD_WORD)) {
+            CDBOut(memory_RobId, wb_master_if.rsp_data[31:0]);
+        } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD)) {
+            CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[15:0]));
+        } else if((memory_uOp == uOP_LSU_LOAD_BYTE)) {
+            CDBOut(memory_RobId, 64#(wb_master_if.rsp_data[7:0]));
+        } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED)) {
+            CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[15:0]));
+        } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED)) {
+            CDBOut(memory_RobId, 64'(wb_master_if.rsp_data[7:0]));
+        }
+    }
     func flush {
         stqV := 0;
     }
     func commit {
-        /* Do not check if(!flush) here, if flush is needed, do not assert commit */
         stqV := 0;
         memory(memory_A, memory_Data, memory_uOp, memory_RobId);
     }
