@@ -14,6 +14,7 @@ add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reservation_station_in_order.nsl ${CM
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reservation_station_entry.nsl ${CMAKE_CURRENT_BINARY_DIR}/reservation_station_entry.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/load_store_unit.nsl ${CMAKE_CURRENT_BINARY_DIR}/load_store_unit.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/control_status_register.nsl ${CMAKE_CURRENT_BINARY_DIR}/control_status_register.v)
+add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/register_status_table.nsl ${CMAKE_CURRENT_BINARY_DIR}/register_status_table.v)
 
 add_custom_target(core
 	DEPENDS
@@ -33,4 +34,5 @@ add_custom_target(core
 		${CMAKE_CURRENT_BINARY_DIR}/reservation_station_entry.v
 		${CMAKE_CURRENT_BINARY_DIR}/load_store_unit.v
 		${CMAKE_CURRENT_BINARY_DIR}/control_status_register.v
+		${CMAKE_CURRENT_BINARY_DIR}/register_status_table.v
 )

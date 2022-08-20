@@ -3,9 +3,6 @@
 
 #include "wishbone_common.h"
 
-#define BUSY 1'b1
-#define READY 1'b0
-
 declare turboV {
     func_in reset();
     func_in timer_interrupt_req_hart0();

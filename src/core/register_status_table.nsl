@@ -1,0 +1,48 @@
+#include "register_status_table.h"
+
+module register_status_table {
+    mem Busy[32][1] = {0};
+    mem ROB[32][ROB_TAG_SIZE] = {0};
+    integer i_;
+
+    func flush {
+        generate(i_ = 0; i_ < 32; i_++) {
+            Busy[i_] := 0;
+            ROB[i_] := -1;
+        }
+    }
+    func readA {
+        readA_ROB = ROB[readA_lrs];
+        return Busy[readA_lrs];
+    }
+    func readB {
+        readB_ROB = ROB[readB_lrs];
+        return Busy[readB_lrs];
+    }
+    func readC {
+        readC_ROB = ROB[readC_lrs];
+        return Busy[readC_lrs];
+    }
+    func readD {
+        readD_ROB = ROB[readD_lrs];
+        return Busy[readD_lrs];
+    }
+    func issue0 {
+        Busy[issue0_lrd] := BUSY;
+        ROB[issue0_lrd] := issue0_ROB;
+    }
+    func issue1 {
+        Busy[issue1_lrd] := BUSY;
+        ROB[issue1_lrd] := issue1_ROB;
+    }
+    func commit0 {
+        if(commit0_ROB == ROB[commit0_lrd]) {
+            Busy[commit0_lrd] := READY;
+        }
+    }
+    func commit1 {
+        if(commit1_ROB == ROB[commit1_lrd]) {
+            Busy[commit1_lrd] := READY;
+        }
+    }
+}

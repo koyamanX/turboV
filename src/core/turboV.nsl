@@ -13,6 +13,7 @@
 #include "control_status_register.h"
 #include "priv.h"
 #include "uops.h"
+#include "register_status_table.h"
 
 #ifdef ENABLE_DEBUG
 #define DEBUG_COMMIT0(pc, inst, cause) debug_commit0(pc, inst, cause)
@@ -91,10 +92,7 @@ module turboV {
     reservation_station_in_order lsu_rs0;
     /* General Purpose Register */
     register_file gpr;
-    /* Register map table from rs fields to reorder buffer entry */
-    mem register_map_table[32][ROB_TAG_SIZE] = {-1};
-    /* Register status table indexing with rs feilds */
-    mem register_status_table[32][1] = {0};
+    register_status_table register_status;
     /* Load Store Unit */
     load_store_unit lsu;
     /* CSR */
@@ -112,9 +110,7 @@ module turboV {
             /* Cycle 1: Reset */
             ifu.reset();
             csr.reset();
-            generate(i_ = 0; i_ < 32; i_++) {
-                register_map_table[i_] := -1;
-            }
+            register_status.flush();
         }
         {
             /* Cycle 2: Start inst fetch */
@@ -142,8 +138,7 @@ module turboV {
         lsu.flush();
         /* reset register status */
         generate(i_ = 0; i_ < 32; i_++) {
-            register_status_table[i_] := 0;
-            register_map_table[i_] := -1;
+            register_status.flush();
         }
         /* Start decode */
         decode.invoke();
@@ -265,11 +260,11 @@ module turboV {
                         if(issue_uop0.lrs1 == 5'b00000) {
                             issue_inst0_Vj = 0;
                             issue_inst0_Qj = -1;
-                        } else if(register_status_table[issue_uop0.lrs1] == BUSY) {
-                            if(rob.read_operandA(register_map_table[issue_uop0.lrs1]) == BUSY) {
+                        } else if(register_status.readA(issue_uop0.lrs1) == BUSY) {
+                            if(rob.read_operandA(register_status.readA_ROB) == BUSY) {
                                 /* Wait for inst in ROB to produce value */
                                 issue_inst0_Vj = 0;
-                                issue_inst0_Qj = register_map_table[issue_uop0.lrs1];
+                                issue_inst0_Qj = register_status.readA_ROB;
                             } else {
                                 /* Use value inside ROB */
                                 issue_inst0_Vj = rob.read_operandA_val;
@@ -292,11 +287,11 @@ module turboV {
                         if(issue_uop0.lrs2 == 5'b00000) {
                             issue_inst0_Vk = 0;
                             issue_inst0_Qk = -1;
-                        } else if(register_status_table[issue_uop0.lrs2] == BUSY) {
-                            if(rob.read_operandB(register_map_table[issue_uop0.lrs2]) == BUSY) {
+                        } else if(register_status.readB(issue_uop0.lrs2) == BUSY) {
+                            if(rob.read_operandB(register_status.readB_ROB) == BUSY) {
                                 /* Wait for inst in ROB to produce value */
                                 issue_inst0_Vk = 0;
-                                issue_inst0_Qk = register_map_table[issue_uop0.lrs2];
+                                issue_inst0_Qk = register_status.readB_ROB;
                             } else {
                                 /* Use value inside ROB */
                                 issue_inst0_Vk = rob.read_operandB_val;
@@ -322,8 +317,7 @@ module turboV {
                 }
                 /* inst0 rd mapping */
                 if((issue_uop0.lrd != 0) && !(issue_packet.inst1_valid && (issue_uop0.lrd == issue_uop1.lrd))) {
-                    register_map_table[issue_uop0.lrd] := rob.tag;
-                    register_status_table[issue_uop0.lrd] := BUSY;
+                    register_status.issue0(issue_uop0.lrd, rob.tag);
                 }
                 /* Issue inst0 to RSs */
                 alt {
@@ -358,11 +352,11 @@ module turboV {
                             issue_inst1_Vj = 0;
                             issue_inst1_Qj = rob.tag;
                         } else {
-                            if(register_status_table[issue_uop1.lrs1] == BUSY) {
-                                if(rob.read_operandC(register_map_table[issue_uop1.lrs1]) == BUSY) {
+                            if(register_status.readC(issue_uop1.lrs1) == BUSY) {
+                                if(rob.read_operandC(register_status.readC_ROB) == BUSY) {
                                     /* Wait for inst in ROB to produce value */
                                     issue_inst1_Vj = 0;
-                                    issue_inst1_Qj = register_map_table[issue_uop1.lrs1];
+                                    issue_inst1_Qj = register_status.readC_ROB;
                                 } else {
                                     /* Use value inside ROB */
                                     issue_inst1_Vj = rob.read_operandC_val;
@@ -389,11 +383,11 @@ module turboV {
                             issue_inst1_Vk = 0;
                             issue_inst1_Qk = rob.tag;
                         } else {
-                            if(register_status_table[issue_uop1.lrs2] == BUSY) {
-                                if(rob.read_operandD(register_map_table[issue_uop1.lrs2]) == BUSY) {
+                            if(register_status.readD(issue_uop1.lrs2) == BUSY) {
+                                if(rob.read_operandD(register_status.readD_ROB) == BUSY) {
                                     /* Wait for inst in ROB to produce value */
                                     issue_inst1_Vk = 0;
-                                    issue_inst1_Qk = register_map_table[issue_uop1.lrs2];
+                                    issue_inst1_Qk = register_status.readD_ROB;
                                 } else {
                                     /* Use value inside ROB */
                                     issue_inst1_Vk = rob.read_operandD_val;
@@ -422,8 +416,7 @@ module turboV {
                 }
                 /* inst1 rd mapping */
                 if((issue_uop1.lrd != 0)) {
-                    register_map_table[issue_uop1.lrd] := rob.tag+1;
-                    register_status_table[issue_uop1.lrd] := BUSY;
+                    register_status.issue1(issue_uop1.lrd, rob.tag+1);
                 }
                 /* Issue inst1 to RSs */
                 alt {
@@ -707,10 +700,7 @@ module turboV {
                 if ROB.Dest0 == ROB.Dest1, do not make READY here, it will be handled
                 in ROB.Dest1 side
             */
-            if((rob.commit_Id == register_map_table[commit_uop0.lrd])) {
-                // Branch instruction has no Dest register.
-                register_status_table[commit_uop0.lrd] := READY;
-            }
+            register_status.commit0(commit_uop0.lrd, rob.commit_Id);
         }
         if(!flush && rob.commit_Valid1 && ~commit_inst1_cause && !commit_kill_inst1 && !(is_issue
             && (issue_packet.inst0_valid && issue_uop0.lrd == commit_uop1.lrd)
@@ -719,10 +709,7 @@ module turboV {
                 conflict will occur for register_status_table, so do not make READY.
                 issue_uop1.lrd is only valid on is_issue.
             */
-            if((rob.commit_Id+1 == register_map_table[commit_uop1.lrd])) {
-                // Branch instruction has no Dest register.
-                register_status_table[commit_uop1.lrd] := READY;
-            }
+            register_status.commit1(commit_uop1.lrd, rob.commit_Id+1);
         }
     }
     /*
