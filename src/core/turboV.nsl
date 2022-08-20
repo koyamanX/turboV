@@ -329,15 +329,15 @@ module turboV {
                 alt {
                     issue_uop0.jalr || issue_uop0.jal || issue_uop0.branch: {
                         bru_rs0.issue(
-                            issue_packet.inst0_valid, issue_uop0, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_pc + issue_uop0.imm
+                            issue_packet.inst0_valid, issue_uop0.uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_pc + issue_uop0.imm
                         );
                     }
                     issue_uop0.load || issue_uop0.store: {
-                        lsu_rs0.issue(issue_packet.inst0_valid, issue_uop0, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_uop0.imm);
+                        lsu_rs0.issue(issue_packet.inst0_valid, issue_uop0.uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_uop0.imm);
                     }
                     else: {
                         alu_rs0.issue(
-                            issue_packet.inst0_valid, issue_uop0, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0);
+                            issue_packet.inst0_valid, issue_uop0.fn, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0);
                     }
                 }
             }
@@ -429,15 +429,15 @@ module turboV {
                 alt {
                     issue_uop1.jalr || issue_uop1.jal || issue_uop1.branch: {
                         bru_rs0.issue(
-                            issue_packet.inst1_valid, issue_uop1, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_pc + issue_uop1.imm
+                            issue_packet.inst1_valid, issue_uop1.uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_pc + issue_uop1.imm
                         );
                     }
                     issue_uop1.load || issue_uop1.store: {
-                        lsu_rs0.issue(issue_packet.inst1_valid, issue_uop1, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_uop1.imm);
+                        lsu_rs0.issue(issue_packet.inst1_valid, issue_uop1.uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_uop1.imm);
                     }
                     else: {
                         alu_rs1.issue(
-                            issue_packet.inst1_valid, issue_uop1, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0);
+                            issue_packet.inst1_valid, issue_uop1.fn, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0);
                     }
                 }
             }
@@ -450,32 +450,23 @@ module turboV {
         }
     }
     func alu_rs0.dispatch {
-        uop_t wire alu_rs0_uop;
-
-        alu_rs0_uop = alu_rs0.dispatch_Op;
         if(!flush) {
-            execute_alu0.invoke(alu_rs0_uop.fn, alu_rs0.dispatch_Dest, alu_rs0.dispatch_Vj, alu_rs0.dispatch_Vk);
+            execute_alu0.invoke(alu_rs0.dispatch_Op, alu_rs0.dispatch_Dest, alu_rs0.dispatch_Vj, alu_rs0.dispatch_Vk);
         }
     }
     func alu_rs1.dispatch {
-        uop_t wire alu_rs1_uop;
-
-        alu_rs1_uop = alu_rs1.dispatch_Op;
         if(!flush) {
-            execute_alu1.invoke(alu_rs1_uop.fn, alu_rs1.dispatch_Dest, alu_rs1.dispatch_Vj, alu_rs1.dispatch_Vk);
+            execute_alu1.invoke(alu_rs1.dispatch_Op, alu_rs1.dispatch_Dest, alu_rs1.dispatch_Vj, alu_rs1.dispatch_Vk);
         }
     }
     func bru_rs0.dispatch {
-        uop_t wire bru_rs0_uop;
-
-        bru_rs0_uop = bru_rs0.dispatch_Op;
         if(!flush) {
-            if(bru_rs0_uop.jalr) {
-                execute_bru0.invoke(bru_rs0_uop.fn, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, {(bru_rs0.dispatch_Vj + bru_rs0.dispatch_Vk)[31:1], 1'b0});
-            } else if(bru_rs0_uop.jal) {
-                execute_bru0.invoke(bru_rs0_uop.fn, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_Vj + bru_rs0.dispatch_Vk);
-            } else if(bru_rs0_uop.branch) {
-                execute_bru0.invoke(bru_rs0_uop.fn, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_A);
+            if(bru_rs0.dispatch_Op == uOP_BRU_JALR) {
+                execute_bru0.invoke(bru_rs0.dispatch_Op, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, {(bru_rs0.dispatch_Vj + bru_rs0.dispatch_Vk)[31:1], 1'b0});
+            } else if(bru_rs0.dispatch_Op == uOP_BRU_JAL) {
+                execute_bru0.invoke(bru_rs0.dispatch_Op, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_Vj + bru_rs0.dispatch_Vk);
+            } else {
+                execute_bru0.invoke(bru_rs0.dispatch_Op, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_A);
             }
         }
     }
@@ -484,12 +475,9 @@ module turboV {
     }
     func lsu_rs0.dispatch {
         wire lsu_rs0_dispatch_Addr[32];
-        uop_t wire lsu_rs0_uop;
-
-        lsu_rs0_uop = lsu_rs0.dispatch_Op;
         if(!flush && !lsu.full) {
             lsu_rs0_dispatch_Addr = lsu_rs0.dispatch_Vj + lsu_rs0.dispatch_A;
-            lsu.issue(lsu_rs0_dispatch_Addr, lsu_rs0_uop.uop, lsu_rs0.dispatch_Vk, lsu_rs0.dispatch_Dest);
+            lsu.issue(lsu_rs0_dispatch_Addr, lsu_rs0.dispatch_Op, lsu_rs0.dispatch_Vk, lsu_rs0.dispatch_Dest);
         }
     }
     proc execute_alu0 {

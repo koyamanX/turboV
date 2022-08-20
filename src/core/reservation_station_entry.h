@@ -5,19 +5,19 @@
 
 struct reservation_station_entry_t {
     Busy;
-    Op[SIZEOF_UOP_T];
+    Op[7];
     Vj[32];
     Vk[32];
     Qj[ROB_TAG_SIZE];
     Qk[ROB_TAG_SIZE];
     Dest[ROB_TAG_SIZE];
     A[32];
-    #define SIZEOF_RESERVATION_STATION_ENTRY_T 97+SIZEOF_UOP_T+ROB_TAG_SIZE+ROB_TAG_SIZE+ROB_TAG_SIZE
+    #define SIZEOF_RESERVATION_STATION_ENTRY_T 104+ROB_TAG_SIZE+ROB_TAG_SIZE+ROB_TAG_SIZE
 };
 
 declare reservation_station_entry {
     input Valid;
-    input Op[SIZEOF_UOP_T];
+    input Op[7];
     input Vj[32];
     input Vk[32];
     input Qj[ROB_TAG_SIZE];
