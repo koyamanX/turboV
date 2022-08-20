@@ -4,41 +4,41 @@ module alu32 {
     wire result[33];
     func exe {
         any {
-            fn[2:0] == ALU_ADD && ~fn[3]: {
+            fn == ALU_ADD: {
                 return a + b;
             }
-            fn[2:0] == ALU_ADD && fn[3]: {
+            fn == ALU_SUB: {
                 return a - b;
             }
-            fn[2:0] == ALU_SLL: {
+            fn == ALU_SLL: {
                 return (a << b[4:0]);
             }
-            fn[2:0] == ALU_SLT: {
+            fn == ALU_SLT: {
                 result = 32'((33#(a) - 33#(b))[32]);
                 if(result == 0) zero();
                 return result;
             }
-            fn[2:0] == ALU_SLTU: {
+            fn == ALU_SLTU: {
                 result = (33'(a) - 33'(b))[32];
                 if(result == 0) zero();
                 return result;
             }
-            fn[2:0] == ALU_XOR: {
+            fn == ALU_XOR: {
                 return a ^ b;
             }
-            fn[2:0] == ALU_SRL & ~fn[3]: {
+            fn == ALU_SRL: {
                 return (a >> b[4:0]);
             }
-            fn[2:0] == ALU_SRL & fn[3]: {
+            fn == ALU_SRA: {
                 return (64#(a) >> b[4:0]);
             }
-            fn[2:0] == ALU_OR: {
+            fn == ALU_OR: {
                 return a | b;
             }
-            fn[2:0] == ALU_AND & !fn[3]: {
+            fn == ALU_AND: {
                 return a & b;
             }
-            fn[2:0] == ALU_AND & fn[3]: {
+            fn == ALU_NAAND: {
                 return ~a & b;
             }
         }

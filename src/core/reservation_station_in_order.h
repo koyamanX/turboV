@@ -8,7 +8,7 @@
 
 declare reservation_station_in_order {
     input Valid;
-    input Op[7];
+    input Op[uOP_SIZE];
     input Vj[32];
     input Vk[32];
     input Qj[ROB_TAG_SIZE];
@@ -19,7 +19,7 @@ declare reservation_station_in_order {
     func_in flush();
     func_out full();
     func_in stall();
-    output dispatch_Op[7];
+    output dispatch_Op[uOP_SIZE];
     output dispatch_Dest[ROB_TAG_SIZE];
     output dispatch_Vj[32];
     output dispatch_Vk[32];

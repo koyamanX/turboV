@@ -5,7 +5,7 @@
 
 struct reservation_station_entry_t {
     Busy;
-    Op[7];
+    Op[uOP_SIZE];
     Vj[32];
     Vk[32];
     Qj[ROB_TAG_SIZE];
@@ -17,7 +17,7 @@ struct reservation_station_entry_t {
 
 declare reservation_station_entry {
     input Valid;
-    input Op[7];
+    input Op[uOP_SIZE];
     input Vj[32];
     input Vk[32];
     input Qj[ROB_TAG_SIZE];

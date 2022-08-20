@@ -1,15 +1,7 @@
 #ifndef BRU32_H
 #define BRU32_H
 
-#define BRU_EQ  4'b0000
-#define BRU_NE  4'b0001
-#define BRU_LT  4'b0100
-#define BRU_GE  4'b0101
-#define BRU_LTU 4'b0110
-#define BRU_GEU 4'b0111
-
-#define BRU_JALR 4'b1111
-#define BRU_JAL  4'b1000
+#include "uops.h"
 
 declare bru32 {
     input a[32];

@@ -5,29 +5,49 @@
 
 #define uOP_SIZE                        7
 
+#define ALU_ADD    4'b0000
+#define ALU_SUB    4'b1000
+#define ALU_SLL    4'b0001
+#define ALU_SLT    4'b0010
+#define ALU_SLTU   4'b0011
+#define ALU_XOR    4'b0100
+#define ALU_SRL    4'b0101
+#define ALU_SRA    4'b1101
+#define ALU_OR     4'b0110
+#define ALU_AND    4'b0111
+#define ALU_NAAND  4'b1111
 /* Lower 4 bits corresponds to fn of ALU */
 #define uOP_ALU                         3'b000
-#define uOP_ALU_ADD                     7'b000_0000
-#define uOP_ALU_SUB                     7'b000_1000
-#define uOP_ALU_SLL                     7'b000_0001
-#define uOP_ALU_SLT                     7'b000_0010
-#define uOP_ALU_SLTU                    7'b000_0011
-#define uOP_ALU_XOR                     7'b000_0100
-#define uOP_ALU_SRL                     7'b000_0101
-#define uOP_ALU_SRL                     7'b000_1101
-#define uOP_ALU_OR                      7'b000_0110
-#define uOP_ALU_AND                     7'b000_0111
+#define uOP_ALU_ADD                     {uOP_ALU, ALU_ADD}
+#define uOP_ALU_SUB                     {uOP_ALU, ALU_SUB}
+#define uOP_ALU_SLL                     {uOP_ALU, ALU_SLL}
+#define uOP_ALU_SLT                     {uOP_ALU, ALU_SLT}
+#define uOP_ALU_SLTU                    {uOP_ALU, ALU_SLTU}
+#define uOP_ALU_XOR                     {uOP_ALU, ALU_XOR}
+#define uOP_ALU_SRL                     {uOP_ALU, ALU_SRL}
+#define uOP_ALU_SRA                     {uOP_ALU, ALU_SRA}
+#define uOP_ALU_OR                      {uOP_ALU, ALU_OR}
+#define uOP_ALU_AND                     {uOP_ALU, ALU_AND}
+#define uOP_ALU_NAAND                   {uOP_ALU, ALU_NAAND}
 
+#define BRU_EQ                          4'b0000
+#define BRU_NE                          4'b0001
+#define BRU_LT                          4'b0100
+#define BRU_GE                          4'b0101
+#define BRU_LTU                         4'b0110
+#define BRU_GEU                         4'b0111
+#define BRU_JALR                        4'b1111
+#define BRU_JAL                         4'b1000
 /* Lower 4 bits corresponds to fn of BRU */
 #define uOP_BRU                         3'b001
-#define uOP_BRU_BEQ                     7'b001_0000
-#define uOP_BRU_BNE                     7'b001_0001
-#define uOP_BRU_BLT                     7'b001_0100
-#define uOP_BRU_BGE                     7'b001_0101
-#define uOP_BRU_BLTU                    7'b001_0110
-#define uOP_BRU_BGEU                    7'b001_0111
-#define uOP_BRU_JALR                    7'b001_1111
-#define uOP_BRU_JAL                     7'b001_1000
+#define uOP_BRU_BEQ                     {uOP_BRU, BRU_EQ}
+#define uOP_BRU_BNE                     {uOP_BRU, BRU_NE}
+#define uOP_BRU_BLT                     {uOP_BRU, BRU_LT}
+#define uOP_BRU_BGE                     {uOP_BRU, BRU_GE}
+#define uOP_BRU_BLTU                    {uOP_BRU, BRU_LTU}
+#define uOP_BRU_BGEU                    {uOP_BRU, BRU_GEU}
+#define uOP_BRU_JALR                    {uOP_BRU, BRU_JALR}
+#define uOP_BRU_JAL                     {uOP_BRU, BRU_JAL}
 
 /* Lower 4 bits corresponds to fn of LSU */
 #define uOP_LSU                         3'b010
@@ -70,7 +90,7 @@ struct cause_t {
 
 struct uop_t {
     opcode[7];
-    uop[7];
+    uop[uOP_SIZE];
     fn[4];
     lrd[5];
     lrs1[5];
