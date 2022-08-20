@@ -1,11 +1,12 @@
 #include "inst_buffer.h"
+#include "consts.h"
 
 module inst_buffer {
-    mem ibuf[8][SIZEOF_FETCH_PACKET_T] = {0};
-    reg rptr[4] = 0;
-    reg wptr[4] = 0;
-    wire next_rptr[4];
-    wire next_wptr[4];
+    mem ibuf[NUMBER_OF_INST_BUFFER][SIZEOF_FETCH_PACKET_T] = {0};
+    reg rptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES+1] = 0;
+    reg wptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES+1] = 0;
+    wire next_rptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES+1];
+    wire next_wptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES+1];
     func_self internal_full();
     func_self internal_empty();
 
@@ -28,7 +29,8 @@ module inst_buffer {
     next_rptr = rptr + 1'b1;
     next_wptr = wptr + 1'b1;
 
-    if((wptr[2:0] == rptr[2:0]) && (wptr[3] != rptr[3])) {
+    if((wptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES-1:0] == rptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES-1:0])
+        && (wptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES] != rptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES])) {
         internal_full();
     }
     if(rptr == wptr) {
