@@ -38,15 +38,17 @@ module register_status_table {
         ROB[issue1_lrd] := issue1_ROB;
     }
     func commit0 {
-        if(!(commit1 && commit1_lrd == commit0_lrd)) {
+        if(!(commit1 && commit1_lrd == commit0_lrd) && !(issue0 && issue0_lrd == commit0_lrd) && !(issue1 && issue1_lrd == commit0_lrd)) {
             if(commit0_ROB == ROB[commit0_lrd]) {
                 Busy[commit0_lrd] := READY;
             }
         }
     }
     func commit1 {
-        if(commit1_ROB == ROB[commit1_lrd]) {
-            Busy[commit1_lrd] := READY;
+        if(!(issue0 && issue0_lrd == commit1_lrd) && !(issue1 && issue1_lrd == commit1_lrd)) {
+            if(commit1_ROB == ROB[commit1_lrd]) {
+                Busy[commit1_lrd] := READY;
+            }
         }
     }
 }

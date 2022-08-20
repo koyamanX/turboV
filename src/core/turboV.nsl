@@ -686,25 +686,10 @@ module turboV {
                 }
             }
         }
-        if(!flush && rob.commit_Valid0 && ~commit_inst0_cause && !(is_issue
-            && (issue_packet.inst0_valid && issue_uop0.lrd == commit_uop0.lrd)
-            && (issue_packet.inst1_valid && issue_uop1.lrd == commit_uop0.lrd)
-            && (rob.commit_Valid1 && commit_uop0.lrd == commit_uop1.lrd))) {
-            /* If rd field of instruction in issue stage has same register destination,
-                conflict will occur for register_status_table, so do not make READY.
-                issue_uop0.lrd is only valid on is_issue.
-                if ROB.Dest0 == ROB.Dest1, do not make READY here, it will be handled
-                in ROB.Dest1 side
-            */
+        if(!flush && rob.commit_Valid0 && ~commit_inst0_cause) {
             register_status.commit0(commit_uop0.lrd, rob.commit_Id);
         }
-        if(!flush && rob.commit_Valid1 && ~commit_inst1_cause && !commit_kill_inst1 && !(is_issue
-            && (issue_packet.inst0_valid && issue_uop0.lrd == commit_uop1.lrd)
-            && (issue_packet.inst1_valid && issue_uop1.lrd == commit_uop1.lrd))) {
-            /* If rd field of instruction in issue stage has same register destination,
-                conflict will occur for register_status_table, so do not make READY.
-                issue_uop1.lrd is only valid on is_issue.
-            */
+        if(!flush && rob.commit_Valid1 && ~commit_inst1_cause && !commit_kill_inst1) {
             register_status.commit1(commit_uop1.lrd, rob.commit_Id+1);
         }
     }
