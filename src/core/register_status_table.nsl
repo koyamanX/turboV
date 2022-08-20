@@ -28,16 +28,20 @@ module register_status_table {
         return Busy[readD_lrs];
     }
     func issue0 {
-        Busy[issue0_lrd] := BUSY;
-        ROB[issue0_lrd] := issue0_ROB;
+        if(!(issue1 && issue1_lrd == issue0_lrd)) {
+            Busy[issue0_lrd] := BUSY;
+            ROB[issue0_lrd] := issue0_ROB;
+        }
     }
     func issue1 {
         Busy[issue1_lrd] := BUSY;
         ROB[issue1_lrd] := issue1_ROB;
     }
     func commit0 {
-        if(commit0_ROB == ROB[commit0_lrd]) {
-            Busy[commit0_lrd] := READY;
+        if(!(commit1 && commit1_lrd == commit0_lrd)) {
+            if(commit0_ROB == ROB[commit0_lrd]) {
+                Busy[commit0_lrd] := READY;
+            }
         }
     }
     func commit1 {

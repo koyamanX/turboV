@@ -316,9 +316,7 @@ module turboV {
                     }
                 }
                 /* inst0 rd mapping */
-                if((issue_uop0.lrd != 0) && !(issue_packet.inst1_valid && (issue_uop0.lrd == issue_uop1.lrd))) {
-                    register_status.issue0(issue_uop0.lrd, rob.tag);
-                }
+                register_status.issue0(issue_uop0.lrd, rob.tag);
                 /* Issue inst0 to RSs */
                 alt {
                     issue_uop0.jalr || issue_uop0.jal || issue_uop0.branch: {
@@ -415,9 +413,7 @@ module turboV {
                     }
                 }
                 /* inst1 rd mapping */
-                if((issue_uop1.lrd != 0)) {
-                    register_status.issue1(issue_uop1.lrd, rob.tag+1);
-                }
+                register_status.issue1(issue_uop1.lrd, rob.tag+1);
                 /* Issue inst1 to RSs */
                 alt {
                     issue_uop1.jalr || issue_uop1.jal || issue_uop1.branch: {
