@@ -22,7 +22,6 @@
 #define DEBUG_COMMIT1(pc, inst, cause)
 #endif
 
-
 struct issue_packet_t {
     inst0_valid;
     inst0_pred;
@@ -35,6 +34,7 @@ struct issue_packet_t {
 };
 
 module turboV {
+    proc_name warm_reset();
     /* Decode stage */
     proc_name decode();
     func_self stall_issue();
@@ -73,8 +73,8 @@ module turboV {
     proc_name writeresult_alu0(writeresult_alu0_dest, writeresult_alu0_val);
     proc_name writeresult_alu1(writeresult_alu1_dest, writeresult_alu1_val);
     proc_name writeresult_bru0(writeresult_bru0_dest, writeresult_bru0_val, writeresult_bru0_target, writeresult_bru0_instruction_address_misaligned);
+    /* Pipeline flush */
     func_self flush();
-    integer i_;
     /* Instruction Fetch Unit */
     ifetch_unit ifu;
     /* Instruction decoder */
@@ -97,10 +97,10 @@ module turboV {
     mem register_status_table[32][1] = {0};
     /* Load Store Unit */
     load_store_unit lsu;
-    reg ifu_grant = 0;
-    reg lsu_grant = 0;
+    /* CSR */
     control_status_register csr;
-    proc_name warm_reset();
+    /* variable for generate statement */
+    integer i_;
 
     func reset {
         if(!warm_reset) {
@@ -109,6 +109,7 @@ module turboV {
     }
     proc warm_reset seq {
         {
+            /* Cycle 1: Reset */
             ifu.reset();
             csr.reset();
             generate(i_ = 0; i_ < 32; i_++) {
@@ -116,12 +117,14 @@ module turboV {
             }
         }
         {
+            /* Cycle 2: Start inst fetch */
             ifu.redirect(csr.trap(0, 0, 0));
             decode();
             finish();
         }
     }
     func flush {
+        /* Flush all stage */
         decode.finish();
         issue.finish();
         execute_alu0.finish();
@@ -130,16 +133,19 @@ module turboV {
         writeresult_alu0.finish();
         writeresult_alu1.finish();
         writeresult_bru0.finish();
+        /* Flush ROB, RSs and LSQs */
         rob.flush();
         alu_rs0.flush();
         alu_rs1.flush();
         bru_rs0.flush();
         lsu_rs0.flush();
         lsu.flush();
+        /* reset register status */
         generate(i_ = 0; i_ < 32; i_++) {
             register_status_table[i_] := 0;
             register_map_table[i_] := -1;
         }
+        /* Start decode */
         decode.invoke();
     }
     proc decode {
@@ -731,6 +737,9 @@ module turboV {
             }
         }
     }
+    /*
+        Interrupts
+    */
     func timer_interrupt_req_hart0 {
         csr.timer_interrupt_req_hart0();
     }
@@ -738,62 +747,68 @@ module turboV {
         csr.software_interrupt_req_hart0();
     }
 
-    ifu.CLK_I = CLK_I;
-    ifu.RST_I = RST_I;
-    lsu.CLK_I = CLK_I;
-    lsu.RST_I = RST_I;
-
-    alt {
-        lsu.CYC_O && !lsu_grant && !ifu_grant: {
-            lsu_grant := 1;
-            lsu.STALL_I();
-            ifu.STALL_I();
+    /*
+        Bus arbiter for instruction fetch unit and load store unit.
+        LSU has higher priority.
+    */
+    {
+        reg ifu_grant = 0;
+        reg lsu_grant = 0;
+        ifu.CLK_I = CLK_I;
+        ifu.RST_I = RST_I;
+        lsu.CLK_I = CLK_I;
+        lsu.RST_I = RST_I;
+        alt {
+            lsu.CYC_O && !lsu_grant && !ifu_grant: {
+                lsu_grant := 1;
+                lsu.STALL_I();
+                ifu.STALL_I();
+            }
+            ifu.CYC_O && !ifu_grant && !lsu_grant: {
+                ifu_grant := 1;
+                lsu.STALL_I();
+                ifu.STALL_I();
+            }
         }
-        ifu.CYC_O && !ifu_grant && !lsu_grant: {
-            ifu_grant := 1;
-            lsu.STALL_I();
-            ifu.STALL_I();
+        alt {
+            lsu_grant && lsu.CYC_O && ACK_I: {
+                lsu_grant := 0;
+            }
+            ifu_grant && ifu.CYC_O && ACK_I: {
+                ifu_grant := 0;
+            }
         }
-    }
-    alt {
-        lsu_grant && lsu.CYC_O && ACK_I: {
-            lsu_grant := 0;
-        }
-        ifu_grant && ifu.CYC_O && ACK_I: {
-            ifu_grant := 0;
-        }
-    }
-
-    alt {
-        lsu_grant: {
-            ADR_O = lsu.ADR_O;
-            SEL_O = lsu.SEL_O;
-            DAT_O = lsu.DAT_O;
-            if(lsu.CYC_O) CYC_O();
-            if(lsu.STB_O) STB_O();
-            if(lsu.WE_O) WE_O();
-            if(lsu.LOCK_O) LOCK_O();
-            lsu.DAT_I = DAT_I;
-            if(ERR_I) lsu.ERR_I();
-            if(RTY_I) lsu.RTY_I();
-            if(STALL_I) lsu.STALL_I();
-            if(ACK_I) lsu.ACK_I();
-            ifu.STALL_I();
-        }
-        ifu_grant: {
-            ADR_O = ifu.ADR_O;
-            SEL_O = ifu.SEL_O;
-            DAT_O = ifu.DAT_O;
-            if(ifu.CYC_O) CYC_O();
-            if(ifu.STB_O) STB_O();
-            if(ifu.WE_O) WE_O();
-            if(ifu.LOCK_O) LOCK_O();
-            ifu.DAT_I = DAT_I;
-            if(ERR_I) ifu.ERR_I();
-            if(RTY_I) ifu.RTY_I();
-            if(STALL_I) ifu.STALL_I();
-            if(ACK_I) ifu.ACK_I();
-            lsu.STALL_I();
+        alt {
+            lsu_grant: {
+                ADR_O = lsu.ADR_O;
+                SEL_O = lsu.SEL_O;
+                DAT_O = lsu.DAT_O;
+                if(lsu.CYC_O) CYC_O();
+                if(lsu.STB_O) STB_O();
+                if(lsu.WE_O) WE_O();
+                if(lsu.LOCK_O) LOCK_O();
+                lsu.DAT_I = DAT_I;
+                if(ERR_I) lsu.ERR_I();
+                if(RTY_I) lsu.RTY_I();
+                if(STALL_I) lsu.STALL_I();
+                if(ACK_I) lsu.ACK_I();
+                ifu.STALL_I();
+            }
+            ifu_grant: {
+                ADR_O = ifu.ADR_O;
+                SEL_O = ifu.SEL_O;
+                DAT_O = ifu.DAT_O;
+                if(ifu.CYC_O) CYC_O();
+                if(ifu.STB_O) STB_O();
+                if(ifu.WE_O) WE_O();
+                if(ifu.LOCK_O) LOCK_O();
+                ifu.DAT_I = DAT_I;
+                if(ERR_I) ifu.ERR_I();
+                if(RTY_I) ifu.RTY_I();
+                if(STALL_I) ifu.STALL_I();
+                if(ACK_I) ifu.ACK_I();
+                lsu.STALL_I();
+            }
         }
     }
 }
