@@ -41,8 +41,6 @@
 #define uOP_SYSTEM_CSRRW                7'b110_0110
 #define uOP_SYSTEM_CSRRS                7'b110_0110
 #define uOP_SYSTEM_CSRRC                7'b110_1111
-#define uOP_SYSTEM_CSRRS_NO_UPDATE_CSR  7'b010_0110
-#define uOP_SYSTEM_CSRRC_NO_UPDATE_CSR  7'b010_1111
 #define uOP_SYSTEM_MRET                 7'b001_1111
 #define uOP_SYSTEM_ECALL                7'b001_1100
 #define uOP_SYSTEM_EBREAK               7'b001_1110
