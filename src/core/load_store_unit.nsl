@@ -12,16 +12,18 @@ module load_store_unit {
     proc_name memory(memory_A, memory_Data, memory_uOp, memory_RobId);
 
     func issue {
-        if((issue_uOp == uOP_LSU_LOAD_WORD) || (issue_uOp == uOP_LSU_LOAD_HALFWORD) || (issue_uOp == uOP_LSU_LOAD_BYTE)
-            || (issue_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED) || (issue_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED)) {
-            memory(issue_A, 0, issue_uOp, issue_RobId);
-        } else if((issue_uOp == uOP_LSU_STORE_WORD) || (issue_uOp == uOP_LSU_STORE_HALFWORD) || (issue_uOp == uOP_LSU_STORE_BYTE)) {
+        wire issue_is_store;
+
+        issue_is_store = issue_uOp[3];
+        if(issue_is_store) {
             stqV := 1;
             memory_A := issue_A;
             memory_Data := issue_Vj;
             memory_uOp := issue_uOp;
             memory_RobId := issue_RobId;
             CDBOut(issue_RobId, issue_Vj);
+        } else {
+            memory(issue_A, 0, issue_uOp, issue_RobId);
         }
     }
     if(!flush && (memory || stqV)) {
