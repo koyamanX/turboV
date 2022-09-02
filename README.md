@@ -1,7 +1,6 @@
 # Implementaion of RISC-V Out-of-Order superscalar pipeline.
 
 [![CircleCI](https://circleci.com/gh/koyamanX/turboV/tree/develop.svg?style=svg)](https://circleci.com/gh/koyamanX/turboV/tree/develop)
-[![docs-release](https://github.com/koyamanX/turboV/actions/workflows/docs.yml/badge.svg?branch=develop)](https://github.com/koyamanX/turboV/actions/workflows/docs.yml)
 
 ## Prerequisite
 - Installation of Docker
