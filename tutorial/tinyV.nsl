@@ -1,0 +1,150 @@
+#define RTYPE 7'b0110011
+#define ITYPE 7'b0010011
+#define BTYPE 7'b1100011
+#define LOAD  7'b0000011
+#define ADD 3'b000
+#define BEQ 3'b000
+#define WORD 3'b010
+
+struct rtype_t {
+    funct7[7];
+    rs2[5];
+    rs1[5];
+    funct3[3];
+    rd[5];
+    opcode[7];
+};
+struct itype_t {
+    imm[12];
+    rs1[5];
+    funct3[3];
+    rd[5];
+    opcode[7];
+};
+struct btype_t {
+    imm0[7];
+    rs2[5];
+    rs1[5];
+    funct3[3];
+    imm1[5];
+    opcode[7];
+};
+declare tinyV {
+    func_in reset();
+    output mem_raddr[32];
+    input mem_rdata[32];
+    func_out mem_read(mem_raddr): mem_rdata;
+}
+declare reg32 {
+    input rnuma[5];
+    output rdataa[32];
+    func_in reada(rnuma): rdataa;
+    input rnumb[5];
+    output rdatab[32];
+    func_in readb(rnumb): rdatab;
+    input wnum[5];
+    input wdata[32];
+    func_in write(wnum, wdata);
+}
+declare top simulation {}
+module top {
+    mem memory[1024][32] = {
+        0x00400093,
+        0x01000113,
+        0x00408093,
+        0x00208463,
+        0xfe000ce3,
+        0x00002183
+    };
+    reg count[32] = 0;
+    wire next_count[32];
+    tinyV core;
+    state_name reset, running, halt;
+    
+    next_count = count + 1;
+    count := next_count;
+    state reset {
+        core.reset();
+        goto running;
+    }
+    state running {
+        if(count >= 30) {
+            goto halt;
+        }
+    }
+    state halt {
+        _finish("Simulation end");
+    }
+    func core.mem_read {
+        return memory[core.mem_raddr[9:2]];
+    }
+}
+module tinyV {
+    reg pc[32];
+    reg inst[32];
+    reg dest[5];
+    reg mar[32];
+    proc_name ifetch(pc);
+    proc_name exec(inst);
+    proc_name load(dest, mar);
+    reg32 gpr;
+
+    func reset {
+        ifetch(0x0000_0000);
+    }
+    proc ifetch {
+        exec(mem_read(pc));
+    }
+    proc exec {
+        rtype_t wire rinst;
+        itype_t wire iinst;
+        btype_t wire binst;
+        wire btype_imm[32];
+
+        rinst = inst;
+        iinst = inst;
+        binst = inst;
+        _display("pc:%x, inst:%x\n", pc, inst);
+        any {
+            rinst.opcode == RTYPE && rinst.funct3 == ADD && !rinst.funct7[5]: {
+                gpr.write(rinst.rd, gpr.reada(rinst.rs1) + gpr.readb(rinst.rs2));
+                ifetch(pc+4);
+            }
+            iinst.opcode == ITYPE && iinst.funct3 == ADD: {
+                gpr.write(iinst.rd, gpr.reada(iinst.rs1) + 32#(iinst.imm));
+                ifetch(pc+4);
+            }
+            binst.opcode == BTYPE && binst.funct3 == BEQ: {
+                if(gpr.reada(binst.rs1) == gpr.readb(binst.rs2)) {
+                    btype_imm = 32#({inst[31], inst[7], inst[30:25], inst[11:8], 1'b0});
+                    ifetch(pc + btype_imm);
+                } else {
+                    ifetch(pc+4);
+                }
+            }
+            iinst.opcode == LOAD && iinst.funct3 == WORD: {
+                load(iinst.rd, gpr.reada(iinst.rs1) + 32#(iinst.imm));
+            }
+            else: {
+                _display("Illegal instruction: Halt");
+                finish();
+            }
+        }
+    }
+    proc load {
+        gpr.write(dest, mem_read(mar));
+        ifetch(pc+4);
+    }
+}
+module reg32 {
+    mem gpr[32][32] = {0};
+    func reada {
+        return gpr[rnuma];
+    }
+    func readb {
+        return gpr[rnumb];
+    }
+    func write {
+        if(wnum != 0) gpr[wnum] := wdata;
+    }
+}
