@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
         sim.sim->rsp_stall = false;
         sim.sim->rsp_valid = false;
         if(sim.sim->req_read) {
-            assert(0x80000000 <= sim.sim->req_addr && sim.sim->req_addr < 0x80000000+mem_size-sizeof(uint64_t));
+            assert(0x80000000 <= sim.sim->req_addr && sim.sim->req_addr < 0x80000000+mem_size);
             if(sim.sim->req_sel == 0xff) {
                 sim.sim->rsp_data = *((uint64_t *)&mem[sim.sim->req_addr-0x80000000]);
             } else if(sim.sim->req_sel == 0x0f) {
