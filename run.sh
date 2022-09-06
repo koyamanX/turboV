@@ -13,4 +13,5 @@ docker run -it --rm \
     -v $(pwd)/image/scripts/env.sh:/root/.env.sh \
 	-v $(pwd)/CMakeLists.txt:/root/CMakeLists.txt \
 	-v $(pwd)/build:/root/build \
+	-v $(pwd)/tutorial:/root/tutorial \
 	koyamanx/turbov_dev:v1.2 $1
