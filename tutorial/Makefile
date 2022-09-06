@@ -10,6 +10,8 @@ GTKWAVE=gtkwave
 MEMORY=memory
 
 
+run: tinyV.vvp
+	./tinyV.vvp
 tinyV.vvp: tinyV.nsl $(MEMORY).S
 	$(NSL2VL) $(NSLFLAGS) tinyV.nsl
 	$(IVERILOG) tinyV.v -o $@
