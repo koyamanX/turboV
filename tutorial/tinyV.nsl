@@ -48,18 +48,13 @@ declare reg32 {
 }
 declare top simulation {}
 module top {
-    mem memory[1024][32] = {
-        0x00400093,
-        0x01000113,
-        0x00408093,
-        0x00208463,
-        0xfe000ce3,
-        0x00002183
-    };
+    mem memory[1024][32];
     reg count[32] = 0;
     wire next_count[32];
     tinyV core;
     state_name reset, running, halt;
+
+    _readmemh("memory.hex", memory);
     
     next_count = count + 1;
     count := next_count;
@@ -68,7 +63,7 @@ module top {
         goto running;
     }
     state running {
-        if(count >= 30) {
+        if(count >= 50) {
             goto halt;
         }
     }
