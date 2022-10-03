@@ -5,15 +5,15 @@
 // Efficient Multi-Ported Memories for FPGAs
 // Charles Eric LaForest and J. Gregory Steffan
 module register_file {
-    mem bank_w0_r0[32][XLEN] = {0};
-    mem bank_w0_r1[32][XLEN] = {0};
-    mem bank_w0_r2[32][XLEN] = {0};
-    mem bank_w0_r3[32][XLEN] = {0};
-    mem bank_w1_r0[32][XLEN] = {0};
-    mem bank_w1_r1[32][XLEN] = {0};
-    mem bank_w1_r2[32][XLEN] = {0};
-    mem bank_w1_r3[32][XLEN] = {0};
-    mem lvt[32] = {0};
+    mem bank_w0_r0[64][XLEN] = {0};
+    mem bank_w0_r1[64][XLEN] = {0};
+    mem bank_w0_r2[64][XLEN] = {0};
+    mem bank_w0_r3[64][XLEN] = {0};
+    mem bank_w1_r0[64][XLEN] = {0};
+    mem bank_w1_r1[64][XLEN] = {0};
+    mem bank_w1_r2[64][XLEN] = {0};
+    mem bank_w1_r3[64][XLEN] = {0};
+    mem lvt[64] = {0};
 
     func readA {
         any {
