@@ -1,0 +1,73 @@
+#include "free_list.h"
+
+module free_list {
+	mem freelist[NUMBER_OF_FREE_LIST][SIZEOF_FREE_LIST_ENTRY];
+    reg tail[LOG2_FREE_LIST_NUM_OF_ENTRIES+1] = 0;
+    reg head[LOG2_FREE_LIST_NUM_OF_ENTRIES+1] = 0;
+	reg freelist_count[LOG2_FREE_LIST_NUM_OF_ENTRIES] = NUMBER_OF_FREE_LIST - 1;
+	wire push_count[LOG2_FREE_LIST_NUM_OF_ENTRIES];
+	wire pop_count[LOG2_FREE_LIST_NUM_OF_ENTRIES];
+    wire next_tail[LOG2_FREE_LIST_NUM_OF_ENTRIES+1];
+    wire next_head[LOG2_FREE_LIST_NUM_OF_ENTRIES+1];
+    wire next_freelist_count[LOG2_FREE_LIST_NUM_OF_ENTRIES+1];
+    wire tail_idx[LOG2_FREE_LIST_NUM_OF_ENTRIES];
+    wire head_idx[LOG2_FREE_LIST_NUM_OF_ENTRIES];
+	integer i_;
+	wire push, pop;
+
+    tail_idx = tail[LOG2_FREE_LIST_NUM_OF_ENTRIES-1:0];
+    head_idx = head[LOG2_FREE_LIST_NUM_OF_ENTRIES-1:0];
+	pop = pop0 || pop1;
+	push = push0 || push1;
+
+	func reset {
+		generate(i_ = 0; i_ < NUMBER_OF_FREE_LIST; i_++) {
+			freelist[i_] := i_;
+		}
+		freelist_count := NUMBER_OF_FREE_LIST - 1;
+	}
+	func pop0 {
+		if(!pop1) {
+			next_head = head + 1;
+		}
+		return freelist[head];
+	}
+	func pop1 {
+		next_head = head + 2;
+		return freelist[head+1];
+	}
+	func push0 {
+		if(!push1) {
+			next_tail = tail + 1;
+		}
+		freelist[tail] := push0_data;	
+	}
+	func push1 {
+		next_tail = tail + 2;
+		freelist[tail+1] := push1_data;
+	}
+	if(pop) {
+		if(next_head >= NUMBER_OF_FREE_LIST) {
+			head := next_head - 64;
+		} else {
+			head := next_head;
+		}
+		pop_count = (next_head - head);
+	} else {
+		pop_count = 0;
+	}
+	if(push) {
+		if(next_tail >= NUMBER_OF_FREE_LIST) {
+			tail := next_tail - 64;
+		} else {
+			tail := next_tail;
+		}
+		push_count = next_tail - tail;
+	} else {
+		push_count = 0; 
+	}
+	next_freelist_count = freelist_count + push_count - pop_count;
+	if(push || pop) {
+		freelist_count := next_freelist_count;
+	}
+}
