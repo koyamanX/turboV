@@ -6,15 +6,9 @@ add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/imm_gen.nsl ${CMAKE_CURRENT_BINARY_DI
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/uop_decoder.nsl ${CMAKE_CURRENT_BINARY_DIR}/uop_decoder.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/alu32.nsl ${CMAKE_CURRENT_BINARY_DIR}/alu32.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/turboV.nsl ${CMAKE_CURRENT_BINARY_DIR}/turboV.v)
-add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reorder_buffer.nsl ${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v)
-add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reorder_buffer_exec.nsl ${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer_exec.v)
-add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reservation_station.nsl ${CMAKE_CURRENT_BINARY_DIR}/reservation_station.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/bru32.nsl ${CMAKE_CURRENT_BINARY_DIR}/bru32.v)
-add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reservation_station_in_order.nsl ${CMAKE_CURRENT_BINARY_DIR}/reservation_station_in_order.v)
-add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reservation_station_entry.nsl ${CMAKE_CURRENT_BINARY_DIR}/reservation_station_entry.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/load_store_unit.nsl ${CMAKE_CURRENT_BINARY_DIR}/load_store_unit.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/control_status_register.nsl ${CMAKE_CURRENT_BINARY_DIR}/control_status_register.v)
-add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/register_status_table.nsl ${CMAKE_CURRENT_BINARY_DIR}/register_status_table.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/free_list.nsl ${CMAKE_CURRENT_BINARY_DIR}/free_list.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/active_list.nsl ${CMAKE_CURRENT_BINARY_DIR}/active_list.v)
 
@@ -28,15 +22,9 @@ add_custom_target(core
 		${CMAKE_CURRENT_BINARY_DIR}/uop_decoder.v
 		${CMAKE_CURRENT_BINARY_DIR}/alu32.v
 		${CMAKE_CURRENT_BINARY_DIR}/turboV.v
-		${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v
-		${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer_exec.v
-		${CMAKE_CURRENT_BINARY_DIR}/reservation_station.v
 		${CMAKE_CURRENT_BINARY_DIR}/bru32.v
-		${CMAKE_CURRENT_BINARY_DIR}/reservation_station_in_order.v
-		${CMAKE_CURRENT_BINARY_DIR}/reservation_station_entry.v
 		${CMAKE_CURRENT_BINARY_DIR}/load_store_unit.v
 		${CMAKE_CURRENT_BINARY_DIR}/control_status_register.v
-		${CMAKE_CURRENT_BINARY_DIR}/register_status_table.v
 		${CMAKE_CURRENT_BINARY_DIR}/free_list.v
 		${CMAKE_CURRENT_BINARY_DIR}/active_list.v
 )
