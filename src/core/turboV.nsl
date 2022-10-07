@@ -2,10 +2,7 @@
 #include "ifetch_unit.h"
 #include "alu32.h"
 #include "wishbone_common.h"
-#include "reorder_buffer.h"
 #include "uop_decoder.h"
-#include "reservation_station.h"
-#include "reservation_station_in_order.h"
 #include "register_file.h"
 #include "opcode_map.h"
 #include "bru32.h"
@@ -13,7 +10,8 @@
 #include "control_status_register.h"
 #include "priv.h"
 #include "uops.h"
-#include "register_status_table.h"
+#include "active_list.h"
+#include "free_list.h"
 
 #ifdef ENABLE_DEBUG
 #define DEBUG_COMMIT0(pc, inst, cause) debug_commit0(pc, inst, cause)
@@ -24,81 +22,51 @@
 #endif
 
 struct issue_packet_t {
-    inst0_valid;
-    inst0_pred;
-    inst0_pc[XLEN];
-    inst0[ILEN];
-    inst1_valid;
-    inst1_pred;
-    inst1_pc[XLEN];
-    inst1[ILEN];
+	pc[XLEN];
+	pred0;
+	pred1;
+	valid0;
+	valid1;
 };
+
+// TODO:
+#define READY 1'b0
+#define BUSY 1'b1
 
 module turboV {
     proc_name warm_reset();
     /* Decode stage */
     proc_name decode();
-    func_self stall_issue();
-    /* Issue stage */
-    issue_packet_t reg issue_packet;
-    wire is_issue;
-    uop_t reg issue_uop0;
-    uop_t reg issue_uop1;
-    proc_name issue(issue_packet, issue_uop0, issue_uop1);
-    /* Execute stage */
-    reg execute_alu0_fn[4];
-    reg execute_alu0_dest[ROB_TAG_SIZE];
-    reg execute_alu0_a[32];
-    reg execute_alu0_b[32];
-    reg execute_alu1_fn[4];
-    reg execute_alu1_dest[ROB_TAG_SIZE];
-    reg execute_alu1_a[32];
-    reg execute_alu1_b[32];
-    reg execute_bru0_fn[4];
-    reg execute_bru0_dest[ROB_TAG_SIZE];
-    reg execute_bru0_a[32];
-    reg execute_bru0_b[32];
-    reg execute_bru0_A[32];
-    proc_name execute_alu0(execute_alu0_fn, execute_alu0_dest, execute_alu0_a, execute_alu0_b);
-    proc_name execute_alu1(execute_alu1_fn, execute_alu1_dest, execute_alu1_a, execute_alu1_b);
-    proc_name execute_bru0(execute_bru0_fn, execute_bru0_dest, execute_bru0_a, execute_bru0_b, execute_bru0_A);
-    /* Write Result stage */
-    reg writeresult_alu0_dest[ROB_TAG_SIZE];
-    reg writeresult_alu0_val[32];
-    reg writeresult_alu1_dest[ROB_TAG_SIZE];
-    reg writeresult_alu1_val[32];
-    reg writeresult_bru0_dest[ROB_TAG_SIZE];
-    reg writeresult_bru0_val[32];
-    reg writeresult_bru0_target[32];
-    reg writeresult_bru0_instruction_address_misaligned;
-    proc_name writeresult_alu0(writeresult_alu0_dest, writeresult_alu0_val);
-    proc_name writeresult_alu1(writeresult_alu1_dest, writeresult_alu1_val);
-    proc_name writeresult_bru0(writeresult_bru0_dest, writeresult_bru0_val, writeresult_bru0_target, writeresult_bru0_instruction_address_misaligned);
-    /* Pipeline flush */
+	issue_packet_t reg issue_packet;
+	uop_t reg issue_uop0;
+	uop_t reg issue_uop1;
+	proc_name issue(issue_packet, issue_uop0, issue_uop1);
+	proc_name register_read();
+	proc_name execute_alu0();
+	proc_name execute_bru0();
+	proc_name execute_lsu0();
+	proc_name writeback_alu0();
+	proc_name writeback_bru0();
+	proc_name writeback_lsu0();
+	/* Pipeline flush */
     func_self flush();
     /* Instruction Fetch Unit */
     ifetch_unit ifu;
     /* Instruction decoder */
     uop_decoder udec0;
     uop_decoder udec1;
-    /* Reorder Buffer */
-    reorder_buffer rob;
-    /* Reservation station for ALUs */
-    reservation_station alu_rs0;
-    reservation_station alu_rs1;
-    /* Reservation station for BRanch Unit */
-    reservation_station bru_rs0;
-    /* Reservation station for Load-Store Unit (In-order) */
-    reservation_station_in_order lsu_rs0;
     /* General Purpose Register */
     register_file gpr;
-    register_status_table register_status;
     /* Load Store Unit */
     load_store_unit lsu;
     /* CSR */
     control_status_register csr;
     /* variable for generate statement */
     integer i_;
+	active_list activelist;
+	free_list freelist;
+	mem register_map_table[32][6];
+	mem register_status_table[32][1] = {0};
 
     func reset {
         if(!warm_reset) {
@@ -110,7 +78,11 @@ module turboV {
             /* Cycle 1: Reset */
             ifu.reset();
             csr.reset();
-            register_status.flush();
+			freelist.reset();
+			generate(i_ = 0; i_ < 32; i_++) {
+				register_map_table[i_] := i_;
+				register_status_table[i_] := READY;
+			}
         }
         {
             /* Cycle 2: Start inst fetch */
@@ -124,574 +96,101 @@ module turboV {
         decode.finish();
         issue.finish();
         execute_alu0.finish();
-        execute_alu1.finish();
         execute_bru0.finish();
-        writeresult_alu0.finish();
-        writeresult_alu1.finish();
-        writeresult_bru0.finish();
+        execute_lsu0.finish();
+        writeback_alu0.finish();
+        writeback_bru0.finish();
+        writeback_lsu0.finish();
         /* Flush ROB, RSs and LSQs */
-        rob.flush();
-        alu_rs0.flush();
-        alu_rs1.flush();
-        bru_rs0.flush();
-        lsu_rs0.flush();
         lsu.flush();
-        /* reset register status */
-        generate(i_ = 0; i_ < 32; i_++) {
-            register_status.flush();
-        }
-        /* Start decode */
+		/* Start decode */
         decode.invoke();
     }
     proc decode {
-        fetch_packet_t wire decode_fetch_packet1;
-        fetch_packet_t reg decode_fetch_packet2;
-        issue_packet_t wire decode_issue_packet;
-        state_name decode1, decode2;
-        uop_t wire decode_uop0;
-        uop_t wire decode_uop1;
+		state_name decode0, decode1;
+		fetch_packet_t wire decode_fetch_packet;
 
-        /*
-            Decode two instructions, if structual hazard for FUs occurs,
-            Send first instruction to issue, then in next cycle, handle
-            remaining instruction. otherwise send both instructions to
-            issue.
-        */
-        state decode1 {
-            if(!ifu.ibuf_empty && !stall_issue && !flush) {
-                decode_fetch_packet1 = ifu.ibuf_pop();
-                // Save fetch packet for decode2.
-                decode_fetch_packet2 := decode_fetch_packet1;
-                // Decode two instructions.
-                udec0.decode(decode_fetch_packet1.inst0);
-                udec1.decode(decode_fetch_packet1.inst1);
-                decode_uop0 = udec0.uop;
-                decode_uop1 = udec1.uop;
-                // Check if structural hazard occurs for FUs.
-                if(((udec0.uop_bru && decode_fetch_packet1.valid0) && (udec1.uop_bru && decode_fetch_packet1.valid1))
-                    || ((udec0.uop_lsu && decode_fetch_packet1.valid0) && (udec1.uop_lsu && decode_fetch_packet1.valid1))
-                    || (udec1.uop_system && decode_fetch_packet1.valid1)) {
-                    // If hazard occurs, send first instructions to issue.
-                    if(udec0.decode_csr) {
-                        csr.decode_csr(udec0.decode_csr_rw, udec0.decode_csr_addr);
-                    }
-                    if(csr.decode_csr_illegal) {
-                        udec0.decode_csr_illegal();
-                    }
-                    decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
-                    decode_issue_packet.inst0_pred      = decode_fetch_packet1.pred0;
-                    decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc;
-                    decode_issue_packet.inst0           = decode_fetch_packet1.inst0;
-                    decode_issue_packet.inst1_valid     = 0;
-                    decode_issue_packet.inst1_pred      = 0;
-                    decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc + 4;
-                    decode_issue_packet.inst1           = 0;
-                    issue.invoke(decode_issue_packet, udec0.uop, 0);
-                    // Handle remaining instructions in next cycle.
-                    goto decode2;
-                } else {
-                    // No structual hazard for FUs.
-                    decode_issue_packet.inst0_valid     = decode_fetch_packet1.valid0;
-                    decode_issue_packet.inst0_pred      = decode_fetch_packet1.pred0;
-                    decode_issue_packet.inst0_pc        = decode_fetch_packet1.pc;
-                    decode_issue_packet.inst0           = decode_fetch_packet1.inst0;
-                    decode_issue_packet.inst1_valid     = decode_fetch_packet1.valid1;
-                    decode_issue_packet.inst1_pred      = decode_fetch_packet1.pred1;
-                    decode_issue_packet.inst1_pc        = decode_fetch_packet1.pc + 4;
-                    decode_issue_packet.inst1           = decode_fetch_packet1.inst1;
-                    decode();
-                    issue(decode_issue_packet, udec0.uop, udec1.uop);
-                }
-            }
-        }
-        state decode2 {
-            // Decode second instrction again.
-            udec0.decode(decode_fetch_packet2.inst1);
-            decode_uop0 = udec0.uop;
-            if(flush) {
-                decode();
-                goto decode1;
-            } else if(!stall_issue && !flush) {
-                // Send second instruction to issue.
-                if(udec0.decode_csr) {
-                    csr.decode_csr(udec0.decode_csr_rw, udec0.decode_csr_addr);
-                }
-                if(csr.decode_csr_illegal) {
-                    udec0.decode_csr_illegal();
-                }
-                decode_issue_packet.inst0_valid     = decode_fetch_packet2.valid1;
-                decode_issue_packet.inst0_pred      = decode_fetch_packet2.pred1;
-                decode_issue_packet.inst0_pc        = decode_fetch_packet2.pc + 4;
-                decode_issue_packet.inst0           = decode_fetch_packet2.inst1;
-                decode_issue_packet.inst1_valid     = 0;
-                decode_issue_packet.inst1_pred      = 0;
-                decode_issue_packet.inst1_pc        = decode_fetch_packet2.pc + 4;
-                decode_issue_packet.inst1           = 0;
+		state decode0 {
+			if(!ifu.ibuf_empty) {
+				decode_fetch_packet = ifu.ibuf_pop();
+				udec0.decode(decode_fetch_packet.inst0);
+				udec1.decode(decode_fetch_packet.inst1);
 
-                issue.invoke(decode_issue_packet, udec0.uop, 0);
-                goto decode1;
-            }
-        }
+				if(decode_fetch_packet.valid0 && decode_fetch_packet.valid1) {
+					/* Check if structural hazard occurs, if so, issue first insts
+					   and second one goes to decode1 stage.
+					any {
+						else: {
+							// both insts can be issued.
+						}
+					}
+					*/
+					// TODO:
+					issue.invoke({decode_fetch_packet.pc,
+							decode_fetch_packet.pred0, decode_fetch_packet.pred1,
+							decode_fetch_packet.valid0, decode_fetch_packet.valid1},
+							udec0.uop, udec1.uop);
+
+				} else {
+					// Either way0 or way1 is valid.
+					// Both invalid is not enter here, ifetch_unit never pushes such case.
+					// TODO:
+					issue.invoke({decode_fetch_packet.pc,
+							decode_fetch_packet.pred0, decode_fetch_packet.pred1,
+							decode_fetch_packet.valid0, decode_fetch_packet.valid1},
+							udec0.uop, udec1.uop);
+				}
+			}
+		}
+		state decode1 {
+			goto decode0;
+		}
     }
-    is_issue = (issue && !stall_issue);
     proc issue {
-        wire issue_inst0_Qj[ROB_TAG_SIZE];
-        wire issue_inst0_Qk[ROB_TAG_SIZE];
-        wire issue_inst0_Vj[32];
-        wire issue_inst0_Vk[32];
-        wire issue_inst1_Qj[ROB_TAG_SIZE];
-        wire issue_inst1_Qk[ROB_TAG_SIZE];
-        wire issue_inst1_Vj[32];
-        wire issue_inst1_Vk[32];
+		active_list_t wire issue_active_list_entry;
 
-        if(!rob.full && !alu_rs0.full && !alu_rs1.full && !bru_rs0.full && !lsu_rs0.full && !flush) {
-            /* TODO: Optimize RSs free entry check */
-            /* inst0 rs1 read */
-            if(issue_packet.inst0_valid) {
-                if(issue_uop0.csr_read) {
-                    csr.read(issue_uop0.csr_addr);
-                }
-                any {
-                    (issue_uop0.rs1_sel == RS1_SEL_PC): {
-                        issue_inst0_Vj = issue_packet.inst0_pc;
-                        issue_inst0_Qj = -1;
-                    }
-                    (issue_uop0.rs1_sel == RS1_SEL_REG): {
-                        if(issue_uop0.lrs1 == 5'b00000) {
-                            issue_inst0_Vj = 0;
-                            issue_inst0_Qj = -1;
-                        } else if(register_status.readA(issue_uop0.lrs1) == BUSY) {
-                            if(rob.read_operandA(register_status.readA_ROB) == BUSY) {
-                                /* Wait for inst in ROB to produce value */
-                                issue_inst0_Vj = 0;
-                                issue_inst0_Qj = register_status.readA_ROB;
-                            } else {
-                                /* Use value inside ROB */
-                                issue_inst0_Vj = rob.read_operandA_val;
-                                issue_inst0_Qj = -1;
-                            }
-                        } else {
-                            // Operand is in register file.
-                            issue_inst0_Vj = gpr.readA(issue_uop0.lrs1);
-                            issue_inst0_Qj = -1;
-                        }
-                    }
-                    (issue_uop0.rs1_sel == RS1_SEL_UIMM): {
-                        issue_inst0_Vj = 32'(issue_uop0.lrs1);
-                        issue_inst0_Qj = -1;
-                    }
-                }
-                /* inst0 rs2 read */
-                any {
-                    (issue_uop0.rs2_sel == RS2_SEL_REG): {
-                        if(issue_uop0.lrs2 == 5'b00000) {
-                            issue_inst0_Vk = 0;
-                            issue_inst0_Qk = -1;
-                        } else if(register_status.readB(issue_uop0.lrs2) == BUSY) {
-                            if(rob.read_operandB(register_status.readB_ROB) == BUSY) {
-                                /* Wait for inst in ROB to produce value */
-                                issue_inst0_Vk = 0;
-                                issue_inst0_Qk = register_status.readB_ROB;
-                            } else {
-                                /* Use value inside ROB */
-                                issue_inst0_Vk = rob.read_operandB_val;
-                                issue_inst0_Qk = -1;
-                            }
-                        } else {
-                            issue_inst0_Vk = gpr.readB(issue_uop0.lrs2);
-                            issue_inst0_Qk = -1;
-                        }
-                    }
-                    (issue_uop0.rs2_sel == RS2_SEL_IMM): {
-                        issue_inst0_Vk = issue_uop0.imm;
-                        issue_inst0_Qk = -1;
-                    }
-                    (issue_uop0.rs2_sel == RS2_SEL_CSR): {
-                        issue_inst0_Vk = csr.csr_rdata;
-                        issue_inst0_Qk = -1;
-                    }
-                    (issue_uop0.rs2_sel == RS2_SEL_CSR_UIMM): {
-                        issue_inst0_Vk = csr.csr_rdata & 0xffffffe0;
-                        issue_inst0_Qk = -1;
-                    }
-                }
-                /* inst0 rd mapping */
-                register_status.issue0(issue_uop0.lrd, rob.tag);
-                /* Issue inst0 to RSs */
-                alt {
-                    issue_uop0.jalr || issue_uop0.jal || issue_uop0.branch: {
-                        bru_rs0.issue(
-                            issue_packet.inst0_valid, issue_uop0.uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_packet.inst0_pc + issue_uop0.imm
-                        );
-                    }
-                    issue_uop0.load || issue_uop0.store: {
-                        lsu_rs0.issue(issue_packet.inst0_valid, issue_uop0.uop, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, issue_uop0.imm);
-                    }
-                    else: {
-                        alu_rs0.issue(
-                            issue_packet.inst0_valid, issue_uop0.fn, issue_inst0_Vj, issue_inst0_Vk, issue_inst0_Qj, issue_inst0_Qk, rob.tag, 0);
-                    }
-                }
-            }
-            if(issue_packet.inst1_valid) { /* inst1 rs1 read */
-                if(issue_uop1.csr_read) {
-                    csr.read(issue_uop1.csr_addr);
-                }
-                any {
-                    (issue_uop1.rs1_sel == RS1_SEL_PC): {
-                        issue_inst1_Vj = issue_packet.inst1_pc;
-                        issue_inst1_Qj = -1;
-                    }
-                    (issue_uop1.rs1_sel == RS1_SEL_REG): {
-                        if(issue_uop1.lrs1 == 5'b00000) {
-                            issue_inst1_Vj = 0;
-                            issue_inst1_Qj = -1;
-                        } else if((issue_uop0.lrd == issue_uop1.lrs1) && issue_packet.inst0_valid) {
-                            issue_inst1_Vj = 0;
-                            issue_inst1_Qj = rob.tag;
-                        } else {
-                            if(register_status.readC(issue_uop1.lrs1) == BUSY) {
-                                if(rob.read_operandC(register_status.readC_ROB) == BUSY) {
-                                    /* Wait for inst in ROB to produce value */
-                                    issue_inst1_Vj = 0;
-                                    issue_inst1_Qj = register_status.readC_ROB;
-                                } else {
-                                    /* Use value inside ROB */
-                                    issue_inst1_Vj = rob.read_operandC_val;
-                                    issue_inst1_Qj = -1;
-                                }
-                            } else {
-                                issue_inst1_Vj = gpr.readC(issue_uop1.lrs1);
-                                issue_inst1_Qj = -1;
-                            }
-                        }
-                    }
-                    (issue_uop1.rs1_sel == RS1_SEL_UIMM): {
-                        issue_inst1_Vj = 32'(issue_uop1.lrs1);
-                        issue_inst1_Qj = -1;
-                    }
-                }
-                /* inst1 rs2 read */
-                any {
-                    (issue_uop1.rs2_sel == RS2_SEL_REG): {
-                        if(issue_uop1.lrs2 == 5'b00000) {
-                            issue_inst1_Vk = 0;
-                            issue_inst1_Qk = -1;
-                        } else if((issue_uop0.lrd == issue_uop1.lrs2) && issue_packet.inst0_valid) {
-                            issue_inst1_Vk = 0;
-                            issue_inst1_Qk = rob.tag;
-                        } else {
-                            if(register_status.readD(issue_uop1.lrs2) == BUSY) {
-                                if(rob.read_operandD(register_status.readD_ROB) == BUSY) {
-                                    /* Wait for inst in ROB to produce value */
-                                    issue_inst1_Vk = 0;
-                                    issue_inst1_Qk = register_status.readD_ROB;
-                                } else {
-                                    /* Use value inside ROB */
-                                    issue_inst1_Vk = rob.read_operandD_val;
-                                    issue_inst1_Qk = -1;
-                                }
-                            } else {
-                                issue_inst1_Vk = gpr.readD(issue_uop1.lrs2);
-                                issue_inst1_Qk = -1;
-                            }
-                        }
-                    }
-                    (issue_uop1.rs2_sel == RS2_SEL_IMM): {
-                        issue_inst1_Vk = issue_uop1.imm;
-                        issue_inst1_Qk = -1;
-                    }
-                    (issue_uop1.rs2_sel == RS2_SEL_CSR): {
-                        // TODO: for now, csr is not decoded in this slot
-                        issue_inst1_Vk = csr.csr_rdata;
-                        issue_inst1_Qk = -1;
-                    }
-                    (issue_uop1.rs2_sel == RS2_SEL_CSR_UIMM): {
-                        // TODO: for now, csr is not decoded in this slot
-                        issue_inst1_Vk = csr.csr_rdata & 0xffffffe0;
-                        issue_inst1_Qk = -1;
-                    }
-                }
-                /* inst1 rd mapping */
-                register_status.issue1(issue_uop1.lrd, rob.tag+1);
-                /* Issue inst1 to RSs */
-                alt {
-                    issue_uop1.jalr || issue_uop1.jal || issue_uop1.branch: {
-                        bru_rs0.issue(
-                            issue_packet.inst1_valid, issue_uop1.uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_packet.inst1_pc + issue_uop1.imm
-                        );
-                    }
-                    issue_uop1.load || issue_uop1.store: {
-                        lsu_rs0.issue(issue_packet.inst1_valid, issue_uop1.uop, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, issue_uop1.imm);
-                    }
-                    else: {
-                        alu_rs1.issue(
-                            issue_packet.inst1_valid, issue_uop1.fn, issue_inst1_Vj, issue_inst1_Vk, issue_inst1_Qj, issue_inst1_Qk, rob.tag+1, 0);
-                    }
-                }
-            }
-            rob.issue(
-                issue_packet.inst0_valid, issue_packet.inst0_pc, issue_packet.inst0, (issue_uop0|{rob.tag, issue_inst0_Qj, issue_inst0_Qk}), csr.csr_rdata,
-                issue_packet.inst1_valid, issue_packet.inst1_pc, issue_packet.inst1, (issue_uop1|{rob.tag+1, issue_inst1_Qj, issue_inst1_Qk}), csr.csr_rdata);
-            finish();
-        } else {
-            stall_issue();
-        }
-    }
-    func alu_rs0.dispatch {
-        if(!flush) {
-            execute_alu0.invoke(alu_rs0.dispatch_Op, alu_rs0.dispatch_Dest, alu_rs0.dispatch_Vj, alu_rs0.dispatch_Vk);
-        }
-    }
-    func alu_rs1.dispatch {
-        if(!flush) {
-            execute_alu1.invoke(alu_rs1.dispatch_Op, alu_rs1.dispatch_Dest, alu_rs1.dispatch_Vj, alu_rs1.dispatch_Vk);
-        }
-    }
-    func bru_rs0.dispatch {
-        if(!flush) {
-            if(bru_rs0.dispatch_Op == uOP_BRU_JALR) {
-                execute_bru0.invoke(bru_rs0.dispatch_Op, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, {(bru_rs0.dispatch_Vj + bru_rs0.dispatch_Vk)[31:1], 1'b0});
-            } else if(bru_rs0.dispatch_Op == uOP_BRU_JAL) {
-                execute_bru0.invoke(bru_rs0.dispatch_Op, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_Vj + bru_rs0.dispatch_Vk);
-            } else {
-                execute_bru0.invoke(bru_rs0.dispatch_Op, bru_rs0.dispatch_Dest, bru_rs0.dispatch_Vj, bru_rs0.dispatch_Vk, bru_rs0.dispatch_A);
-            }
-        }
-    }
-    if(lsu.full) {
-        lsu_rs0.stall();
-    }
-    func lsu_rs0.dispatch {
-        wire lsu_rs0_dispatch_Addr[32];
-        if(!flush && !lsu.full) {
-            lsu_rs0_dispatch_Addr = lsu_rs0.dispatch_Vj + lsu_rs0.dispatch_A;
-            lsu.issue(lsu_rs0_dispatch_Addr, lsu_rs0.dispatch_Op, lsu_rs0.dispatch_Vk, lsu_rs0.dispatch_Dest);
-        }
+		if((freelist.count >= 2) && (!activelist.full)) {
+			issue_active_list_entry.valid0 = issue_packet.valid0;
+			issue_active_list_entry.valid1 = issue_packet.valid1;
+			issue_active_list_entry.PC = issue_packet.pc[31:3];
+			issue_active_list_entry.exception0 = |issue_uop0.cause;
+			issue_active_list_entry.exception1 = |issue_uop1.cause;
+			issue_active_list_entry.retired0 = !issue_packet.valid0;
+			issue_active_list_entry.retired1 = !issue_packet.valid1;
+			issue_active_list_entry.dreg0 = issue_uop0.lrd;
+			issue_active_list_entry.dreg1 = issue_uop1.lrd;
+
+			if(issue_packet.valid0 && (issue_uop0.lrd != 0)) {
+				freelist.pop0();
+				if(!(issue_packet.valid1 && (issue_uop1.lrd != 0)
+							&& (issue_uop0.lrd == issue_uop1.lrd))) {
+					register_map_table[issue_uop0.lrd] := freelist.pop0_data;
+					register_status_table[issue_uop0.lrd] := BUSY;
+				}
+				issue_active_list_entry.ppreg0 = register_map_table[issue_uop0.lrd];
+			}
+			if(issue_packet.valid1 && (issue_uop1.lrd != 0)) {
+				freelist.pop1();
+				register_map_table[issue_uop1.lrd] := freelist.pop1_data;
+				register_status_table[issue_uop1.lrd] := BUSY;
+				issue_active_list_entry.ppreg1 = register_map_table[issue_uop1.lrd];
+			}
+			activelist.issue(issue_active_list_entry);
+			// TODO:
+			finish();
+		}
     }
     proc execute_alu0 {
-        alu32 alu0;
-
-        if(!flush) {
-            alu0.exe(execute_alu0_a, execute_alu0_b, execute_alu0_fn);
-            writeresult_alu0(execute_alu0_dest, alu0.q);
-        }
-    }
-    proc execute_alu1 {
-        alu32 alu1;
-
-        if(!flush) {
-            alu1.exe(execute_alu1_a, execute_alu1_b, execute_alu1_fn);
-            writeresult_alu1(execute_alu1_dest, alu1.q);
-        }
     }
     proc execute_bru0 {
-        func_self execute_bru0_taken;
-        bru32 bru0;
-
-        if(!flush) {
-            bru0.exe(execute_bru0_a, execute_bru0_b, execute_bru0_fn);
-#define IS_IALIGNED(a, ialign) (((a[1:0] & ialign) != 2'b00))
-            writeresult_bru0(execute_bru0_dest, bru0.taken, execute_bru0_A, bru0.taken & IS_IALIGNED(execute_bru0_A, csr.ialign));
-        }
     }
-    proc writeresult_alu0 {
-        if(!flush) {
-            alu_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
-            alu_rs1.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
-            bru_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
-            lsu_rs0.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
-            rob.CDB0(writeresult_alu0_dest, writeresult_alu0_val);
-            finish();
-        }
+    proc execute_lsu0 {
     }
-    proc writeresult_alu1 {
-        if(!flush) {
-            alu_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
-            alu_rs1.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
-            bru_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
-            lsu_rs0.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
-            rob.CDB1(writeresult_alu1_dest, writeresult_alu1_val);
-            finish();
-        }
+    proc writeback_alu0 {
     }
-    proc writeresult_bru0 {
-        if(!flush) {
-            alu_rs0.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
-            alu_rs1.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
-            bru_rs0.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
-            lsu_rs0.CDB2(writeresult_bru0_dest, writeresult_bru0_val);
-            rob.CDB2(writeresult_bru0_dest, writeresult_bru0_val, writeresult_bru0_target, writeresult_bru0_instruction_address_misaligned);
-            finish();
-        }
+    proc writeback_bru0 {
     }
-    func lsu.CDBOut {
-        if(!flush) {
-            alu_rs0.CDB3(lsu.CDBOutId, lsu.CDBOutVal);
-            alu_rs1.CDB3(lsu.CDBOutId, lsu.CDBOutVal);
-            bru_rs0.CDB3(lsu.CDBOutId, lsu.CDBOutVal);
-            lsu_rs0.CDB3(lsu.CDBOutId, lsu.CDBOutVal);
-            rob.CDB3(lsu.CDBOutId, lsu.CDBOutVal);
-        }
-    }
-    func rob.commit {
-        cause_t wire commit_inst0_cause;
-        cause_t wire commit_inst1_cause;
-        func_self commit_kill_inst1;
-        uop_t wire commit_uop0;
-        uop_t wire commit_uop1;
-        
-        csr.update_instret();
-        if(rob.commit_Valid0) {
-            commit_uop0 = rob.commit_uOp0;
-            commit_inst0_cause = rob.commit_Cause0;
-            alt {
-                csr.msip && csr.msie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
-                    flush();
-                    commit_kill_inst1();
-                    ifu.redirect(csr.trap(MACHINE_SOFTWARE_INTERRUPT, rob.commit_PC0, rob.commit_Inst0));
-                }
-                csr.mtip && csr.mtie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
-                    flush();
-                    commit_kill_inst1();
-                    ifu.redirect(csr.trap(MACHINE_TIMER_INTERRUPT, rob.commit_PC0, rob.commit_Inst0));
-                }
-                commit_inst0_cause.illegal_instruction: {
-                    flush();
-                    commit_kill_inst1();
-                    ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC0, rob.commit_Inst0));
-                }
-               commit_inst0_cause.instruction_address_misaligned: {
-                    flush();
-                    commit_kill_inst1();
-                    ifu.redirect(csr.trap(INSTRUCTION_ADDRESS_MISALIGNED, rob.commit_PC0, rob.commit_Target0));
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_inst0_cause);
-                }
-                commit_inst0_cause.environment_call_from_m_mode: {
-                    flush();
-                    commit_kill_inst1();
-                    ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC0, rob.commit_Inst0));
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_inst0_cause);
-                }
-                commit_inst0_cause.breakpoint: {
-                    flush();
-                    commit_kill_inst1();
-                    ifu.redirect(csr.trap(BREAKPOINT, rob.commit_PC0, rob.commit_Inst0));
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_inst0_cause);
-                }
-                (commit_uop0.jal || commit_uop0.jalr): {
-                    // Jump instruction always redirect and flush pipeline.
-                    gpr.writeA(commit_uop0.lrd, rob.commit_PC0+4);
-                    ifu.redirect(rob.commit_Target0);
-                    commit_kill_inst1();
-                    flush();
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_inst0_cause);
-                }
-                (commit_uop0.branch && (rob.commit_Value0[0] == 1)): {
-                    // Branch instruction only redirect and flush pipeline if branch is taken.
-                    ifu.redirect(rob.commit_Target0);
-                    commit_kill_inst1();
-                    flush();
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_inst0_cause);
-                }
-                (commit_uop0.store): {
-                    lsu.commit(commit_uop0.lrd);
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_inst0_cause);
-                }
-                (commit_uop0.mret): {
-                    ifu.redirect(csr.mret());
-                    commit_kill_inst1();
-                    flush();
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_inst0_cause);
-                }
-                (commit_uop0.csr_write): {
-                    csr.write(commit_uop0.csr_addr, rob.commit_Value0);
-                    gpr.writeA(commit_uop0.lrd, rob.commit_CSR_Value0);
-                    ifu.redirect(rob.commit_PC0 + 4);
-                    commit_kill_inst1();
-                    flush();
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_inst0_cause);
-                }
-                else: {
-                    // Other instructions which has Dest register field.
-                    gpr.writeA(commit_uop0.lrd, rob.commit_Value0);
-                    DEBUG_COMMIT0(rob.commit_PC0, rob.commit_Inst0, commit_inst0_cause);
-                }
-            }
-       }
-       if(rob.commit_Valid1 && !commit_kill_inst1) {
-            commit_uop1 = rob.commit_uOp1;
-            commit_inst1_cause = rob.commit_Cause1;
-            alt {
-                csr.msip && csr.msie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
-                    flush();
-                    ifu.redirect(csr.trap(MACHINE_SOFTWARE_INTERRUPT, rob.commit_PC1, rob.commit_Inst1));
-                }
-                csr.mtip && csr.mtie && ((csr.mstatus_mie && csr.priv_mode == MACHINE) || (csr.priv_mode < MACHINE)): {
-                    flush();
-                    ifu.redirect(csr.trap(MACHINE_TIMER_INTERRUPT, rob.commit_PC1, rob.commit_Inst1));
-                }
-                commit_inst1_cause.illegal_instruction: {
-                    flush();
-                    ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, rob.commit_PC1, rob.commit_Inst1));
-                }
-                commit_inst1_cause.instruction_address_misaligned: {
-                    flush();
-                    ifu.redirect(csr.trap(INSTRUCTION_ADDRESS_MISALIGNED, rob.commit_PC1, rob.commit_Target1));
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_inst1_cause);
-                }
-                commit_inst1_cause.environment_call_from_m_mode: {
-                    flush();
-                    ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC1, rob.commit_Inst1));
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_inst1_cause);
-                }
-                commit_inst1_cause.breakpoint: {
-                    flush();
-                    ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, rob.commit_PC1, rob.commit_Inst1));
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_inst1_cause);
-                }
-                (commit_uop1.jal || commit_uop1.jalr): {
-                    // Jump instruction always redirect and flush pipeline.
-                    gpr.writeB(commit_uop1.lrd, rob.commit_PC1+4);
-                    ifu.redirect(rob.commit_Target1);
-                    flush();
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_inst1_cause);
-                }
-                (commit_uop1.branch && (rob.commit_Value1[0] == 1)): {
-                    // Branch instruction only redirect and flush pipeline if branch is taken.
-                    ifu.redirect(rob.commit_Target1);
-                    flush();
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_inst1_cause);
-                }
-                (commit_uop1.store): {
-                    lsu.commit(commit_uop1.lrd);
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_inst1_cause);
-                }
-                (commit_uop1.mret): {
-                    ifu.redirect(csr.mret());
-                    flush();
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_inst1_cause);
-                }
-                (commit_uop1.csr_write): {
-                    csr.write(commit_uop1.csr_addr, rob.commit_Value1);
-                    gpr.writeB(commit_uop1.lrd, rob.commit_CSR_Value1);
-                    ifu.redirect(rob.commit_PC1 + 4);
-                    flush();
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_inst1_cause);
-                }
-                else: {
-                    // Other instructions which has Dest register field.
-                    gpr.writeB(commit_uop1.lrd, rob.commit_Value1);
-                    DEBUG_COMMIT1(rob.commit_PC1, rob.commit_Inst1, commit_inst1_cause);
-                }
-            }
-        }
-        if(!flush && rob.commit_Valid0 && ~commit_inst0_cause) {
-            register_status.commit0(commit_uop0.lrd, rob.commit_Id);
-        }
-        if(!flush && rob.commit_Valid1 && ~commit_inst1_cause && !commit_kill_inst1) {
-            register_status.commit1(commit_uop1.lrd, rob.commit_Id+1);
-        }
+    proc writeback_lsu0 {
     }
     /*
         Interrupts
