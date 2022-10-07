@@ -89,9 +89,7 @@ struct cause_t {
 };
 
 struct uop_t {
-    opcode[7];
     uop[uOP_SIZE];
-    fn[4];
     lrd[5];
     lrs1[5];
     rs1_sel[2];
@@ -105,16 +103,11 @@ struct uop_t {
     branch;
     csr_write;
     csr_read;
-    csr_addr[12];
     mret;
     ecall;
     ebreak;
-    cause[16];
-    // TODO: Not set
-    prd[ROB_TAG_SIZE];
-    prs1[ROB_TAG_SIZE];
-    prs2[ROB_TAG_SIZE];
-#define SIZEOF_UOP_T 107+ROB_TAG_SIZE+ROB_TAG_SIZE+ROB_TAG_SIZE
+	cause[SIZEOF_CAUSE_T];
+#define SIZEOF_UOP_T uOP_SIZE+SIZEOF_CAUSE_T+61
 };
 
 #endif
