@@ -11,6 +11,7 @@ add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/load_store_unit.nsl ${CMAKE_CURRENT_B
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/control_status_register.nsl ${CMAKE_CURRENT_BINARY_DIR}/control_status_register.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/free_list.nsl ${CMAKE_CURRENT_BINARY_DIR}/free_list.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/active_list.nsl ${CMAKE_CURRENT_BINARY_DIR}/active_list.v)
+add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/issue_queue.nsl ${CMAKE_CURRENT_BINARY_DIR}/issue_queue.v)
 
 add_custom_target(core
 	DEPENDS
@@ -27,4 +28,5 @@ add_custom_target(core
 		${CMAKE_CURRENT_BINARY_DIR}/control_status_register.v
 		${CMAKE_CURRENT_BINARY_DIR}/free_list.v
 		${CMAKE_CURRENT_BINARY_DIR}/active_list.v
+		${CMAKE_CURRENT_BINARY_DIR}/issue_queue.v
 )
