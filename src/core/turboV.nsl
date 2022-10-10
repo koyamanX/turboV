@@ -12,6 +12,7 @@
 #include "uops.h"
 #include "active_list.h"
 #include "free_list.h"
+#include "issue_queue.h"
 
 #ifdef ENABLE_DEBUG
 #define DEBUG_COMMIT0(pc, inst, cause) debug_commit0(pc, inst, cause)
@@ -38,9 +39,9 @@ module turboV {
     /* Decode stage */
     proc_name decode();
 	issue_packet_t reg issue_packet;
-	uop_t reg issue_uop0;
-	uop_t reg issue_uop1;
-	proc_name issue(issue_packet, issue_uop0, issue_uop1);
+	decoder_packet_t reg decoder_packet0;
+	decoder_packet_t reg decoder_packet1;
+	proc_name issue(issue_packet, decoder_packet0, decoder_packet1);
 	proc_name register_read();
 	proc_name execute_alu0();
 	proc_name execute_bru0();
@@ -67,6 +68,8 @@ module turboV {
 	free_list freelist;
 	mem register_map_table[32][6];
 	mem register_status_table[32][1] = {0};
+	issue_queue iq_alu0;
+	issue_queue iq_alu1;
 
     func reset {
         if(!warm_reset) {
@@ -129,7 +132,7 @@ module turboV {
 					issue.invoke({decode_fetch_packet.pc,
 							decode_fetch_packet.pred0, decode_fetch_packet.pred1,
 							decode_fetch_packet.valid0, decode_fetch_packet.valid1},
-							udec0.uop, udec1.uop);
+							udec0.packet, udec1.packet);
 
 				} else {
 					// Either way0 or way1 is valid.
@@ -138,7 +141,7 @@ module turboV {
 					issue.invoke({decode_fetch_packet.pc,
 							decode_fetch_packet.pred0, decode_fetch_packet.pred1,
 							decode_fetch_packet.valid0, decode_fetch_packet.valid1},
-							udec0.uop, udec1.uop);
+							udec0.packet, udec1.packet);
 				}
 			}
 		}
@@ -148,39 +151,113 @@ module turboV {
     }
     proc issue {
 		active_list_t wire issue_active_list_entry;
+		wire issue_inst0_prd[6];
+		wire issue_inst0_pprd[6];
+		wire issue_inst0_rs1_valid;
+		wire issue_inst0_rs1_ready;
+		wire issue_inst0_prs1[6];
+		wire issue_inst0_rs2_valid;
+		wire issue_inst0_rs2_ready;
+		wire issue_inst0_prs2[6];
+		wire issue_inst1_prd[6];
+		wire issue_inst1_pprd[6];
+		wire issue_inst1_rs1_valid;
+		wire issue_inst1_rs1_ready;
+		func_self issue_inst1_rs1_ready_bypass;
+		wire issue_inst1_prs1[6];
+		wire issue_inst1_rs2_valid;
+		wire issue_inst1_rs2_ready;
+		func_self issue_inst1_rs2_ready_bypass;
+		wire issue_inst1_prs2[6];
+		uop_t wire issue_uop0;
+		uop_t wire issue_uop1;
 
+		issue_uop0 = decoder_packet0.uop;
+		issue_uop1 = decoder_packet1.uop;
 		if((freelist.count >= 2) && (!activelist.full)) {
 			issue_active_list_entry.valid0 = issue_packet.valid0;
 			issue_active_list_entry.valid1 = issue_packet.valid1;
 			issue_active_list_entry.PC = issue_packet.pc[31:3];
+			issue_active_list_entry.uop0 = issue_uop0;
+			issue_active_list_entry.uop1 = issue_uop1;
 			issue_active_list_entry.exception0 = |issue_uop0.cause;
 			issue_active_list_entry.exception1 = |issue_uop1.cause;
 			issue_active_list_entry.retired0 = !issue_packet.valid0;
 			issue_active_list_entry.retired1 = !issue_packet.valid1;
-			issue_active_list_entry.dreg0 = issue_uop0.lrd;
-			issue_active_list_entry.dreg1 = issue_uop1.lrd;
+			issue_active_list_entry.dreg0 = decoder_packet0.lrd;
+			issue_active_list_entry.dreg1 = decoder_packet1.lrd;
 
-			if(issue_packet.valid0 && (issue_uop0.lrd != 0)) {
-				freelist.pop0();
-				if(!(issue_packet.valid1 && (issue_uop1.lrd != 0)
-							&& (issue_uop0.lrd == issue_uop1.lrd))) {
-					register_map_table[issue_uop0.lrd] := freelist.pop0_data;
-					register_status_table[issue_uop0.lrd] := BUSY;
+			// Rename destination registers
+			issue_inst0_pprd = register_map_table[decoder_packet0.lrd];
+			issue_inst1_pprd = register_map_table[decoder_packet1.lrd];
+			if(issue_packet.valid0 && (decoder_packet0.lrd != 0)) {
+				issue_inst0_prd = freelist.pop0();
+				if(!(issue_packet.valid1 && (decoder_packet0.lrd != 0)
+							&& (decoder_packet0.lrd == decoder_packet1.lrd))) {
+					register_map_table[decoder_packet0.lrd] := issue_inst0_prd;
+					register_status_table[decoder_packet0.lrd] := BUSY;
 				}
-				issue_active_list_entry.ppreg0 = register_map_table[issue_uop0.lrd];
+				issue_active_list_entry.ppreg0 = issue_inst0_pprd;
 			}
-			if(issue_packet.valid1 && (issue_uop1.lrd != 0)) {
-				freelist.pop1();
-				register_map_table[issue_uop1.lrd] := freelist.pop1_data;
-				register_status_table[issue_uop1.lrd] := BUSY;
-				issue_active_list_entry.ppreg1 = register_map_table[issue_uop1.lrd];
+			if(issue_packet.valid1 && (decoder_packet1.lrd != 0)) {
+				issue_inst1_prd = freelist.pop1();
+				register_map_table[decoder_packet1.lrd] := issue_inst1_prd;
+				register_status_table[decoder_packet1.lrd] := BUSY;
+				issue_active_list_entry.ppreg1 = issue_inst1_pprd;
 			}
+			// Rename source registers
+			if(issue_packet.valid0) {
+				issue_inst0_prs1 = register_map_table[decoder_packet0.lrs1];
+				issue_inst0_prs2 = register_map_table[decoder_packet0.lrs2];
+			}
+			if(issue_packet.valid0 && issue_packet.valid1
+					&& decoder_packet0.lrd == decoder_packet1.lrs1) {
+				issue_inst1_prs1 = issue_inst0_prs1;
+				issue_inst1_rs1_ready_bypass();
+			} else {
+				issue_inst1_prs1 = register_map_table[decoder_packet1.lrs1];
+			}
+			if(issue_packet.valid0 && issue_packet.valid1
+					&& decoder_packet0.lrd == decoder_packet1.lrs2) {
+				issue_inst1_prs2 = issue_inst0_prs2;
+				issue_inst1_rs2_ready_bypass();
+			} else {
+				issue_inst1_prs2 = register_map_table[decoder_packet1.lrs2];
+			}
+			issue_inst0_rs1_valid = issue_packet.valid0
+				&& (decoder_packet0.rs1_sel == RS1_SEL_REG);
+			issue_inst0_rs2_valid = issue_packet.valid0
+				&& (decoder_packet0.rs2_sel == RS1_SEL_REG);
+			issue_inst1_rs1_valid = issue_packet.valid1
+				&& (decoder_packet1.rs1_sel == RS1_SEL_REG);
+			issue_inst1_rs2_valid = issue_packet.valid1
+				&& (decoder_packet1.rs2_sel == RS1_SEL_REG);
+			// Source register ready
+			issue_inst0_rs1_ready = issue_packet.valid0
+				&& register_status_table[decoder_packet1.lrs1];
+			issue_inst0_rs2_ready = issue_packet.valid0
+				&& register_status_table[decoder_packet1.lrs2];
+			issue_inst1_rs1_ready = if(issue_inst1_rs1_ready_bypass) issue_inst0_rs1_ready
+				else issue_packet.valid1 && register_status_table[decoder_packet1.lrs1];
+			issue_inst1_rs2_ready = if(issue_inst1_rs2_ready_bypass) issue_inst0_rs2_ready
+				else issue_packet.valid1 && register_status_table[decoder_packet1.lrs2];
+
 			activelist.issue(issue_active_list_entry);
+			// TODO:
+			iq_alu0.issue(decoder_packet0.uop, issue_inst0_prd,
+					issue_inst0_rs1_valid, issue_inst0_rs1_ready, issue_inst0_prs1,
+					issue_inst0_rs2_valid, issue_inst0_rs2_ready, issue_inst0_prs2,
+					decoder_packet0.imm);
+			iq_alu1.issue(decoder_packet1.uop, issue_inst1_prd,
+					issue_inst1_rs1_valid, issue_inst1_rs1_ready, issue_inst1_prs1,
+					issue_inst1_rs2_valid, issue_inst1_rs2_ready, issue_inst1_prs2,
+					decoder_packet1.imm);
 			// TODO:
 			finish();
 		}
     }
     proc execute_alu0 {
+
     }
     proc execute_bru0 {
     }

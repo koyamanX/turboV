@@ -18,7 +18,7 @@ struct issue_queue_t {
 };
 
 declare issue_queue {
-    input uop[uOP_SIZE];
+    input uop[SIZEOF_UOP_T];
     input prd[6];
 	input prs1_valid;
 	input prs1_ready;

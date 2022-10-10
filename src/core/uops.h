@@ -90,12 +90,6 @@ struct cause_t {
 
 struct uop_t {
     uop[uOP_SIZE];
-    lrd[5];
-    lrs1[5];
-    rs1_sel[2];
-    lrs2[5];
-    rs2_sel[2];
-    imm[32];
     jal;
     jalr;
     load;
@@ -107,7 +101,7 @@ struct uop_t {
     ecall;
     ebreak;
 	cause[SIZEOF_CAUSE_T];
-#define SIZEOF_UOP_T uOP_SIZE+SIZEOF_CAUSE_T+61
+#define SIZEOF_UOP_T uOP_SIZE+SIZEOF_CAUSE_T+10
 };
 
 #endif
