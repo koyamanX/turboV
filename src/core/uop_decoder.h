@@ -13,14 +13,25 @@
 #include "uops.h"
 #include "control_status_register.h"
 
+struct decoder_packet_t {
+	uop[SIZEOF_UOP_T];
+	lrd[5];
+    rs1_sel[2];
+    lrs1[5];
+    rs2_sel[2];
+    lrs2[5];
+    imm[32];
+#define SIZEOF_DECODER_PACKET_T SIZEOF_UOP_T+51
+};
+
 declare uop_decoder {
     input inst[32];
     func_in decode(inst);
-    output uop[SIZEOF_UOP_T];
-    func_out uop_alu(uop);
-    func_out uop_bru(uop);
-    func_out uop_lsu(uop);
-    func_out uop_system(uop);
+    output packet[SIZEOF_DECODER_PACKET_T];
+    func_out uop_alu(packet);
+    func_out uop_bru(packet);
+    func_out uop_lsu(packet);
+    func_out uop_system(packet);
     output decode_csr_rw[2];
     output decode_csr_addr[12];
     func_out decode_csr(decode_csr_rw, decode_csr_addr);
