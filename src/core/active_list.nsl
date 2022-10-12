@@ -15,6 +15,7 @@ module active_list {
 			activelist[tail] := new_entry;
 			tail := next_tail;
 		}
+		return tail  << 1;
 	}
 	head_entry = activelist[tail];
 	if((head_entry.valid0 || head_entry.valid1) && (head_entry.retired0 && head_entry.retired1)) {

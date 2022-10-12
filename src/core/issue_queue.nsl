@@ -19,6 +19,7 @@ module issue_queue {
         issue_queue_t wire new_entry;
         if(!flush) {
             new_entry.valid = 1;
+            new_entry.ptr = ptr;
             new_entry.uop = uop;
 			new_entry.prs1_valid = prs1_valid;
 			new_entry.prs2_valid = prs2_valid;
@@ -63,19 +64,19 @@ module issue_queue {
     }
     func dispatch_rs0 {
         rs0.valid := 0;
-        dispatch(rs0.uop, rs0.prd, rs0.prs1, rs0.prs2, rs0.imm);
+        dispatch(rs0.ptr, rs0.uop, rs0.prd, rs0.prs1, rs0.prs2, rs0.imm);
     }
     func dispatch_rs1 {
         rs1.valid := 0;
-        dispatch(rs1.uop, rs1.prd, rs1.prs1, rs1.prs2, rs1.imm);
+        dispatch(rs1.ptr, rs1.uop, rs1.prd, rs1.prs1, rs1.prs2, rs1.imm);
     }
     func dispatch_rs2 {
         rs2.valid := 0;
-        dispatch(rs2.uop, rs2.prd, rs2.prs1, rs2.prs2, rs2.imm);
+        dispatch(rs2.ptr, rs2.uop, rs2.prd, rs2.prs1, rs2.prs2, rs2.imm);
     }
     func dispatch_rs3 {
         rs3.valid := 0;
-        dispatch(rs3.uop, rs3.prd, rs3.prs1, rs3.prs2, rs3.imm);
+        dispatch(rs3.ptr, rs3.uop, rs3.prd, rs3.prs1, rs3.prs2, rs3.imm);
     }
     func wakeup0 {
         if(!flush) {

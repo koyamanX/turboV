@@ -2,9 +2,11 @@
 #define ISSUE_QUEUE_H
 
 #include "uops.h"
+#include "active_list.h"
 
 struct issue_queue_t {
 	valid;
+	ptr[LOG2_ACTIVE_LIST_NUM_OF_ENTRIES];
     uop[uOP_SIZE];
     prs1[6];
 	prs1_valid;
@@ -14,10 +16,11 @@ struct issue_queue_t {
 	prs2_valid;
     prd[6];
     imm[32];
-    #define SIZEOF_ISSUE_QUEUE_T uOP_SIZE+18+32+3
+    #define SIZEOF_ISSUE_QUEUE_T LOG2_ACTIVE_LIST_NUM_OF_ENTRIES+uOP_SIZE+18+32+3
 };
 
 declare issue_queue {
+	input ptr[LOG2_ACTIVE_LIST_NUM_OF_ENTRIES];
     input uop[SIZEOF_UOP_T];
     input prd[6];
 	input prs1_valid;
@@ -27,16 +30,17 @@ declare issue_queue {
 	input prs2_ready;
     input prs2[6];
     input imm[32];
-    func_in issue(uop, prd, prs1_valid, prs1_ready, prs1, prs2_valid, prs2_ready, prs2, imm);
+    func_in issue(ptr, uop, prd, prs1_valid, prs1_ready, prs1, prs2_valid, prs2_ready, prs2, imm);
     func_in flush();
     func_out full();
     func_in stall();
+    output dispatch_ptr[LOG2_ACTIVE_LIST_NUM_OF_ENTRIES];
     output dispatch_uop[uOP_SIZE];
     output dispatch_prd[6];
     output dispatch_prs1[6];
     output dispatch_prs2[6];
     output dispatch_imm[32];
-    func_out dispatch(dispatch_uop, dispatch_prd, dispatch_prs1, dispatch_prs2, dispatch_imm);
+    func_out dispatch(dispatch_ptr, dispatch_uop, dispatch_prd, dispatch_prs1, dispatch_prs2, dispatch_imm);
 	input wakeup0_prd[6];
 	func_in wakeup0(wakeup0_prd);
 	input wakeup1_prd[6];
