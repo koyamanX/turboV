@@ -151,6 +151,7 @@ module turboV {
     }
     proc issue {
 		active_list_t wire issue_active_list_entry;
+		wire issue_inst0_ptr[LOG2_ACTIVE_LIST_NUM_OF_ENTRIES];
 		wire issue_inst0_prd[6];
 		wire issue_inst0_pprd[6];
 		wire issue_inst0_rs1_valid;
@@ -159,6 +160,7 @@ module turboV {
 		wire issue_inst0_rs2_valid;
 		wire issue_inst0_rs2_ready;
 		wire issue_inst0_prs2[6];
+		wire issue_inst1_ptr[LOG2_ACTIVE_LIST_NUM_OF_ENTRIES];
 		wire issue_inst1_prd[6];
 		wire issue_inst1_pprd[6];
 		wire issue_inst1_rs1_valid;
@@ -243,12 +245,15 @@ module turboV {
 				else issue_packet.valid1 && register_status_table[decoder_packet1.lrs2];
 
 			activelist.issue(issue_active_list_entry);
+			// TODO: NSL does not support mod.sig_o[_int(N)]
+			issue_inst0_ptr = {activelist.ptr, 1'b0};
+			issue_inst1_ptr = {activelist.ptr, 1'b1};
 			// TODO:
-			iq_alu0.issue(decoder_packet0.uop, issue_inst0_prd,
+			iq_alu0.issue(issue_inst0_ptr, decoder_packet0.uop, issue_inst0_prd,
 					issue_inst0_rs1_valid, issue_inst0_rs1_ready, issue_inst0_prs1,
 					issue_inst0_rs2_valid, issue_inst0_rs2_ready, issue_inst0_prs2,
 					decoder_packet0.imm);
-			iq_alu1.issue(decoder_packet1.uop, issue_inst1_prd,
+			iq_alu1.issue(issue_inst0_ptr, decoder_packet1.uop, issue_inst1_prd,
 					issue_inst1_rs1_valid, issue_inst1_rs1_ready, issue_inst1_prs1,
 					issue_inst1_rs2_valid, issue_inst1_rs2_ready, issue_inst1_prs2,
 					decoder_packet1.imm);

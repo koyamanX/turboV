@@ -26,7 +26,8 @@ struct active_list_t {
 
 declare active_list {
 	input new_entry[SIZEOF_ACTIVE_LIST_T];
-	func_in issue(new_entry);
+	output ptr[LOG2_ACTIVE_LIST_NUM_OF_ENTRIES+1];
+	func_in issue(new_entry): ptr;
 	output commit_entry[SIZEOF_ACTIVE_LIST_T];
 	func_in commit(): commit_entry;
 	func_out commitable();
