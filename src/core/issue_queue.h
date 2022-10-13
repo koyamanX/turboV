@@ -2,11 +2,11 @@
 #define ISSUE_QUEUE_H
 
 #include "uops.h"
-#include "active_list.h"
+#include "reorder_buffer.h"
 
 struct issue_queue_t {
 	valid;
-	ptr[LOG2_ACTIVE_LIST_NUM_OF_ENTRIES];
+	ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
     uop[uOP_SIZE];
     prs1[6];
 	prs1_valid;
@@ -16,11 +16,11 @@ struct issue_queue_t {
 	prs2_valid;
     prd[6];
     imm[32];
-    #define SIZEOF_ISSUE_QUEUE_T LOG2_ACTIVE_LIST_NUM_OF_ENTRIES+uOP_SIZE+18+32+3
+    #define SIZEOF_ISSUE_QUEUE_T LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+uOP_SIZE+18+32+3
 };
 
 declare issue_queue {
-	input ptr[LOG2_ACTIVE_LIST_NUM_OF_ENTRIES];
+	input ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
     input uop[SIZEOF_UOP_T];
     input prd[6];
 	input prs1_valid;
@@ -34,7 +34,7 @@ declare issue_queue {
     func_in flush();
     func_out full();
     func_in stall();
-    output dispatch_ptr[LOG2_ACTIVE_LIST_NUM_OF_ENTRIES];
+    output dispatch_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
     output dispatch_uop[uOP_SIZE];
     output dispatch_prd[6];
     output dispatch_prs1[6];
