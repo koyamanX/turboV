@@ -15,6 +15,7 @@ struct issue_queue_t {
 	prs2_ready;
 	prs2_valid;
     prd[6];
+	// pure IMM or IMM+PC
     imm[32];
     #define SIZEOF_ISSUE_QUEUE_T LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+uOP_SIZE+18+32+3
 };

@@ -9,6 +9,7 @@ struct decoder_packet_t {
 	lrd[5];
     lrs1[5];
     lrs2[5];
+	// pure IMM or IMM+PC
     imm[32];
 	cause[SIZEOF_CAUSE_T];
 #define SIZEOF_DECODER_PACKET_T SIZEOF_UOP_T+SIZEOF_CAUSE_T+47
