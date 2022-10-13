@@ -7,7 +7,7 @@
 struct issue_queue_t {
 	valid;
 	ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
-    uop[uOP_SIZE];
+    uop[SIZEOF_UOP_T];
     prs1[6];
 	prs1_valid;
 	prs1_ready;
