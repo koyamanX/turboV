@@ -181,8 +181,8 @@ module turboV {
 			issue_reorder_buffer_entry.PC = issue_packet.pc[31:3];
 			issue_reorder_buffer_entry.uop0 = issue_uop0;
 			issue_reorder_buffer_entry.uop1 = issue_uop1;
-			issue_reorder_buffer_entry.exception0 = |issue_uop0.cause;
-			issue_reorder_buffer_entry.exception1 = |issue_uop1.cause;
+			issue_reorder_buffer_entry.exception0 = |decoder_packet0.cause;
+			issue_reorder_buffer_entry.exception1 = |decoder_packet1.cause;
 			issue_reorder_buffer_entry.retired0 = !issue_packet.valid0;
 			issue_reorder_buffer_entry.retired1 = !issue_packet.valid1;
 			issue_reorder_buffer_entry.dreg0 = decoder_packet0.lrd;

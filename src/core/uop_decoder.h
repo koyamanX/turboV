@@ -21,7 +21,8 @@ struct decoder_packet_t {
     rs2_sel[2];
     lrs2[5];
     imm[32];
-#define SIZEOF_DECODER_PACKET_T SIZEOF_UOP_T+51
+	cause[SIZEOF_CAUSE_T];
+#define SIZEOF_DECODER_PACKET_T SIZEOF_UOP_T+SIZEOF_CAUSE_T+51
 };
 
 declare uop_decoder {
