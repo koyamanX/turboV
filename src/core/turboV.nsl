@@ -115,8 +115,8 @@ module turboV {
 		state decode0 {
 			if(!ifu.ibuf_empty) {
 				decode_fetch_packet = ifu.ibuf_pop();
-				udec0.decode(decode_fetch_packet.inst0);
-				udec1.decode(decode_fetch_packet.inst1);
+				udec0.decode({decode_fetch_packet.pc, 3'b000}, decode_fetch_packet.inst0);
+				udec1.decode({decode_fetch_packet.pc, 3'b100}, decode_fetch_packet.inst1);
 
 				if(decode_fetch_packet.valid0 && decode_fetch_packet.valid1) {
 					/* Check if structural hazard occurs, if so, issue first insts
