@@ -20,7 +20,7 @@ struct reorder_buffer_t {
 #define SIZEOF_REORDER_BUFFER_T 57+SIZEOF_UOP_T+SIZEOF_UOP_T
 };
 
-#define NUMBER_OF_REORDER_BUFFER 16
+#define NUMBER_OF_REORDER_BUFFER 8
 #define REORDER_BUFFER_NUM_OF_ENTRIES NUMBER_OF_REORDER_BUFFER.0
 #define LOG2_REORDER_BUFFER_NUM_OF_ENTRIES _int(_log10(REORDER_BUFFER_NUM_OF_ENTRIES)/_log10(2.0))
 
@@ -31,6 +31,12 @@ declare reorder_buffer {
 	output commit_entry[SIZEOF_REORDER_BUFFER_T];
 	func_in commit(): commit_entry;
 	func_out commitable();
+	input retire0_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	func_in retire0(retire0_ptr);
+	input retire1_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	func_in retire1(retire1_ptr);
+	input retire2_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	func_in retire2(retire2_ptr);
 	func_in flush();
 	func_out full();
 }

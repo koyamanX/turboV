@@ -1,7 +1,15 @@
 #include "reorder_buffer.h"
 
+// TODO: Re-implement with LVT based multi-ported RAM
 module reorder_buffer {
-	mem rob[NUMBER_OF_REORDER_BUFFER][SIZEOF_REORDER_BUFFER_T] = {0};	
+	reorder_buffer_t reg rob0 = 0;
+	reorder_buffer_t reg rob1 = 0;
+	reorder_buffer_t reg rob2 = 0;
+	reorder_buffer_t reg rob3 = 0;
+	reorder_buffer_t reg rob4 = 0;
+	reorder_buffer_t reg rob5 = 0;
+	reorder_buffer_t reg rob6 = 0;
+	reorder_buffer_t reg rob7 = 0;
 	reg tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1] = 0;
 	reg head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1] = 0;
 	wire next_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
@@ -12,12 +20,30 @@ module reorder_buffer {
 	next_head = head + 1;
 	func issue {
 		if(!flush) {
-			rob[tail] := new_entry;
+			any {
+				tail == 0: rob0 := new_entry;
+				tail == 1: rob1 := new_entry;
+				tail == 2: rob2 := new_entry;
+				tail == 3: rob3 := new_entry;
+				tail == 4: rob4 := new_entry;
+				tail == 5: rob5 := new_entry;
+				tail == 6: rob6 := new_entry;
+				tail == 7: rob7 := new_entry;
+			}
 			tail := next_tail;
 		}
 		return tail  << 1;
 	}
-	head_entry = rob[tail];
+	any {
+		head == 0: head_entry = rob0;
+		head == 1: head_entry = rob1;
+		head == 2: head_entry = rob2;
+		head == 3: head_entry = rob3;
+		head == 4: head_entry = rob4;
+		head == 5: head_entry = rob5;
+		head == 6: head_entry = rob6;
+		head == 7: head_entry = rob7;
+	}
 	if((head_entry.valid0 || head_entry.valid1) && (head_entry.retired0 && head_entry.retired1)) {
 		commitable();
 	}
@@ -31,10 +57,52 @@ module reorder_buffer {
             full();
         }
     }
+	func retire0 {
+		any {
+			retire0_ptr == 0: rob0.retired0 := 0;
+			retire0_ptr == 1: rob0.retired1 := 0;
+			retire0_ptr == 2: rob1.retired0 := 0;
+			retire0_ptr == 3: rob1.retired1 := 0;
+			retire0_ptr == 4: rob2.retired0 := 0;
+			retire0_ptr == 5: rob2.retired1 := 0;
+			retire0_ptr == 6: rob3.retired0 := 0;
+			retire0_ptr == 7: rob3.retired1 := 0;
+		}
+	}
+	func retire1 {
+		any {
+			retire1_ptr == 0: rob0.retired0 := 0;
+			retire1_ptr == 1: rob0.retired1 := 0;
+			retire1_ptr == 2: rob1.retired0 := 0;
+			retire1_ptr == 3: rob1.retired1 := 0;
+			retire1_ptr == 4: rob2.retired0 := 0;
+			retire1_ptr == 5: rob2.retired1 := 0;
+			retire1_ptr == 6: rob3.retired0 := 0;
+			retire1_ptr == 7: rob3.retired1 := 0;
+		}
+	}
+	func retire2 {
+		any {
+			retire2_ptr == 0: rob0.retired0 := 0;
+			retire2_ptr == 1: rob0.retired1 := 0;
+			retire2_ptr == 2: rob1.retired0 := 0;
+			retire2_ptr == 3: rob1.retired1 := 0;
+			retire2_ptr == 4: rob2.retired0 := 0;
+			retire2_ptr == 5: rob2.retired1 := 0;
+			retire2_ptr == 6: rob3.retired0 := 0;
+			retire2_ptr == 7: rob3.retired1 := 0;
+		}
+	}
 	func flush {
 		head := 0;
 		tail := 0;
-		//TODO:
-		rob[0] := 0;
+		rob0 := 0;
+		rob1 := 0;
+		rob2 := 0;
+		rob3 := 0;
+		rob4 := 0;
+		rob5 := 0;
+		rob6 := 0;
+		rob7 := 0;
 	}
 }
