@@ -43,8 +43,10 @@ module turboV {
 	proc_name issue(issue_packet, decoder_packet0, decoder_packet1);
 	proc_name register_read();
 	proc_name execute_alu0();
+	proc_name execute_alu1();
 	proc_name execute_lsu0();
 	proc_name writeback_alu0();
+	proc_name writeback_alu1();
 	proc_name writeback_lsu0();
 	/* Pipeline flush */
     func_self flush();
@@ -67,6 +69,8 @@ module turboV {
 	mem register_status_table[32][1] = {0};
 	issue_queue iq_alu0;
 	issue_queue iq_alu1;
+	alu32 alu0;
+	alu32 alu1;
 
     func reset {
         if(!warm_reset) {
@@ -257,11 +261,14 @@ module turboV {
 		}
     }
     proc execute_alu0 {
-
+    }
+    proc execute_alu1 {
     }
     proc execute_lsu0 {
     }
     proc writeback_alu0 {
+    }
+    proc writeback_alu1 {
     }
     proc writeback_lsu0 {
     }
