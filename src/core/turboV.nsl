@@ -5,7 +5,6 @@
 #include "uop_decoder.h"
 #include "register_file.h"
 #include "opcode_map.h"
-#include "bru32.h"
 #include "load_store_unit.h"
 #include "control_status_register.h"
 #include "priv.h"
@@ -44,10 +43,8 @@ module turboV {
 	proc_name issue(issue_packet, decoder_packet0, decoder_packet1);
 	proc_name register_read();
 	proc_name execute_alu0();
-	proc_name execute_bru0();
 	proc_name execute_lsu0();
 	proc_name writeback_alu0();
-	proc_name writeback_bru0();
 	proc_name writeback_lsu0();
 	/* Pipeline flush */
     func_self flush();
@@ -99,10 +96,8 @@ module turboV {
         decode.finish();
         issue.finish();
         execute_alu0.finish();
-        execute_bru0.finish();
         execute_lsu0.finish();
         writeback_alu0.finish();
-        writeback_bru0.finish();
         writeback_lsu0.finish();
         /* Flush ROB, RSs and LSQs */
         lsu.flush();
@@ -264,13 +259,9 @@ module turboV {
     proc execute_alu0 {
 
     }
-    proc execute_bru0 {
-    }
     proc execute_lsu0 {
     }
     proc writeback_alu0 {
-    }
-    proc writeback_bru0 {
     }
     proc writeback_lsu0 {
     }

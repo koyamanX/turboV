@@ -3,19 +3,20 @@
 
 #include "consts.h"
 
-#define uOP_SIZE                        7
+#define uOP_SIZE                        8
+#define FN_SIZE							5
 
-#define ALU_ADD    4'b0000
-#define ALU_SUB    4'b1000
-#define ALU_SLL    4'b0001
-#define ALU_SLT    4'b0010
-#define ALU_SLTU   4'b0011
-#define ALU_XOR    4'b0100
-#define ALU_SRL    4'b0101
-#define ALU_SRA    4'b1101
-#define ALU_OR     4'b0110
-#define ALU_AND    4'b0111
-#define ALU_NAAND  4'b1111
+#define ALU_ADD    5'b00000
+#define ALU_SUB    5'b01000
+#define ALU_SLL    5'b00001
+#define ALU_SLT    5'b00010
+#define ALU_SLTU   5'b00011
+#define ALU_XOR    5'b00100
+#define ALU_SRL    5'b00101
+#define ALU_SRA    5'b01101
+#define ALU_OR     5'b00110
+#define ALU_AND    5'b00111
+#define ALU_NAAND  5'b01111
 /* Lower 4 bits corresponds to fn of ALU */
 #define uOP_ALU                         3'b000
 #define uOP_ALU_ADD                     {uOP_ALU, ALU_ADD}
@@ -30,14 +31,14 @@
 #define uOP_ALU_AND                     {uOP_ALU, ALU_AND}
 #define uOP_ALU_NAAND                   {uOP_ALU, ALU_NAAND}
 
-#define BRU_EQ                          4'b0000
-#define BRU_NE                          4'b0001
-#define BRU_LT                          4'b0100
-#define BRU_GE                          4'b0101
-#define BRU_LTU                         4'b0110
-#define BRU_GEU                         4'b0111
-#define BRU_JALR                        4'b1111
-#define BRU_JAL                         4'b1000
+#define BRU_EQ                          5'b10000
+#define BRU_NE                          5'b10001
+#define BRU_LT                          5'b10100
+#define BRU_GE                          5'b10101
+#define BRU_LTU                         5'b10110
+#define BRU_GEU                         5'b10111
+#define BRU_JALR                        5'b11111
+#define BRU_JAL                         5'b11000
 /* Lower 4 bits corresponds to fn of BRU */
 #define uOP_BRU                         3'b001
 #define uOP_BRU_BEQ                     {uOP_BRU, BRU_EQ}
