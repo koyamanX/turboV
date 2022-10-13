@@ -150,112 +150,139 @@ module turboV {
     }
     proc issue {
 		reorder_buffer_t wire issue_reorder_buffer_entry;
+		wire issue_PC[29];
+		// issue slot 0
+		wire issue_inst0_valid;
 		wire issue_inst0_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
+		wire issue_inst0_lrd[5];
 		wire issue_inst0_prd[6];
 		wire issue_inst0_pprd[6];
 		wire issue_inst0_rs1_valid;
 		wire issue_inst0_rs1_ready;
+		wire issue_inst0_rs1_sel[SIZEOF_REG_SEL];
+		wire issue_inst0_lrs1[5];
 		wire issue_inst0_prs1[6];
 		wire issue_inst0_rs2_valid;
 		wire issue_inst0_rs2_ready;
+		wire issue_inst0_rs2_sel[SIZEOF_REG_SEL];
+		wire issue_inst0_lrs2[5];
 		wire issue_inst0_prs2[6];
+		wire issue_inst0_cause[SIZEOF_CAUSE_T];
+		uop_t wire issue_inst0_uop;
+		wire issue_inst0_imm[32];
+		// issue slot 1
+		wire issue_inst1_valid;
 		wire issue_inst1_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
+		wire issue_inst1_lrd[5];
 		wire issue_inst1_prd[6];
 		wire issue_inst1_pprd[6];
 		wire issue_inst1_rs1_valid;
 		wire issue_inst1_rs1_ready;
+		wire issue_inst1_rs1_sel[SIZEOF_REG_SEL];
 		func_self issue_inst1_rs1_ready_bypass;
+		wire issue_inst1_lrs1[5];
 		wire issue_inst1_prs1[6];
 		wire issue_inst1_rs2_valid;
 		wire issue_inst1_rs2_ready;
+		wire issue_inst1_rs2_sel[SIZEOF_REG_SEL];
 		func_self issue_inst1_rs2_ready_bypass;
+		wire issue_inst1_lrs2[5];
 		wire issue_inst1_prs2[6];
-		uop_t wire issue_uop0;
-		uop_t wire issue_uop1;
+		wire issue_inst1_cause[SIZEOF_CAUSE_T];
+		uop_t wire issue_inst1_uop;
+		wire issue_inst1_imm[32];
 
-		issue_uop0 = decoder_packet0.uop;
-		issue_uop1 = decoder_packet1.uop;
+		issue_inst0_uop = decoder_packet0.uop;
+		issue_inst1_uop = decoder_packet1.uop;
 		if((freelist.count >= 2) && (!rob.full)) {
-			issue_reorder_buffer_entry.valid0 = issue_packet.valid0;
-			issue_reorder_buffer_entry.valid1 = issue_packet.valid1;
-			issue_reorder_buffer_entry.PC = issue_packet.pc[31:3];
-			issue_reorder_buffer_entry.uop0 = issue_uop0;
-			issue_reorder_buffer_entry.uop1 = issue_uop1;
-			issue_reorder_buffer_entry.exception0 = |decoder_packet0.cause;
-			issue_reorder_buffer_entry.exception1 = |decoder_packet1.cause;
-			issue_reorder_buffer_entry.retired0 = !issue_packet.valid0;
-			issue_reorder_buffer_entry.retired1 = !issue_packet.valid1;
-			issue_reorder_buffer_entry.dreg0 = decoder_packet0.lrd;
-			issue_reorder_buffer_entry.dreg1 = decoder_packet1.lrd;
+			issue_PC = issue_packet.pc[31:3];
+			// inst0
+			issue_inst0_valid = issue_packet.valid0;
+			issue_inst0_cause = |decoder_packet0.cause;
+			issue_inst0_lrd = decoder_packet0.lrd;
+			issue_inst0_rs1_sel = decoder_packet0.rs1_sel;
+			issue_inst0_lrs1 = decoder_packet0.lrs1;
+			issue_inst0_rs2_sel = decoder_packet0.rs2_sel;
+			issue_inst0_lrs2 = decoder_packet0.lrs2;
+			issue_inst0_imm = decoder_packet0.imm;
+			// inst1
+			issue_inst1_valid = issue_packet.valid1;
+			issue_inst1_cause = |decoder_packet1.cause;
+			issue_inst1_lrd = decoder_packet1.lrd;
+			issue_inst1_rs1_sel = decoder_packet1.rs1_sel;
+			issue_inst1_lrs1 = decoder_packet1.lrs1;
+			issue_inst1_rs2_sel = decoder_packet1.rs2_sel;
+			issue_inst1_lrs2 = decoder_packet1.lrs2;
+			issue_inst1_imm = decoder_packet1.imm;
 
 			// Rename destination registers
-			issue_inst0_pprd = register_map_table[decoder_packet0.lrd];
-			issue_inst1_pprd = register_map_table[decoder_packet1.lrd];
-			if(issue_packet.valid0 && (decoder_packet0.lrd != 0)) {
+			issue_inst0_pprd = register_map_table[issue_inst0_lrd];
+			issue_inst1_pprd = register_map_table[issue_inst1_lrd];
+			if(issue_packet.valid0 && (issue_inst0_lrd != 0)) {
 				issue_inst0_prd = freelist.pop0();
-				if(!(issue_packet.valid1 && (decoder_packet0.lrd != 0)
-							&& (decoder_packet0.lrd == decoder_packet1.lrd))) {
-					register_map_table[decoder_packet0.lrd] := issue_inst0_prd;
-					register_status_table[decoder_packet0.lrd] := BUSY;
+				if(!(issue_packet.valid1 && (issue_inst0_lrd != 0)
+							&& (issue_inst0_lrd == issue_inst1_lrd))) {
+					register_map_table[issue_inst0_lrd] := issue_inst0_prd;
+					register_status_table[issue_inst0_lrd] := BUSY;
 				}
-				issue_reorder_buffer_entry.ppreg0 = issue_inst0_pprd;
 			}
-			if(issue_packet.valid1 && (decoder_packet1.lrd != 0)) {
+			if(issue_packet.valid1 && (issue_inst1_lrd != 0)) {
 				issue_inst1_prd = freelist.pop1();
-				register_map_table[decoder_packet1.lrd] := issue_inst1_prd;
-				register_status_table[decoder_packet1.lrd] := BUSY;
-				issue_reorder_buffer_entry.ppreg1 = issue_inst1_pprd;
+				register_map_table[issue_inst1_lrd] := issue_inst1_prd;
+				register_status_table[issue_inst1_lrd] := BUSY;
 			}
 			// Rename source registers
 			if(issue_packet.valid0) {
-				issue_inst0_prs1 = register_map_table[decoder_packet0.lrs1];
-				issue_inst0_prs2 = register_map_table[decoder_packet0.lrs2];
+				issue_inst0_prs1 = register_map_table[issue_inst0_lrs1];
+				issue_inst0_prs2 = register_map_table[issue_inst0_lrs2];
 			}
 			if(issue_packet.valid0 && issue_packet.valid1
-					&& decoder_packet0.lrd == decoder_packet1.lrs1) {
+					&& issue_inst0_lrd == issue_inst1_lrs1) {
 				issue_inst1_prs1 = issue_inst0_prs1;
 				issue_inst1_rs1_ready_bypass();
 			} else {
-				issue_inst1_prs1 = register_map_table[decoder_packet1.lrs1];
+				issue_inst1_prs1 = register_map_table[issue_inst1_lrs1];
 			}
 			if(issue_packet.valid0 && issue_packet.valid1
-					&& decoder_packet0.lrd == decoder_packet1.lrs2) {
+					&& issue_inst0_lrd == issue_inst1_lrs2) {
 				issue_inst1_prs2 = issue_inst0_prs2;
 				issue_inst1_rs2_ready_bypass();
 			} else {
-				issue_inst1_prs2 = register_map_table[decoder_packet1.lrs2];
+				issue_inst1_prs2 = register_map_table[issue_inst1_lrs2];
 			}
 			issue_inst0_rs1_valid = issue_packet.valid0
-				&& (decoder_packet0.rs1_sel == RS1_SEL_REG);
+				&& (issue_inst0_rs1_sel == RS1_SEL_REG);
 			issue_inst0_rs2_valid = issue_packet.valid0
-				&& (decoder_packet0.rs2_sel == RS1_SEL_REG);
+				&& (issue_inst0_rs2_sel == RS1_SEL_REG);
 			issue_inst1_rs1_valid = issue_packet.valid1
-				&& (decoder_packet1.rs1_sel == RS1_SEL_REG);
+				&& (issue_inst1_rs1_sel == RS1_SEL_REG);
 			issue_inst1_rs2_valid = issue_packet.valid1
-				&& (decoder_packet1.rs2_sel == RS1_SEL_REG);
+				&& (issue_inst1_rs2_sel == RS1_SEL_REG);
 			// Source register ready
 			issue_inst0_rs1_ready = issue_packet.valid0
-				&& register_status_table[decoder_packet1.lrs1];
+				&& register_status_table[issue_inst1_lrs1];
 			issue_inst0_rs2_ready = issue_packet.valid0
-				&& register_status_table[decoder_packet1.lrs2];
+				&& register_status_table[issue_inst1_lrs2];
 			issue_inst1_rs1_ready = if(issue_inst1_rs1_ready_bypass) issue_inst0_rs1_ready
-				else issue_packet.valid1 && register_status_table[decoder_packet1.lrs1];
+				else issue_packet.valid1 && register_status_table[issue_inst1_lrs1];
 			issue_inst1_rs2_ready = if(issue_inst1_rs2_ready_bypass) issue_inst0_rs2_ready
-				else issue_packet.valid1 && register_status_table[decoder_packet1.lrs2];
+				else issue_packet.valid1 && register_status_table[issue_inst1_lrs2];
 
-			rob.issue(issue_reorder_buffer_entry);
+			rob.issue(issue_PC,
+					issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_pprd, issue_inst0_cause,
+					issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_pprd, issue_inst1_cause);
 			// TODO: NSL does not support mod.sig_o[_int(N)]
 			issue_inst0_ptr = {rob.ptr, 1'b0};
 			issue_inst1_ptr = {rob.ptr, 1'b1};
 			// TODO:
-			iq_alu0.issue(issue_inst0_ptr, decoder_packet0.uop, issue_inst0_prd,
+			iq_alu0.issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
 					issue_inst0_rs1_valid, issue_inst0_rs1_ready, issue_inst0_prs1,
 					issue_inst0_rs2_valid, issue_inst0_rs2_ready, issue_inst0_prs2,
-					decoder_packet0.imm);
-			iq_alu1.issue(issue_inst0_ptr, decoder_packet1.uop, issue_inst1_prd,
+					issue_inst0_imm);
+			iq_alu1.issue(issue_inst0_ptr, issue_inst1_uop, issue_inst1_prd,
 					issue_inst1_rs1_valid, issue_inst1_rs1_ready, issue_inst1_prs1,
 					issue_inst1_rs2_valid, issue_inst1_rs2_ready, issue_inst1_prs2,
-					decoder_packet1.imm);
+					issue_inst1_imm);
 			// TODO:
 			finish();
 		}

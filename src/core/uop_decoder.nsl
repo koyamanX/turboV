@@ -13,9 +13,9 @@ module uop_decoder {
         wire opcode[7];
         wire fn[4];
 		wire lrd[5];
-		wire rs1_sel[2];
+		wire rs1_sel[SIZEOF_REG_SEL];
 		wire lrs1[5];
-		wire rs2_sel[2];
+		wire rs2_sel[SIZEOF_REG_SEL];
 		wire lrs2[5];
 		wire imm[32];
         r_type_t wire inst_rtype;
