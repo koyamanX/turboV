@@ -101,8 +101,7 @@ struct uop_t {
     mret;
     ecall;
     ebreak;
-	cause[SIZEOF_CAUSE_T];
-#define SIZEOF_UOP_T uOP_SIZE+SIZEOF_CAUSE_T+10
+#define SIZEOF_UOP_T uOP_SIZE+10
 };
 
 #endif
