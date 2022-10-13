@@ -35,7 +35,7 @@ declare issue_queue {
     func_out full();
     func_in stall();
     output dispatch_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
-    output dispatch_uop[uOP_SIZE];
+    output dispatch_uop[SIZEOF_UOP_T];
     output dispatch_prd[6];
     output dispatch_prs1[6];
     output dispatch_prs2[6];
