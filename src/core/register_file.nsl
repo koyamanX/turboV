@@ -5,38 +5,67 @@
 // Efficient Multi-Ported Memories for FPGAs
 // Charles Eric LaForest and J. Gregory Steffan
 module register_file {
+	// 6 reads/3 writes
     mem bank_w0_r0[64][XLEN] = {0};
     mem bank_w0_r1[64][XLEN] = {0};
     mem bank_w0_r2[64][XLEN] = {0};
     mem bank_w0_r3[64][XLEN] = {0};
+    mem bank_w0_r4[64][XLEN] = {0};
+    mem bank_w0_r5[64][XLEN] = {0};
     mem bank_w1_r0[64][XLEN] = {0};
     mem bank_w1_r1[64][XLEN] = {0};
     mem bank_w1_r2[64][XLEN] = {0};
     mem bank_w1_r3[64][XLEN] = {0};
-    mem lvt[64] = {0};
+    mem bank_w1_r4[64][XLEN] = {0};
+    mem bank_w1_r5[64][XLEN] = {0};
+    mem bank_w2_r0[64][XLEN] = {0};
+    mem bank_w2_r1[64][XLEN] = {0};
+    mem bank_w2_r2[64][XLEN] = {0};
+    mem bank_w2_r3[64][XLEN] = {0};
+    mem bank_w2_r4[64][XLEN] = {0};
+    mem bank_w2_r5[64][XLEN] = {0};
+    mem lvt[64][2] = {0};
 
     func readA {
         any {
             lvt[rnumA] == 0: return bank_w0_r0[rnumA];
             lvt[rnumA] == 1: return bank_w1_r0[rnumA];
+            lvt[rnumA] == 2: return bank_w2_r0[rnumA];
         }
     }
     func readB {
         any {
             lvt[rnumB] == 0: return bank_w0_r1[rnumB];
             lvt[rnumB] == 1: return bank_w1_r1[rnumB];
+            lvt[rnumB] == 2: return bank_w2_r1[rnumB];
         }
     }
     func readC {
         any {
             lvt[rnumC] == 0: return bank_w0_r2[rnumC];
             lvt[rnumC] == 1: return bank_w1_r2[rnumC];
+            lvt[rnumC] == 2: return bank_w2_r2[rnumC];
         }
     }
     func readD {
         any {
             lvt[rnumD] == 0: return bank_w0_r3[rnumD];
             lvt[rnumD] == 1: return bank_w1_r3[rnumD];
+            lvt[rnumD] == 2: return bank_w2_r3[rnumD];
+        }
+    }
+    func readE {
+        any {
+            lvt[rnumE] == 0: return bank_w0_r4[rnumE];
+            lvt[rnumE] == 1: return bank_w1_r4[rnumE];
+            lvt[rnumE] == 2: return bank_w2_r4[rnumE];
+        }
+    }
+    func readF {
+        any {
+            lvt[rnumF] == 0: return bank_w0_r5[rnumF];
+            lvt[rnumF] == 1: return bank_w1_r5[rnumF];
+            lvt[rnumF] == 2: return bank_w2_r5[rnumF];
         }
     }
     func writeA {
@@ -46,6 +75,8 @@ module register_file {
             bank_w0_r1[wnumA] := wdataA;
             bank_w0_r2[wnumA] := wdataA;
             bank_w0_r3[wnumA] := wdataA;
+            bank_w0_r4[wnumA] := wdataA;
+            bank_w0_r5[wnumA] := wdataA;
         }
     }
     func writeB {
@@ -54,5 +85,16 @@ module register_file {
         bank_w1_r1[wnumB] := wdataB;
         bank_w1_r2[wnumB] := wdataB;
         bank_w1_r3[wnumB] := wdataB;
+        bank_w1_r4[wnumB] := wdataB;
+        bank_w1_r5[wnumB] := wdataB;
+    }
+    func writeC {
+        lvt[wnumC] := 2;
+        bank_w2_r0[wnumC] := wdataC;
+        bank_w2_r1[wnumC] := wdataC;
+        bank_w2_r2[wnumC] := wdataC;
+        bank_w2_r3[wnumC] := wdataC;
+        bank_w2_r4[wnumC] := wdataC;
+        bank_w2_r5[wnumC] := wdataC;
     }
 }
