@@ -1,0 +1,40 @@
+#include "reorder_buffer.h"
+
+module reorder_buffer {
+	mem rob[NUMBER_OF_REORDER_BUFFER][SIZEOF_REORDER_BUFFER_T] = {0};	
+	reg tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1] = 0;
+	reg head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1] = 0;
+	wire next_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	wire next_tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	reorder_buffer_t wire head_entry;
+	
+	next_tail = tail + 1;
+	next_head = head + 1;
+	func issue {
+		if(!flush) {
+			rob[tail] := new_entry;
+			tail := next_tail;
+		}
+		return tail  << 1;
+	}
+	head_entry = rob[tail];
+	if((head_entry.valid0 || head_entry.valid1) && (head_entry.retired0 && head_entry.retired1)) {
+		commitable();
+	}
+	func commit {
+		head := next_head;
+		return head_entry;
+	}
+    if(!flush) {
+        if((tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0])
+            && (tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES] != head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES])) {
+            full();
+        }
+    }
+	func flush {
+		head := 0;
+		tail := 0;
+		//TODO:
+		rob[0] := 0;
+	}
+}

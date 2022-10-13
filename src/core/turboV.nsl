@@ -10,7 +10,7 @@
 #include "control_status_register.h"
 #include "priv.h"
 #include "uops.h"
-#include "active_list.h"
+#include "reorder_buffer.h"
 #include "free_list.h"
 #include "issue_queue.h"
 
@@ -64,7 +64,7 @@ module turboV {
     control_status_register csr;
     /* variable for generate statement */
     integer i_;
-	active_list activelist;
+	reorder_buffer rob;
 	free_list freelist;
 	mem register_map_table[32][6];
 	mem register_status_table[32][1] = {0};
@@ -150,8 +150,8 @@ module turboV {
 		}
     }
     proc issue {
-		active_list_t wire issue_active_list_entry;
-		wire issue_inst0_ptr[LOG2_ACTIVE_LIST_NUM_OF_ENTRIES];
+		reorder_buffer_t wire issue_reorder_buffer_entry;
+		wire issue_inst0_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
 		wire issue_inst0_prd[6];
 		wire issue_inst0_pprd[6];
 		wire issue_inst0_rs1_valid;
@@ -160,7 +160,7 @@ module turboV {
 		wire issue_inst0_rs2_valid;
 		wire issue_inst0_rs2_ready;
 		wire issue_inst0_prs2[6];
-		wire issue_inst1_ptr[LOG2_ACTIVE_LIST_NUM_OF_ENTRIES];
+		wire issue_inst1_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
 		wire issue_inst1_prd[6];
 		wire issue_inst1_pprd[6];
 		wire issue_inst1_rs1_valid;
@@ -176,18 +176,18 @@ module turboV {
 
 		issue_uop0 = decoder_packet0.uop;
 		issue_uop1 = decoder_packet1.uop;
-		if((freelist.count >= 2) && (!activelist.full)) {
-			issue_active_list_entry.valid0 = issue_packet.valid0;
-			issue_active_list_entry.valid1 = issue_packet.valid1;
-			issue_active_list_entry.PC = issue_packet.pc[31:3];
-			issue_active_list_entry.uop0 = issue_uop0;
-			issue_active_list_entry.uop1 = issue_uop1;
-			issue_active_list_entry.exception0 = |issue_uop0.cause;
-			issue_active_list_entry.exception1 = |issue_uop1.cause;
-			issue_active_list_entry.retired0 = !issue_packet.valid0;
-			issue_active_list_entry.retired1 = !issue_packet.valid1;
-			issue_active_list_entry.dreg0 = decoder_packet0.lrd;
-			issue_active_list_entry.dreg1 = decoder_packet1.lrd;
+		if((freelist.count >= 2) && (!rob.full)) {
+			issue_reorder_buffer_entry.valid0 = issue_packet.valid0;
+			issue_reorder_buffer_entry.valid1 = issue_packet.valid1;
+			issue_reorder_buffer_entry.PC = issue_packet.pc[31:3];
+			issue_reorder_buffer_entry.uop0 = issue_uop0;
+			issue_reorder_buffer_entry.uop1 = issue_uop1;
+			issue_reorder_buffer_entry.exception0 = |issue_uop0.cause;
+			issue_reorder_buffer_entry.exception1 = |issue_uop1.cause;
+			issue_reorder_buffer_entry.retired0 = !issue_packet.valid0;
+			issue_reorder_buffer_entry.retired1 = !issue_packet.valid1;
+			issue_reorder_buffer_entry.dreg0 = decoder_packet0.lrd;
+			issue_reorder_buffer_entry.dreg1 = decoder_packet1.lrd;
 
 			// Rename destination registers
 			issue_inst0_pprd = register_map_table[decoder_packet0.lrd];
@@ -199,13 +199,13 @@ module turboV {
 					register_map_table[decoder_packet0.lrd] := issue_inst0_prd;
 					register_status_table[decoder_packet0.lrd] := BUSY;
 				}
-				issue_active_list_entry.ppreg0 = issue_inst0_pprd;
+				issue_reorder_buffer_entry.ppreg0 = issue_inst0_pprd;
 			}
 			if(issue_packet.valid1 && (decoder_packet1.lrd != 0)) {
 				issue_inst1_prd = freelist.pop1();
 				register_map_table[decoder_packet1.lrd] := issue_inst1_prd;
 				register_status_table[decoder_packet1.lrd] := BUSY;
-				issue_active_list_entry.ppreg1 = issue_inst1_pprd;
+				issue_reorder_buffer_entry.ppreg1 = issue_inst1_pprd;
 			}
 			// Rename source registers
 			if(issue_packet.valid0) {
@@ -244,10 +244,10 @@ module turboV {
 			issue_inst1_rs2_ready = if(issue_inst1_rs2_ready_bypass) issue_inst0_rs2_ready
 				else issue_packet.valid1 && register_status_table[decoder_packet1.lrs2];
 
-			activelist.issue(issue_active_list_entry);
+			rob.issue(issue_reorder_buffer_entry);
 			// TODO: NSL does not support mod.sig_o[_int(N)]
-			issue_inst0_ptr = {activelist.ptr, 1'b0};
-			issue_inst1_ptr = {activelist.ptr, 1'b1};
+			issue_inst0_ptr = {rob.ptr, 1'b0};
+			issue_inst1_ptr = {rob.ptr, 1'b1};
 			// TODO:
 			iq_alu0.issue(issue_inst0_ptr, decoder_packet0.uop, issue_inst0_prd,
 					issue_inst0_rs1_valid, issue_inst0_rs1_ready, issue_inst0_prs1,
