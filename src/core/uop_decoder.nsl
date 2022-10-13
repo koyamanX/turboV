@@ -46,6 +46,8 @@ module uop_decoder {
         inst_btype = inst;
         inst_stype = inst;
 
+		decode_uop.rs1_sel = rs1_sel;
+		decode_uop.rs2_sel = rs2_sel;
         decode_uop.jal = jal;
         decode_uop.jalr = jalr;
         decode_uop.branch = branch;
@@ -58,9 +60,7 @@ module uop_decoder {
         decode_uop.ebreak = ebreak;
 		decode_packet.uop = decode_uop;
 		decode_packet.lrd = lrd;
-		decode_packet.rs1_sel = rs1_sel;
 		decode_packet.lrs1 = lrs1;
-		decode_packet.rs2_sel = rs2_sel;
 		decode_packet.lrs2 = lrs2;
 		decode_packet.imm = imm;
         decode_packet.cause = SET_EXCEPTION(ENVIRONMENT_CALL_FROM_M_MODE, ecall) | SET_EXCEPTION(BREAKPOINT, ebreak)

@@ -1,29 +1,17 @@
 #ifndef UOP_DECODER_H
 #define UOP_DECODER_H
 
-#define SIZEOF_REG_SEL		2
-#define RS1_SEL_REG         2'b00
-#define RS1_SEL_UIMM        2'b01
-#define RS1_SEL_PC          2'b10
-
-#define RS2_SEL_REG         2'b00
-#define RS2_SEL_IMM         2'b01
-#define RS2_SEL_CSR         2'b10
-#define RS2_SEL_CSR_UIMM    2'b11
-
 #include "uops.h"
 #include "control_status_register.h"
 
 struct decoder_packet_t {
 	uop[SIZEOF_UOP_T];
 	lrd[5];
-    rs1_sel[SIZEOF_REG_SEL];
     lrs1[5];
-    rs2_sel[SIZEOF_REG_SEL];
     lrs2[5];
     imm[32];
 	cause[SIZEOF_CAUSE_T];
-#define SIZEOF_DECODER_PACKET_T SIZEOF_UOP_T+SIZEOF_CAUSE_T+47+SIZEOF_REG_SEL+SIZEOF_REG_SEL
+#define SIZEOF_DECODER_PACKET_T SIZEOF_UOP_T+SIZEOF_CAUSE_T+47
 };
 
 declare uop_decoder {
