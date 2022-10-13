@@ -1,7 +1,6 @@
 #include "alu32.h"
 
 module alu32 {
-    wire result[33];
     wire eq;
     wire lt;
     wire ltu;
@@ -22,14 +21,10 @@ module alu32 {
                 return (a << b[4:0]);
             }
             fn == ALU_SLT: {
-                result = 32'((33#(a) - 33#(b))[32]);
-                if(result == 0) zero();
-                return 32'(result[31:0]);
+                return 32'(lt);
             }
             fn == ALU_SLTU: {
-                result = (33'(a) - 33'(b))[32];
-                if(result == 0) zero();
-                return 32'(result[31:0]);
+                return 32'(ltu);
             }
             fn == ALU_XOR: {
                 return a ^ b;
