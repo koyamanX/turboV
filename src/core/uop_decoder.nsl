@@ -3,7 +3,6 @@
 #include "opcode_map.h"
 #include "imm_gen.h"
 #include "uops.h"
-#include "bru32.h"
 #include "alu32.h"
 #include "csr.h"
 
