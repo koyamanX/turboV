@@ -89,8 +89,20 @@ struct cause_t {
 #define SIZEOF_CAUSE_T 16
 };
 
+#define SIZEOF_REG_SEL		2
+#define RS1_SEL_REG         2'b00
+#define RS1_SEL_UIMM        2'b01
+#define RS1_SEL_PC          2'b10
+
+#define RS2_SEL_REG         2'b00
+#define RS2_SEL_IMM         2'b01
+#define RS2_SEL_CSR         2'b10
+#define RS2_SEL_CSR_UIMM    2'b11
+
 struct uop_t {
     uop[uOP_SIZE];
+    rs1_sel[SIZEOF_REG_SEL];
+    rs2_sel[SIZEOF_REG_SEL];
     jal;
     jalr;
     load;
@@ -101,7 +113,7 @@ struct uop_t {
     mret;
     ecall;
     ebreak;
-#define SIZEOF_UOP_T uOP_SIZE+10
+#define SIZEOF_UOP_T uOP_SIZE+10+SIZEOF_REG_SEL+SIZEOF_REG_SEL
 };
 
 #endif
