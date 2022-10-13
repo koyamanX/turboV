@@ -3,6 +3,7 @@
 #include "riscv.h"
 
 declare register_file {
+	// 6 reads/ 3 writes
     input rnumA[6];
     output rdataA[XLEN];
     func_in readA(rnumA): rdataA;
@@ -15,12 +16,21 @@ declare register_file {
     input rnumD[6];
     output rdataD[XLEN];
     func_in readD(rnumD): rdataD;
+    input rnumE[6];
+    output rdataE[XLEN];
+    func_in readE(rnumE): rdataE;
+    input rnumF[6];
+    output rdataF[XLEN];
+    func_in readF(rnumF): rdataF;
     input wnumA[6];
     input wdataA[XLEN];
     func_in writeA(wnumA, wdataA);
     input wnumB[6];
     input wdataB[XLEN];
     func_in writeB(wnumB, wdataB);
+    input wnumC[6];
+    input wdataC[XLEN];
+    func_in writeC(wnumC, wdataC);
 }
 
 #endif
