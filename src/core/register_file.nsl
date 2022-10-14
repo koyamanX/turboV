@@ -69,24 +69,22 @@ module register_file {
         }
     }
     func writeA {
-        if(!(writeB && (wnumA == wnumB))) {
-            lvt[wnumA] := 0;
-            bank_w0_r0[wnumA] := wdataA;
-            bank_w0_r1[wnumA] := wdataA;
-            bank_w0_r2[wnumA] := wdataA;
-            bank_w0_r3[wnumA] := wdataA;
-            bank_w0_r4[wnumA] := wdataA;
-            bank_w0_r5[wnumA] := wdataA;
-        }
+		lvt[wnumA] := 0;
+		bank_w0_r0[wnumA] := wdataA;
+		bank_w0_r1[wnumA] := wdataA;
+		bank_w0_r2[wnumA] := wdataA;
+		bank_w0_r3[wnumA] := wdataA;
+		bank_w0_r4[wnumA] := wdataA;
+		bank_w0_r5[wnumA] := wdataA;
     }
     func writeB {
-        lvt[wnumB] := 1;
-        bank_w1_r0[wnumB] := wdataB;
-        bank_w1_r1[wnumB] := wdataB;
-        bank_w1_r2[wnumB] := wdataB;
-        bank_w1_r3[wnumB] := wdataB;
-        bank_w1_r4[wnumB] := wdataB;
-        bank_w1_r5[wnumB] := wdataB;
+		lvt[wnumB] := 1;
+		bank_w1_r0[wnumB] := wdataB;
+		bank_w1_r1[wnumB] := wdataB;
+		bank_w1_r2[wnumB] := wdataB;
+		bank_w1_r3[wnumB] := wdataB;
+		bank_w1_r4[wnumB] := wdataB;
+		bank_w1_r5[wnumB] := wdataB;
     }
     func writeC {
         lvt[wnumC] := 2;
