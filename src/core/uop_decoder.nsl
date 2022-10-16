@@ -73,6 +73,9 @@ module uop_decoder {
 			| SET_EXCEPTION(BREAKPOINT, ebreak)
             | SET_EXCEPTION(ILLEGAL_INSTRUCTION, illegal_instruction)
 			| SET_EXCEPTION(ILLEGAL_INSTRUCTION, decode_csr_illegal);
+#ifdef ENABLE_DEBUG
+		decode_packet.inst = inst;
+#endif
 
         any {
             opcode == OP: {
