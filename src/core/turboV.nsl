@@ -185,12 +185,10 @@ module turboV {
 		wire issue_inst0_lrd[5];
 		wire issue_inst0_prd[6];
 		wire issue_inst0_pprd[6];
-		wire issue_inst0_rs1_valid;
 		wire issue_inst0_rs1_ready;
 		wire issue_inst0_rs1_sel[SIZEOF_REG_SEL];
 		wire issue_inst0_lrs1[5];
 		wire issue_inst0_prs1[6];
-		wire issue_inst0_rs2_valid;
 		wire issue_inst0_rs2_ready;
 		wire issue_inst0_rs2_sel[SIZEOF_REG_SEL];
 		wire issue_inst0_lrs2[5];
@@ -204,13 +202,11 @@ module turboV {
 		wire issue_inst1_lrd[5];
 		wire issue_inst1_prd[6];
 		wire issue_inst1_pprd[6];
-		wire issue_inst1_rs1_valid;
 		wire issue_inst1_rs1_ready;
 		wire issue_inst1_rs1_sel[SIZEOF_REG_SEL];
 		func_self issue_inst1_rs1_ready_bypass;
 		wire issue_inst1_lrs1[5];
 		wire issue_inst1_prs1[6];
-		wire issue_inst1_rs2_valid;
 		wire issue_inst1_rs2_ready;
 		wire issue_inst1_rs2_sel[SIZEOF_REG_SEL];
 		func_self issue_inst1_rs2_ready_bypass;
@@ -278,14 +274,6 @@ module turboV {
 			} else {
 				issue_inst1_prs2 = register_map_table[issue_inst1_lrs2];
 			}
-			issue_inst0_rs1_valid = issue_packet.valid0
-				&& (issue_inst0_rs1_sel == RS1_SEL_REG);
-			issue_inst0_rs2_valid = issue_packet.valid0
-				&& (issue_inst0_rs2_sel == RS1_SEL_REG);
-			issue_inst1_rs1_valid = issue_packet.valid1
-				&& (issue_inst1_rs1_sel == RS1_SEL_REG);
-			issue_inst1_rs2_valid = issue_packet.valid1
-				&& (issue_inst1_rs2_sel == RS1_SEL_REG);
 			// Source register ready
 			issue_inst0_rs1_ready = issue_packet.valid0
 				&& register_status_table[issue_inst1_lrs1];
@@ -304,12 +292,12 @@ module turboV {
 			issue_inst1_ptr = {rob.ptr, 1'b1};
 			// TODO:
 			iq_alu0.issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
-					issue_inst0_rs1_valid, issue_inst0_rs1_ready, issue_inst0_prs1,
-					issue_inst0_rs2_valid, issue_inst0_rs2_ready, issue_inst0_prs2,
+					issue_inst0_rs1_ready, issue_inst0_prs1,
+					issue_inst0_rs2_ready, issue_inst0_prs2,
 					issue_inst0_imm);
 			iq_alu1.issue(issue_inst0_ptr, issue_inst1_uop, issue_inst1_prd,
-					issue_inst1_rs1_valid, issue_inst1_rs1_ready, issue_inst1_prs1,
-					issue_inst1_rs2_valid, issue_inst1_rs2_ready, issue_inst1_prs2,
+					issue_inst1_rs1_ready, issue_inst1_prs1,
+					issue_inst1_rs2_ready, issue_inst1_prs2,
 					issue_inst1_imm);
 			// TODO:
 			finish();
