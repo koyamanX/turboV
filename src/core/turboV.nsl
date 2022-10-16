@@ -29,10 +29,6 @@ struct issue_packet_t {
 	valid1;
 };
 
-// TODO:
-#define READY 1'b0
-#define BUSY 1'b1
-
 module turboV {
     proc_name warm_reset();
     /* Decode stage */
@@ -281,9 +277,9 @@ module turboV {
 				&& register_status_table[issue_inst1_lrs1];
 			issue_inst0_rs2_ready = issue_packet.valid0
 				&& register_status_table[issue_inst1_lrs2];
-			issue_inst1_rs1_ready = if(issue_inst1_rs1_ready_bypass) issue_inst0_rs1_ready
+			issue_inst1_rs1_ready = if(issue_inst1_rs1_ready_bypass) BUSY
 				else issue_packet.valid1 && register_status_table[issue_inst1_lrs1];
-			issue_inst1_rs2_ready = if(issue_inst1_rs2_ready_bypass) issue_inst0_rs2_ready
+			issue_inst1_rs2_ready = if(issue_inst1_rs2_ready_bypass) BUSY
 				else issue_packet.valid1 && register_status_table[issue_inst1_lrs2];
 
 			rob.issue(issue_PC,

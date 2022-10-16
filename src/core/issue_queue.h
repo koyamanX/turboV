@@ -4,6 +4,9 @@
 #include "uops.h"
 #include "reorder_buffer.h"
 
+#define READY 1'b1
+#define BUSY 1'b0
+
 struct issue_queue_t {
 	valid;
 	ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
