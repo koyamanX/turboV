@@ -133,6 +133,7 @@ module turboV {
 		state decode0 {
 			if(!ifu.ibuf_empty) {
 				decode_fetch_packet = ifu.ibuf_pop();
+				// TODO:
 				udec0.decode({decode_fetch_packet.pc[31:3], 3'b000}, decode_fetch_packet.inst0);
 				udec1.decode({decode_fetch_packet.pc[31:3], 3'b100}, decode_fetch_packet.inst1);
 
