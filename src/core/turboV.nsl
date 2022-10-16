@@ -40,25 +40,29 @@ module turboV {
 	proc_name register_read();
 	reg execute_alu0_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
 	reg execute_alu0_fn[FN_SIZE];
+	reg execute_alu0_prd_valid;
 	reg execute_alu0_prd[6];
 	reg execute_alu0_A[32];
 	reg execute_alu0_B[32];
-	proc_name execute_alu0(execute_alu0_ptr, execute_alu0_fn, execute_alu0_prd, execute_alu0_A, execute_alu0_B);
+	proc_name execute_alu0(execute_alu0_ptr, execute_alu0_fn, execute_alu0_prd_valid, execute_alu0_prd, execute_alu0_A, execute_alu0_B);
 	reg execute_alu1_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
 	reg execute_alu1_fn[FN_SIZE];
+	reg execute_alu1_prd_valid;
 	reg execute_alu1_prd[6];
 	reg execute_alu1_A[32];
 	reg execute_alu1_B[32];
-	proc_name execute_alu1(execute_alu1_ptr, execute_alu1_fn, execute_alu1_prd, execute_alu1_A, execute_alu1_B);
+	proc_name execute_alu1(execute_alu1_ptr, execute_alu1_fn, execute_alu1_prd_valid, execute_alu1_prd, execute_alu1_A, execute_alu1_B);
 	proc_name execute_lsu0();
 	reg writeback_alu0_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	reg writeback_alu0_prd_valid;
 	reg writeback_alu0_prd[6];
 	reg writeback_alu0_q[32];
-	proc_name writeback_alu0(writeback_alu0_ptr, writeback_alu0_prd, writeback_alu0_q);
+	proc_name writeback_alu0(writeback_alu0_ptr, writeback_alu0_prd_valid, writeback_alu0_prd, writeback_alu0_q);
 	reg writeback_alu1_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	reg writeback_alu1_prd_valid;
 	reg writeback_alu1_prd[6];
 	reg writeback_alu1_q[32];
-	proc_name writeback_alu1(writeback_alu1_ptr, writeback_alu1_prd, writeback_alu1_q);
+	proc_name writeback_alu1(writeback_alu1_ptr, writeback_alu1_prd_valid, writeback_alu1_prd, writeback_alu1_q);
 	proc_name writeback_lsu0();
 	/* Pipeline flush */
     func_self flush();
@@ -310,22 +314,24 @@ module turboV {
 
 		iq_alu0_uop = iq_alu0.dispatch_uop;
 		any {
-			iq_alu0_uop.rs1_sel == RS1_SEL_REG: iq_alu0_A = gpr.readA(iq_alu0.dispatch_prs1);
+			iq_alu0_uop.rs1_sel == RS1_SEL_REG && iq_alu0_uop.rs1_valid: iq_alu0_A = gpr.readA(iq_alu0.dispatch_prs1);
+			iq_alu0_uop.rs1_sel == RS1_SEL_REG && !iq_alu0_uop.rs1_valid: iq_alu0_A = 0;
 			iq_alu0_uop.rs1_sel == RS1_SEL_UIMM: iq_alu0_A = iq_alu0.dispatch_imm[4:0];
 		}
 		any {
-			iq_alu0_uop.rs2_sel == RS2_SEL_REG: iq_alu0_B = gpr.readB(iq_alu0.dispatch_prs2);
+			iq_alu0_uop.rs2_sel == RS2_SEL_REG && iq_alu0_uop.rs2_valid: iq_alu0_B = gpr.readB(iq_alu0.dispatch_prs2);
+			iq_alu0_uop.rs2_sel == RS2_SEL_REG && !iq_alu0_uop.rs2_valid: iq_alu0_B = 0;
 			iq_alu0_uop.rs2_sel == RS2_SEL_IMM: iq_alu0_B = iq_alu0.dispatch_imm;
 			/*	TODO:
 				RS2_SEL_CSR
 				RS2_SEL_CSR_UIMM
 		   */
 		}
-		execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop.uop[FN_SIZE-1:0], iq_alu0.dispatch_prd, iq_alu0_A, iq_alu0_B);
+		execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop.uop[FN_SIZE-1:0], iq_alu0_uop.rd_valid, iq_alu0.dispatch_prd, iq_alu0_A, iq_alu0_B);
 	}
     proc execute_alu0 {
 		alu0.exe(execute_alu0_A, execute_alu0_B, execute_alu0_fn);
-		writeback_alu0(execute_alu0_ptr, execute_alu0_prd, alu0.q);
+		writeback_alu0(execute_alu0_ptr, execute_alu0_prd_valid, execute_alu0_prd, alu0.q);
     }
 	func iq_alu1.dispatch {
 		wire iq_alu1_A[32];
@@ -334,37 +340,43 @@ module turboV {
 
 		iq_alu1_uop = iq_alu1.dispatch_uop;
 		any {
-			iq_alu1_uop.rs1_sel == RS1_SEL_REG: iq_alu1_A = gpr.readC(iq_alu1.dispatch_prs1);
+			iq_alu1_uop.rs1_sel == RS1_SEL_REG && iq_alu1_uop.rs1_valid: iq_alu1_A = gpr.readC(iq_alu1.dispatch_prs1);
+			iq_alu1_uop.rs1_sel == RS1_SEL_REG && !iq_alu1_uop.rs1_valid: iq_alu1_A = 0;
 			iq_alu1_uop.rs1_sel == RS1_SEL_UIMM: iq_alu1_A = iq_alu1.dispatch_imm[4:0];
 		}
 		any {
-			iq_alu1_uop.rs2_sel == RS2_SEL_REG: iq_alu1_B = gpr.readD(iq_alu1.dispatch_prs2);
+			iq_alu1_uop.rs2_sel == RS2_SEL_REG && iq_alu1_uop.rs2_valid: iq_alu1_B = gpr.readD(iq_alu1.dispatch_prs2);
+			iq_alu1_uop.rs2_sel == RS2_SEL_REG && !iq_alu1_uop.rs2_valid: iq_alu1_B = 0;
 			iq_alu1_uop.rs2_sel == RS2_SEL_IMM: iq_alu1_B = iq_alu1.dispatch_imm;
 			/*	TODO:
 				RS2_SEL_CSR
 				RS2_SEL_CSR_UIMM
 		   */
 		}
-		execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop.uop[FN_SIZE-1:0], iq_alu1.dispatch_prd, iq_alu1_A, iq_alu1_B);
+		execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop.uop[FN_SIZE-1:0], iq_alu1_uop.rd_valid, iq_alu1.dispatch_prd, iq_alu1_A, iq_alu1_B);
 	}
 
     proc execute_alu1 {
 		alu1.exe(execute_alu1_A, execute_alu1_B, execute_alu1_fn);
-		writeback_alu1(execute_alu1_ptr, execute_alu1_prd, alu1.q);
+		writeback_alu1(execute_alu1_ptr, execute_alu1_prd_valid, execute_alu1_prd, alu1.q);
     }
     proc execute_lsu0 {
     }
     proc writeback_alu0 {
-		gpr.writeA(writeback_alu0_prd, writeback_alu0_q);
-		iq_alu0.wakeup0(writeback_alu0_prd);
-		iq_alu1.wakeup0(writeback_alu0_prd);
+		if(writeback_alu0_prd_valid) {
+			gpr.writeA(writeback_alu0_prd, writeback_alu0_q);
+			iq_alu0.wakeup0(writeback_alu0_prd);
+			iq_alu1.wakeup0(writeback_alu0_prd);
+		}
 		rob.retire0(writeback_alu0_ptr);
 		finish();
     }
     proc writeback_alu1 {
-		gpr.writeB(writeback_alu1_prd, writeback_alu1_q);
-		iq_alu1.wakeup1(writeback_alu1_prd);
-		iq_alu1.wakeup1(writeback_alu1_prd);
+		if(writeback_alu1_prd_valid) {
+			gpr.writeB(writeback_alu1_prd, writeback_alu1_q);
+			iq_alu1.wakeup1(writeback_alu1_prd);
+			iq_alu1.wakeup1(writeback_alu1_prd);
+		}
 		rob.retire1(writeback_alu1_ptr);
 		finish();
     }
