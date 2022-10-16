@@ -60,7 +60,7 @@ module reorder_buffer {
 		head == 6: head_entry = rob6;
 		head == 7: head_entry = rob7;
 	}
-	if((head_entry.valid0 || head_entry.valid1) && (head_entry.retired0 && head_entry.retired1)) {
+	if((head_entry.valid0 || head_entry.valid1) && (!head_entry.retired0 && !head_entry.retired1)) {
 		commitable();
 	}
 	func commit {
