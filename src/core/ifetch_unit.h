@@ -5,6 +5,7 @@
 #include "riscv.h"
 
 struct fetch_packet_t {
+	// TODO: 29 bit
     pc[XLEN];
     inst0[ILEN];
     inst1[ILEN];
