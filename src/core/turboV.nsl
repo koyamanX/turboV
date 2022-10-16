@@ -140,6 +140,19 @@ module turboV {
 							// both insts can be issued.
 						}
 					}
+					INST0 | INST1 | issue?
+					ALU   | ALU   | OK
+					ALU   | LSU   | OK
+					ALU   | SYSTEM| OK
+					LSU   | ALU   | OK
+					LSU   | LSU   | NG
+					LSU   | SYSTEM| OK
+					SYSTEM| ALU   | OK
+					SYSTEM| LSU   | OK
+					SYSTEM| SYSTEM| NG
+
+					=> if both insts are SYSTEM or LSU, split decode into
+					two stages to avoid structural hazard.
 					*/
 					// TODO:
 					issue.invoke({decode_fetch_packet.pc,
@@ -159,6 +172,7 @@ module turboV {
 			}
 		}
 		state decode1 {
+			// Inst1 is either SYSTEM or LSU.
 			goto decode0;
 		}
     }
