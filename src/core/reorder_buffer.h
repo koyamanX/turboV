@@ -23,6 +23,7 @@ struct reorder_buffer_t {
 #define NUMBER_OF_REORDER_BUFFER 8
 #define REORDER_BUFFER_NUM_OF_ENTRIES NUMBER_OF_REORDER_BUFFER.0
 #define LOG2_REORDER_BUFFER_NUM_OF_ENTRIES _int(_log10(REORDER_BUFFER_NUM_OF_ENTRIES)/_log10(2.0))
+#define REORDER_BUFFER_PTR_SIZE LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1
 
 declare reorder_buffer {
 	input PC[29];
@@ -36,17 +37,17 @@ declare reorder_buffer {
 	input dreg1[5];
 	input ppreg1[6];
 	input cause1[SIZEOF_CAUSE_T];
-	output ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	output ptr[REORDER_BUFFER_PTR_SIZE];
 	func_in issue(PC, valid0, uop0, dreg0, ppreg0, cause0,
 					  valid1, uop1, dreg1, ppreg1, cause1): ptr;
 	output commit_entry[SIZEOF_REORDER_BUFFER_T];
 	func_in commit(): commit_entry;
 	func_out commitable();
-	input retire0_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	input retire0_ptr[REORDER_BUFFER_PTR_SIZE];
 	func_in retire0(retire0_ptr);
-	input retire1_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	input retire1_ptr[REORDER_BUFFER_PTR_SIZE];
 	func_in retire1(retire1_ptr);
-	input retire2_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	input retire2_ptr[REORDER_BUFFER_PTR_SIZE];
 	func_in retire2(retire2_ptr);
 	func_in flush();
 	func_out full();

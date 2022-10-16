@@ -9,7 +9,7 @@
 
 struct issue_queue_t {
 	valid;
-	ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
+	ptr[REORDER_BUFFER_PTR_SIZE];
     uop[SIZEOF_UOP_T];
     prs1[6];
 	prs1_ready;
@@ -18,11 +18,11 @@ struct issue_queue_t {
     prd[6];
 	// pure IMM or IMM+PC
     imm[32];
-    #define SIZEOF_ISSUE_QUEUE_T LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+uOP_SIZE+18+32+1
+    #define SIZEOF_ISSUE_QUEUE_T REORDER_BUFFER_PTR_SIZE+uOP_SIZE+18+32+1
 };
 
 declare issue_queue {
-	input ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
+	input ptr[REORDER_BUFFER_PTR_SIZE];
     input uop[SIZEOF_UOP_T];
     input prd[6];
 	input prs1_ready;
@@ -34,7 +34,7 @@ declare issue_queue {
     func_in flush();
     func_out full();
     func_in stall();
-    output dispatch_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
+    output dispatch_ptr[REORDER_BUFFER_PTR_SIZE];
     output dispatch_uop[SIZEOF_UOP_T];
     output dispatch_prd[6];
     output dispatch_prs1[6];

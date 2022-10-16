@@ -27,13 +27,13 @@ module reorder_buffer {
 		new_entry.dreg0 = dreg0;
 		new_entry.ppreg0 = ppreg0;
 		new_entry.cause0 = cause0;
-		new_entry.retired0 = !valid0;
+		new_entry.retired0 = valid0;
 		new_entry.valid1 = valid1;
 		new_entry.uop1 = uop1;
 		new_entry.dreg1 = dreg1;
 		new_entry.ppreg1 = ppreg1;
 		new_entry.cause1 = cause1;
-		new_entry.retired1 = !valid1;
+		new_entry.retired1 = valid1;
 
 		if(!flush) {
 			any {
