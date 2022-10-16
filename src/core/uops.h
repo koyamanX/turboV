@@ -100,7 +100,10 @@ struct cause_t {
 
 struct uop_t {
     uop[uOP_SIZE];
+	rd_valid;
+	rs1_valid;
     rs1_sel[SIZEOF_REG_SEL];
+	rs2_valid;
     rs2_sel[SIZEOF_REG_SEL];
     jal;
     jalr;
@@ -112,7 +115,7 @@ struct uop_t {
     mret;
     ecall;
     ebreak;
-#define SIZEOF_UOP_T uOP_SIZE+10+SIZEOF_REG_SEL+SIZEOF_REG_SEL
+#define SIZEOF_UOP_T uOP_SIZE+13+SIZEOF_REG_SEL+SIZEOF_REG_SEL
 };
 
 #endif
