@@ -21,8 +21,6 @@ module issue_queue {
             new_entry.valid = 1;
             new_entry.ptr = ptr;
             new_entry.uop = uop;
-			new_entry.prs1_valid = prs1_valid;
-			new_entry.prs2_valid = prs2_valid;
 			new_entry.prs1 = prs1;
 			new_entry.prs2 = prs2;
 			new_entry.prd = prd;
