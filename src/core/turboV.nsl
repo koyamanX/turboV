@@ -38,14 +38,14 @@ module turboV {
 	decoder_packet_t reg decoder_packet1;
 	proc_name issue(issue_packet, decoder_packet0, decoder_packet1);
 	proc_name register_read();
-	reg execute_alu0_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	reg execute_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
 	reg execute_alu0_fn[FN_SIZE];
 	reg execute_alu0_prd_valid;
 	reg execute_alu0_prd[6];
 	reg execute_alu0_A[32];
 	reg execute_alu0_B[32];
 	proc_name execute_alu0(execute_alu0_ptr, execute_alu0_fn, execute_alu0_prd_valid, execute_alu0_prd, execute_alu0_A, execute_alu0_B);
-	reg execute_alu1_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	reg execute_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
 	reg execute_alu1_fn[FN_SIZE];
 	reg execute_alu1_prd_valid;
 	reg execute_alu1_prd[6];
@@ -53,12 +53,12 @@ module turboV {
 	reg execute_alu1_B[32];
 	proc_name execute_alu1(execute_alu1_ptr, execute_alu1_fn, execute_alu1_prd_valid, execute_alu1_prd, execute_alu1_A, execute_alu1_B);
 	proc_name execute_lsu0();
-	reg writeback_alu0_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	reg writeback_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
 	reg writeback_alu0_prd_valid;
 	reg writeback_alu0_prd[6];
 	reg writeback_alu0_q[32];
 	proc_name writeback_alu0(writeback_alu0_ptr, writeback_alu0_prd_valid, writeback_alu0_prd, writeback_alu0_q);
-	reg writeback_alu1_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	reg writeback_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
 	reg writeback_alu1_prd_valid;
 	reg writeback_alu1_prd[6];
 	reg writeback_alu1_q[32];
@@ -185,7 +185,7 @@ module turboV {
 		wire issue_PC[29];
 		// issue slot 0
 		wire issue_inst0_valid;
-		wire issue_inst0_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
+		wire issue_inst0_ptr[REORDER_BUFFER_PTR_SIZE];
 		wire issue_inst0_lrd[5];
 		wire issue_inst0_prd[6];
 		wire issue_inst0_pprd[6];
@@ -202,7 +202,7 @@ module turboV {
 		wire issue_inst0_imm[32];
 		// issue slot 1
 		wire issue_inst1_valid;
-		wire issue_inst1_ptr[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
+		wire issue_inst1_ptr[REORDER_BUFFER_PTR_SIZE];
 		wire issue_inst1_lrd[5];
 		wire issue_inst1_prd[6];
 		wire issue_inst1_pprd[6];
@@ -294,15 +294,21 @@ module turboV {
 			// TODO: NSL does not support mod.sig_o[_int(N)]
 			issue_inst0_ptr = {rob.ptr, 1'b0};
 			issue_inst1_ptr = {rob.ptr, 1'b1};
+
 			// TODO:
-			iq_alu0.issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
-					issue_inst0_rs1_ready, issue_inst0_prs1,
-					issue_inst0_rs2_ready, issue_inst0_prs2,
-					issue_inst0_imm);
-			iq_alu1.issue(issue_inst0_ptr, issue_inst1_uop, issue_inst1_prd,
-					issue_inst1_rs1_ready, issue_inst1_prs1,
-					issue_inst1_rs2_ready, issue_inst1_prs2,
-					issue_inst1_imm);
+			if(issue_inst0_valid) {
+				iq_alu0.issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
+						issue_inst0_rs1_ready, issue_inst0_prs1,
+						issue_inst0_rs2_ready, issue_inst0_prs2,
+						issue_inst0_imm);
+			}
+			// TODO:
+			if(issue_inst1_valid) {
+				iq_alu1.issue(issue_inst1_ptr, issue_inst1_uop, issue_inst1_prd,
+						issue_inst1_rs1_ready, issue_inst1_prs1,
+						issue_inst1_rs2_ready, issue_inst1_prs2,
+						issue_inst1_imm);
+			}
 			// TODO:
 			finish();
 		}
