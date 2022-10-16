@@ -82,6 +82,7 @@ module turboV {
 	reorder_buffer rob;
 	free_list freelist;
 	mem register_map_table[32][6];
+	mem retirement_register_map_table[32][6];
 	mem register_status_table[32][1] = {0};
 	issue_queue iq_alu0;
 	issue_queue iq_alu1;
@@ -101,6 +102,7 @@ module turboV {
 			freelist.reset();
 			generate(i_ = 0; i_ < 32; i_++) {
 				register_map_table[i_] := i_;
+				retirement_register_map_table[i_] := i_;
 				register_status_table[i_] := READY;
 			}
         }
@@ -125,6 +127,11 @@ module turboV {
         lsu.flush();
 		/* Start decode */
         decode.invoke();
+		generate(i_ = 0; i_ < 32; i_++) {
+			register_map_table[i_] := i_;
+			retirement_register_map_table[i_] := i_;
+			register_status_table[i_] := READY;
+		}
     }
     proc decode {
 		state_name decode0, decode1;
@@ -291,13 +298,13 @@ module turboV {
 
 #ifdef ENABLE_DEBUG
 			rob.issue(issue_PC,
-					issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_pprd, issue_inst0_cause,
-					issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_pprd, issue_inst1_cause,
+					issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_prd, issue_inst0_pprd, issue_inst0_cause,
+					issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_prd, issue_inst1_pprd, issue_inst1_cause,
 					decoder_packet0.inst, decoder_packet1.inst);
 #else
 			rob.issue(issue_PC,
-					issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_pprd, issue_inst0_cause,
-					issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_pprd, issue_inst1_cause);
+					issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_prd, issue_inst0_pprd, issue_inst0_cause,
+					issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_prd, issue_inst1_pprd, issue_inst1_cause);
 #endif
 			// TODO: NSL does not support mod.sig_o[_int(N)]
 			issue_inst0_ptr = rob.ptr;
@@ -413,12 +420,14 @@ module turboV {
 		if(commit_entry.valid0) {
 			if(commit_uop0.rd_valid) {
 				freelist.push0(commit_entry.ppreg0);
+				retirement_register_map_table[commit_entry.dreg0] := commit_entry.preg0;
 			}
 			DEBUG_COMMIT0(commit_PC0, commit_entry.inst0, commit_entry.cause0);
 		}
 		if(commit_entry.valid1) {
 			if(commit_uop1.rd_valid) {
 				freelist.push1(commit_entry.ppreg1);
+				retirement_register_map_table[commit_entry.dreg1] := commit_entry.preg1;
 			}
 			DEBUG_COMMIT1(commit_PC1, commit_entry.inst1, commit_entry.cause1);
 		}
