@@ -289,12 +289,19 @@ module turboV {
 			issue_inst1_rs2_ready = if(issue_inst1_rs2_ready_bypass) BUSY
 				else issue_packet.valid1 && register_status_table[issue_inst1_lrs2];
 
+#ifdef ENABLE_DEBUG
+			rob.issue(issue_PC,
+					issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_pprd, issue_inst0_cause,
+					issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_pprd, issue_inst1_cause,
+					decoder_packet0.inst, decoder_packet1.inst);
+#else
 			rob.issue(issue_PC,
 					issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_pprd, issue_inst0_cause,
 					issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_pprd, issue_inst1_cause);
+#endif
 			// TODO: NSL does not support mod.sig_o[_int(N)]
-			issue_inst0_ptr = {rob.ptr, 1'b0};
-			issue_inst1_ptr = {rob.ptr, 1'b1};
+			issue_inst0_ptr = rob.ptr;
+			issue_inst1_ptr = rob.ptr+1;
 
 			// TODO:
 			if(issue_inst0_valid) {
@@ -382,7 +389,7 @@ module turboV {
     proc writeback_alu1 {
 		if(writeback_alu1_prd_valid) {
 			gpr.writeB(writeback_alu1_prd, writeback_alu1_q);
-			iq_alu1.wakeup1(writeback_alu1_prd);
+			iq_alu0.wakeup1(writeback_alu1_prd);
 			iq_alu1.wakeup1(writeback_alu1_prd);
 			register_status_table[writeback_alu1_prd] := READY;
 		}
@@ -395,20 +402,26 @@ module turboV {
 		reorder_buffer_t wire commit_entry;
 		uop_t wire commit_uop0;
 		uop_t wire commit_uop1;
+		wire commit_PC0[32];
+		wire commit_PC1[32];
 
 		commit_entry = rob.commit();
 		commit_uop0 = commit_entry.uop0;
 		commit_uop1 = commit_entry.uop1;
+		commit_PC0 = {commit_entry.PC, 3'b000};
+		commit_PC1 = {commit_entry.PC, 3'b100};
 
 		if(commit_entry.valid0) {
 			if(commit_uop0.rd_valid) {
 				freelist.push0(commit_entry.ppreg0);
 			}
+			DEBUG_COMMIT0(commit_PC0, commit_entry.inst0, commit_entry.cause0);
 		}
 		if(commit_entry.valid1) {
 			if(commit_uop1.rd_valid) {
 				freelist.push1(commit_entry.ppreg1);
 			}
+			DEBUG_COMMIT1(commit_PC1, commit_entry.inst1, commit_entry.cause1);
 		}
 	}
     /*

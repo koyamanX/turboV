@@ -34,6 +34,10 @@ module reorder_buffer {
 		new_entry.ppreg1 = ppreg1;
 		new_entry.cause1 = cause1;
 		new_entry.retired1 = valid1;
+#ifdef ENABLE_DEBUG
+		new_entry.inst0 = inst0;
+		new_entry.inst1 = inst1;
+#endif
 
 		if(!flush) {
 			any {

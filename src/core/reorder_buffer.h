@@ -17,7 +17,13 @@ struct reorder_buffer_t {
 	ppreg1[6];
 	cause1[SIZEOF_CAUSE_T];
 	retired1;
+#ifdef ENABLE_DEBUG
+	inst0[32];
+	inst1[32];
+#define SIZEOF_REORDER_BUFFER_T 55+SIZEOF_UOP_T+SIZEOF_UOP_T+SIZEOF_CAUSE_T+SIZEOF_CAUSE_T+32+32
+#else
 #define SIZEOF_REORDER_BUFFER_T 55+SIZEOF_UOP_T+SIZEOF_UOP_T+SIZEOF_CAUSE_T+SIZEOF_CAUSE_T
+#endif
 };
 
 #define NUMBER_OF_REORDER_BUFFER 8
@@ -38,8 +44,16 @@ declare reorder_buffer {
 	input ppreg1[6];
 	input cause1[SIZEOF_CAUSE_T];
 	output ptr[REORDER_BUFFER_PTR_SIZE];
+#ifdef ENABLE_DEBUG
+	input inst0[32];
+	input inst1[32];
+	func_in issue(PC, valid0, uop0, dreg0, ppreg0, cause0,
+					  valid1, uop1, dreg1, ppreg1, cause1, inst0, inst1): ptr;
+#else
 	func_in issue(PC, valid0, uop0, dreg0, ppreg0, cause0,
 					  valid1, uop1, dreg1, ppreg1, cause1): ptr;
+
+#endif
 	output commit_entry[SIZEOF_REORDER_BUFFER_T];
 	func_in commit(): commit_entry;
 	func_out commitable();

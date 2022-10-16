@@ -12,7 +12,12 @@ struct decoder_packet_t {
 	// pure IMM or IMM+PC
     imm[32];
 	cause[SIZEOF_CAUSE_T];
+#ifdef ENABLE_DEBUG
+	inst[32];
+#define SIZEOF_DECODER_PACKET_T SIZEOF_UOP_T+SIZEOF_CAUSE_T+47+32
+#else
 #define SIZEOF_DECODER_PACKET_T SIZEOF_UOP_T+SIZEOF_CAUSE_T+47
+#endif
 };
 
 declare uop_decoder {
