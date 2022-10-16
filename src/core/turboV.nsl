@@ -369,7 +369,6 @@ module turboV {
 		}
 		execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop.uop[FN_SIZE-1:0], iq_alu1_uop.rd_valid, iq_alu1.dispatch_prd, iq_alu1_A, iq_alu1_B);
 	}
-
     proc execute_alu1 {
 		alu1.exe(execute_alu1_A, execute_alu1_B, execute_alu1_fn);
 		writeback_alu1(execute_alu1_ptr, execute_alu1_prd_valid, execute_alu1_prd, alu1.q);
