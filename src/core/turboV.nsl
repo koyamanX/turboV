@@ -133,8 +133,8 @@ module turboV {
 		state decode0 {
 			if(!ifu.ibuf_empty) {
 				decode_fetch_packet = ifu.ibuf_pop();
-				udec0.decode({decode_fetch_packet.pc, 3'b000}, decode_fetch_packet.inst0);
-				udec1.decode({decode_fetch_packet.pc, 3'b100}, decode_fetch_packet.inst1);
+				udec0.decode({decode_fetch_packet.pc[31:3], 3'b000}, decode_fetch_packet.inst0);
+				udec1.decode({decode_fetch_packet.pc[31:3], 3'b100}, decode_fetch_packet.inst1);
 
 				if(decode_fetch_packet.valid0 && decode_fetch_packet.valid1) {
 					/* Check if structural hazard occurs, if so, issue first insts
@@ -373,6 +373,7 @@ module turboV {
 			gpr.writeA(writeback_alu0_prd, writeback_alu0_q);
 			iq_alu0.wakeup0(writeback_alu0_prd);
 			iq_alu1.wakeup0(writeback_alu0_prd);
+			register_status_table[writeback_alu0_prd] := READY;
 		}
 		rob.retire0(writeback_alu0_ptr);
 		finish();
@@ -382,12 +383,33 @@ module turboV {
 			gpr.writeB(writeback_alu1_prd, writeback_alu1_q);
 			iq_alu1.wakeup1(writeback_alu1_prd);
 			iq_alu1.wakeup1(writeback_alu1_prd);
+			register_status_table[writeback_alu1_prd] := READY;
 		}
 		rob.retire1(writeback_alu1_ptr);
 		finish();
     }
     proc writeback_lsu0 {
     }
+	func rob.commitable {
+		reorder_buffer_t wire commit_entry;
+		uop_t wire commit_uop0;
+		uop_t wire commit_uop1;
+
+		commit_entry = rob.commit();
+		commit_uop0 = commit_entry.uop0;
+		commit_uop1 = commit_entry.uop1;
+
+		if(commit_entry.valid0) {
+			if(commit_uop0.rd_valid) {
+				freelist.push0(commit_entry.ppreg0);
+			}
+		}
+		if(commit_entry.valid1) {
+			if(commit_uop1.rd_valid) {
+				freelist.push1(commit_entry.ppreg1);
+			}
+		}
+	}
     /*
         Interrupts
     */
