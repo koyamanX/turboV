@@ -128,7 +128,7 @@ module turboV {
 		/* Start decode */
         decode.invoke();
 		generate(i_ = 0; i_ < 32; i_++) {
-			register_map_table[i_] := i_;
+			register_map_table[i_] := retirement_register_map_table[i_];
 			retirement_register_map_table[i_] := i_;
 			register_status_table[i_] := READY;
 		}
