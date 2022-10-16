@@ -43,7 +43,7 @@ module control_status_register {
         misa.mxl            := MISA_MXL_XLEN32;
         misa.extensions     := (MISA_EXTENSIONS_I);
         mtvec.mode          := MTVEC_MODE_DIRECT;
-        mtvec.base          := 0;
+        mtvec.base          := 30'b10000_00000_00000_00000_00000_00000;
         mstatus.mie         := 0;
         mstatus.mprv        := 0;
         mstatus.mpp         := MACHINE;
