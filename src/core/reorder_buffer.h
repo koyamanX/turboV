@@ -61,12 +61,12 @@ declare reorder_buffer {
 	output commit_entry[SIZEOF_REORDER_BUFFER_T];
 	func_in commit(): commit_entry;
 	func_out commitable();
-	input complete0_ptr[REORDER_BUFFER_PTR_SIZE];
-	func_in complete0(complete0_ptr);
-	input complete1_ptr[REORDER_BUFFER_PTR_SIZE];
-	func_in complete1(complete1_ptr);
-	input complete2_ptr[REORDER_BUFFER_PTR_SIZE];
-	func_in complete2(complete2_ptr);
+	input complete_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
+	func_in complete_alu0(complete_alu0_ptr);
+	input complete_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
+	func_in complete_alu1(complete_alu1_ptr);
+	input complete_lsu0_ptr[REORDER_BUFFER_PTR_SIZE];
+	func_in complete_lsu0(complete_lsu0_ptr);
 	func_in flush();
 	func_out full();
 }

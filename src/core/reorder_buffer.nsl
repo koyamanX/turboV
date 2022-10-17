@@ -79,40 +79,40 @@ module reorder_buffer {
             full();
         }
     }
-	func complete0 {
+	func complete_alu0 {
 		any {
-			complete0_ptr == 0: rob0.completed0 := 0;
-			complete0_ptr == 1: rob0.completed1 := 0;
-			complete0_ptr == 2: rob1.completed0 := 0;
-			complete0_ptr == 3: rob1.completed1 := 0;
-			complete0_ptr == 4: rob2.completed0 := 0;
-			complete0_ptr == 5: rob2.completed1 := 0;
-			complete0_ptr == 6: rob3.completed0 := 0;
-			complete0_ptr == 7: rob3.completed1 := 0;
+			complete_alu0_ptr == 0: rob0.completed0 := 0;
+			complete_alu0_ptr == 1: rob0.completed1 := 0;
+			complete_alu0_ptr == 2: rob1.completed0 := 0;
+			complete_alu0_ptr == 3: rob1.completed1 := 0;
+			complete_alu0_ptr == 4: rob2.completed0 := 0;
+			complete_alu0_ptr == 5: rob2.completed1 := 0;
+			complete_alu0_ptr == 6: rob3.completed0 := 0;
+			complete_alu0_ptr == 7: rob3.completed1 := 0;
 		}
 	}
-	func complete1 {
+	func complete_alu1 {
 		any {
-			complete1_ptr == 0: rob0.completed0 := 0;
-			complete1_ptr == 1: rob0.completed1 := 0;
-			complete1_ptr == 2: rob1.completed0 := 0;
-			complete1_ptr == 3: rob1.completed1 := 0;
-			complete1_ptr == 4: rob2.completed0 := 0;
-			complete1_ptr == 5: rob2.completed1 := 0;
-			complete1_ptr == 6: rob3.completed0 := 0;
-			complete1_ptr == 7: rob3.completed1 := 0;
+			complete_alu1_ptr == 0: rob0.completed0 := 0;
+			complete_alu1_ptr == 1: rob0.completed1 := 0;
+			complete_alu1_ptr == 2: rob1.completed0 := 0;
+			complete_alu1_ptr == 3: rob1.completed1 := 0;
+			complete_alu1_ptr == 4: rob2.completed0 := 0;
+			complete_alu1_ptr == 5: rob2.completed1 := 0;
+			complete_alu1_ptr == 6: rob3.completed0 := 0;
+			complete_alu1_ptr == 7: rob3.completed1 := 0;
 		}
 	}
-	func complete2 {
+	func complete_lsu0 {
 		any {
-			complete2_ptr == 0: rob0.completed0 := 0;
-			complete2_ptr == 1: rob0.completed1 := 0;
-			complete2_ptr == 2: rob1.completed0 := 0;
-			complete2_ptr == 3: rob1.completed1 := 0;
-			complete2_ptr == 4: rob2.completed0 := 0;
-			complete2_ptr == 5: rob2.completed1 := 0;
-			complete2_ptr == 6: rob3.completed0 := 0;
-			complete2_ptr == 7: rob3.completed1 := 0;
+			complete_lsu0_ptr == 0: rob0.completed0 := 0;
+			complete_lsu0_ptr == 1: rob0.completed1 := 0;
+			complete_lsu0_ptr == 2: rob1.completed0 := 0;
+			complete_lsu0_ptr == 3: rob1.completed1 := 0;
+			complete_lsu0_ptr == 4: rob2.completed0 := 0;
+			complete_lsu0_ptr == 5: rob2.completed1 := 0;
+			complete_lsu0_ptr == 6: rob3.completed0 := 0;
+			complete_lsu0_ptr == 7: rob3.completed1 := 0;
 		}
 	}
 	func flush {
