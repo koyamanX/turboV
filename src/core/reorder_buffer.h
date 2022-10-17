@@ -11,14 +11,14 @@ struct reorder_buffer_t {
 	preg0[6];
 	ppreg0[6];
 	cause0[SIZEOF_CAUSE_T];
-	retired0;
+	completed0;
 	valid1;
 	uop1[SIZEOF_UOP_T];
 	dreg1[5];
 	preg1[6];
 	ppreg1[6];
 	cause1[SIZEOF_CAUSE_T];
-	retired1;
+	completed1;
 #ifdef ENABLE_DEBUG
 	inst0[32];
 	inst1[32];
@@ -61,12 +61,12 @@ declare reorder_buffer {
 	output commit_entry[SIZEOF_REORDER_BUFFER_T];
 	func_in commit(): commit_entry;
 	func_out commitable();
-	input retire0_ptr[REORDER_BUFFER_PTR_SIZE];
-	func_in retire0(retire0_ptr);
-	input retire1_ptr[REORDER_BUFFER_PTR_SIZE];
-	func_in retire1(retire1_ptr);
-	input retire2_ptr[REORDER_BUFFER_PTR_SIZE];
-	func_in retire2(retire2_ptr);
+	input complete0_ptr[REORDER_BUFFER_PTR_SIZE];
+	func_in complete0(complete0_ptr);
+	input complete1_ptr[REORDER_BUFFER_PTR_SIZE];
+	func_in complete1(complete1_ptr);
+	input complete2_ptr[REORDER_BUFFER_PTR_SIZE];
+	func_in complete2(complete2_ptr);
 	func_in flush();
 	func_out full();
 }

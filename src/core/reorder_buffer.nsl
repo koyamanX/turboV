@@ -28,14 +28,14 @@ module reorder_buffer {
 		new_entry.preg0 = preg0;
 		new_entry.ppreg0 = ppreg0;
 		new_entry.cause0 = cause0;
-		new_entry.retired0 = valid0;
+		new_entry.completed0 = valid0;
 		new_entry.valid1 = valid1;
 		new_entry.uop1 = uop1;
 		new_entry.dreg1 = dreg1;
 		new_entry.preg1 = preg1;
 		new_entry.ppreg1 = ppreg1;
 		new_entry.cause1 = cause1;
-		new_entry.retired1 = valid1;
+		new_entry.completed1 = valid1;
 #ifdef ENABLE_DEBUG
 		new_entry.inst0 = inst0;
 		new_entry.inst1 = inst1;
@@ -66,7 +66,7 @@ module reorder_buffer {
 		head == 6: head_entry = rob6;
 		head == 7: head_entry = rob7;
 	}
-	if((head_entry.valid0 || head_entry.valid1) && (!head_entry.retired0 && !head_entry.retired1)) {
+	if((head_entry.valid0 || head_entry.valid1) && (!head_entry.completed0 && !head_entry.completed1)) {
 		commitable();
 	}
 	func commit {
@@ -79,40 +79,40 @@ module reorder_buffer {
             full();
         }
     }
-	func retire0 {
+	func complete0 {
 		any {
-			retire0_ptr == 0: rob0.retired0 := 0;
-			retire0_ptr == 1: rob0.retired1 := 0;
-			retire0_ptr == 2: rob1.retired0 := 0;
-			retire0_ptr == 3: rob1.retired1 := 0;
-			retire0_ptr == 4: rob2.retired0 := 0;
-			retire0_ptr == 5: rob2.retired1 := 0;
-			retire0_ptr == 6: rob3.retired0 := 0;
-			retire0_ptr == 7: rob3.retired1 := 0;
+			complete0_ptr == 0: rob0.completed0 := 0;
+			complete0_ptr == 1: rob0.completed1 := 0;
+			complete0_ptr == 2: rob1.completed0 := 0;
+			complete0_ptr == 3: rob1.completed1 := 0;
+			complete0_ptr == 4: rob2.completed0 := 0;
+			complete0_ptr == 5: rob2.completed1 := 0;
+			complete0_ptr == 6: rob3.completed0 := 0;
+			complete0_ptr == 7: rob3.completed1 := 0;
 		}
 	}
-	func retire1 {
+	func complete1 {
 		any {
-			retire1_ptr == 0: rob0.retired0 := 0;
-			retire1_ptr == 1: rob0.retired1 := 0;
-			retire1_ptr == 2: rob1.retired0 := 0;
-			retire1_ptr == 3: rob1.retired1 := 0;
-			retire1_ptr == 4: rob2.retired0 := 0;
-			retire1_ptr == 5: rob2.retired1 := 0;
-			retire1_ptr == 6: rob3.retired0 := 0;
-			retire1_ptr == 7: rob3.retired1 := 0;
+			complete1_ptr == 0: rob0.completed0 := 0;
+			complete1_ptr == 1: rob0.completed1 := 0;
+			complete1_ptr == 2: rob1.completed0 := 0;
+			complete1_ptr == 3: rob1.completed1 := 0;
+			complete1_ptr == 4: rob2.completed0 := 0;
+			complete1_ptr == 5: rob2.completed1 := 0;
+			complete1_ptr == 6: rob3.completed0 := 0;
+			complete1_ptr == 7: rob3.completed1 := 0;
 		}
 	}
-	func retire2 {
+	func complete2 {
 		any {
-			retire2_ptr == 0: rob0.retired0 := 0;
-			retire2_ptr == 1: rob0.retired1 := 0;
-			retire2_ptr == 2: rob1.retired0 := 0;
-			retire2_ptr == 3: rob1.retired1 := 0;
-			retire2_ptr == 4: rob2.retired0 := 0;
-			retire2_ptr == 5: rob2.retired1 := 0;
-			retire2_ptr == 6: rob3.retired0 := 0;
-			retire2_ptr == 7: rob3.retired1 := 0;
+			complete2_ptr == 0: rob0.completed0 := 0;
+			complete2_ptr == 1: rob0.completed1 := 0;
+			complete2_ptr == 2: rob1.completed0 := 0;
+			complete2_ptr == 3: rob1.completed1 := 0;
+			complete2_ptr == 4: rob2.completed0 := 0;
+			complete2_ptr == 5: rob2.completed1 := 0;
+			complete2_ptr == 6: rob3.completed0 := 0;
+			complete2_ptr == 7: rob3.completed1 := 0;
 		}
 	}
 	func flush {

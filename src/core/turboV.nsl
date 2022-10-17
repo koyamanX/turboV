@@ -82,7 +82,7 @@ module turboV {
 	reorder_buffer rob;
 	free_list freelist;
 	mem register_map_table[32][6];
-	mem retirement_register_map_table[32][6];
+	mem completement_register_map_table[32][6];
 	mem register_status_table[32][1] = {0};
 	issue_queue iq_alu0;
 	issue_queue iq_alu1;
@@ -102,7 +102,7 @@ module turboV {
 			freelist.reset();
 			generate(i_ = 0; i_ < 32; i_++) {
 				register_map_table[i_] := i_;
-				retirement_register_map_table[i_] := i_;
+				completement_register_map_table[i_] := i_;
 				register_status_table[i_] := READY;
 			}
         }
@@ -128,8 +128,8 @@ module turboV {
 		/* Start decode */
         decode.invoke();
 		generate(i_ = 0; i_ < 32; i_++) {
-			register_map_table[i_] := retirement_register_map_table[i_];
-			retirement_register_map_table[i_] := i_;
+			register_map_table[i_] := completement_register_map_table[i_];
+			completement_register_map_table[i_] := i_;
 			register_status_table[i_] := READY;
 		}
     }
@@ -389,7 +389,7 @@ module turboV {
 			iq_alu1.wakeup0(writeback_alu0_prd);
 			register_status_table[writeback_alu0_prd] := READY;
 		}
-		rob.retire0(writeback_alu0_ptr);
+		rob.complete0(writeback_alu0_ptr);
 		finish();
     }
     proc writeback_alu1 {
@@ -399,7 +399,7 @@ module turboV {
 			iq_alu1.wakeup1(writeback_alu1_prd);
 			register_status_table[writeback_alu1_prd] := READY;
 		}
-		rob.retire1(writeback_alu1_ptr);
+		rob.complete1(writeback_alu1_ptr);
 		finish();
     }
     proc writeback_lsu0 {
@@ -420,14 +420,14 @@ module turboV {
 		if(commit_entry.valid0) {
 			if(commit_uop0.rd_valid) {
 				freelist.push0(commit_entry.ppreg0);
-				retirement_register_map_table[commit_entry.dreg0] := commit_entry.preg0;
+				completement_register_map_table[commit_entry.dreg0] := commit_entry.preg0;
 			}
 			DEBUG_COMMIT0(commit_PC0, commit_entry.inst0, commit_entry.cause0);
 		}
 		if(commit_entry.valid1) {
 			if(commit_uop1.rd_valid) {
 				freelist.push1(commit_entry.ppreg1);
-				retirement_register_map_table[commit_entry.dreg1] := commit_entry.preg1;
+				completement_register_map_table[commit_entry.dreg1] := commit_entry.preg1;
 			}
 			DEBUG_COMMIT1(commit_PC1, commit_entry.inst1, commit_entry.cause1);
 		}
