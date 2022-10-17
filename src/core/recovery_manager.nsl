@@ -27,18 +27,38 @@
 
 module recovery_manager {
 	recovery_manager_t reg rm_entry = 0;	
+	wire retire0_age[REORDER_BUFFER_PTR_SIZE+1];
+	wire retire1_age[REORDER_BUFFER_PTR_SIZE+1];
+	wire retire2_age[REORDER_BUFFER_PTR_SIZE+1];
+	wire update_rm_ptr[REORDER_BUFFER_PTR_SIZE+1];
+	wire update_rm_entry[SIZEOF_RECOVERY_MANAGER_T];
+	func_self update_rm(update_rm_ptr, update_rm_entry);
 
 	func flush {
 		rm_entry := 0;
 	}
-	func retire0 {
+	retire0_age = if(retire0) PTR2AGE(retire0_ptr) else -1;
+	retire1_age = if(retire1) PTR2AGE(retire1_ptr) else -1;
+	retire2_age = if(retire2) PTR2AGE(retire2_ptr) else -1;
 
+	alt {
+		retire0_age < retire1_age && retire1_age < retire2_age: update_rm(retire0_ptr, retire0_entry);
+		retire1_age < retire2_age && retire2_age < retire0_age: update_rm(retire1_ptr, retire2_entry);
+		retire2_age < retire0_age && retire0_age < retire1_age: update_rm(retire2_ptr, retire2_entry);
 	}
-	func retire1 {
+	func update_rm {
+		wire update_rm_age[REORDER_BUFFER_PTR_SIZE+1];
+		wire update_rm_entry_age[REORDER_BUFFER_PTR_SIZE+1];
 
-	}
-	func retire2 {
-
+		update_rm_age = PTR2AGE(update_rm_ptr);
+		update_rm_entry_age = PTR2AGE(rm_entry.ptr);
+		if(rm_entry.valid) {
+			if(update_rm_age < update_rm_entry_age) {
+				rm_entry := update_rm_entry;
+			}
+		} else {
+			rm_entry := update_rm_entry;
+		}
 	}
 	func commit0 {
 		if(rm_entry.valid && rm_entry.ptr == commit0_ptr) {
