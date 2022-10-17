@@ -27,9 +27,9 @@
 
 module recovery_manager {
 	recovery_manager_t reg rm_entry = 0;	
-	wire retire0_age[REORDER_BUFFER_PTR_SIZE+1];
-	wire retire1_age[REORDER_BUFFER_PTR_SIZE+1];
-	wire retire2_age[REORDER_BUFFER_PTR_SIZE+1];
+	wire complete0_age[REORDER_BUFFER_PTR_SIZE+1];
+	wire complete1_age[REORDER_BUFFER_PTR_SIZE+1];
+	wire complete2_age[REORDER_BUFFER_PTR_SIZE+1];
 	wire update_rm_ptr[REORDER_BUFFER_PTR_SIZE+1];
 	wire update_rm_entry[SIZEOF_RECOVERY_MANAGER_T];
 	func_self update_rm(update_rm_ptr, update_rm_entry);
@@ -37,14 +37,14 @@ module recovery_manager {
 	func flush {
 		rm_entry := 0;
 	}
-	retire0_age = if(retire0) PTR2AGE(retire0_ptr) else -1;
-	retire1_age = if(retire1) PTR2AGE(retire1_ptr) else -1;
-	retire2_age = if(retire2) PTR2AGE(retire2_ptr) else -1;
+	complete0_age = if(complete0) PTR2AGE(complete0_ptr) else -1;
+	complete1_age = if(complete1) PTR2AGE(complete1_ptr) else -1;
+	complete2_age = if(complete2) PTR2AGE(complete2_ptr) else -1;
 
 	alt {
-		retire0_age < retire1_age && retire1_age < retire2_age: update_rm(retire0_ptr, retire0_entry);
-		retire1_age < retire2_age && retire2_age < retire0_age: update_rm(retire1_ptr, retire2_entry);
-		retire2_age < retire0_age && retire0_age < retire1_age: update_rm(retire2_ptr, retire2_entry);
+		complete0_age < complete1_age && complete1_age < complete2_age: update_rm(complete0_ptr, complete0_entry);
+		complete1_age < complete2_age && complete2_age < complete0_age: update_rm(complete1_ptr, complete2_entry);
+		complete2_age < complete0_age && complete0_age < complete1_age: update_rm(complete2_ptr, complete2_entry);
 	}
 	func update_rm {
 		wire update_rm_age[REORDER_BUFFER_PTR_SIZE+1];
