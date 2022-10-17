@@ -4,15 +4,15 @@
 
 struct recovery_manager_t {
 	valid;
-	branch;
-	exception;
+	uops[SIZEOF_UOP_T];
 	ptr[REORDER_BUFFER_PTR_SIZE];
-	cause[SIZEOF_CAUSE_T];
 	target[32];
-#define SIZEOF_RECOVERY_MANAGER_T 3+REORDER_BUFFER_PTR_SIZE+SIZEOF_CAUSE_T+32
+#define SIZEOF_RECOVERY_MANAGER_T 1+SIZEOF_UOP_T+REORDER_BUFFER_PTR_SIZE+32
 };
 
 declare recovery_manager {
+	input head[REORDER_BUFFER_PTR_SIZE];
+#define PTR2AGE(ptr) (if(ptr<head) ptr+NUMBER_OF_REORDER_BUFFER*2 else ptr)
 	input retire0_ptr[REORDER_BUFFER_PTR_SIZE];
 	input retire0_entry[SIZEOF_RECOVERY_MANAGER_T];
 	func_in retire0(retire0_ptr, retire0_entry);
