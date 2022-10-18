@@ -43,27 +43,38 @@ module turboV {
 	reg execute_alu0_prd[6];
 	reg execute_alu0_A[32];
 	reg execute_alu0_B[32];
-	proc_name execute_alu0(execute_alu0_ptr, execute_alu0_uop, execute_alu0_prd, execute_alu0_A, execute_alu0_B);
+	reg execute_alu0_X[32];
+	reg execute_alu0_Y[32];
+	proc_name execute_alu0(execute_alu0_ptr, execute_alu0_uop, execute_alu0_prd,
+			execute_alu0_A, execute_alu0_B, execute_alu0_X, execute_alu0_Y);
 	reg execute_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
 	uop_t reg execute_alu1_uop;
 	reg execute_alu1_prd[6];
 	reg execute_alu1_A[32];
 	reg execute_alu1_B[32];
-	proc_name execute_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd, execute_alu1_A, execute_alu1_B);
+	reg execute_alu1_X[32];
+	reg execute_alu1_Y[32];
+	proc_name execute_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd,
+			execute_alu1_A, execute_alu1_B, execute_alu1_X, execute_alu1_Y);
 	proc_name execute_lsu0();
 	reg writeback_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
 	uop_t reg writeback_alu0_uop;
 	reg writeback_alu0_prd[6];
 	reg writeback_alu0_q[32];
-	proc_name writeback_alu0(writeback_alu0_ptr, writeback_alu0_uop, writeback_alu0_prd, writeback_alu0_q);
+	reg writeback_alu0_target[32];
+	proc_name writeback_alu0(writeback_alu0_ptr, writeback_alu0_uop, writeback_alu0_prd,
+			writeback_alu0_q, writeback_alu0_target);
 	reg writeback_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
 	uop_t reg writeback_alu1_uop;
 	reg writeback_alu1_prd[6];
 	reg writeback_alu1_q[32];
-	proc_name writeback_alu1(writeback_alu1_ptr, writeback_alu1_uop, writeback_alu1_prd, writeback_alu1_q);
+	reg writeback_alu1_target[32];
+	proc_name writeback_alu1(writeback_alu1_ptr, writeback_alu1_uop, writeback_alu1_prd,
+			writeback_alu1_q, writeback_alu1_target);
 	proc_name writeback_lsu0();
 	/* Pipeline flush */
-    func_self flush();
+	wire newpc[32];
+    func_self flush(newpc);
     /* Instruction Fetch Unit */
     ifetch_unit ifu;
     /* Instruction decoder */
@@ -130,6 +141,10 @@ module turboV {
 			retirement_register_map_table[i_] := i_;
 			register_status_table[i_] := READY;
 		}
+		rob.flush();
+		iq_alu0.flush();
+		iq_alu1.flush();
+		ifu.redirect(newpc);
     }
     proc decode {
 		state_name decode0, decode1;
@@ -139,8 +154,8 @@ module turboV {
 			if(!ifu.ibuf_empty) {
 				decode_fetch_packet = ifu.ibuf_pop();
 				// TODO:
-				udec0.decode({decode_fetch_packet.pc[31:3], 3'b000}, decode_fetch_packet.inst0);
-				udec1.decode({decode_fetch_packet.pc[31:3], 3'b100}, decode_fetch_packet.inst1);
+				udec0.decode(decode_fetch_packet.inst0);
+				udec1.decode(decode_fetch_packet.inst1);
 
 				if(decode_fetch_packet.valid0 && decode_fetch_packet.valid1) {
 					/* Check if structural hazard occurs, if so, issue first insts
@@ -170,7 +185,8 @@ module turboV {
 							decode_fetch_packet.valid0, decode_fetch_packet.valid1},
 							udec0.packet, udec1.packet);
 
-				} else {
+				} else if((!decode_fetch_packet.valid0 && decode_fetch_packet.valid1)
+					|| (decode_fetch_packet.valid0 && !decode_fetch_packet.valid1)) {
 					// Either way0 or way1 is valid.
 					// Both invalid is not enter here, ifetch_unit never pushes such case.
 					// TODO:
@@ -285,13 +301,15 @@ module turboV {
 				issue_inst1_prs2 = register_map_table[issue_inst1_lrs2];
 			}
 			// Source register ready
-			issue_inst0_rs1_ready = issue_packet.valid0
-				&& register_status_table[issue_inst1_lrs1];
-			issue_inst0_rs2_ready = issue_packet.valid0
-				&& register_status_table[issue_inst1_lrs2];
-			issue_inst1_rs1_ready = if(issue_inst1_rs1_ready_bypass) BUSY
+			issue_inst0_rs1_ready = if(!issue_inst0_uop.rs1_valid) READY
+				else issue_packet.valid0 && register_status_table[issue_inst1_lrs1];
+			issue_inst0_rs2_ready = if(!issue_inst0_uop.rs2_valid) READY
+				else issue_packet.valid0 && register_status_table[issue_inst1_lrs2];
+			issue_inst1_rs1_ready = if(!issue_inst1_uop.rs1_valid) READY
+				else if(issue_inst1_rs1_ready_bypass) BUSY
 				else issue_packet.valid1 && register_status_table[issue_inst1_lrs1];
-			issue_inst1_rs2_ready = if(issue_inst1_rs2_ready_bypass) BUSY
+			issue_inst1_rs2_ready = if(!issue_inst1_uop.rs2_valid) READY
+				else if(issue_inst1_rs2_ready_bypass) BUSY
 				else issue_packet.valid1 && register_status_table[issue_inst1_lrs2];
 
 #ifdef ENABLE_DEBUG
@@ -329,13 +347,16 @@ module turboV {
 	func iq_alu0.dispatch {
 		wire iq_alu0_A[32];
 		wire iq_alu0_B[32];
+		wire iq_alu0_PC[32];
 		uop_t wire iq_alu0_uop;
 
 		iq_alu0_uop = iq_alu0.dispatch_uop;
+		iq_alu0_PC = rob.readPC0(iq_alu0.dispatch_ptr);
 		any {
 			iq_alu0_uop.rs1_sel == RS1_SEL_REG && iq_alu0_uop.rs1_valid: iq_alu0_A = gpr.readA(iq_alu0.dispatch_prs1);
 			iq_alu0_uop.rs1_sel == RS1_SEL_REG && !iq_alu0_uop.rs1_valid: iq_alu0_A = 0;
-			iq_alu0_uop.rs1_sel == RS1_SEL_UIMM: iq_alu0_A = iq_alu0.dispatch_imm[4:0];
+			//iq_alu0_uop.rs1_sel == RS1_SEL_UIMM: iq_alu0_A = iq_alu0.dispatch_imm[4:0];
+			iq_alu0_uop.rs1_sel == RS1_SEL_PC: iq_alu0_A = iq_alu0_PC;
 		}
 		any {
 			iq_alu0_uop.rs2_sel == RS2_SEL_REG && iq_alu0_uop.rs2_valid: iq_alu0_B = gpr.readB(iq_alu0.dispatch_prs2);
@@ -346,22 +367,57 @@ module turboV {
 				RS2_SEL_CSR_UIMM
 		   */
 		}
-		execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd, iq_alu0_A, iq_alu0_B);
+		/*
+			For branch instruction, branch target is already calculated in decode stage,
+			only branch condition need to be calculated. 
+				rs1_sel == REG, rs2_sel == REG, PC+imm
+				alu_A = REG, alu_B = REG, PC, imm
+				no writeback
+			For JAL instruction, target is already calculated in decode stage (PC+imm),
+				rs1_sel == REG(x0), rs2_sel == IMM(PC+imm), PC+4
+				writeback PC+4
+				alu_A = PC, alu_B = 4, PC, 4
+			For JALR instruction, target address need to be calculated in execute stage(rs1+imm)
+				rs1_sel == REG, rs2_sel == IMM, PC+4
+				writeback PC+4
+				alu_A = PC, alu_B = 4, REG, IMM
+			For JAL and JALR instruction, write PC+4 to rd register.
+	   */
+		if(iq_alu0_uop.branch) {
+			execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
+					iq_alu0_A, iq_alu0_B, iq_alu0_PC, iq_alu0.dispatch_imm);
+		} else if(iq_alu0_uop.jal) {
+			execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
+					iq_alu0_PC, 4, iq_alu0_PC, iq_alu0.dispatch_imm);
+		} else if(iq_alu0_uop.jalr) {
+			execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
+					iq_alu0_PC, 4, iq_alu0_A, iq_alu0.dispatch_imm);
+		} else {
+			execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
+					iq_alu0_A, iq_alu0_B, 0, 0);
+		}
 	}
     proc execute_alu0 {
 		alu0.exe(execute_alu0_A, execute_alu0_B, execute_alu0_uop.uop[FN_SIZE-1:0]);
-		writeback_alu0(execute_alu0_ptr, execute_alu0_uop, execute_alu0_prd, alu0.q);
+		if(execute_alu0_uop.branch || execute_alu0_uop.jal || execute_alu0_uop.jalr) {
+			writeback_alu0(execute_alu0_ptr, execute_alu0_uop, execute_alu0_prd, alu0.q, execute_alu0_X+execute_alu0_Y);
+		} else {
+			writeback_alu0(execute_alu0_ptr, execute_alu0_uop, execute_alu0_prd, alu0.q, 0);
+		}
     }
 	func iq_alu1.dispatch {
 		wire iq_alu1_A[32];
 		wire iq_alu1_B[32];
+		wire iq_alu1_PC[32];
 		uop_t wire iq_alu1_uop;
 
 		iq_alu1_uop = iq_alu1.dispatch_uop;
+		iq_alu1_PC = rob.readPC1(iq_alu1.dispatch_ptr);
 		any {
 			iq_alu1_uop.rs1_sel == RS1_SEL_REG && iq_alu1_uop.rs1_valid: iq_alu1_A = gpr.readC(iq_alu1.dispatch_prs1);
 			iq_alu1_uop.rs1_sel == RS1_SEL_REG && !iq_alu1_uop.rs1_valid: iq_alu1_A = 0;
 			iq_alu1_uop.rs1_sel == RS1_SEL_UIMM: iq_alu1_A = iq_alu1.dispatch_imm[4:0];
+			iq_alu1_uop.rs1_sel == RS1_SEL_PC: iq_alu1_A = iq_alu1_PC;
 		}
 		any {
 			iq_alu1_uop.rs2_sel == RS2_SEL_REG && iq_alu1_uop.rs2_valid: iq_alu1_B = gpr.readD(iq_alu1.dispatch_prs2);
@@ -372,11 +428,27 @@ module turboV {
 				RS2_SEL_CSR_UIMM
 		   */
 		}
-		execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd, iq_alu1_A, iq_alu1_B);
+		if(iq_alu1_uop.branch) {
+			execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd,
+					iq_alu1_A, iq_alu1_B, iq_alu1_PC, iq_alu1.dispatch_imm);
+		} else if(iq_alu1_uop.jal) {
+			execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd,
+					iq_alu1_PC, 4, iq_alu1_PC, iq_alu1.dispatch_imm);
+		} else if(iq_alu1_uop.jalr) {
+			execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd,
+					iq_alu1_PC, 4, iq_alu1_A, iq_alu1.dispatch_imm);
+		} else {
+			execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd,
+					iq_alu1_A, iq_alu1_B, 0, 0);
+		}
 	}
     proc execute_alu1 {
 		alu1.exe(execute_alu1_A, execute_alu1_B, execute_alu1_uop.uop[FN_SIZE-1:0]);
-		writeback_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd, alu1.q);
+		if(execute_alu1_uop.branch || execute_alu1_uop.jal || execute_alu1_uop.jalr) {
+			writeback_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd, alu1.q, execute_alu1_X+execute_alu1_Y);
+		} else {
+			writeback_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd, alu1.q, 0);
+		}
     }
     proc execute_lsu0 {
     }
@@ -387,7 +459,13 @@ module turboV {
 			iq_alu1.wakeup0(writeback_alu0_prd);
 			register_status_table[writeback_alu0_prd] := READY;
 		}
-		rob.complete_alu0(writeback_alu0_ptr);
+		if(writeback_alu0_uop.branch) {
+			rob.complete_alu0(writeback_alu0_ptr, writeback_alu0_q, writeback_alu0_target);
+		} else if(writeback_alu0_uop.jal || writeback_alu0_uop.jalr) {
+			rob.complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target);
+		} else {
+			rob.complete_alu0(writeback_alu0_ptr, 0, 0);
+		}
 		finish();
     }
     proc writeback_alu1 {
@@ -397,7 +475,13 @@ module turboV {
 			iq_alu1.wakeup1(writeback_alu1_prd);
 			register_status_table[writeback_alu1_prd] := READY;
 		}
-		rob.complete_alu1(writeback_alu1_ptr);
+		if(writeback_alu1_uop.branch) {
+			rob.complete_alu1(writeback_alu1_ptr, writeback_alu1_q, writeback_alu1_target);
+		} else if(writeback_alu1_uop.jal || writeback_alu1_uop.jalr) {
+			rob.complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target);
+		} else {
+			rob.complete_alu1(writeback_alu1_ptr, 0, 0);
+		}
 		finish();
     }
     proc writeback_lsu0 {
@@ -408,6 +492,7 @@ module turboV {
 		uop_t wire commit_uop1;
 		wire commit_PC0[32];
 		wire commit_PC1[32];
+		func_self commit_kill;
 
 		commit_entry = rob.commit();
 		commit_uop0 = commit_entry.uop0;
@@ -420,12 +505,19 @@ module turboV {
 				freelist.push0(commit_entry.ppreg0);
 				retirement_register_map_table[commit_entry.dreg0] := commit_entry.preg0;
 			}
+			if(commit_uop0.jal || commit_uop0.jalr || (commit_uop0.branch && commit_entry.taken0)) {
+				flush(commit_entry.target0);
+				commit_kill();
+			}
 			DEBUG_COMMIT0(commit_PC0, commit_entry.inst0, commit_entry.cause0);
 		}
-		if(commit_entry.valid1) {
+		if(commit_entry.valid1 && !commit_kill) {
 			if(commit_uop1.rd_valid) {
 				freelist.push1(commit_entry.ppreg1);
 				retirement_register_map_table[commit_entry.dreg1] := commit_entry.preg1;
+			}
+			if(commit_uop1.jal || commit_uop1.jalr || (commit_uop1.branch && commit_entry.taken1)) {
+				flush(commit_entry.target1);
 			}
 			DEBUG_COMMIT1(commit_PC1, commit_entry.inst1, commit_entry.cause1);
 		}

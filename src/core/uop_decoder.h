@@ -21,9 +21,8 @@ struct decoder_packet_t {
 };
 
 declare uop_decoder {
-	input PC[32];
     input inst[32];
-    func_in decode(PC, inst);
+    func_in decode(inst);
     output packet[SIZEOF_DECODER_PACKET_T];
     func_out uop_alu(packet);
     func_out uop_bru(packet);
