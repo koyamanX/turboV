@@ -21,6 +21,8 @@ module free_list {
 			freelist[i_] := i_;
 		}
 		freelist_count := NUMBER_OF_FREE_LIST - 1;
+		head := 0;
+		tail := 0;
 	}
 	func flush {
 		generate(i_ = 0; i_ < NUMBER_OF_FREE_LIST; i_++) {

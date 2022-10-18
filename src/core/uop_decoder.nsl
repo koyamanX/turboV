@@ -133,24 +133,24 @@ module uop_decoder {
                 decode_uop.uop = uOP_ALU_ADD;
 				rd_valid();
                 lrd = inst_utype.rd;
-                rs1_sel = RS1_SEL_REG;
+                rs1_sel = RS1_SEL_PC;
                 lrs1 = 0;
                 rs2_sel = RS2_SEL_IMM;
                 lrs2 = 0;
-                imm = imm_gen0.imm + PC;
+                imm = imm_gen0.imm;
                 uop_alu(decode_packet);
             }
             opcode == JAL: {
                 imm_gen0.j_type(inst);
 
-                decode_uop.uop = uOP_BRU_JAL;
+                decode_uop.uop = uOP_ALU_ADD;
 				rd_valid();
                 lrd = inst_jtype.rd;
-                rs1_sel = RS1_SEL_REG;
+                rs1_sel = RS1_SEL_PC;
                 lrs1 = 0;
                 rs2_sel = RS2_SEL_IMM;
                 lrs2 = 0;
-                imm = imm_gen0.imm + PC;
+                imm = imm_gen0.imm;
                 jal();
 
                 uop_bru(decode_packet);
@@ -158,7 +158,7 @@ module uop_decoder {
             opcode == JALR: {
                 imm_gen0.i_type(inst);
 
-                decode_uop.uop = uOP_BRU_JALR;
+                decode_uop.uop = uOP_ALU_ADD;
 				rd_valid();
                 lrd = inst_itype.rd;
                 rs1_sel = RS1_SEL_REG;

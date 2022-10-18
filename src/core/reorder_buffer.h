@@ -11,6 +11,8 @@ struct reorder_buffer_t {
 	preg0[6];
 	ppreg0[6];
 	cause0[SIZEOF_CAUSE_T];
+	taken0;
+	target0[32];
 	completed0;
 	valid1;
 	uop1[SIZEOF_UOP_T];
@@ -18,11 +20,13 @@ struct reorder_buffer_t {
 	preg1[6];
 	ppreg1[6];
 	cause1[SIZEOF_CAUSE_T];
+	taken1;
+	target1[32];
 	completed1;
 #ifdef ENABLE_DEBUG
 	inst0[32];
 	inst1[32];
-#define SIZEOF_REORDER_BUFFER_T 55+SIZEOF_UOP_T+SIZEOF_UOP_T+SIZEOF_CAUSE_T+SIZEOF_CAUSE_T+32+32+12
+#define SIZEOF_REORDER_BUFFER_T 55+SIZEOF_UOP_T+SIZEOF_UOP_T+SIZEOF_CAUSE_T+SIZEOF_CAUSE_T+32+32+12+2+64
 #else
 #define SIZEOF_REORDER_BUFFER_T 55+SIZEOF_UOP_T+SIZEOF_UOP_T+SIZEOF_CAUSE_T+SIZEOF_CAUSE_T
 #endif
@@ -62,11 +66,21 @@ declare reorder_buffer {
 	func_in commit(): commit_entry;
 	func_out commitable();
 	input complete_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
-	func_in complete_alu0(complete_alu0_ptr);
+	input complete_alu0_taken;
+	input complete_alu0_target[32];
+	func_in complete_alu0(complete_alu0_ptr, complete_alu0_taken, complete_alu0_target);
 	input complete_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
-	func_in complete_alu1(complete_alu1_ptr);
+	input complete_alu1_taken;
+	input complete_alu1_target[32];
+	func_in complete_alu1(complete_alu1_ptr, complete_alu1_taken, complete_alu1_target);
 	input complete_lsu0_ptr[REORDER_BUFFER_PTR_SIZE];
 	func_in complete_lsu0(complete_lsu0_ptr);
+	input readPC0_ptr[REORDER_BUFFER_PTR_SIZE];
+	output PC0[32];
+	func_in readPC0(readPC0_ptr): PC0;
+	input readPC1_ptr[REORDER_BUFFER_PTR_SIZE];
+	output PC1[32];
+	func_in readPC1(readPC1_ptr): PC1;
 	func_in flush();
 	func_out full();
 }
