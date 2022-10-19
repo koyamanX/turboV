@@ -150,16 +150,24 @@ module turboV {
     }
     proc decode {
 		state_name decode0, decode1;
-		fetch_packet_t wire decode_fetch_packet;
+		fetch_packet_t wire decode0_fetch_packet;
+		decoder_packet_t wire decode0_decoder_packet0;
+		decoder_packet_t wire decode0_decoder_packet1;
+		uop_t wire decode0_uop0;
+		uop_t wire decode0_uop1;
+		fetch_packet_t reg decode1_fetch_packet;
 
 		state decode0 {
 			if(!ifu.ibuf_empty) {
-				decode_fetch_packet = ifu.ibuf_pop();
-				// TODO:
-				udec0.decode(decode_fetch_packet.inst0);
-				udec1.decode(decode_fetch_packet.inst1);
+				decode0_fetch_packet = ifu.ibuf_pop();
+				udec0.decode(decode0_fetch_packet.inst0);
+				udec1.decode(decode0_fetch_packet.inst1);
+				decode0_decoder_packet0 = udec0.packet;
+				decode0_decoder_packet1 = udec1.packet;
+				decode0_uop0 = decode0_decoder_packet0.uop;
+				decode0_uop1 = decode0_decoder_packet1.uop;
 
-				if(decode_fetch_packet.valid0 && decode_fetch_packet.valid1) {
+				if(decode0_fetch_packet.valid0 && decode0_fetch_packet.valid1) {
 					/* Check if structural hazard occurs, if so, issue first insts
 					   and second one goes to decode1 stage.
 					any {
@@ -181,26 +189,42 @@ module turboV {
 					=> if both insts are SYSTEM or LSU, split decode into
 					two stages to avoid structural hazard.
 					*/
-					// TODO:
-					issue.invoke({decode_fetch_packet.pc,
-							decode_fetch_packet.pred0, decode_fetch_packet.pred1,
-							decode_fetch_packet.valid0, decode_fetch_packet.valid1},
+					if(!((decode0_uop0.load || decode0_uop0.store) && (decode0_uop1.load || decode0_uop1.store))) {
+						issue.invoke({decode0_fetch_packet.pc,
+							decode0_fetch_packet.pred0, decode0_fetch_packet.pred1,
+							decode0_fetch_packet.valid0, decode0_fetch_packet.valid1},
 							udec0.packet, udec1.packet);
+					} else {
+						issue.invoke({decode0_fetch_packet.pc,
+							decode0_fetch_packet.pred0, 1'b0,
+							decode0_fetch_packet.valid0, 1'b0},
+							udec0.packet, 0);
+						decode1_fetch_packet := decode0_fetch_packet;
+					    goto decode1;
+					}
 
-				} else if((!decode_fetch_packet.valid0 && decode_fetch_packet.valid1)
-					|| (decode_fetch_packet.valid0 && !decode_fetch_packet.valid1)) {
+				} else if((!decode0_fetch_packet.valid0 && decode0_fetch_packet.valid1)
+					|| (decode0_fetch_packet.valid0 && !decode0_fetch_packet.valid1)) {
 					// Either way0 or way1 is valid.
 					// Both invalid is not enter here, ifetch_unit never pushes such case.
 					// TODO:
-					issue.invoke({decode_fetch_packet.pc,
-							decode_fetch_packet.pred0, decode_fetch_packet.pred1,
-							decode_fetch_packet.valid0, decode_fetch_packet.valid1},
-							udec0.packet, udec1.packet);
+					issue.invoke({decode0_fetch_packet.pc,
+						decode0_fetch_packet.pred0, decode0_fetch_packet.pred1,
+						decode0_fetch_packet.valid0, decode0_fetch_packet.valid1},
+						udec0.packet, udec1.packet);
 				}
 			}
 		}
 		state decode1 {
 			// Inst1 is either SYSTEM or LSU.
+			// TODO: decode_fetch_packet
+			// CAUTION: valid1, pred1, inst1
+			udec0.decode(decode1_fetch_packet.inst1);
+			issue.invoke({decode1_fetch_packet.pc,
+				decode1_fetch_packet.pred1, 1'b0,
+				decode1_fetch_packet.valid1, 1'b0},
+				udec0.packet, 0);
+
 			goto decode0;
 		}
     }
@@ -344,17 +368,37 @@ module turboV {
 
 			// TODO:
 			if(issue_inst0_valid) {
-				iq_alu0.issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
-						issue_inst0_rs1_ready, issue_inst0_prs1,
-						issue_inst0_rs2_ready, issue_inst0_prs2,
-						issue_inst0_imm);
+				any {
+					issue_inst0_uop.store || issue_inst0_uop.load: {
+						iq_lsu0.issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
+								issue_inst0_rs1_ready, issue_inst0_prs1,
+								issue_inst0_rs2_ready, issue_inst0_prs2,
+								issue_inst0_imm);
+					}
+					else: {
+						iq_alu0.issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
+								issue_inst0_rs1_ready, issue_inst0_prs1,
+								issue_inst0_rs2_ready, issue_inst0_prs2,
+								issue_inst0_imm);
+					 }
+				}
 			}
 			// TODO:
 			if(issue_inst1_valid) {
-				iq_alu1.issue(issue_inst1_ptr, issue_inst1_uop, issue_inst1_prd,
-						issue_inst1_rs1_ready, issue_inst1_prs1,
-						issue_inst1_rs2_ready, issue_inst1_prs2,
-						issue_inst1_imm);
+				any {
+					issue_inst1_uop.store || issue_inst1_uop.load: {
+						iq_lsu0.issue(issue_inst1_ptr, issue_inst1_uop, issue_inst1_prd,
+							issue_inst1_rs1_ready, issue_inst1_prs1,
+							issue_inst1_rs2_ready, issue_inst1_prs2,
+							issue_inst1_imm);
+					}
+					else: {
+						iq_alu1.issue(issue_inst1_ptr, issue_inst1_uop, issue_inst1_prd,
+							issue_inst1_rs1_ready, issue_inst1_prs1,
+							issue_inst1_rs2_ready, issue_inst1_prs2,
+							issue_inst1_imm);
+					}
+				}
 			}
 			// TODO:
 			finish();
