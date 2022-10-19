@@ -52,7 +52,7 @@ module free_list {
 		next_tail = tail + 2;
 		freelist[tail+1] := push1_data;
 	}
-	if(pop) {
+	if(pop && !flush) {
 		if(next_head >= NUMBER_OF_FREE_LIST) {
 			head := next_head - 64;
 		} else {
@@ -62,7 +62,7 @@ module free_list {
 	} else {
 		pop_count = 0;
 	}
-	if(push) {
+	if(push && !flush) {
 		if(next_tail >= NUMBER_OF_FREE_LIST) {
 			tail := next_tail - 64;
 		} else {
@@ -73,7 +73,7 @@ module free_list {
 		push_count = 0; 
 	}
 	next_freelist_count = freelist_count + push_count - pop_count;
-	if(push || pop) {
+	if((push || pop) && !flush) {
 		freelist_count := next_freelist_count;
 	}
 	count = freelist_count;
