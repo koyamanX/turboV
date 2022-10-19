@@ -1,6 +1,41 @@
 #include "reorder_buffer.h"
 
 // TODO: Re-implement with LVT based multi-ported RAM
+/*
+Per-entry:
+
+3reads/1writes
+PC[29];
+
+1reads/1writes
+struct rob {
+	uop0[SIZEOF_UOP_T];
+	dreg0[5];
+	preg0[6];
+	ppreg0[6];
+	uop1[SIZEOF_UOP_T];
+	dreg1[5];
+	preg1[6];
+	ppreg1[6];
+};
+
+1reads/5writes
+struct rob_exec {
+	valid0;
+	completed0;
+	valid1;
+	completed1;
+};
+Oldest branch/jump exception instructions:
+1reads/1writes
+valid;
+struct recovery_manager_t {
+	ptr[N];
+	cause[SIZEOF_CAUSE_T];
+	taken;
+	target[32];
+};
+*/
 module reorder_buffer {
 	reorder_buffer_t reg rob0 = 0;
 	reorder_buffer_t reg rob1 = 0;
