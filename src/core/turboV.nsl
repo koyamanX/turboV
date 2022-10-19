@@ -287,30 +287,44 @@ module turboV {
 				issue_inst0_prs2 = register_map_table[issue_inst0_lrs2];
 			}
 			if(issue_packet.valid0 && issue_packet.valid1
-					&& issue_inst0_lrd == issue_inst1_lrs1) {
-				issue_inst1_prs1 = issue_inst0_prs1;
+					&& issue_inst0_lrd == issue_inst1_lrs1 && issue_inst0_uop.rd_valid && issue_inst1_uop.rs1_valid) {
+				issue_inst1_prs1 = issue_inst0_prd;
 				issue_inst1_rs1_ready_bypass();
 			} else {
 				issue_inst1_prs1 = register_map_table[issue_inst1_lrs1];
 			}
 			if(issue_packet.valid0 && issue_packet.valid1
-					&& issue_inst0_lrd == issue_inst1_lrs2) {
-				issue_inst1_prs2 = issue_inst0_prs2;
+					&& issue_inst0_lrd == issue_inst1_lrs2 && issue_inst0_uop.rd_valid && issue_inst1_uop.rs2_valid) {
+				issue_inst1_prs2 = issue_inst0_prd;
 				issue_inst1_rs2_ready_bypass();
 			} else {
 				issue_inst1_prs2 = register_map_table[issue_inst1_lrs2];
 			}
 			// Source register ready
-			issue_inst0_rs1_ready = if(!issue_inst0_uop.rs1_valid) READY
-				else issue_packet.valid0 && register_status_table[issue_inst1_lrs1];
-			issue_inst0_rs2_ready = if(!issue_inst0_uop.rs2_valid) READY
-				else issue_packet.valid0 && register_status_table[issue_inst1_lrs2];
-			issue_inst1_rs1_ready = if(!issue_inst1_uop.rs1_valid) READY
-				else if(issue_inst1_rs1_ready_bypass) BUSY
-				else issue_packet.valid1 && register_status_table[issue_inst1_lrs1];
-			issue_inst1_rs2_ready = if(!issue_inst1_uop.rs2_valid) READY
-				else if(issue_inst1_rs2_ready_bypass) BUSY
-				else issue_packet.valid1 && register_status_table[issue_inst1_lrs2];
+			if(!issue_inst0_uop.rs1_valid) {
+				issue_inst0_rs1_ready = READY;
+			} else {
+				issue_inst0_rs1_ready = issue_packet.valid0 && register_status_table[issue_inst1_lrs1];
+			}
+			if(!issue_inst0_uop.rs2_valid) {
+				issue_inst0_rs2_ready = READY;
+			} else {
+				issue_inst0_rs2_ready = issue_packet.valid0 && register_status_table[issue_inst1_lrs2];
+			}
+			if(!issue_inst1_uop.rs1_valid) {
+				issue_inst1_rs1_ready = READY;
+			} else if(issue_inst1_rs1_ready_bypass) {
+				issue_inst1_rs1_ready = BUSY;
+			} else {
+				issue_inst1_rs1_ready = issue_packet.valid1 && register_status_table[issue_inst1_lrs1];
+			}
+			if(!issue_inst1_uop.rs2_valid) {
+				issue_inst1_rs2_ready = READY;
+			} else if(issue_inst1_rs2_ready_bypass) {
+				issue_inst1_rs2_ready = BUSY;
+			} else {
+				issue_inst1_rs2_ready = issue_packet.valid1 && register_status_table[issue_inst1_lrs2];
+			}
 
 #ifdef ENABLE_DEBUG
 			rob.issue(issue_PC,
