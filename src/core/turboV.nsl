@@ -12,6 +12,7 @@
 #include "reorder_buffer.h"
 #include "free_list.h"
 #include "issue_queue.h"
+#include "issue_queue_in_order.h"
 
 #ifdef ENABLE_DEBUG
 #define DEBUG_COMMIT0(pc, inst, cause) debug_commit0(pc, inst, cause)
@@ -95,6 +96,7 @@ module turboV {
 	mem register_status_table[32][1] = {0};
 	issue_queue iq_alu0;
 	issue_queue iq_alu1;
+	issue_queue iq_lsu0;
 	alu32 alu0;
 	alu32 alu1;
 
@@ -143,6 +145,7 @@ module turboV {
 		rob.flush();
 		iq_alu0.flush();
 		iq_alu1.flush();
+		iq_lsu0.flush();
 		ifu.redirect(newpc);
     }
     proc decode {
@@ -470,6 +473,7 @@ module turboV {
 			gpr.writeA(writeback_alu0_prd, writeback_alu0_q);
 			iq_alu0.wakeup0(writeback_alu0_prd);
 			iq_alu1.wakeup0(writeback_alu0_prd);
+			iq_lsu0.wakeup0(writeback_alu0_prd);
 			register_status_table[writeback_alu0_prd] := READY;
 		}
 		if(writeback_alu0_uop.branch) {
@@ -486,6 +490,7 @@ module turboV {
 			gpr.writeB(writeback_alu1_prd, writeback_alu1_q);
 			iq_alu0.wakeup1(writeback_alu1_prd);
 			iq_alu1.wakeup1(writeback_alu1_prd);
+			iq_lsu0.wakeup1(writeback_alu1_prd);
 			register_status_table[writeback_alu1_prd] := READY;
 		}
 		if(writeback_alu1_uop.branch) {
