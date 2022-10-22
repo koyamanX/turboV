@@ -189,7 +189,10 @@ module turboV {
 					=> if both insts are SYSTEM or LSU, split decode into
 					two stages to avoid structural hazard.
 					*/
-					if(!((decode0_uop0.load || decode0_uop0.store) && (decode0_uop1.load || decode0_uop1.store))) {
+#define IS_MEMORY(uop) (uop.load || uop.store)
+#define IS_CSR(uop) (uop.csr)
+					if(!(IS_MEMORY(decode0_uop0) && IS_MEMORY(decode0_uop1))
+							&& !(IS_CSR(decode0_uop0) && IS_CSR(decode0_uop1))) {
 						issue.invoke({decode0_fetch_packet.pc,
 							decode0_fetch_packet.pred0, decode0_fetch_packet.pred1,
 							decode0_fetch_packet.valid0, decode0_fetch_packet.valid1},
