@@ -111,12 +111,13 @@ struct uop_t {
     load;
     store;
     branch;
+	csr;
     csr_write;
     csr_read;
     mret;
     ecall;
     ebreak;
-#define SIZEOF_UOP_T uOP_SIZE+13+SIZEOF_REG_SEL+SIZEOF_REG_SEL
+#define SIZEOF_UOP_T uOP_SIZE+13+SIZEOF_REG_SEL+SIZEOF_REG_SEL+1
 };
 
 #endif
