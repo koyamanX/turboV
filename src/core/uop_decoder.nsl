@@ -396,7 +396,7 @@ module uop_decoder {
                         lrd = 0;
                         rs1_sel = RS1_SEL_REG;
                         lrs1 = 0;
-                        rs2_sel = RS2_SEL_CSR;
+                        rs2_sel = RS2_SEL_REG;
                         lrs2 = 0;
                         imm = 0;
                         mret();
@@ -408,7 +408,7 @@ module uop_decoder {
                         lrd = 0;
                         rs1_sel = RS1_SEL_REG;
                         lrs1 = 0;
-                        rs2_sel = RS2_SEL_CSR;
+                        rs2_sel = RS2_SEL_REG;
                         lrs2 = 0;
                         imm = 0;
                         ecall();
@@ -420,7 +420,7 @@ module uop_decoder {
                         lrd = 0;
                         rs1_sel = RS1_SEL_REG;
                         lrs1 = 0;
-                        rs2_sel = RS2_SEL_CSR;
+                        rs2_sel = RS2_SEL_REG;
                         lrs2 = 0;
                         imm = 0;
                         ebreak();
