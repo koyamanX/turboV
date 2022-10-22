@@ -178,101 +178,12 @@ module control_status_register {
             (mode >= USER) && (csr_rnum == TIME): {
                 return mtime.lo;
             }
-        }
+			else: {
+				return 0;
+				read_error();
+		    }
+		}
     }
-    func decode_csr {
-        func_self decode_csr_mapped;
-        func_self decode_csr_readonly();
-
-        any {
-            ((decode_csr_rw == DECODE_CSR_RW) && (decode_csr_readonly || !decode_csr_mapped)): {
-                decode_csr_illegal();
-            }
-            ((decode_csr_rw == DECODE_CSR_WO) && (decode_csr_readonly || !decode_csr_mapped)): {
-                decode_csr_illegal();
-            }
-            ((decode_csr_rw == DECODE_CSR_RO) && !decode_csr_mapped): {
-                decode_csr_illegal();
-            }
-        }
-
-        if(decode_csr_addr[11:10] == 2'b11) decode_csr_readonly();
-        any {
-            (mode >= MACHINE) && (decode_csr_addr == MISA): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MVENDORID): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MARCHID): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MIMPID): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MHARTID): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MSTATUSH): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MSTATUS): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MTVEC): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MIP): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MIE): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MSCRATCH): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MEPC): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MCAUSE): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MTVAL): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MCYCLEH): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MCYCLE): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MINSTRETH): {
-                decode_csr_mapped();
-            }
-            (mode >= MACHINE) && (decode_csr_addr == MINSTRET): {
-                decode_csr_mapped();
-            }
-            (mode >= USER) && (decode_csr_addr == CYCLEH): {
-                decode_csr_mapped();
-            }
-            (mode >= USER) && (decode_csr_addr == CYCLE): {
-                decode_csr_mapped();
-            }
-            (mode >= USER) && (decode_csr_addr == INSTRETH): {
-                decode_csr_mapped();
-            }
-            (mode >= USER) && (decode_csr_addr == INSTRET): {
-                decode_csr_mapped();
-            }
-            (mode >= USER) && (decode_csr_addr == TIMEH): {
-                decode_csr_mapped();
-            }
-            (mode >= USER) && (decode_csr_addr == TIME): {
-                decode_csr_mapped();
-            }
-        }
-    }
-
     func write {
         mstatus_t wire xstatus;
         mtvec_t wire xtvec;
@@ -385,6 +296,9 @@ module control_status_register {
                 minstret.lo := csr_wdata;
                 stop_minstret();
             }
+			else: {
+				write_error();
+		    }
         }
     }
     func update_instret {

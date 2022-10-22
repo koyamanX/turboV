@@ -71,8 +71,7 @@ module uop_decoder {
 		decode_packet.imm = imm;
         decode_packet.cause = SET_EXCEPTION(ENVIRONMENT_CALL_FROM_M_MODE, ecall)
 			| SET_EXCEPTION(BREAKPOINT, ebreak)
-            | SET_EXCEPTION(ILLEGAL_INSTRUCTION, illegal_instruction)
-			| SET_EXCEPTION(ILLEGAL_INSTRUCTION, decode_csr_illegal);
+            | SET_EXCEPTION(ILLEGAL_INSTRUCTION, illegal_instruction);
 #ifdef ENABLE_DEBUG
 		decode_packet.inst = inst;
 #endif
@@ -234,7 +233,6 @@ module uop_decoder {
                         rs2_sel = RS2_SEL_REG;
                         lrs2 = 0;
                         imm = inst_itype.imm0;
-                        decode_csr(DECODE_CSR_RW, imm[11:0]);
                         csr_read();
                         csr_write();
 
@@ -250,7 +248,6 @@ module uop_decoder {
                         rs2_sel = RS2_SEL_REG;
                         lrs2 = 0;
                         imm = inst_itype.imm0;
-                        decode_csr(DECODE_CSR_WO, imm[11:0]);
                         csr_write();
 
 						uop_system(decode_packet);
@@ -265,7 +262,6 @@ module uop_decoder {
                         rs2_sel = RS2_SEL_CSR;
                         lrs2 = 0;
                         imm = inst_itype.imm0;
-                        decode_csr(DECODE_CSR_RW, imm[11:0]);
                         csr_read();
                         csr_write();
 
@@ -281,7 +277,6 @@ module uop_decoder {
                         rs2_sel = RS2_SEL_CSR;
                         lrs2 = 0;
                         imm = inst_itype.imm0;
-                        decode_csr(DECODE_CSR_RO, imm[11:0]);
                         csr_read();
 
 						uop_system(decode_packet);
@@ -296,7 +291,6 @@ module uop_decoder {
                         rs2_sel = RS2_SEL_CSR;
                         lrs2 = 0;
                         imm = inst_itype.imm0;
-                        decode_csr(DECODE_CSR_RW, imm[11:0]);
                         csr_read();
                         csr_write();
 
@@ -312,7 +306,6 @@ module uop_decoder {
                         rs2_sel = RS2_SEL_CSR;
                         lrs2 = 0;
                         imm = inst_itype.imm0;
-                        decode_csr(DECODE_CSR_RO, imm[11:0]);
                         csr_read();
 
 						uop_system(decode_packet);
@@ -326,7 +319,6 @@ module uop_decoder {
                         rs2_sel = RS2_SEL_CSR_UIMM;
                         lrs2 = 0;
                         imm = inst_itype.imm0;
-                        decode_csr(DECODE_CSR_RW, imm[11:0]);
                         csr_read();
                         csr_write();
 
@@ -341,7 +333,6 @@ module uop_decoder {
                         rs2_sel = RS2_SEL_REG;
                         lrs2 = 0;
                         imm = inst_itype.imm0;
-                        decode_csr(DECODE_CSR_WO, imm[11:0]);
                         csr_write();
 
 						uop_system(decode_packet);
@@ -355,7 +346,6 @@ module uop_decoder {
                         rs2_sel = RS2_SEL_CSR;
                         lrs2 = 0;
                         imm = inst_itype.imm0;
-                        decode_csr(DECODE_CSR_RW, imm[11:0]);
                         csr_read();
                         csr_write();
 
@@ -370,7 +360,6 @@ module uop_decoder {
                         rs2_sel = RS2_SEL_CSR;
                         lrs2 = 0;
                         imm = inst_itype.imm0;
-                        decode_csr(DECODE_CSR_RO, imm[11:0]);
                         csr_read();
 
 						uop_system(decode_packet);
@@ -384,7 +373,6 @@ module uop_decoder {
                         rs2_sel = RS2_SEL_CSR;
                         lrs2 = 0;
                         imm = inst_itype.imm0;
-                        decode_csr(DECODE_CSR_RW, imm[11:0]);
                         csr_read();
                         csr_write();
 
@@ -399,7 +387,6 @@ module uop_decoder {
                         rs2_sel = RS2_SEL_CSR_UIMM;
                         lrs2 = 0;
                         imm = inst_itype.imm0;
-                        decode_csr(DECODE_CSR_RO, imm[11:0]);
                         csr_read();
 
 						uop_system(decode_packet);

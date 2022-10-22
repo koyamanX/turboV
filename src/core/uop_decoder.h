@@ -28,10 +28,6 @@ declare uop_decoder {
     func_out uop_bru(packet);
     func_out uop_lsu(packet);
     func_out uop_system(packet);
-    output decode_csr_rw[2];
-    output decode_csr_addr[12];
-    func_out decode_csr(decode_csr_rw, decode_csr_addr);
-    func_in decode_csr_illegal();
 }
 
 #endif
