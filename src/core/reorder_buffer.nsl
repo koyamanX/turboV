@@ -53,7 +53,7 @@ module reorder_buffer {
 	
 	next_tail = tail + 1;
 	next_head = head + 1;
-	head_ptr = head;
+	head_ptr = head << 1;
 	func issue {
 		reorder_buffer_t wire new_entry;
 
