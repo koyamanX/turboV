@@ -2,6 +2,7 @@
 #define REORDER_BUFFER_H
 
 #include "uops.h"
+#define PTR2AGE(ptr, head) (if(ptr<head) ptr+NUMBER_OF_REORDER_BUFFER*2 else ptr)
 
 struct reorder_buffer_t {
 	PC[29];		// {PC[28:0], offset_in_reorder_buffer, 2'b00}
@@ -52,6 +53,7 @@ declare reorder_buffer {
 	input ppreg1[6];
 	input cause1[SIZEOF_CAUSE_T];
 	output ptr[REORDER_BUFFER_PTR_SIZE];
+	output head_ptr[REORDER_BUFFER_PTR_SIZE];
 #ifdef ENABLE_DEBUG
 	input inst0[32];
 	input inst1[32];

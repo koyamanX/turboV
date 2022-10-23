@@ -37,9 +37,9 @@ module recovery_manager {
 	func flush {
 		rm_entry := 0;
 	}
-	complete0_age = if(complete0) PTR2AGE(complete0_ptr) else -1;
-	complete1_age = if(complete1) PTR2AGE(complete1_ptr) else -1;
-	complete2_age = if(complete2) PTR2AGE(complete2_ptr) else -1;
+	complete0_age = if(complete0) PTR2AGE(complete0_ptr, head) else -1;
+	complete1_age = if(complete1) PTR2AGE(complete1_ptr, head) else -1;
+	complete2_age = if(complete2) PTR2AGE(complete2_ptr, head) else -1;
 
 	alt {
 		complete0_age < complete1_age && complete1_age < complete2_age: update_rm(complete0_ptr, complete0_entry);
@@ -50,8 +50,8 @@ module recovery_manager {
 		wire update_rm_age[REORDER_BUFFER_PTR_SIZE+1];
 		wire update_rm_entry_age[REORDER_BUFFER_PTR_SIZE+1];
 
-		update_rm_age = PTR2AGE(update_rm_ptr);
-		update_rm_entry_age = PTR2AGE(rm_entry.ptr);
+		update_rm_age = PTR2AGE(update_rm_ptr, head);
+		update_rm_entry_age = PTR2AGE(rm_entry.ptr, head);
 		if(rm_entry.valid) {
 			if(update_rm_age < update_rm_entry_age) {
 				rm_entry := update_rm_entry;
