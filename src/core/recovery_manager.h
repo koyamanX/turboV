@@ -12,7 +12,6 @@ struct recovery_manager_t {
 
 declare recovery_manager {
 	input head[REORDER_BUFFER_PTR_SIZE];
-#define PTR2AGE(ptr) (if(ptr<head) ptr+NUMBER_OF_REORDER_BUFFER*2 else ptr)
 	input complete0_ptr[REORDER_BUFFER_PTR_SIZE];
 	input complete0_entry[SIZEOF_RECOVERY_MANAGER_T];
 	func_in complete0(complete0_ptr, complete0_entry);
