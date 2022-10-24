@@ -58,7 +58,14 @@ module turboV {
 	reg execute_alu1_Y[32];
 	proc_name execute_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd,
 			execute_alu1_A, execute_alu1_B, execute_alu1_X, execute_alu1_Y);
-	proc_name execute_lsu0();
+	reg execute_lsu0_ptr[REORDER_BUFFER_PTR_SIZE];
+	uop_t reg execute_lsu0_uop;
+	reg execute_lsu0_prd[6];
+	reg execute_lsu0_A[32];
+	reg execute_lsu0_B[32];
+	reg execute_lsu0_data[32];
+	proc_name execute_lsu0(execute_lsu0_ptr, execute_lsu0_uop, execute_lsu0_prd,
+			execute_lsu0_A, execute_lsu0_B, execute_lsu0_data);
 	reg writeback_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
 	uop_t reg writeback_alu0_uop;
 	reg writeback_alu0_prd[6];
@@ -73,7 +80,9 @@ module turboV {
 	reg writeback_alu1_target[32];
 	proc_name writeback_alu1(writeback_alu1_ptr, writeback_alu1_uop, writeback_alu1_prd,
 			writeback_alu1_q, writeback_alu1_target);
-	proc_name writeback_lsu0();
+	reg writeback_lsu0_prd[6];
+	reg writeback_lsu0_q[32];
+	proc_name writeback_lsu0(writeback_lsu0_prd, writeback_lsu0_q);
 	/* Pipeline flush */
 	wire newpc[32];
     func_self flush(newpc);
@@ -85,7 +94,7 @@ module turboV {
     /* General Purpose Register */
     register_file gpr;
     /* Load Store Unit */
-    load_store_unit lsu;
+    load_store_unit lsu0;
     /* CSR */
     control_status_register csr;
     /* variable for generate statement */
@@ -136,7 +145,7 @@ module turboV {
         writeback_alu1.finish();
         writeback_lsu0.finish();
         /* Flush ROB, RSs and LSQs */
-        lsu.flush();
+        lsu0.flush();
 		/* Start decode */
         decode.invoke();
 		generate(i_ = 0; i_ < 32; i_++) {
@@ -192,8 +201,8 @@ module turboV {
 					*/
 #define IS_MEMORY(uop) (uop.load || uop.store)
 #define IS_SYSTEM(uop) (uop.csr || uop.mret || uop.ecall || uop.ebreak)
-					if(!(IS_MEMORY(decode0_uop0) && IS_MEMORY(decode0_uop1))
-							&& !(IS_SYSTEM(decode0_uop0) && IS_SYSTEM(decode0_uop1)) && (!IS_SYSTEM(decode0_uop1))) {
+					if((!(IS_MEMORY(decode0_uop0) && IS_MEMORY(decode0_uop1)) && (!IS_MEMORY(decode0_uop1)))
+							&& (!(IS_SYSTEM(decode0_uop0) && IS_SYSTEM(decode0_uop1)) && (!IS_SYSTEM(decode0_uop1)))) {
 						// No structual hazard, issue 2 insts
 						issue.invoke({decode0_fetch_packet.pc,
 							decode0_fetch_packet.pred0, decode0_fetch_packet.pred1,
@@ -510,8 +519,46 @@ module turboV {
 		alu1.exe(execute_alu1_A, execute_alu1_B, execute_alu1_uop.uop[FN_SIZE-1:0]);
 		writeback_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd, alu1.q, execute_alu1_X+execute_alu1_Y);
     }
+	func iq_lsu0.dispatch {
+		wire iq_lsu0_A[32];
+		wire iq_lsu0_B[32];
+		wire iq_lsu0_PC[32];
+		uop_t wire iq_lsu0_uop;
+		// SYSTEM instruction never dispatched here.
+
+		iq_lsu0_uop = iq_lsu0.dispatch_uop;
+		iq_lsu0_PC = rob.readPC1(iq_lsu0.dispatch_ptr);
+		any {
+			iq_lsu0_uop.rs1_sel == RS1_SEL_REG && iq_lsu0_uop.rs1_valid: iq_lsu0_A = gpr.readE(iq_lsu0.dispatch_prs1);
+			iq_lsu0_uop.rs1_sel == RS1_SEL_REG && !iq_lsu0_uop.rs1_valid: iq_lsu0_A = 0;
+		}
+		any {
+			iq_lsu0_uop.rs2_sel == RS2_SEL_REG && iq_lsu0_uop.rs2_valid: iq_lsu0_B = gpr.readF(iq_lsu0.dispatch_prs2);
+			iq_lsu0_uop.rs2_sel == RS2_SEL_REG && !iq_lsu0_uop.rs2_valid: iq_lsu0_B = 0;
+			iq_lsu0_uop.rs2_sel == RS2_SEL_IMM: iq_lsu0_B = iq_lsu0.dispatch_imm;
+		}
+		any {
+			execute_lsu0_uop.store: {
+				execute_lsu0.invoke(iq_lsu0.dispatch_ptr, iq_lsu0_uop, iq_lsu0.dispatch_prd,
+						iq_lsu0_A, iq_lsu0.dispatch_imm, iq_lsu0_B);
+			}
+			execute_lsu0_uop.load: {
+				execute_lsu0.invoke(iq_lsu0.dispatch_ptr, iq_lsu0_uop, iq_lsu0.dispatch_prd,
+						iq_lsu0_A, iq_lsu0_B, 0);
+			}
+		}
+	}
     proc execute_lsu0 {
+		lsu0.issue(execute_lsu0_ptr, execute_lsu0_prd, execute_lsu0_uop, execute_lsu0_A+execute_lsu0_B, execute_lsu0_data);
+		finish();
     }
+	func lsu0.writeback {
+		gpr.writeC(lsu0.writeback_prd, lsu0.writeback_data);
+		iq_alu0.wakeup2(lsu0.writeback_prd);
+		iq_alu1.wakeup2(lsu0.writeback_prd);
+		iq_lsu0.wakeup2(lsu0.writeback_prd);
+		rob.complete_lsu0(lsu0.writeback_ptr);
+	}
     proc writeback_alu0 {
 		if(writeback_alu0_uop.rd_valid) {
 			gpr.writeA(writeback_alu0_prd, writeback_alu0_q);
@@ -596,6 +643,9 @@ module turboV {
 				flush(commit_entry.target0);
 				commit_kill();
 			}
+			if(commit_uop0.store) {
+				lsu0.commit(rob.head_ptr);
+			}
 			DEBUG_COMMIT0(commit_PC0, commit_entry.inst0, commit_entry.cause0);
 		}
 		if(commit_entry.valid1 && !commit_kill) {
@@ -628,22 +678,22 @@ module turboV {
         reg lsu_grant = 0;
         ifu.CLK_I = CLK_I;
         ifu.RST_I = RST_I;
-        lsu.CLK_I = CLK_I;
-        lsu.RST_I = RST_I;
+        lsu0.CLK_I = CLK_I;
+        lsu0.RST_I = RST_I;
         alt {
-            lsu.CYC_O && !lsu_grant && !ifu_grant: {
+            lsu0.CYC_O && !lsu_grant && !ifu_grant: {
                 lsu_grant := 1;
-                lsu.STALL_I();
+                lsu0.STALL_I();
                 ifu.STALL_I();
             }
             ifu.CYC_O && !ifu_grant && !lsu_grant: {
                 ifu_grant := 1;
-                lsu.STALL_I();
+                lsu0.STALL_I();
                 ifu.STALL_I();
             }
         }
         alt {
-            lsu_grant && lsu.CYC_O && ACK_I: {
+            lsu_grant && lsu0.CYC_O && ACK_I: {
                 lsu_grant := 0;
             }
             ifu_grant && ifu.CYC_O && ACK_I: {
@@ -652,18 +702,18 @@ module turboV {
         }
         alt {
             lsu_grant: {
-                ADR_O = lsu.ADR_O;
-                SEL_O = lsu.SEL_O;
-                DAT_O = lsu.DAT_O;
-                if(lsu.CYC_O) CYC_O();
-                if(lsu.STB_O) STB_O();
-                if(lsu.WE_O) WE_O();
-                if(lsu.LOCK_O) LOCK_O();
-                lsu.DAT_I = DAT_I;
-                if(ERR_I) lsu.ERR_I();
-                if(RTY_I) lsu.RTY_I();
-                if(STALL_I) lsu.STALL_I();
-                if(ACK_I) lsu.ACK_I();
+                ADR_O = lsu0.ADR_O;
+                SEL_O = lsu0.SEL_O;
+                DAT_O = lsu0.DAT_O;
+                if(lsu0.CYC_O) CYC_O();
+                if(lsu0.STB_O) STB_O();
+                if(lsu0.WE_O) WE_O();
+                if(lsu0.LOCK_O) LOCK_O();
+                lsu0.DAT_I = DAT_I;
+                if(ERR_I) lsu0.ERR_I();
+                if(RTY_I) lsu0.RTY_I();
+                if(STALL_I) lsu0.STALL_I();
+                if(ACK_I) lsu0.ACK_I();
                 ifu.STALL_I();
             }
             ifu_grant: {
@@ -679,7 +729,7 @@ module turboV {
                 if(RTY_I) ifu.RTY_I();
                 if(STALL_I) ifu.STALL_I();
                 if(ACK_I) ifu.ACK_I();
-                lsu.STALL_I();
+                lsu0.STALL_I();
             }
         }
     }
