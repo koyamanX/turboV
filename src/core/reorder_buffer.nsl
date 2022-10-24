@@ -79,28 +79,28 @@ module reorder_buffer {
 
 		if(!flush) {
 			any {
-				tail == 0: rob0 := new_entry;
-				tail == 1: rob1 := new_entry;
-				tail == 2: rob2 := new_entry;
-				tail == 3: rob3 := new_entry;
-				tail == 4: rob4 := new_entry;
-				tail == 5: rob5 := new_entry;
-				tail == 6: rob6 := new_entry;
-				tail == 7: rob7 := new_entry;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: rob0 := new_entry;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: rob1 := new_entry;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: rob2 := new_entry;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: rob3 := new_entry;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: rob4 := new_entry;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: rob5 := new_entry;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: rob6 := new_entry;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: rob7 := new_entry;
 			}
 			tail := next_tail;
 		}
 		return tail  << 1;
 	}
 	any {
-		head == 0: head_entry = rob0;
-		head == 1: head_entry = rob1;
-		head == 2: head_entry = rob2;
-		head == 3: head_entry = rob3;
-		head == 4: head_entry = rob4;
-		head == 5: head_entry = rob5;
-		head == 6: head_entry = rob6;
-		head == 7: head_entry = rob7;
+		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: head_entry = rob0;
+		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: head_entry = rob1;
+		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: head_entry = rob2;
+		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: head_entry = rob3;
+		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: head_entry = rob4;
+		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: head_entry = rob5;
+		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: head_entry = rob6;
+		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: head_entry = rob7;
 	}
 	if((head_entry.valid0 || head_entry.valid1) && (!head_entry.completed0 && !head_entry.completed1)) {
 		commitable();
@@ -185,42 +185,42 @@ module reorder_buffer {
 	}
 	func readPC0 {
 		any {
-			readPC0_ptr ==  0: return {rob0.PC, 3'b000};
-			readPC0_ptr ==  1: return {rob0.PC, 3'b100};
-			readPC0_ptr ==  2: return {rob1.PC, 3'b000};
-			readPC0_ptr ==  3: return {rob1.PC, 3'b100};
-			readPC0_ptr ==  4: return {rob2.PC, 3'b000};
-			readPC0_ptr ==  5: return {rob2.PC, 3'b100};
-			readPC0_ptr ==  6: return {rob3.PC, 3'b000};
-			readPC0_ptr ==  7: return {rob3.PC, 3'b100};
-			readPC0_ptr ==  8: return {rob4.PC, 3'b000};
-			readPC0_ptr ==  9: return {rob4.PC, 3'b100};
-			readPC0_ptr == 10: return {rob5.PC, 3'b000};
-			readPC0_ptr == 11: return {rob5.PC, 3'b100};
-			readPC0_ptr == 12: return {rob6.PC, 3'b000};
-			readPC0_ptr == 13: return {rob6.PC, 3'b100};
-			readPC0_ptr == 14: return {rob7.PC, 3'b000};
-			readPC0_ptr == 15: return {rob7.PC, 3'b100};
+			readPC0_ptr ==  0: return {rob0.PC, 2'b00};
+			readPC0_ptr ==  1: return {rob0.PC, 2'b00};
+			readPC0_ptr ==  2: return {rob1.PC, 2'b00};
+			readPC0_ptr ==  3: return {rob1.PC, 2'b00};
+			readPC0_ptr ==  4: return {rob2.PC, 2'b00};
+			readPC0_ptr ==  5: return {rob2.PC, 2'b00};
+			readPC0_ptr ==  6: return {rob3.PC, 2'b00};
+			readPC0_ptr ==  7: return {rob3.PC, 2'b00};
+			readPC0_ptr ==  8: return {rob4.PC, 2'b00};
+			readPC0_ptr ==  9: return {rob4.PC, 2'b00};
+			readPC0_ptr == 10: return {rob5.PC, 2'b00};
+			readPC0_ptr == 11: return {rob5.PC, 2'b00};
+			readPC0_ptr == 12: return {rob6.PC, 2'b00};
+			readPC0_ptr == 13: return {rob6.PC, 2'b00};
+			readPC0_ptr == 14: return {rob7.PC, 2'b00};
+			readPC0_ptr == 15: return {rob7.PC, 2'b00};
 		}
 	}
 	func readPC1 {
 		any {
-			readPC1_ptr ==  0: return {rob0.PC, 3'b000};
-			readPC1_ptr ==  1: return {rob0.PC, 3'b100};
-			readPC1_ptr ==  2: return {rob1.PC, 3'b000};
-			readPC1_ptr ==  3: return {rob1.PC, 3'b100};
-			readPC1_ptr ==  4: return {rob2.PC, 3'b000};
-			readPC1_ptr ==  5: return {rob2.PC, 3'b100};
-			readPC1_ptr ==  6: return {rob3.PC, 3'b000};
-			readPC1_ptr ==  7: return {rob3.PC, 3'b100};
-			readPC1_ptr ==  8: return {rob4.PC, 3'b000};
-			readPC1_ptr ==  9: return {rob4.PC, 3'b100};
-			readPC1_ptr == 10: return {rob5.PC, 3'b000};
-			readPC1_ptr == 11: return {rob5.PC, 3'b100};
-			readPC1_ptr == 12: return {rob6.PC, 3'b000};
-			readPC1_ptr == 13: return {rob6.PC, 3'b100};
-			readPC1_ptr == 14: return {rob7.PC, 3'b000};
-			readPC1_ptr == 15: return {rob7.PC, 3'b100};
+			readPC1_ptr ==  0: return {rob0.PC, 2'b00};
+			readPC1_ptr ==  1: return {rob0.PC, 2'b00};
+			readPC1_ptr ==  2: return {rob1.PC, 2'b00};
+			readPC1_ptr ==  3: return {rob1.PC, 2'b00};
+			readPC1_ptr ==  4: return {rob2.PC, 2'b00};
+			readPC1_ptr ==  5: return {rob2.PC, 2'b00};
+			readPC1_ptr ==  6: return {rob3.PC, 2'b00};
+			readPC1_ptr ==  7: return {rob3.PC, 2'b00};
+			readPC1_ptr ==  8: return {rob4.PC, 2'b00};
+			readPC1_ptr ==  9: return {rob4.PC, 2'b00};
+			readPC1_ptr == 10: return {rob5.PC, 2'b00};
+			readPC1_ptr == 11: return {rob5.PC, 2'b00};
+			readPC1_ptr == 12: return {rob6.PC, 2'b00};
+			readPC1_ptr == 13: return {rob6.PC, 2'b00};
+			readPC1_ptr == 14: return {rob7.PC, 2'b00};
+			readPC1_ptr == 15: return {rob7.PC, 2'b00};
 		}
 	}
 	func flush {
