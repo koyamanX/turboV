@@ -6,26 +6,26 @@ module load_store_unit {
     wishbone_master wb_master_if;
     reg memory_ptr[REORDER_BUFFER_PTR_SIZE];
 	reg memory_prd[6];
-    reg memory_uOp[uOP_SIZE];
+    reg memory_uop[SIZEOF_UOP_T];
     reg memory_addr[32];
     reg memory_wdata[32];
     reg stqV = 0;
-    proc_name memory(memory_ptr, memory_prd, memory_uOp, memory_addr, memory_wdata);
+    proc_name memory(memory_ptr, memory_prd, memory_uop, memory_addr, memory_wdata);
 
     func issue {
         wire issue_is_store;
 
-        issue_is_store = issue_uOp[3];
+        issue_is_store = issue_uop[3];
         if(issue_is_store) {
             stqV := 1;
             memory_ptr := issue_ptr;
 			memory_prd := issue_prd;
-            memory_uOp := issue_uOp;
+            memory_uop := issue_uop;
             memory_addr := issue_addr;
             memory_wdata := issue_wdata;
-            writeback(issue_ptr, issue_prd, issue_wdata);
+            writeback(issue_ptr, issue_uop, issue_prd, issue_wdata);
         } else {
-            memory(issue_ptr, issue_prd, issue_uOp, issue_addr, 0);
+            memory(issue_ptr, issue_prd, issue_uop, issue_addr, 0);
         }
     }
     if(!flush && (memory || stqV)) {
@@ -37,14 +37,14 @@ module load_store_unit {
 
         state memory_req {
             any {
-                (memory_uOp == uOP_LSU_LOAD_WORD):              wb_master_if.req_read(memory_addr, 0x0f);
-                (memory_uOp == uOP_LSU_LOAD_HALFWORD):          wb_master_if.req_read({memory_addr[31:1], 1'b0}, 0x03);
-                (memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED): wb_master_if.req_read({memory_addr[31:1], 1'b0}, 0x03);
-                (memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED):     wb_master_if.req_read(memory_addr[31:0], 0x01);
-                (memory_uOp == uOP_LSU_LOAD_BYTE):              wb_master_if.req_read(memory_addr[31:0], 0x01);
-                (memory_uOp == uOP_LSU_STORE_WORD):             wb_master_if.req_write(memory_addr, 0x0f, memory_wdata);
-                (memory_uOp == uOP_LSU_STORE_HALFWORD):         wb_master_if.req_write({memory_addr[31:1], 1'b0}, 0x3, memory_wdata);
-                (memory_uOp == uOP_LSU_STORE_BYTE):             wb_master_if.req_write(memory_addr, 0x1, memory_wdata);
+                (memory_uop == uOP_LSU_LOAD_WORD):              wb_master_if.req_read(memory_addr, 0x0f);
+                (memory_uop == uOP_LSU_LOAD_HALFWORD):          wb_master_if.req_read({memory_addr[31:1], 1'b0}, 0x03);
+                (memory_uop == uOP_LSU_LOAD_HALFWORD_UNSIGNED): wb_master_if.req_read({memory_addr[31:1], 1'b0}, 0x03);
+                (memory_uop == uOP_LSU_LOAD_BYTE_UNSIGNED):     wb_master_if.req_read(memory_addr[31:0], 0x01);
+                (memory_uop == uOP_LSU_LOAD_BYTE):              wb_master_if.req_read(memory_addr[31:0], 0x01);
+                (memory_uop == uOP_LSU_STORE_WORD):             wb_master_if.req_write(memory_addr, 0x0f, memory_wdata);
+                (memory_uop == uOP_LSU_STORE_HALFWORD):         wb_master_if.req_write({memory_addr[31:1], 1'b0}, 0x3, memory_wdata);
+                (memory_uop == uOP_LSU_STORE_BYTE):             wb_master_if.req_write(memory_addr, 0x1, memory_wdata);
             }
             if(wb_master_if.rsp_valid) {
                 rsp_valid();
@@ -63,16 +63,16 @@ module load_store_unit {
         stall();
     }
     func rsp_valid {
-        if((memory_uOp == uOP_LSU_LOAD_WORD)) {
-            writeback(memory_ptr, memory_prd, wb_master_if.rsp_data[31:0]);
-        } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD)) {
-            writeback(memory_ptr, memory_prd, 64#(wb_master_if.rsp_data[15:0]));
-        } else if((memory_uOp == uOP_LSU_LOAD_BYTE)) {
-            writeback(memory_ptr, memory_prd, 64#(wb_master_if.rsp_data[7:0]));
-        } else if((memory_uOp == uOP_LSU_LOAD_HALFWORD_UNSIGNED)) {
-            writeback(memory_ptr, memory_prd, 64'(wb_master_if.rsp_data[15:0]));
-        } else if((memory_uOp == uOP_LSU_LOAD_BYTE_UNSIGNED)) {
-            writeback(memory_ptr, memory_prd, 64'(wb_master_if.rsp_data[7:0]));
+        if((memory_uop == uOP_LSU_LOAD_WORD)) {
+            writeback(memory_ptr, memory_uop, memory_prd, wb_master_if.rsp_data[31:0]);
+        } else if((memory_uop == uOP_LSU_LOAD_HALFWORD)) {
+            writeback(memory_ptr, memory_uop, memory_prd, 64#(wb_master_if.rsp_data[15:0]));
+        } else if((memory_uop == uOP_LSU_LOAD_BYTE)) {
+            writeback(memory_ptr, memory_uop, memory_prd, 64#(wb_master_if.rsp_data[7:0]));
+        } else if((memory_uop == uOP_LSU_LOAD_HALFWORD_UNSIGNED)) {
+            writeback(memory_ptr, memory_uop, memory_prd, 64'(wb_master_if.rsp_data[15:0]));
+        } else if((memory_uop == uOP_LSU_LOAD_BYTE_UNSIGNED)) {
+            writeback(memory_ptr, memory_uop, memory_prd, 64'(wb_master_if.rsp_data[7:0]));
         }
     }
     func flush {
@@ -80,7 +80,7 @@ module load_store_unit {
     }
     func commit {
         stqV := 0;
-		memory(memory_ptr, memory_prd, memory_uOp, memory_addr, memory_wdata);
+		memory(memory_ptr, memory_prd, memory_uop, memory_addr, memory_wdata);
     }
     WISHBONE_MASTER_IF(wb_master_if);
 }
