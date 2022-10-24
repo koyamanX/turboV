@@ -195,43 +195,45 @@ module reorder_buffer {
 		}
 	}
 	func readPC0 {
+		// TODO:
 		any {
 			readPC0_ptr ==  0: return {rob0.PC, 2'b00};
-			readPC0_ptr ==  1: return {rob0.PC, 2'b00};
+			readPC0_ptr ==  1: return {rob0.PC, 2'b00}+4;
 			readPC0_ptr ==  2: return {rob1.PC, 2'b00};
-			readPC0_ptr ==  3: return {rob1.PC, 2'b00};
+			readPC0_ptr ==  3: return {rob1.PC, 2'b00}+4;
 			readPC0_ptr ==  4: return {rob2.PC, 2'b00};
-			readPC0_ptr ==  5: return {rob2.PC, 2'b00};
+			readPC0_ptr ==  5: return {rob2.PC, 2'b00}+4;
 			readPC0_ptr ==  6: return {rob3.PC, 2'b00};
-			readPC0_ptr ==  7: return {rob3.PC, 2'b00};
+			readPC0_ptr ==  7: return {rob3.PC, 2'b00}+4;
 			readPC0_ptr ==  8: return {rob4.PC, 2'b00};
-			readPC0_ptr ==  9: return {rob4.PC, 2'b00};
+			readPC0_ptr ==  9: return {rob4.PC, 2'b00}+4;
 			readPC0_ptr == 10: return {rob5.PC, 2'b00};
-			readPC0_ptr == 11: return {rob5.PC, 2'b00};
+			readPC0_ptr == 11: return {rob5.PC, 2'b00}+4;
 			readPC0_ptr == 12: return {rob6.PC, 2'b00};
-			readPC0_ptr == 13: return {rob6.PC, 2'b00};
+			readPC0_ptr == 13: return {rob6.PC, 2'b00}+4;
 			readPC0_ptr == 14: return {rob7.PC, 2'b00};
-			readPC0_ptr == 15: return {rob7.PC, 2'b00};
+			readPC0_ptr == 15: return {rob7.PC, 2'b00}+4;
 		}
 	}
 	func readPC1 {
+		// TODO:
 		any {
 			readPC1_ptr ==  0: return {rob0.PC, 2'b00};
-			readPC1_ptr ==  1: return {rob0.PC, 2'b00};
+			readPC1_ptr ==  1: return {rob0.PC, 2'b00}+4;
 			readPC1_ptr ==  2: return {rob1.PC, 2'b00};
-			readPC1_ptr ==  3: return {rob1.PC, 2'b00};
+			readPC1_ptr ==  3: return {rob1.PC, 2'b00}+4;
 			readPC1_ptr ==  4: return {rob2.PC, 2'b00};
-			readPC1_ptr ==  5: return {rob2.PC, 2'b00};
+			readPC1_ptr ==  5: return {rob2.PC, 2'b00}+4;
 			readPC1_ptr ==  6: return {rob3.PC, 2'b00};
-			readPC1_ptr ==  7: return {rob3.PC, 2'b00};
+			readPC1_ptr ==  7: return {rob3.PC, 2'b00}+4;
 			readPC1_ptr ==  8: return {rob4.PC, 2'b00};
-			readPC1_ptr ==  9: return {rob4.PC, 2'b00};
+			readPC1_ptr ==  9: return {rob4.PC, 2'b00}+4;
 			readPC1_ptr == 10: return {rob5.PC, 2'b00};
-			readPC1_ptr == 11: return {rob5.PC, 2'b00};
+			readPC1_ptr == 11: return {rob5.PC, 2'b00}+4;
 			readPC1_ptr == 12: return {rob6.PC, 2'b00};
-			readPC1_ptr == 13: return {rob6.PC, 2'b00};
+			readPC1_ptr == 13: return {rob6.PC, 2'b00}+4;
 			readPC1_ptr == 14: return {rob7.PC, 2'b00};
-			readPC1_ptr == 15: return {rob7.PC, 2'b00};
+			readPC1_ptr == 15: return {rob7.PC, 2'b00}+4;
 		}
 	}
 	func flush {

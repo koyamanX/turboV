@@ -102,12 +102,16 @@ module turboV {
 	free_list freelist;
 	mem register_map_table[32][6];
 	mem retirement_register_map_table[32][6];
-	mem register_status_table[32][1] = {0};
+	mem register_status_table[64][1] = {0};
 	issue_queue iq_alu0;
 	issue_queue iq_alu1;
-	issue_queue iq_lsu0;
+	issue_queue_in_order iq_lsu0;
 	alu32 alu0;
 	alu32 alu1;
+	wire update_register_status_table_inst0_lrd[5];
+	wire update_register_status_table_inst1_lrd[5];
+	func_self update_register_status_table_inst0(update_register_status_table_inst0_lrd);
+	func_self update_register_status_table_inst1(update_register_status_table_inst1_lrd);
 
     func reset {
         if(!warm_reset) {
@@ -123,6 +127,8 @@ module turboV {
 			generate(i_ = 0; i_ < 32; i_++) {
 				register_map_table[i_] := i_;
 				retirement_register_map_table[i_] := i_;
+			}
+			generate(i_ = 0; i_ < 64; i_++) {
 				register_status_table[i_] := READY;
 			}
         }
@@ -149,6 +155,8 @@ module turboV {
         decode.invoke();
 		generate(i_ = 0; i_ < 32; i_++) {
 			register_map_table[i_] := retirement_register_map_table[i_];
+		}
+		generate(i_ = 0; i_ < 64; i_++) {
 			register_status_table[i_] := READY;
 		}
 		rob.flush();
@@ -318,7 +326,8 @@ module turboV {
 							&& (issue_inst0_lrd == issue_inst1_lrd))) {
 					if(!flush) {
 						register_map_table[issue_inst0_lrd] := issue_inst0_prd;
-						register_status_table[issue_inst0_lrd] := BUSY;
+						register_status_table[issue_inst0_prd] := BUSY;
+						update_register_status_table_inst0(issue_inst0_lrd);
 					}
 				}
 			}
@@ -326,7 +335,8 @@ module turboV {
 				issue_inst1_prd = freelist.pop1();
 				if(!flush) {
 					register_map_table[issue_inst1_lrd] := issue_inst1_prd;
-					register_status_table[issue_inst1_lrd] := BUSY;
+					register_status_table[issue_inst1_prd] := BUSY;
+					update_register_status_table_inst1(issue_inst1_lrd);
 				}
 			}
 			// Rename source registers
@@ -352,26 +362,26 @@ module turboV {
 			if(!issue_inst0_uop.rs1_valid) {
 				issue_inst0_rs1_ready = READY;
 			} else {
-				issue_inst0_rs1_ready = issue_packet.valid0 && register_status_table[issue_inst0_lrs1];
+				issue_inst0_rs1_ready = issue_packet.valid0 && register_status_table[issue_inst0_prs1];
 			}
 			if(!issue_inst0_uop.rs2_valid) {
 				issue_inst0_rs2_ready = READY;
 			} else {
-				issue_inst0_rs2_ready = issue_packet.valid0 && register_status_table[issue_inst0_lrs2];
+				issue_inst0_rs2_ready = issue_packet.valid0 && register_status_table[issue_inst0_prs2];
 			}
 			if(!issue_inst1_uop.rs1_valid) {
 				issue_inst1_rs1_ready = READY;
 			} else if(issue_inst1_rs1_ready_bypass) {
 				issue_inst1_rs1_ready = BUSY;
 			} else {
-				issue_inst1_rs1_ready = issue_packet.valid1 && register_status_table[issue_inst1_lrs1];
+				issue_inst1_rs1_ready = issue_packet.valid1 && register_status_table[issue_inst1_prs1];
 			}
 			if(!issue_inst1_uop.rs2_valid) {
 				issue_inst1_rs2_ready = READY;
 			} else if(issue_inst1_rs2_ready_bypass) {
 				issue_inst1_rs2_ready = BUSY;
 			} else {
-				issue_inst1_rs2_ready = issue_packet.valid1 && register_status_table[issue_inst1_lrs2];
+				issue_inst1_rs2_ready = issue_packet.valid1 && register_status_table[issue_inst1_prs2];
 			}
 
 #ifdef ENABLE_DEBUG
@@ -541,11 +551,11 @@ module turboV {
 			iq_lsu0_uop.rs2_sel == RS2_SEL_IMM: iq_lsu0_B = iq_lsu0.dispatch_imm;
 		}
 		any {
-			execute_lsu0_uop.store: {
+			iq_lsu0_uop.store: {
 				execute_lsu0.invoke(iq_lsu0.dispatch_ptr, iq_lsu0_uop, iq_lsu0.dispatch_prd,
 						iq_lsu0_A, iq_lsu0.dispatch_imm, iq_lsu0_B);
 			}
-			execute_lsu0_uop.load: {
+			iq_lsu0_uop.load: {
 				execute_lsu0.invoke(iq_lsu0.dispatch_ptr, iq_lsu0_uop, iq_lsu0.dispatch_prd,
 						iq_lsu0_A, iq_lsu0_B, 0);
 			}
