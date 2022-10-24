@@ -565,6 +565,7 @@ module turboV {
 		commit_uop0 = commit_entry.uop0;
 		commit_uop1 = commit_entry.uop1;
 		commit_PC0 = {commit_entry.PC, 2'b00};
+		// TODO:
 		commit_PC1 = {commit_entry.PC, 2'b00}+4;
 
 		if(commit_entry.valid0) {
