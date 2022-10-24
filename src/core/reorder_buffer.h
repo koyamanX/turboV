@@ -5,7 +5,7 @@
 #define PTR2AGE(ptr, head) (if(ptr<head) ptr+NUMBER_OF_REORDER_BUFFER*2 else ptr)
 
 struct reorder_buffer_t {
-	PC[29];		// {PC[28:0], offset_in_reorder_buffer, 2'b00}
+	PC[30];		// {PC[29:0], 2'b00}
 	valid0;
 	uop0[SIZEOF_UOP_T];
 	dreg0[5];
@@ -27,9 +27,9 @@ struct reorder_buffer_t {
 #ifdef ENABLE_DEBUG
 	inst0[32];
 	inst1[32];
-#define SIZEOF_REORDER_BUFFER_T 55+SIZEOF_UOP_T+SIZEOF_UOP_T+SIZEOF_CAUSE_T+SIZEOF_CAUSE_T+32+32+12+2+64
+#define SIZEOF_REORDER_BUFFER_T 55+SIZEOF_UOP_T+SIZEOF_UOP_T+SIZEOF_CAUSE_T+SIZEOF_CAUSE_T+32+32+12+2+64+1
 #else
-#define SIZEOF_REORDER_BUFFER_T 55+SIZEOF_UOP_T+SIZEOF_UOP_T+SIZEOF_CAUSE_T+SIZEOF_CAUSE_T
+#define SIZEOF_REORDER_BUFFER_T 55+SIZEOF_UOP_T+SIZEOF_UOP_T+SIZEOF_CAUSE_T+SIZEOF_CAUSE_T+1
 #endif
 };
 
@@ -39,7 +39,7 @@ struct reorder_buffer_t {
 #define REORDER_BUFFER_PTR_SIZE LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1
 
 declare reorder_buffer {
-	input PC[29];
+	input PC[30];
 	input valid0;
 	input uop0[SIZEOF_UOP_T];
 	input dreg0[5];

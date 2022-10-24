@@ -193,12 +193,16 @@ module turboV {
 #define IS_MEMORY(uop) (uop.load || uop.store)
 #define IS_SYSTEM(uop) (uop.csr || uop.mret || uop.ecall || uop.ebreak)
 					if(!(IS_MEMORY(decode0_uop0) && IS_MEMORY(decode0_uop1))
-							&& !(IS_SYSTEM(decode0_uop0) && IS_SYSTEM(decode0_uop1))) {
+							&& !(IS_SYSTEM(decode0_uop0) && IS_SYSTEM(decode0_uop1)) && (!IS_SYSTEM(decode0_uop1))) {
+						// No structual hazard, issue 2 insts
 						issue.invoke({decode0_fetch_packet.pc,
 							decode0_fetch_packet.pred0, decode0_fetch_packet.pred1,
 							decode0_fetch_packet.valid0, decode0_fetch_packet.valid1},
 							udec0.packet, udec1.packet);
 					} else {
+						// There is structual hazard, issue first one in this cycle
+						// Send another inst to issue stage in next cycle.
+						// decode1 takes care of issue next inst in the cycle.
 						issue.invoke({decode0_fetch_packet.pc,
 							decode0_fetch_packet.pred0, 1'b0,
 							decode0_fetch_packet.valid0, 1'b0},
@@ -211,11 +215,12 @@ module turboV {
 					|| (decode0_fetch_packet.valid0 && !decode0_fetch_packet.valid1)) {
 					// Either way0 or way1 is valid.
 					// Both invalid is not enter here, ifetch_unit never pushes such case.
-					// TODO:
+					// Also, currently, ifetch_unit never pushes inst1 valid && inst0 invalid.
+					// TODO: 
 					issue.invoke({decode0_fetch_packet.pc,
-						decode0_fetch_packet.pred0, decode0_fetch_packet.pred1,
-						decode0_fetch_packet.valid0, decode0_fetch_packet.valid1},
-						udec0.packet, udec1.packet);
+						decode0_fetch_packet.pred0, 1'b0,
+						decode0_fetch_packet.valid0, 1'b0},
+						udec0.packet, 0);
 				}
 			}
 		}
@@ -223,8 +228,9 @@ module turboV {
 			// Inst1 is either SYSTEM or LSU.
 			// TODO: decode_fetch_packet
 			// CAUTION: valid1, pred1, inst1
+			// TODO: pc+4
 			udec0.decode(decode1_fetch_packet.inst1);
-			issue.invoke({decode1_fetch_packet.pc,
+			issue.invoke({decode1_fetch_packet.pc+4,
 				decode1_fetch_packet.pred1, 1'b0,
 				decode1_fetch_packet.valid1, 1'b0},
 				udec0.packet, 0);
@@ -234,7 +240,7 @@ module turboV {
     }
     proc issue {
 		reorder_buffer_t wire issue_reorder_buffer_entry;
-		wire issue_PC[29];
+		wire issue_PC[30];
 		// issue slot 0
 		wire issue_inst0_valid;
 		wire issue_inst0_ptr[REORDER_BUFFER_PTR_SIZE];
@@ -275,7 +281,7 @@ module turboV {
 		issue_inst0_uop = decoder_packet0.uop;
 		issue_inst1_uop = decoder_packet1.uop;
 		if((freelist.count >= 2) && (!rob.full)) {
-			issue_PC = issue_packet.pc[31:3];
+			issue_PC = issue_packet.pc[31:2];
 			// inst0
 			issue_inst0_valid = issue_packet.valid0;
 			issue_inst0_cause = |decoder_packet0.cause;
@@ -558,8 +564,8 @@ module turboV {
 		commit_entry = rob.commit();
 		commit_uop0 = commit_entry.uop0;
 		commit_uop1 = commit_entry.uop1;
-		commit_PC0 = {commit_entry.PC, 3'b000};
-		commit_PC1 = {commit_entry.PC, 3'b100};
+		commit_PC0 = {commit_entry.PC, 2'b00};
+		commit_PC1 = {commit_entry.PC, 2'b00}+4;
 
 		if(commit_entry.valid0) {
 			if(commit_uop0.rd_valid) {
@@ -569,6 +575,20 @@ module turboV {
 			if(commit_uop0.csr_write) {
 				csr.commit(rob.head_ptr);
 				flush(commit_PC0+4);
+				commit_kill();
+			}
+			if(commit_uop0.ecall) {
+				csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, commit_PC0+4, 0);
+				flush();
+				commit_kill();
+			}
+			if(commit_uop0.ebreak) {
+				csr.trap(BREAKPOINT, commit_PC0, 0);
+				flush();
+				commit_kill();
+			}
+			if(commit_uop0.mret) {
+				flush(csr.mret());
 				commit_kill();
 			}
 			if(commit_uop0.jal || commit_uop0.jalr || (commit_uop0.branch && commit_entry.taken0)) {

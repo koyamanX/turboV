@@ -130,9 +130,9 @@ module issue_queue {
         full();
     }
     any {
-        (!rs3.valid || dispatch_rs3): rs3_free();
-        (!rs2.valid || dispatch_rs2): rs2_free();
-        (!rs1.valid || dispatch_rs1): rs1_free();
-        (!rs0.valid || dispatch_rs0): rs0_free();
+        (!rs3.valid): rs3_free();
+        (!rs2.valid): rs2_free();
+        (!rs1.valid): rs1_free();
+        (!rs0.valid): rs0_free();
     }
 }
