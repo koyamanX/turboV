@@ -107,6 +107,17 @@ module reorder_buffer {
 	}
 	func commit {
 		if(!flush) {
+			// TODO:
+			any {
+				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: rob0 := 0;
+				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: rob1 := 0;
+				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: rob2 := 0;
+				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: rob3 := 0;
+				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: rob4 := 0;
+				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: rob5 := 0;
+				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: rob6 := 0;
+				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: rob7 := 0;
+			}
 			head := next_head;
 		}
 		return head_entry;
