@@ -300,7 +300,7 @@ module turboV {
 			issue_PC = issue_packet.pc[31:2];
 			// inst0
 			issue_inst0_valid = issue_packet.valid0;
-			issue_inst0_cause = |decoder_packet0.cause;
+			issue_inst0_cause = decoder_packet0.cause;
 			issue_inst0_lrd = decoder_packet0.lrd;
 			issue_inst0_rs1_sel = issue_inst0_uop.rs1_sel;
 			issue_inst0_lrs1 = decoder_packet0.lrs1;
@@ -309,7 +309,7 @@ module turboV {
 			issue_inst0_imm = decoder_packet0.imm;
 			// inst1
 			issue_inst1_valid = issue_packet.valid1;
-			issue_inst1_cause = |decoder_packet1.cause;
+			issue_inst1_cause = decoder_packet1.cause;
 			issue_inst1_lrd = decoder_packet1.lrd;
 			issue_inst1_rs1_sel = issue_inst1_uop.rs1_sel;
 			issue_inst1_lrs1 = decoder_packet1.lrs1;
