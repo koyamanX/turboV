@@ -648,7 +648,9 @@ module turboV {
 		if(commit_entry.valid0) {
 			if(commit_uop0.rd_valid && !commit_kill_inst0) {
 				freelist.push0(commit_entry.ppreg0);
-				retirement_register_map_table[commit_entry.dreg0] := commit_entry.preg0;
+				if(!(commit_entry.valid1 && !commit_kill_inst1 && commit_entry.dreg1 == commit_entry.dreg0 && commit_uop1.rd_valid)) {
+					retirement_register_map_table[commit_entry.dreg0] := commit_entry.preg0;
+				}
 			}
 			if(commit_uop0.csr_write) {
 				csr.commit(rob.head_ptr);
