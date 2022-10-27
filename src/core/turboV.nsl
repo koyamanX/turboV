@@ -561,6 +561,9 @@ module turboV {
 			}
 		}
 	}
+	func lsu0.full {
+		iq_lsu0.stall();
+	}
     proc execute_lsu0 {
 		lsu0.issue(execute_lsu0_ptr, execute_lsu0_prd, execute_lsu0_uop, execute_lsu0_A+execute_lsu0_B, execute_lsu0_data);
 		finish();
