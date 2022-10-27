@@ -1,0 +1,5 @@
+Issue system inst in pipe0.
+
+if inst1 is not decoded in same cycle, send pipe1 (for PC offset calculation)
+
+PC has wrong offset if new pc takes PC+4

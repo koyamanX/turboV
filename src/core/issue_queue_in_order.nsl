@@ -40,10 +40,10 @@ module issue_queue_in_order {
 				else: {new_entry.prs2_ready = prs2_ready;}
             }
 			any {
-				tail == 0: rs0 := new_entry;
-				tail == 1: rs1 := new_entry;
-				tail == 2: rs2 := new_entry;
-				tail == 3: rs3 := new_entry;
+				tail[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES-1:0] == 0: rs0 := new_entry;
+				tail[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES-1:0] == 1: rs1 := new_entry;
+				tail[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES-1:0] == 2: rs2 := new_entry;
+				tail[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES-1:0] == 3: rs3 := new_entry;
 			}
 			tail := next_tail;
         }
@@ -51,16 +51,16 @@ module issue_queue_in_order {
     if(!flush && !stall) {
         alt {
 			// TODO: check prs{1,2}_valid
-            head == 0 && rs0.valid && (rs0.prs1_ready == READY) && (rs0.prs2_ready == READY): {
+            head[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES-1:0] == 0 && rs0.valid && (rs0.prs1_ready == READY) && (rs0.prs2_ready == READY): {
                 dispatch_rs0();
             }
-            head == 1 && rs1.valid && (rs1.prs1_ready == READY) && (rs1.prs2_ready == READY): {
+            head[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES-1:0] == 1 && rs1.valid && (rs1.prs1_ready == READY) && (rs1.prs2_ready == READY): {
                 dispatch_rs1();
             }
-            head == 2 && rs2.valid && (rs2.prs1_ready == READY) && (rs2.prs2_ready == READY): {
+            head[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES-1:0] == 2 && rs2.valid && (rs2.prs1_ready == READY) && (rs2.prs2_ready == READY): {
                 dispatch_rs2();
             }
-            head == 3 && rs3.valid && (rs3.prs1_ready == READY) && (rs3.prs2_ready == READY): {
+            head[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES-1:0] == 3 && rs3.valid && (rs3.prs1_ready == READY) && (rs3.prs2_ready == READY): {
                 dispatch_rs3();
             }
         }
