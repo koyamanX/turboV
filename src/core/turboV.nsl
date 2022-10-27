@@ -38,6 +38,7 @@ module turboV {
 	decoder_packet_t reg decoder_packet0;
 	decoder_packet_t reg decoder_packet1;
 	proc_name issue(issue_packet, decoder_packet0, decoder_packet1);
+	func_self stall_issue();
 	proc_name register_read();
 	reg execute_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
 	uop_t reg execute_alu0_uop;
@@ -175,7 +176,7 @@ module turboV {
 		fetch_packet_t reg decode1_fetch_packet;
 
 		state decode0 {
-			if(!ifu.ibuf_empty) {
+			if(!ifu.ibuf_empty && !stall_issue && !flush) {
 				decode0_fetch_packet = ifu.ibuf_pop();
 				udec0.decode(decode0_fetch_packet.inst0);
 				udec1.decode(decode0_fetch_packet.inst1);
@@ -245,13 +246,16 @@ module turboV {
 			// TODO: decode_fetch_packet
 			// CAUTION: valid1, pred1, inst1
 			// TODO: pc+4
-			udec0.decode(decode1_fetch_packet.inst1);
-			issue.invoke({decode1_fetch_packet.pc+4,
-				decode1_fetch_packet.pred1, 1'b0,
-				decode1_fetch_packet.valid1, 1'b0},
-				udec0.packet, 0);
-
-			goto decode0;
+			if(flush) {
+				goto decode0;
+			} else if(!stall_issue && !flush) {
+				udec0.decode(decode1_fetch_packet.inst1);
+				issue.invoke({decode1_fetch_packet.pc+4,
+					decode1_fetch_packet.pred1, 1'b0,
+					decode1_fetch_packet.valid1, 1'b0},
+					udec0.packet, 0);
+				goto decode0;
+			}
 		}
     }
     proc issue {
@@ -296,6 +300,7 @@ module turboV {
 
 		issue_inst0_uop = decoder_packet0.uop;
 		issue_inst1_uop = decoder_packet1.uop;
+		// TODO: !flush
 		if((freelist.count >= 2) && (!rob.full) && !iq_alu0.full && !iq_alu1.full && !iq_lsu0.full) {
 			issue_PC = issue_packet.pc[31:2];
 			// inst0
@@ -434,6 +439,8 @@ module turboV {
 			}
 			// TODO:
 			finish();
+		} else {
+			stall_issue();
 		}
     }
 	func iq_alu0.dispatch {
