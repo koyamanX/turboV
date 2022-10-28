@@ -126,8 +126,8 @@ module turboV {
             csr.reset();
 			freelist.reset();
 			generate(i_ = 0; i_ < 32; i_++) {
-				register_map_table[i_] := i_;
-				retirement_register_map_table[i_] := i_;
+				register_map_table[i_] := NUMBER_OF_FREE_LIST-1-i_;
+				retirement_register_map_table[i_] := NUMBER_OF_FREE_LIST-1-i_;
 			}
 			generate(i_ = 0; i_ < 64; i_++) {
 				register_status_table[i_] := READY;
@@ -327,7 +327,7 @@ module turboV {
 			issue_inst1_pprd = register_map_table[issue_inst1_lrd];
 			if(issue_packet.valid0 && (issue_inst0_lrd != 0)) {
 				issue_inst0_prd = freelist.pop0();
-				if(!(issue_packet.valid1 && (issue_inst0_lrd != 0)
+				if(!(issue_packet.valid1 && (issue_inst1_lrd != 0)
 							&& (issue_inst0_lrd == issue_inst1_lrd))) {
 					if(!flush) {
 						register_map_table[issue_inst0_lrd] := issue_inst0_prd;
