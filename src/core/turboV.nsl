@@ -85,7 +85,8 @@ module turboV {
 	reg writeback_lsu0_q[32];
 	proc_name writeback_lsu0(writeback_lsu0_prd, writeback_lsu0_q);
 	/* Pipeline flush */
-    func_self flush();
+	wire newpc[32];
+    func_self flush(newpc);
     /* Instruction Fetch Unit */
     ifetch_unit ifu;
     /* Instruction decoder */
@@ -165,6 +166,7 @@ module turboV {
 		iq_alu1.flush();
 		iq_lsu0.flush();
 		freelist.flush();
+		ifu.redirect(newpc);
     }
     proc decode {
 		state_name decode0, decode1;
@@ -664,28 +666,23 @@ module turboV {
 			}
 			if(commit_uop0.csr_write) {
 				csr.commit(rob.head_ptr);
-				ifu.redirect(commit_PC0+4);
-				flush();
+				flush(commit_PC0+4);
 				commit_kill_inst1();
 			}
 			if(commit_uop0.ecall) {
-				ifu.redirect(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, commit_PC0+4, 0));
-				flush();
+				flush(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, commit_PC0+4, 0));
 				commit_kill_inst1();
 			}
 			if(commit_uop0.ebreak) {
-				ifu.redirect(csr.trap(BREAKPOINT, commit_PC0, 0));
-				flush();
+				flush(csr.trap(BREAKPOINT, commit_PC0, 0));
 				commit_kill_inst1();
 			}
 			if(commit_uop0.mret) {
-				ifu.redirect(csr.mret());
-				flush();
+				flush(csr.mret());
 				commit_kill_inst1();
 			}
 			if(commit_uop0.jal || commit_uop0.jalr || (commit_uop0.branch && commit_entry.taken0)) {
-				ifu.redirect(commit_entry.target0);
-				flush();
+				flush(commit_entry.target0);
 				commit_kill_inst1();
 			}
 			if(commit_uop0.store) {
@@ -695,8 +692,7 @@ module turboV {
 				commit_kill_inst1();
 				commit_kill_inst0();
 				//TODO: inst0 debug only
-				ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0));
-				flush();
+				flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0));
 			}
 			DEBUG_COMMIT0(commit_PC0, commit_entry.inst0, commit_entry.cause0);
 		}
@@ -706,13 +702,11 @@ module turboV {
 				retirement_register_map_table[commit_entry.dreg1] := commit_entry.preg1;
 			}
 			if(commit_uop1.jal || commit_uop1.jalr || (commit_uop1.branch && commit_entry.taken1)) {
-				flush();
-				ifu.redirect(commit_entry.target1);
+				flush(commit_entry.target1);
 			}
 			if(commit_cause1.illegal_instruction) {
 				//TODO: inst0 debug only
-				ifu.redirect(csr.trap(ILLEGAL_INSTRUCTION, commit_PC1, commit_entry.inst1));
-				flush();
+				flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC1, commit_entry.inst1));
 			}
 			DEBUG_COMMIT1(commit_PC1, commit_entry.inst1, commit_entry.cause1);
 		}
