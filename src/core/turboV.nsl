@@ -87,6 +87,8 @@ module turboV {
 	/* Pipeline flush */
 	wire newpc[32];
     func_self flush(newpc);
+	reg rewind_newpc[32];
+	proc_name rewind(rewind_newpc);
     /* Instruction Fetch Unit */
     ifetch_unit ifu;
     /* Instruction decoder */
@@ -154,20 +156,48 @@ module turboV {
         /* Flush ROB, RSs and LSQs */
         lsu0.flush();
 		/* Start decode */
-        decode.invoke();
 		generate(i_ = 0; i_ < 32; i_++) {
 			register_map_table[i_] := retirement_register_map_table[i_];
 		}
 		generate(i_ = 0; i_ < 64; i_++) {
 			register_status_table[i_] := READY;
 		}
-		rob.flush();
 		iq_alu0.flush();
 		iq_alu1.flush();
 		iq_lsu0.flush();
-		freelist.flush();
-		ifu.redirect(newpc);
+		rewind.invoke(newpc);
     }
+	proc rewind seq {
+		reg i[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
+		reorder_buffer_t wire rewind_entry;
+		uop_t wire rewind_entry_uop0;
+		uop_t wire rewind_entry_uop1;
+
+		for(i := 0; i < NUMBER_OF_REORDER_BUFFER-1; i++) {
+			{
+				rewind_entry = rob.commit();
+				rewind_entry_uop0 = rewind_entry.uop0;
+				rewind_entry_uop1 = rewind_entry.uop1;
+
+				if(rewind_entry.valid0) {
+					if(rewind_entry_uop0.rd_valid) {
+						freelist.push0(rewind_entry.preg0);
+					}
+				}
+				if(rewind_entry.valid1) {
+					if(rewind_entry_uop1.rd_valid) {
+						freelist.push1(rewind_entry.preg1);
+					}
+				}
+			}
+		}
+		{
+			rob.flush();
+			decode.invoke();
+			ifu.redirect(rewind_newpc);
+			finish();
+		}
+	}
     proc decode {
 		state_name decode0, decode1;
 		fetch_packet_t wire decode0_fetch_packet;
@@ -648,67 +678,79 @@ module turboV {
 		func_self commit_kill_inst0;
 		func_self commit_kill_inst1;
 
-		commit_entry = rob.commit();
-		commit_uop0 = commit_entry.uop0;
-		commit_uop1 = commit_entry.uop1;
-		commit_PC0 = {commit_entry.PC, 2'b00};
-		// TODO:
-		commit_PC1 = {commit_entry.PC, 2'b00}+4;
-		commit_cause0 = commit_entry.cause0;
-		commit_cause1 = commit_entry.cause1;
 
-		if(commit_entry.valid0) {
-			if(commit_uop0.rd_valid && !commit_kill_inst0) {
-				freelist.push0(commit_entry.ppreg0);
-				if(!(commit_entry.valid1 && !commit_kill_inst1 && commit_entry.dreg1 == commit_entry.dreg0 && commit_uop1.rd_valid)) {
-					retirement_register_map_table[commit_entry.dreg0] := commit_entry.preg0;
+		if(!rewind) {
+			commit_entry = rob.commit();
+			commit_uop0 = commit_entry.uop0;
+			commit_uop1 = commit_entry.uop1;
+			commit_PC0 = {commit_entry.PC, 2'b00};
+			// TODO:
+			commit_PC1 = {commit_entry.PC, 2'b00}+4;
+			commit_cause0 = commit_entry.cause0;
+			commit_cause1 = commit_entry.cause1;
+
+			if(commit_entry.valid0) {
+				if(commit_uop0.rd_valid) {
+					if(commit_kill_inst0) {
+						freelist.push0(commit_entry.preg0);
+					} else {
+						freelist.push0(commit_entry.ppreg0);
+					}
+					if(!(commit_entry.valid1 && !commit_kill_inst1 && commit_entry.dreg1 == commit_entry.dreg0 && commit_uop1.rd_valid)) {
+						retirement_register_map_table[commit_entry.dreg0] := commit_entry.preg0;
+					}
+				}
+				if(commit_uop0.csr_write) {
+					csr.commit(rob.head_ptr);
+					flush(commit_PC0+4);
+					commit_kill_inst1();
+				}
+				if(commit_uop0.ecall) {
+					flush(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, commit_PC0+4, 0));
+					commit_kill_inst1();
+				}
+				if(commit_uop0.ebreak) {
+					flush(csr.trap(BREAKPOINT, commit_PC0, 0));
+					commit_kill_inst1();
+				}
+				if(commit_uop0.mret) {
+					flush(csr.mret());
+					commit_kill_inst1();
+				}
+				if(commit_uop0.jal || commit_uop0.jalr || (commit_uop0.branch && commit_entry.taken0)) {
+					flush(commit_entry.target0);
+					commit_kill_inst1();
+				}
+				if(commit_uop0.store) {
+					lsu0.commit(rob.head_ptr);
+				}
+				if(commit_cause0.illegal_instruction) {
+					commit_kill_inst1();
+					commit_kill_inst0();
+					//TODO: inst0 debug only
+					flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0));
+				}
+				DEBUG_COMMIT0(commit_PC0, commit_entry.inst0, commit_entry.cause0);
+			}
+			if(commit_entry.valid1 && commit_kill_inst1) {
+				if(commit_uop1.rd_valid) {
+					freelist.push1(commit_entry.preg1);
 				}
 			}
-			if(commit_uop0.csr_write) {
-				csr.commit(rob.head_ptr);
-				flush(commit_PC0+4);
-				commit_kill_inst1();
+			if(commit_entry.valid1 && !commit_kill_inst0 && !commit_kill_inst1) {
+				if(commit_uop1.rd_valid) {
+					freelist.push1(commit_entry.ppreg1);
+					retirement_register_map_table[commit_entry.dreg1] := commit_entry.preg1;
+				}
+				if(commit_uop1.jal || commit_uop1.jalr || (commit_uop1.branch && commit_entry.taken1)) {
+					flush(commit_entry.target1);
+				}
+				if(commit_cause1.illegal_instruction) {
+					//TODO: inst0 debug only
+					flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC1, commit_entry.inst1));
+				}
+				DEBUG_COMMIT1(commit_PC1, commit_entry.inst1, commit_entry.cause1);
 			}
-			if(commit_uop0.ecall) {
-				flush(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, commit_PC0+4, 0));
-				commit_kill_inst1();
-			}
-			if(commit_uop0.ebreak) {
-				flush(csr.trap(BREAKPOINT, commit_PC0, 0));
-				commit_kill_inst1();
-			}
-			if(commit_uop0.mret) {
-				flush(csr.mret());
-				commit_kill_inst1();
-			}
-			if(commit_uop0.jal || commit_uop0.jalr || (commit_uop0.branch && commit_entry.taken0)) {
-				flush(commit_entry.target0);
-				commit_kill_inst1();
-			}
-			if(commit_uop0.store) {
-				lsu0.commit(rob.head_ptr);
-			}
-			if(commit_cause0.illegal_instruction) {
-				commit_kill_inst1();
-				commit_kill_inst0();
-				//TODO: inst0 debug only
-				flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0));
-			}
-			DEBUG_COMMIT0(commit_PC0, commit_entry.inst0, commit_entry.cause0);
-		}
-		if(commit_entry.valid1 && !commit_kill_inst0 && !commit_kill_inst1) {
-			if(commit_uop1.rd_valid) {
-				freelist.push1(commit_entry.ppreg1);
-				retirement_register_map_table[commit_entry.dreg1] := commit_entry.preg1;
-			}
-			if(commit_uop1.jal || commit_uop1.jalr || (commit_uop1.branch && commit_entry.taken1)) {
-				flush(commit_entry.target1);
-			}
-			if(commit_cause1.illegal_instruction) {
-				//TODO: inst0 debug only
-				flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC1, commit_entry.inst1));
-			}
-			DEBUG_COMMIT1(commit_PC1, commit_entry.inst1, commit_entry.cause1);
 		}
 	}
     /*
