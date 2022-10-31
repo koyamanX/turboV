@@ -11,6 +11,7 @@
 #include "VturboVSim___024root.h"
 #include "verilated_vcd_c.h"
 #include "VturboVSim.h"
+#include "version.h"
 
 #define ENABLE_DEBUG
 
@@ -73,6 +74,7 @@ int main(int argc, char **argv) {
     uint32_t sim_done_cnt = 0;
     uint32_t sim_done_result = 0;
 
+	fprintf(stdout, "turboVSim %s.%s.%s\n", MAJOR_VERSION, MINOR_VERSION, REVISION);
     if(argc != 2) {
         fprintf(stderr, "Insufficient arguments\n");
         exit(EXIT_FAILURE);

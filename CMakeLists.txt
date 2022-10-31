@@ -12,6 +12,7 @@ set(RISCV_TOOLS_PREFIX riscv32-unknown-elf-)
 set(INSTALL_DIR release)
 
 list(APPEND NSL_INCLUDE
+	"-I${CMAKE_BINARY_DIR}/src/"
 	"-I${CMAKE_SOURCE_DIR}/src/core"
 	"-I${CMAKE_SOURCE_DIR}/src/integration"
 	"-I${CMAKE_SOURCE_DIR}/src/wishbone"
@@ -83,6 +84,7 @@ list(APPEND verilator_flags
 	"-flatten"
 )
 list(APPEND verilator_include
+	"-I${CMAKE_BINARY_DIR}/src/"
 	"-I${CMAKE_BINARY_DIR}/src/core"
 	"-I${CMAKE_BINARY_DIR}/src/wishbone"
 	"-I${CMAKE_BINARY_DIR}/src/integration"
@@ -90,6 +92,7 @@ list(APPEND verilator_include
 	"-I${CMAKE_CURRENT_BINARY_DIR}"
 )
 list(APPEND CXX_FLAGS
+	"-I${CMAKE_BINARY_DIR}/src/"
 	"-I${CMAKE_SOURCE_DIR}/tests/common"
 	"-I/usr/src/googletest/googletest/include"
 	"-O3"
