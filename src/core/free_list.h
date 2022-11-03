@@ -17,6 +17,5 @@ declare free_list {
 	output pop1_data[SIZEOF_FREE_LIST_ENTRY];
 	func_in pop1(): pop1_data;
 	output count[SIZEOF_FREE_LIST_ENTRY];
-	func_in flush();
 }
 #endif
