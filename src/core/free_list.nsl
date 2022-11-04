@@ -24,19 +24,26 @@ module free_list {
 		head := 0;
 		tail := 0;
 	}
-	func pop0 {
-		if(!pop1) {
+	any {
+		!pop0 && pop1: {
+			// TODO: REMOVE
+			freelist[head] := 0;
 			next_head = head + 1;
+			pop1_data = freelist[head];
 		}
-		return freelist[head];
-	}
-	func pop1 {
-		if(!pop0) {
+		pop0 && !pop1: {
+			// TODO: REMOVE
+			freelist[head] := 0;
 			next_head = head + 1;
-			return freelist[head];
-		} else {
+			pop0_data = freelist[head];
+		}
+		pop0 && pop1: {
+			// TODO: REMOVE
+			freelist[head] := 0;
+			freelist[head+1] := 0;
 			next_head = head + 2;
-			return freelist[head+1];
+			pop0_data = freelist[head];
+			pop1_data = freelist[head+1];
 		}
 	}
 	func push0 {
