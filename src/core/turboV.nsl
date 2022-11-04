@@ -128,7 +128,8 @@ module turboV {
             csr.reset();
 			freelist.reset();
 			generate(i_ = 0; i_ < 32; i_++) {
-				register_map_table[i_] := NUMBER_OF_FREE_LIST+i_;
+				//register_map_table[i_] := (NUMBER_OF_FREE_LIST-1)-i_;
+				register_map_table[i_] := 0;
 			}
 			generate(i_ = 0; i_ < 64; i_++) {
 				register_status_table[i_] := READY;
