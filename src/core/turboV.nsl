@@ -744,6 +744,13 @@ module turboV {
 				}
 				DEBUG_COMMIT0(commit_PC0, commit_entry.inst0, commit_entry.cause0);
 			}
+			if(commit_entry.valid1 && commit_kill_inst1) {
+				if(commit_uop1.rd_valid) {
+					if(commit_entry.preg1 != 0) {
+						freelist.push1(commit_entry.preg1);
+					}
+				}
+			}
 			if(commit_entry.valid1 && !commit_kill_inst0 && !commit_kill_inst1) {
 				if(commit_uop1.rd_valid) {
 					if(commit_entry.ppreg1 != 0) {
