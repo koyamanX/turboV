@@ -127,9 +127,8 @@ module turboV {
             ifu.reset();
             csr.reset();
 			freelist.reset();
-			generate(i_ = 0; i_ < 32; i_++) {
-				//register_map_table[i_] := (NUMBER_OF_FREE_LIST-1)-i_;
-				register_map_table[i_] := 0;
+			generate(i_ = 0; i_ < NUMBER_OF_FREE_LIST; i_++) {
+				register_map_table[i_] := i_;
 			}
 			generate(i_ = 0; i_ < 64; i_++) {
 				register_status_table[i_] := READY;
@@ -164,12 +163,12 @@ module turboV {
 		rewind.invoke(newpc);
     }
 	proc rewind seq {
-		reg i[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES];
+		reg i[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
 		reorder_buffer_t wire rewind_entry;
 		uop_t wire rewind_entry_uop0;
 		uop_t wire rewind_entry_uop1;
 
-		for(i := 0; i < NUMBER_OF_REORDER_BUFFER-1; i++) {
+		for(i := 0; i < NUMBER_OF_REORDER_BUFFER; i++) {
 			{
 				rob.rewind();
 				rewind_entry = rob.commit();
@@ -181,13 +180,17 @@ module turboV {
 						if(!(rewind_entry.valid1 && rewind_entry_uop1.rd_valid && rewind_entry.dreg0 == rewind_entry.dreg1)) {
 							register_map_table[rewind_entry.dreg0] := rewind_entry.preg0;
 						}
-						freelist.push0(rewind_entry.preg0);
+						if(rewind_entry.preg0 != 0) {
+							freelist.push0(rewind_entry.preg0);
+						}
 					}
 				}
 				if(rewind_entry.valid1) {
 					if(rewind_entry_uop1.rd_valid) {
 						register_map_table[rewind_entry.dreg1] := rewind_entry.preg1;
-						freelist.push1(rewind_entry.preg1);
+						if(rewind_entry.preg1 != 0) {
+							freelist.push1(rewind_entry.preg1);
+						}
 					}
 				}
 			}
@@ -356,8 +359,16 @@ module turboV {
 			issue_inst1_imm = decoder_packet1.imm;
 
 			// Rename destination registers
-			issue_inst0_pprd = register_map_table[issue_inst0_lrd];
-			issue_inst1_pprd = register_map_table[issue_inst1_lrd];
+			if(issue_packet.valid0 && issue_inst0_uop.rd_valid) {
+				issue_inst0_pprd = register_map_table[issue_inst0_lrd];
+			} else {
+				issue_inst0_pprd = 0;
+			}
+			if(issue_packet.valid0 && issue_packet.valid1 && issue_inst0_uop.rd_valid && issue_inst1_uop.rd_valid && issue_inst0_lrd == issue_inst1_lrd) {
+				issue_inst1_pprd = issue_inst0_prd;
+			} else {
+				issue_inst1_pprd = register_map_table[issue_inst1_lrd];
+			}
 			if(issue_packet.valid0 && (issue_inst0_lrd != 0)) {
 				issue_inst0_prd = freelist.pop0();
 				if(!(issue_packet.valid1 && (issue_inst1_lrd != 0)
@@ -692,9 +703,13 @@ module turboV {
 			if(commit_entry.valid0) {
 				if(commit_uop0.rd_valid) {
 					if(commit_kill_inst0) {
-						freelist.push0(commit_entry.preg0);
+						if(commit_entry.preg0 != 0) {
+							freelist.push0(commit_entry.preg0);
+						}
 					} else {
-						freelist.push0(commit_entry.ppreg0);
+						if(commit_entry.ppreg0 != 0) {
+							freelist.push0(commit_entry.ppreg0);
+						}
 					}
 				}
 				if(commit_uop0.csr_write) {
@@ -731,12 +746,16 @@ module turboV {
 			}
 			if(commit_entry.valid1 && commit_kill_inst1) {
 				if(commit_uop1.rd_valid) {
-					freelist.push1(commit_entry.preg1);
+					if(commit_entry.preg1 != 0) {
+						freelist.push1(commit_entry.preg1);
+					}
 				}
 			}
 			if(commit_entry.valid1 && !commit_kill_inst0 && !commit_kill_inst1) {
 				if(commit_uop1.rd_valid) {
-					freelist.push1(commit_entry.ppreg1);
+					if(commit_entry.ppreg1 != 0) {
+						freelist.push1(commit_entry.ppreg1);
+					}
 				}
 				if(commit_uop1.jal || commit_uop1.jalr || (commit_uop1.branch && commit_entry.taken1)) {
 					flush(commit_entry.target1);
