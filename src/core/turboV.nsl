@@ -177,7 +177,7 @@ module turboV {
 
 				if(rewind_entry.valid0) {
 					if(rewind_entry_uop0.rd_valid) {
-						register_map_table[rewind_entry.dreg0] := rewind_entry.preg0;
+						register_map_table[rewind_entry.dreg0] := rewind_entry.ppreg0;
 						if(rewind_entry.preg0 != 0) {
 							freelist.push0(rewind_entry.preg0);
 						}
@@ -186,7 +186,7 @@ module turboV {
 				if(rewind_entry.valid1) {
 					if(rewind_entry_uop1.rd_valid) {
 						if(!(rewind_entry.valid0 && rewind_entry_uop0.rd_valid && rewind_entry.dreg0 == rewind_entry.dreg1)) {
-							register_map_table[rewind_entry.dreg1] := rewind_entry.preg1;
+							register_map_table[rewind_entry.dreg1] := rewind_entry.ppreg1;
 						}
 						if(rewind_entry.preg1 != 0) {
 							freelist.push1(rewind_entry.preg1);
@@ -743,13 +743,6 @@ module turboV {
 					flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0));
 				}
 				DEBUG_COMMIT0(commit_PC0, commit_entry.inst0, commit_entry.cause0);
-			}
-			if(commit_entry.valid1 && commit_kill_inst1) {
-				if(commit_uop1.rd_valid) {
-					if(commit_entry.preg1 != 0) {
-						freelist.push1(commit_entry.preg1);
-					}
-				}
 			}
 			if(commit_entry.valid1 && !commit_kill_inst0 && !commit_kill_inst1) {
 				if(commit_uop1.rd_valid) {
