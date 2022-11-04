@@ -177,7 +177,9 @@ module turboV {
 
 				if(rewind_entry.valid0) {
 					if(rewind_entry_uop0.rd_valid) {
-						register_map_table[rewind_entry.dreg0] := rewind_entry.preg0;
+						if(!(rewind_entry.valid1 && rewind_entry_uop1.rd_valid && rewind_entry.dreg0 == rewind_entry.dreg1)) {
+							register_map_table[rewind_entry.dreg0] := rewind_entry.preg0;
+						}
 						freelist.push0(rewind_entry.preg0);
 					}
 				}
