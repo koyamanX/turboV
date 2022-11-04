@@ -47,6 +47,7 @@ module reorder_buffer {
 	reorder_buffer_t reg rob7 = 0;
 	reg tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1] = 0;
 	reg head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1] = 0;
+	wire commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
 	wire next_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
 	wire next_tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
 	reorder_buffer_t wire head_entry;
@@ -54,6 +55,8 @@ module reorder_buffer {
 	next_tail = tail + 1;
 	next_head = head + 1;
 	head_ptr = head << 1;
+	head_o = head;
+	tail_o = tail;
 	func issue {
 		reorder_buffer_t wire new_entry;
 
@@ -93,32 +96,41 @@ module reorder_buffer {
 		return tail  << 1;
 	}
 	any {
-		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: head_entry = rob0;
-		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: head_entry = rob1;
-		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: head_entry = rob2;
-		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: head_entry = rob3;
-		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: head_entry = rob4;
-		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: head_entry = rob5;
-		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: head_entry = rob6;
-		head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: head_entry = rob7;
+		commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: head_entry = rob0;
+		commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: head_entry = rob1;
+		commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: head_entry = rob2;
+		commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: head_entry = rob3;
+		commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: head_entry = rob4;
+		commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: head_entry = rob5;
+		commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: head_entry = rob6;
+		commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: head_entry = rob7;
 	}
 	if((head_entry.valid0 || head_entry.valid1) && (!head_entry.completed0 && !head_entry.completed1)) {
 		commitable();
+	}
+	if(rewind) {
+		commit_head = tail;
+	} else {
+		commit_head = head;
 	}
 	func commit {
 		if(!flush) {
 			// TODO:
 			any {
-				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: rob0 := 0;
-				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: rob1 := 0;
-				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: rob2 := 0;
-				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: rob3 := 0;
-				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: rob4 := 0;
-				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: rob5 := 0;
-				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: rob6 := 0;
-				head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: rob7 := 0;
+				commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: rob0 := 0;
+				commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: rob1 := 0;
+				commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: rob2 := 0;
+				commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: rob3 := 0;
+				commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: rob4 := 0;
+				commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: rob5 := 0;
+				commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: rob6 := 0;
+				commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: rob7 := 0;
 			}
-			head := next_head;
+			if(rewind) {
+				tail := tail - 1;
+			} else {
+				head := next_head;
+			}
 		}
 		return head_entry;
 	}

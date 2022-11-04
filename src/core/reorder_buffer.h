@@ -54,6 +54,8 @@ declare reorder_buffer {
 	input cause1[SIZEOF_CAUSE_T];
 	output ptr[REORDER_BUFFER_PTR_SIZE];
 	output head_ptr[REORDER_BUFFER_PTR_SIZE];
+	output head_o[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+	output tail_o[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
 #ifdef ENABLE_DEBUG
 	input inst0[32];
 	input inst1[32];
@@ -67,6 +69,7 @@ declare reorder_buffer {
 	output commit_entry[SIZEOF_REORDER_BUFFER_T];
 	func_in commit(): commit_entry;
 	func_out commitable();
+	func_in rewind();
 	input complete_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
 	input complete_alu0_taken;
 	input complete_alu0_target[32];

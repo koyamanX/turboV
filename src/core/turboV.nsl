@@ -175,6 +175,7 @@ module turboV {
 
 		for(i := 0; i < NUMBER_OF_REORDER_BUFFER-1; i++) {
 			{
+				rob.rewind();
 				rewind_entry = rob.commit();
 				rewind_entry_uop0 = rewind_entry.uop0;
 				rewind_entry_uop1 = rewind_entry.uop1;

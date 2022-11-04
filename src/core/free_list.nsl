@@ -56,7 +56,7 @@ module free_list {
 	}
 	if(pop) {
 		if(next_head >= NUMBER_OF_FREE_LIST) {
-			head := next_head - 64;
+			head := next_head - NUMBER_OF_FREE_LIST;
 		} else {
 			head := next_head;
 		}
@@ -66,7 +66,7 @@ module free_list {
 	}
 	if(push) {
 		if(next_tail >= NUMBER_OF_FREE_LIST) {
-			tail := next_tail - 64;
+			tail := next_tail - NUMBER_OF_FREE_LIST;
 		} else {
 			tail := next_tail;
 		}
