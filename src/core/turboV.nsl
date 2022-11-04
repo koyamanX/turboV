@@ -105,7 +105,6 @@ module turboV {
 	reorder_buffer rob;
 	free_list freelist;
 	mem register_map_table[32][6];
-	mem retirement_register_map_table[32][6];
 	mem register_status_table[64][1] = {0};
 	issue_queue iq_alu0;
 	issue_queue iq_alu1;
@@ -129,8 +128,7 @@ module turboV {
             csr.reset();
 			freelist.reset();
 			generate(i_ = 0; i_ < 32; i_++) {
-				register_map_table[i_] := NUMBER_OF_FREE_LIST-1-i_;
-				retirement_register_map_table[i_] := NUMBER_OF_FREE_LIST-1-i_;
+				register_map_table[i_] := NUMBER_OF_FREE_LIST+i_;
 			}
 			generate(i_ = 0; i_ < 64; i_++) {
 				register_status_table[i_] := READY;
@@ -156,9 +154,6 @@ module turboV {
         /* Flush ROB, RSs and LSQs */
         lsu0.flush();
 		/* Start decode */
-		generate(i_ = 0; i_ < 32; i_++) {
-			register_map_table[i_] := retirement_register_map_table[i_];
-		}
 		generate(i_ = 0; i_ < 64; i_++) {
 			register_status_table[i_] := READY;
 		}
@@ -182,11 +177,13 @@ module turboV {
 
 				if(rewind_entry.valid0) {
 					if(rewind_entry_uop0.rd_valid) {
+						register_map_table[rewind_entry.dreg0] := rewind_entry.preg0;
 						freelist.push0(rewind_entry.preg0);
 					}
 				}
 				if(rewind_entry.valid1) {
 					if(rewind_entry_uop1.rd_valid) {
+						register_map_table[rewind_entry.dreg1] := rewind_entry.preg1;
 						freelist.push1(rewind_entry.preg1);
 					}
 				}
@@ -696,9 +693,6 @@ module turboV {
 					} else {
 						freelist.push0(commit_entry.ppreg0);
 					}
-					if(!(commit_entry.valid1 && !commit_kill_inst1 && commit_entry.dreg1 == commit_entry.dreg0 && commit_uop1.rd_valid)) {
-						retirement_register_map_table[commit_entry.dreg0] := commit_entry.preg0;
-					}
 				}
 				if(commit_uop0.csr_write) {
 					csr.commit(rob.head_ptr);
@@ -740,7 +734,6 @@ module turboV {
 			if(commit_entry.valid1 && !commit_kill_inst0 && !commit_kill_inst1) {
 				if(commit_uop1.rd_valid) {
 					freelist.push1(commit_entry.ppreg1);
-					retirement_register_map_table[commit_entry.dreg1] := commit_entry.preg1;
 				}
 				if(commit_uop1.jal || commit_uop1.jalr || (commit_uop1.branch && commit_entry.taken1)) {
 					flush(commit_entry.target1);
