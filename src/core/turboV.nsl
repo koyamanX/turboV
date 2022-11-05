@@ -704,6 +704,7 @@ module turboV {
 				if(commit_uop0.rd_valid) {
 					if(commit_kill_inst0) {
 						if(commit_entry.preg0 != 0) {
+							register_map_table[commit_entry.dreg0] := commit_entry.ppreg0;
 							freelist.push0(commit_entry.preg0);
 						}
 					} else {
@@ -746,6 +747,7 @@ module turboV {
 			}
 			if(commit_entry.valid1 && commit_kill_inst1) {
 				if(commit_uop1.rd_valid) {
+					register_map_table[commit_entry.dreg1] := commit_entry.ppreg1;
 					if(commit_entry.preg1 != 0) {
 						freelist.push1(commit_entry.preg1);
 					}
