@@ -26,6 +26,7 @@ public:
     }
     ~Simulator(void) {
         tfp->close();
+		free(mem);
         delete sim;
         delete tfp;
     }
@@ -53,26 +54,178 @@ public:
         Tick();
         sim->reset = false;
     }
-bool m_clock = false;
-bool p_reset = false;
-uint64_t m_clock_count = 0;
-Trace_t *tfp;
-Sim_t *sim;
+	uint8_t *LoadElf(const char *path) {
+		int fd;
+		uint8_t *buf;
+		Elf32_Ehdr *ehdr;
+		Elf32_Phdr *phdr;
+		struct stat st;
+
+		fd = open(path, O_RDONLY);
+		if(fd < 0) {
+			perror("open");
+			exit(1);
+		}
+		if(fstat(fd, &st) < 0) {
+			perror("fstat");
+			exit(1);
+		}
+		buf = (uint8_t *)mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+		if(buf == MAP_FAILED) {
+			perror("mmap");
+			exit(1);
+		}
+		ehdr = (Elf32_Ehdr *)buf;
+		assert(ehdr->e_ident[0] == ELFMAG0);
+		assert(ehdr->e_ident[1] == ELFMAG1);
+		assert(ehdr->e_ident[2] == ELFMAG2);
+		assert(ehdr->e_ident[3] == ELFMAG3);
+		assert(ehdr->e_ident[4] == ELFCLASS32);
+		assert(ehdr->e_ident[5] == ELFDATA2LSB);
+		assert(ehdr->e_ident[6] == EV_CURRENT);
+		assert(ehdr->e_type == ET_EXEC);
+		assert(ehdr->e_machine == EM_RISCV);
+
+		phdr = (Elf32_Phdr *)(buf + ehdr->e_phoff);
+		mem = (uint8_t *)calloc(mem_size, sizeof(uint8_t));
+		for(int i = 0; i < ehdr->e_phnum; i++) {
+			if(phdr->p_type == PT_LOAD) {
+				assert(0x80000000 <= phdr->p_vaddr && phdr->p_vaddr+phdr->p_memsz < 0x80000000+mem_size);
+				memcpy((mem+phdr->p_vaddr-0x80000000), buf+phdr->p_offset, phdr->p_filesz);
+			}
+			phdr++;
+		}
+		munmap(buf, st.st_size);
+		close(fd);
+
+		return mem;
+	}
+	inline uint8_t read_byte(uint64_t addr) {
+		uint8_t ret = 0;
+
+		ret |= (uint8_t)mem[addr+0] << 0;
+
+		return ret;
+	}
+	inline uint16_t read_halfword(uint64_t addr) {
+		uint16_t ret = 0;
+
+		ret |= (uint16_t)mem[addr+1] << 8;
+		ret |= (uint16_t)mem[addr+0] << 0;
+
+		return ret;
+	}
+	inline uint32_t read_word(uint64_t addr) {
+		uint32_t ret = 0;
+
+		ret |= (uint32_t)mem[addr+3] << 24;
+		ret |= (uint32_t)mem[addr+2] << 16;
+		ret |= (uint32_t)mem[addr+1] << 8;
+		ret |= (uint32_t)mem[addr+0] << 0;
+
+		return ret;
+	}
+	inline uint64_t read_dword(uint64_t addr) {
+		uint64_t ret = 0;
+
+		ret |= (uint64_t)mem[addr+7] << 56;
+		ret |= (uint64_t)mem[addr+6] << 48;
+		ret |= (uint64_t)mem[addr+5] << 40;
+		ret |= (uint64_t)mem[addr+4] << 32;
+		ret |= (uint64_t)mem[addr+3] << 24;
+		ret |= (uint64_t)mem[addr+2] << 16;
+		ret |= (uint64_t)mem[addr+1] << 8;
+		ret |= (uint64_t)mem[addr+0] << 0;
+
+		return ret;
+	}
+	inline void write_byte(uint64_t addr, uint8_t data) {
+		mem[addr+0] = data;
+	}
+	inline void write_halfword(uint64_t addr, uint16_t data) {
+		mem[addr+1] = data << 8;
+		mem[addr+0] = data << 0;
+	}
+	inline void write_word(uint64_t addr, uint32_t data) {
+		mem[addr+3] = data << 24;
+		mem[addr+2] = data << 16;
+		mem[addr+1] = data << 8;
+		mem[addr+0] = data << 0;
+	}
+	inline void write_dword(uint64_t addr, uint64_t data) {
+		mem[addr+7] = data << 56;
+		mem[addr+6] = data << 48;
+		mem[addr+5] = data << 40;
+		mem[addr+4] = data << 32;
+		mem[addr+3] = data << 24;
+		mem[addr+2] = data << 16;
+		mem[addr+1] = data << 8;
+		mem[addr+0] = data << 0;
+	}
+	uint8_t Run(void) {
+		while(1) {
+			sim->rsp_error = false;
+			sim->rsp_retry = false;
+			sim->rsp_stall = false;
+			sim->rsp_valid = false;
+			if(sim->req_read) {
+				assert(0x80000000 <= sim->req_addr && sim->req_addr < 0x80000000+mem_size);
+				if(sim->req_sel == 0xff) {
+					sim->rsp_data = read_dword(sim->req_addr-0x80000000);
+				} else if(sim->req_sel == 0x0f) {
+					sim->rsp_data = read_word(sim->req_addr-0x80000000);
+				} else if(sim->req_sel == 0x03) {
+					sim->rsp_data = read_halfword(sim->req_addr-0x80000000);
+				} else if(sim->req_sel == 0x01) {
+					sim->rsp_data = read_byte(sim->req_addr-0x80000000);
+				}
+				sim->rsp_valid = true;
+			}
+			if(sim->req_write) {
+				assert(0x80000000 <= sim->req_addr && sim->req_addr < 0x80000000+mem_size);
+				if(sim->req_sel == 0xff) {
+					write_dword(sim->req_addr-0x80000000, sim->req_data);
+				} else if(sim->req_sel == 0x0f) {
+					write_word(sim->req_addr-0x80000000, sim->req_data);
+				} else if(sim->req_sel == 0x03) {
+					write_halfword(sim->req_addr-0x80000000, sim->req_data);
+				} else if(sim->req_sel == 0x01) {
+					write_byte(sim->req_addr-0x80000000, sim->req_data);
+				}
+				sim->rsp_valid = true;
+				if(sim->req_addr == 0x80001000) {
+					sim_result = sim->req_data;
+					Tick();
+					break;
+				}
+			}
+#ifdef ENABLE_DEBUG
+			if(sim->debug_commit0) {
+				fprintf(stdout, "%08x: DASM(%08x)\n", sim->debug_commit_pc0, sim->debug_commit_inst0);
+			}
+			if(sim->debug_commit1) {
+				fprintf(stdout, "%08x: DASM(%08x)\n", sim->debug_commit_pc1, sim->debug_commit_inst1);
+			}
+#endif
+			Tick();
+		}
+		return (sim_result == 1) ? 0 : sim_result;
+	}
+
+    uint32_t sim_result = 0;
+	bool m_clock = false;
+	bool p_reset = false;
+	uint64_t m_clock_count = 0;
+	Trace_t *tfp;
+	Sim_t *sim;
+	uint8_t *mem = NULL;
+	const size_t mem_size = 64*1024*1024;
 };
+
 int main(int argc, char **argv) {
 	Verilated::commandArgs(argc, argv);
 	Verilated::traceEverOn(true);
-    int fd;
-    uint8_t *buf;
-    Elf32_Ehdr *ehdr;
-    Elf32_Phdr *phdr;
-    struct stat st;
-    uint8_t *mem;
-    size_t mem_size = 64*1024*1024;
     Simulator<VturboVSim, VerilatedVcdC> sim;
-    bool sim_done = false;
-    uint32_t sim_done_cnt = 0;
-    uint32_t sim_done_result = 0;
 
 	fprintf(stdout, "turboVSim %s.%s.%s\n", MAJOR_VERSION, MINOR_VERSION, REVISION);
     if(argc != 2) {
@@ -80,103 +233,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    fd = open(argv[1], O_RDONLY);
-    if(fd < 0) {
-        perror("open");
-        exit(1);
-    }
-    if(fstat(fd, &st) < 0) {
-        perror("fstat");
-        exit(1);
-    }
-    buf = (uint8_t *)mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-    if(buf == MAP_FAILED) {
-        perror("mmap");
-        exit(1);
-    }
-    ehdr = (Elf32_Ehdr *)buf;
-    assert(ehdr->e_ident[0] == ELFMAG0);
-    assert(ehdr->e_ident[1] == ELFMAG1);
-    assert(ehdr->e_ident[2] == ELFMAG2);
-    assert(ehdr->e_ident[3] == ELFMAG3);
-    assert(ehdr->e_ident[4] == ELFCLASS32);
-    assert(ehdr->e_ident[5] == ELFDATA2LSB);
-    assert(ehdr->e_ident[6] == EV_CURRENT);
-    assert(ehdr->e_type == ET_EXEC);
-    assert(ehdr->e_machine == EM_RISCV);
-
-    phdr = (Elf32_Phdr *)(buf + ehdr->e_phoff);
-    mem = (uint8_t *)calloc(mem_size, sizeof(uint8_t));
-    for(int i = 0; i < ehdr->e_phnum; i++) {
-        if(phdr->p_type == PT_LOAD) {
-            assert(0x80000000 <= phdr->p_vaddr && phdr->p_vaddr+phdr->p_memsz < 0x80000000+mem_size);
-            memcpy((mem+phdr->p_vaddr-0x80000000), buf+phdr->p_offset, phdr->p_filesz);
-        }
-        phdr++;
-    }
-
-#if ELF_TXT_DUMP
-    FILE *fp = fopen("elf.dump", "w");
-    for(size_t i = 0; i < mem_size-4; i+=4) {
-        fprintf(fp, "%08lx: %08x\n", i, *((uint32_t *) &mem[i]));
-    }
-    fclose(fp);
-#endif
-
+	sim.LoadElf(argv[1]);
     sim.Reset();
-    while(1) {
-        sim.sim->rsp_error = false;
-        sim.sim->rsp_retry = false;
-        sim.sim->rsp_stall = false;
-        sim.sim->rsp_valid = false;
-        if(sim.sim->req_read) {
-            assert(0x80000000 <= sim.sim->req_addr && sim.sim->req_addr < 0x80000000+mem_size);
-            if(sim.sim->req_sel == 0xff) {
-                sim.sim->rsp_data = *((uint64_t *)&mem[sim.sim->req_addr-0x80000000]);
-            } else if(sim.sim->req_sel == 0x0f) {
-                sim.sim->rsp_data = *((uint32_t *)&mem[sim.sim->req_addr-0x80000000]);
-            } else if(sim.sim->req_sel == 0x03) {
-                sim.sim->rsp_data = *((uint16_t *)&mem[sim.sim->req_addr-0x80000000]);
-            } else if(sim.sim->req_sel == 0x01) {
-                sim.sim->rsp_data = *((uint8_t *)&mem[sim.sim->req_addr-0x80000000]);
-            }
-            sim.sim->rsp_valid = true;
-        }
-        if(sim.sim->req_write) {
-            assert(0x80000000 <= sim.sim->req_addr && sim.sim->req_addr < 0x80000000+mem_size);
-            if(sim.sim->req_sel == 0xff) {
-                *((uint64_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
-            } else if(sim.sim->req_sel == 0x0f) {
-                *((uint32_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
-            } else if(sim.sim->req_sel == 0x03) {
-                *((uint16_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
-            } else if(sim.sim->req_sel == 0x01) {
-                *((uint8_t *)&mem[sim.sim->req_addr-0x80000000]) = sim.sim->req_data;
-            }
-            sim.sim->rsp_valid = true;
-            if(sim.sim->req_addr == 0x80001000) {
-                sim_done = true;
-                sim_done_result = sim.sim->req_data;
-            }
-        }
-#ifdef ENABLE_DEBUG
-        if(sim.sim->debug_commit0) {
-            fprintf(stdout, "%08x: DASM(%08x)\n", sim.sim->debug_commit_pc0, sim.sim->debug_commit_inst0);
-        }
-        if(sim.sim->debug_commit1) {
-            fprintf(stdout, "%08x: DASM(%08x)\n", sim.sim->debug_commit_pc1, sim.sim->debug_commit_inst1);
-        }
-
-#endif
-        if(sim_done) {
-            if(sim_done_cnt >= 64) {
-                break;
-            } else {
-                sim_done_cnt++;
-            }
-        }
-        sim.Tick();
-    }
-
-    return (sim_done_result == 1) ? 0 : sim_done_result;
+	return sim.Run();
 }
