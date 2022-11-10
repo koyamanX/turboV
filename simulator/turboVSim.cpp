@@ -201,10 +201,21 @@ public:
 			}
 #ifdef ENABLE_DEBUG
 			if(sim->debug_commit0) {
-				fprintf(stdout, "%08x: DASM(%08x)\n", sim->debug_commit_pc0, sim->debug_commit_inst0);
+				fprintf(stdout, "%08x: DASM(%08x)", sim->debug_commit_pc0, sim->debug_commit_inst0);
+				if(sim->debug_commit_rd_valid0) {
+					fprintf(stdout, "\t");
+					fprintf(stdout, "dreg: 0x%02x, preg: 0x%02x, ppreg: 0x%02x", sim->debug_commit_dreg0, sim->debug_commit_preg0, sim->debug_commit_ppreg0);
+				}
+				fprintf(stdout, "\n");
 			}
 			if(sim->debug_commit1) {
-				fprintf(stdout, "%08x: DASM(%08x)\n", sim->debug_commit_pc1, sim->debug_commit_inst1);
+				fprintf(stdout, "%08x: DASM(%08x)", sim->debug_commit_pc1, sim->debug_commit_inst1);
+				if(sim->debug_commit_rd_valid1) {
+					fprintf(stdout, "\t");
+					fprintf(stdout, "dreg: 0x%02x, preg: 0x%02x, ppreg: 0x%02x", sim->debug_commit_dreg1, sim->debug_commit_preg1, sim->debug_commit_ppreg1);
+				}
+				fprintf(stdout, "\n");
+
 			}
 #endif
 			Tick();

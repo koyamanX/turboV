@@ -15,11 +15,11 @@
 #include "issue_queue_in_order.h"
 
 #ifdef ENABLE_DEBUG
-#define DEBUG_COMMIT0(pc, inst, cause) debug_commit0(pc, inst, cause)
-#define DEBUG_COMMIT1(pc, inst, cause) debug_commit1(pc, inst, cause)
+#define DEBUG_COMMIT0(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg) debug_commit0(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg)
+#define DEBUG_COMMIT1(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg) debug_commit1(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg)
 #else
-#define DEBUG_COMMIT0(pc, inst, cause)
-#define DEBUG_COMMIT1(pc, inst, cause)
+#define DEBUG_COMMIT0(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg)
+#define DEBUG_COMMIT1(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg)
 #endif
 
 struct issue_packet_t {
@@ -743,7 +743,7 @@ module turboV {
 					//TODO: inst0 debug only
 					flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0));
 				}
-				DEBUG_COMMIT0(commit_PC0, commit_entry.inst0, commit_entry.cause0);
+				DEBUG_COMMIT0(rob.head_ptr, commit_PC0, commit_entry.inst0, commit_entry.cause0, commit_uop0.rd_valid, commit_entry.dreg0, commit_entry.preg0, commit_entry.ppreg0);
 			}
 			if(commit_entry.valid1 && commit_kill_inst1) {
 				if(commit_uop1.rd_valid) {
@@ -766,7 +766,7 @@ module turboV {
 					//TODO: inst0 debug only
 					flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC1, commit_entry.inst1));
 				}
-				DEBUG_COMMIT1(commit_PC1, commit_entry.inst1, commit_entry.cause1);
+				DEBUG_COMMIT1(rob.head_ptr+1, commit_PC1, commit_entry.inst1, commit_entry.cause1, commit_uop1.rd_valid, commit_entry.dreg1, commit_entry.preg1, commit_entry.ppreg1);
 			}
 		}
 	}
