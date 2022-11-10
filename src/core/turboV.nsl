@@ -19,11 +19,13 @@
 #define DEBUG_COMMIT1(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg) debug_commit1(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg)
 #define DEBUG_REWIND0(dreg, preg, ppreg) debug_rewind0(dreg, preg, ppreg)
 #define DEBUG_REWIND1(dreg, preg, ppreg) debug_rewind1(dreg, preg, ppreg)
+#define DEBUG_FLUSH(newpc) debug_flush(newpc)
 #else
 #define DEBUG_COMMIT0(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg)
 #define DEBUG_COMMIT1(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg)
 #define DEBUG_REWIND0(dreg, preg, ppreg)
 #define DEBUG_REWIND1(dreg, preg, ppreg)
+#define DEBUG_FLUSH(newpc)
 #endif
 
 struct issue_packet_t {
@@ -165,6 +167,7 @@ module turboV {
 		iq_alu1.flush();
 		iq_lsu0.flush();
 		rewind.invoke(newpc);
+		DEBUG_FLUSH(newpc);
     }
 	proc rewind seq {
 		reg i[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];

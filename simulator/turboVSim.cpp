@@ -216,6 +216,9 @@ public:
 				}
 				fprintf(stdout, "\n");
 			}
+			if(sim->debug_flush) {
+				fprintf(stdout, "flush: %08x\n", sim->debug_flush_newpc);
+			}
 			if(sim->debug_rewind0) {
 				fprintf(stdout, "rewind: dreg: %02x, preg: %02x, ppreg: %02x\n", sim->debug_rewind0_dreg, sim->debug_rewind0_preg, sim->debug_rewind0_ppreg);
 			}

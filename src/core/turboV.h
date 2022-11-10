@@ -38,6 +38,9 @@ declare turboV {
 	output debug_rewind1_preg[6];
 	output debug_rewind1_ppreg[6];
 	func_out debug_rewind1(debug_rewind1_dreg, debug_rewind1_preg, debug_rewind1_ppreg);
+
+	output debug_flush_newpc[32];
+	func_out debug_flush(debug_flush_newpc);
 #endif
 }
 
