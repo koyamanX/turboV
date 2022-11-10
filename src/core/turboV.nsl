@@ -17,9 +17,13 @@
 #ifdef ENABLE_DEBUG
 #define DEBUG_COMMIT0(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg) debug_commit0(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg)
 #define DEBUG_COMMIT1(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg) debug_commit1(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg)
+#define DEBUG_REWIND0(dreg, preg, ppreg) debug_rewind0(dreg, preg, ppreg)
+#define DEBUG_REWIND1(dreg, preg, ppreg) debug_rewind1(dreg, preg, ppreg)
 #else
 #define DEBUG_COMMIT0(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg)
 #define DEBUG_COMMIT1(ptr, pc, inst, cause, rd_valid, dreg, preg, ppreg)
+#define DEBUG_REWIND0(dreg, preg, ppreg)
+#define DEBUG_REWIND1(dreg, preg, ppreg)
 #endif
 
 struct issue_packet_t {
@@ -181,6 +185,7 @@ module turboV {
 						if(rewind_entry.preg0 != 0) {
 							freelist.push0(rewind_entry.preg0);
 						}
+						DEBUG_REWIND0(rewind_entry.dreg0, rewind_entry.preg0, rewind_entry.ppreg0);
 					}
 				}
 				if(rewind_entry.valid1) {
@@ -191,6 +196,7 @@ module turboV {
 						if(rewind_entry.preg1 != 0) {
 							freelist.push1(rewind_entry.preg1);
 						}
+						DEBUG_REWIND1(rewind_entry.dreg1, rewind_entry.preg1, rewind_entry.ppreg1);
 					}
 				}
 			}

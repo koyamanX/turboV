@@ -29,6 +29,15 @@ declare turboV {
     output debug_commit_preg1[6];
     output debug_commit_ppreg1[6];
     func_out debug_commit1(debug_commit_ptr1, debug_commit_pc1, debug_commit_inst1, debug_commit_cause1, debug_commit_rd_valid1, debug_commit_dreg1, debug_commit_preg1, debug_commit_ppreg1);
+	
+	output debug_rewind0_dreg[5];
+	output debug_rewind0_preg[6];
+	output debug_rewind0_ppreg[6];
+	func_out debug_rewind0(debug_rewind0_dreg, debug_rewind0_preg, debug_rewind0_ppreg);
+	output debug_rewind1_dreg[5];
+	output debug_rewind1_preg[6];
+	output debug_rewind1_ppreg[6];
+	func_out debug_rewind1(debug_rewind1_dreg, debug_rewind1_preg, debug_rewind1_ppreg);
 #endif
 }
 
