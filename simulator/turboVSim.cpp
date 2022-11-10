@@ -243,8 +243,8 @@ int main(int argc, char **argv) {
 	Verilated::traceEverOn(true);
     Simulator<VturboVSim, VerilatedVcdC> sim;
 
-	fprintf(stdout, "turboVSim %s.%s.%s\n", MAJOR_VERSION, MINOR_VERSION, REVISION);
     if(argc != 2) {
+		fprintf(stdout, "turboVSim %s.%s.%s\n", MAJOR_VERSION, MINOR_VERSION, REVISION);
         fprintf(stderr, "Insufficient arguments\n");
         exit(EXIT_FAILURE);
     }
