@@ -225,7 +225,7 @@ module turboVSim {
 		debug_flush(core.debug_flush_newpc);
 	}
 	func core.debug_rename0 {
-		debug_rename1(core.debug_rename0_ptr, core.debug_rename0_pc, core.debug_rename0_inst,
+		debug_rename0(core.debug_rename0_ptr, core.debug_rename0_pc, core.debug_rename0_inst,
 				core.debug_rename0_rd_valid, core.debug_rename0_lrd, core.debug_rename0_prd, core.debug_rename0_pprd,
 				core.debug_rename0_rs1_valid, core.debug_rename0_rs1_ready, core.debug_rename0_lrs1, core.debug_rename0_prs1,
 				core.debug_rename0_rs2_valid, core.debug_rename0_rs2_ready, core.debug_rename0_lrs2, core.debug_rename0_prs2,
