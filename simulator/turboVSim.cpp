@@ -200,6 +200,38 @@ public:
 				}
 			}
 #ifdef ENABLE_DEBUG
+			if(sim->debug_rename0) {
+				fprintf(stdout, "rename: pc: %08x, inst: DASM(%08x), ptr: 0x%02x", sim->debug_rename0_pc, sim->debug_rename0_inst, sim->debug_rename0_ptr);
+				if(sim->debug_rename0_rd_valid) {
+					fprintf(stdout, ", ");
+					fprintf(stdout, "prd: 0x%02x, pprd: 0x%02x", sim->debug_rename0_prd, sim->debug_rename0_pprd);
+				}
+				if(sim->debug_rename0_rs1_valid) {
+					fprintf(stdout, ", ");
+					fprintf(stdout, "rs1_ready: %s, prs1: 0x%02x", sim->debug_rename0_rs1_ready ? "true" : "false", sim->debug_rename0_prs1);
+				}
+				if(sim->debug_rename0_rs2_valid) {
+					fprintf(stdout, ", ");
+					fprintf(stdout, "rs2_ready: %s, prs2: 0x%02x", sim->debug_rename0_rs2_ready ? "true" : "false", sim->debug_rename0_prs2);
+				}
+				fprintf(stdout, "\n");
+			}
+			if(sim->debug_rename1) {
+				fprintf(stdout, "rename: pc: %08x, inst: DASM(%08x), ptr: 0x%02x", sim->debug_rename1_pc, sim->debug_rename1_inst, sim->debug_rename1_ptr);
+				if(sim->debug_rename1_rd_valid) {
+					fprintf(stdout, ", ");
+					fprintf(stdout, "prd: 0x%02x, pprd: 0x%02x", sim->debug_rename1_prd, sim->debug_rename1_pprd);
+				}
+				if(sim->debug_rename1_rs1_valid) {
+					fprintf(stdout, ", ");
+					fprintf(stdout, "rs1_ready: %s, prs1: 0x%02x", sim->debug_rename1_rs1_ready ? "true" : "false", sim->debug_rename1_prs1);
+				}
+				if(sim->debug_rename1_rs2_valid) {
+					fprintf(stdout, ", ");
+					fprintf(stdout, "rs2_ready: %s, prs2: 0x%02x", sim->debug_rename1_rs2_ready ? "true" : "false", sim->debug_rename1_prs2);
+				}
+				fprintf(stdout, "\n");
+			}
 			if(sim->debug_commit0) {
 				fprintf(stdout, "commit: pc: %08x, inst: DASM(%08x), ptr: 0x%02x", sim->debug_commit_pc0, sim->debug_commit_inst0, sim->debug_commit_ptr0);
 				if(sim->debug_commit_rd_valid0) {

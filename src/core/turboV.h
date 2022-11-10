@@ -11,6 +11,52 @@ declare turboV {
 
     WISHBONE_GEN_MASTER_IF(32, 64, 8)
 #ifdef ENABLE_DEBUG
+	output debug_rename0_ptr[REORDER_BUFFER_PTR_SIZE];
+	output debug_rename0_pc[32];
+	output debug_rename0_inst[32];
+	output debug_rename0_rd_valid;
+	output debug_rename0_lrd[5];
+	output debug_rename0_prd[6];
+	output debug_rename0_pprd[6];
+	output debug_rename0_rs1_valid;
+	output debug_rename0_rs1_ready;
+	output debug_rename0_lrs1[5];
+	output debug_rename0_prs1[6];
+	output debug_rename0_rs2_valid;
+	output debug_rename0_rs2_ready;
+	output debug_rename0_lrs2[5];
+	output debug_rename0_prs2[6];
+	output debug_rename0_cause[16];
+	output debug_rename0_imm[32];
+	func_out debug_rename0(debug_rename0_ptr, debug_rename0_pc, debug_rename0_inst,
+			debug_rename0_rd_valid, debug_rename0_lrd, debug_rename0_prd, debug_rename0_pprd,
+			debug_rename0_rs1_valid, debug_rename0_rs1_ready, debug_rename0_lrs1, debug_rename0_prs1,
+			debug_rename0_rs2_valid, debug_rename0_rs2_ready, debug_rename0_lrs2, debug_rename0_prs2,
+			debug_rename0_cause, debug_rename0_imm);
+
+	output debug_rename1_ptr[REORDER_BUFFER_PTR_SIZE];
+	output debug_rename1_pc[32];
+	output debug_rename1_inst[32];
+	output debug_rename1_rd_valid;
+	output debug_rename1_lrd[5];
+	output debug_rename1_prd[6];
+	output debug_rename1_pprd[6];
+	output debug_rename1_rs1_valid;
+	output debug_rename1_rs1_ready;
+	output debug_rename1_lrs1[5];
+	output debug_rename1_prs1[6];
+	output debug_rename1_rs2_valid;
+	output debug_rename1_rs2_ready;
+	output debug_rename1_lrs2[5];
+	output debug_rename1_prs2[6];
+	output debug_rename1_cause[16];
+	output debug_rename1_imm[32];
+	func_out debug_rename1(debug_rename1_ptr, debug_rename1_pc, debug_rename1_inst,
+			debug_rename1_rd_valid, debug_rename1_lrd, debug_rename1_prd, debug_rename1_pprd,
+			debug_rename1_rs1_valid, debug_rename1_rs1_ready, debug_rename1_lrs1, debug_rename1_prs1,
+			debug_rename1_rs2_valid, debug_rename1_rs2_ready, debug_rename1_lrs2, debug_rename1_prs2,
+			debug_rename1_cause, debug_rename1_imm);
+
     output debug_commit_ptr0[REORDER_BUFFER_PTR_SIZE];
     output debug_commit_pc0[32];
     output debug_commit_inst0[32];
