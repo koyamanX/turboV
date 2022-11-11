@@ -21,6 +21,20 @@
 
 using json = nlohmann::json;
 
+const char *rs1_sel_str[] = {
+	"REG",
+	"UIMM",
+	"PC",
+	"UNIMP"
+};
+const char *rs2_sel_str[] = {
+	"REG",
+	"IMM",
+	"CSR",
+	"CSR_UIMM"
+};
+
+
 template <typename Sim_t, typename Trace_t>
 class Simulator {
 public:
@@ -171,18 +185,6 @@ public:
 	uint8_t Run(void) {
 		while(1) {
 #ifdef ENABLE_DEBUG
-			const char *rs1_sel_str[] = {
-				"REG",
-				"UIMM",
-				"PC",
-				"UNIMP"
-			};
-			const char *rs2_sel_str[] = {
-				"REG",
-				"IMM",
-				"CSR",
-				"CSR_UIMM"
-			};
 			json j;
 			j["cycle"] = m_clock_count >> 1;
 			if(sim->debug_rename0) {
