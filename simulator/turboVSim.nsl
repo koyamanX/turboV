@@ -130,6 +130,22 @@ declare turboVSim simulation {
 	func_out debug_dispatch1(debug_dispatch1_ptr, debug_dispatch1_pc, debug_dispatch1_rd_valid, debug_dispatch1_prd,
 			debug_dispatch1_rs1_sel, debug_dispatch1_rs1_valid, debug_dispatch1_prs1, debug_dispatch1_rs1_data,
 			debug_dispatch1_rs2_sel, debug_dispatch1_rs2_valid, debug_dispatch1_prs2, debug_dispatch1_rs2_data);
+
+	output debug_dispatch2_ptr[REORDER_BUFFER_PTR_SIZE];
+	output debug_dispatch2_pc[32];
+	output debug_dispatch2_rd_valid;
+	output debug_dispatch2_prd[6];
+	output debug_dispatch2_rs1_sel[2];
+	output debug_dispatch2_rs1_valid;
+	output debug_dispatch2_prs1[6];
+	output debug_dispatch2_rs1_data[32];
+	output debug_dispatch2_rs2_sel[2];
+	output debug_dispatch2_rs2_valid;
+	output debug_dispatch2_prs2[6];
+	output debug_dispatch2_rs2_data[32];
+	func_out debug_dispatch2(debug_dispatch2_ptr, debug_dispatch2_pc, debug_dispatch2_rd_valid, debug_dispatch2_prd,
+			debug_dispatch2_rs1_sel, debug_dispatch2_rs1_valid, debug_dispatch2_prs1, debug_dispatch2_rs1_data,
+			debug_dispatch2_rs2_sel, debug_dispatch2_rs2_valid, debug_dispatch2_prs2, debug_dispatch2_rs2_data);
 #endif
 }
 module turboVSim {
@@ -282,5 +298,11 @@ module turboVSim {
 				core.debug_dispatch1_rs1_sel, core.debug_dispatch1_rs1_valid, core.debug_dispatch1_prs1, core.debug_dispatch1_rs1_data,
 				core.debug_dispatch1_rs2_sel, core.debug_dispatch1_rs2_valid, core.debug_dispatch1_prs2, core.debug_dispatch1_rs2_data);
 	}
+	func core.debug_dispatch2 {
+		debug_dispatch2(core.debug_dispatch2_ptr, core.debug_dispatch2_pc, core.debug_dispatch2_rd_valid, core.debug_dispatch2_prd,
+				core.debug_dispatch2_rs1_sel, core.debug_dispatch2_rs1_valid, core.debug_dispatch2_prs1, core.debug_dispatch2_rs1_data,
+				core.debug_dispatch2_rs2_sel, core.debug_dispatch2_rs2_valid, core.debug_dispatch2_prs2, core.debug_dispatch2_rs2_data);
+	}
+
 #endif
 }
