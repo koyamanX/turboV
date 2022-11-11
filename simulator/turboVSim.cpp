@@ -12,8 +12,14 @@
 #include "verilated_vcd_c.h"
 #include "VturboVSim.h"
 #include "version.h"
+#include <nlohmann/json.hpp>
+#include <iomanip>
+#include <iostream>
+#include <fstream>
 
 #define ENABLE_DEBUG
+
+using json = nlohmann::json;
 
 template <typename Sim_t, typename Trace_t>
 class Simulator {
@@ -177,103 +183,121 @@ public:
 				"CSR",
 				"CSR_UIMM"
 			};
+			json j;
+			j["cycle"] = m_clock_count >> 1;
 			if(sim->debug_dispatch0) {
-				fprintf(stdout, "dispatch0: pc: %08x,  ptr: 0x%02x", sim->debug_dispatch0_pc, sim->debug_dispatch0_ptr);
+				j["stages"]["dispatch0"]["ptr"] = sim->debug_dispatch0_ptr;
+				j["stages"]["dispatch0"]["pc"] = sim->debug_dispatch0_pc;
+
 				if(sim->debug_dispatch0_rd_valid) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "prd: 0x%02x", sim->debug_dispatch0_prd);
+					j["stages"]["dispatch0"]["prd"] = sim->debug_dispatch0_prd;
 				}
 				if(sim->debug_dispatch0_rs1_valid) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "prs1: 0x%02x", sim->debug_dispatch0_prs1);
+					j["stages"]["dispatch0"]["prs1"] = sim->debug_dispatch0_prs1;
 				}
-				fprintf(stdout, ", ");
-				fprintf(stdout, "rs1_sel: %s, rs1_data: 0x%08x", rs1_sel_str[sim->debug_dispatch0_rs1_sel&0x3], sim->debug_dispatch0_rs1_data);
+				j["stages"]["dispatch0"]["rs1_sel"] = rs1_sel_str[sim->debug_dispatch0_rs1_sel&0x3];
+				j["stages"]["dispatch0"]["rs1_data"] = sim->debug_dispatch0_rs1_data;
 				if(sim->debug_dispatch0_rs2_valid) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "prs2: 0x%02x", sim->debug_dispatch0_prs2);
+					j["stages"]["dispatch0"]["prs2"] = sim->debug_dispatch0_prs2;
 				}
-				fprintf(stdout, ", ");
-				fprintf(stdout, "rs2_sel: %s, rs2_data: 0x%08x", rs2_sel_str[sim->debug_dispatch0_rs2_sel&0x3], sim->debug_dispatch0_rs2_data);
-				fprintf(stdout, "\n");
+				j["stages"]["dispatch0"]["rs2_sel"] = rs2_sel_str[sim->debug_dispatch0_rs2_sel&0x3];
+				j["stages"]["dispatch0"]["rs2_data"] = sim->debug_dispatch0_rs2_data;
 			}
 			if(sim->debug_dispatch1) {
-				fprintf(stdout, "dispatch1: pc: %08x,  ptr: 0x%02x", sim->debug_dispatch1_pc, sim->debug_dispatch1_ptr);
+				j["stages"]["dispatch1"]["ptr"] = sim->debug_dispatch1_ptr;
+				j["stages"]["dispatch1"]["pc"] = sim->debug_dispatch1_pc;
+
 				if(sim->debug_dispatch1_rd_valid) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "prd: 0x%02x", sim->debug_dispatch1_prd);
+					j["stages"]["dispatch1"]["prd"] = sim->debug_dispatch1_prd;
 				}
 				if(sim->debug_dispatch1_rs1_valid) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "prs1: 0x%02x", sim->debug_dispatch1_prs1);
+					j["stages"]["dispatch1"]["prs1"] = sim->debug_dispatch1_prs1;
 				}
-				fprintf(stdout, ", ");
-				fprintf(stdout, "rs1_sel: %s, rs1_data: 0x%08x", rs1_sel_str[sim->debug_dispatch1_rs1_sel&0x3], sim->debug_dispatch1_rs1_data);
+				j["stages"]["dispatch1"]["rs1_sel"] = rs1_sel_str[sim->debug_dispatch1_rs1_sel&0x3];
+				j["stages"]["dispatch1"]["rs1_data"] = sim->debug_dispatch1_rs1_data;
 				if(sim->debug_dispatch1_rs2_valid) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "prs2: 0x%02x", sim->debug_dispatch1_prs2);
+					j["stages"]["dispatch1"]["prs2"] = sim->debug_dispatch1_prs2;
 				}
-				fprintf(stdout, ", ");
-				fprintf(stdout, "rs2_sel: %s, rs2_data: 0x%08x", rs2_sel_str[sim->debug_dispatch1_rs2_sel&0x3], sim->debug_dispatch1_rs2_data);
-				fprintf(stdout, "\n");
+				j["stages"]["dispatch1"]["rs2_sel"] = rs2_sel_str[sim->debug_dispatch1_rs2_sel&0x3];
+				j["stages"]["dispatch1"]["rs2_data"] = sim->debug_dispatch1_rs2_data;
 			}
 			if(sim->debug_rename0) {
-				fprintf(stdout, "rename: pc: %08x, inst: DASM(%08x), ptr: 0x%02x", sim->debug_rename0_pc, sim->debug_rename0_inst, sim->debug_rename0_ptr);
+				j["stages"]["rename0"]["pc"] = sim->debug_rename0_pc;
+				j["stages"]["rename0"]["ptr"] = sim->debug_rename0_ptr;
+				j["stages"]["rename0"]["inst"] = sim->debug_rename0_inst;
+				j["stages"]["rename0"]["cause"] = sim->debug_rename0_cause;
+				j["stages"]["rename0"]["imm"] = sim->debug_rename0_imm;
 				if(sim->debug_rename0_rd_valid) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "prd: 0x%02x, pprd: 0x%02x", sim->debug_rename0_prd, sim->debug_rename0_pprd);
+					j["stages"]["rename0"]["prd"] = sim->debug_rename0_prd;
+					j["stages"]["rename0"]["pprd"] = sim->debug_rename0_pprd;
 				}
 				if(sim->debug_rename0_rs1_valid) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "rs1_ready: %s, prs1: 0x%02x", sim->debug_rename0_rs1_ready ? "true" : "false", sim->debug_rename0_prs1);
+					j["stages"]["rename0"]["rs1_ready"] = sim->debug_rename0_rs1_ready == true;
+					j["stages"]["rename0"]["prs1"] = sim->debug_rename0_prs1;
 				}
 				if(sim->debug_rename0_rs2_valid) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "rs2_ready: %s, prs2: 0x%02x", sim->debug_rename0_rs2_ready ? "true" : "false", sim->debug_rename0_prs2);
+					j["stages"]["rename0"]["rs2_ready"] = sim->debug_rename0_rs2_ready == true;
+					j["stages"]["rename0"]["prs2"] = sim->debug_rename0_prs2;
 				}
-				fprintf(stdout, "\n");
 			}
 			if(sim->debug_rename1) {
-				fprintf(stdout, "rename: pc: %08x, inst: DASM(%08x), ptr: 0x%02x", sim->debug_rename1_pc, sim->debug_rename1_inst, sim->debug_rename1_ptr);
+				j["stages"]["rename1"]["pc"] = sim->debug_rename1_pc;
+				j["stages"]["rename1"]["ptr"] = sim->debug_rename1_ptr;
+				j["stages"]["rename1"]["inst"] = sim->debug_rename1_inst;
+				j["stages"]["rename1"]["cause"] = sim->debug_rename1_cause;
+				j["stages"]["rename1"]["imm"] = sim->debug_rename1_imm;
 				if(sim->debug_rename1_rd_valid) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "prd: 0x%02x, pprd: 0x%02x", sim->debug_rename1_prd, sim->debug_rename1_pprd);
+					j["stages"]["rename1"]["prd"] = sim->debug_rename1_prd;
+					j["stages"]["rename1"]["pprd"] = sim->debug_rename1_pprd;
 				}
 				if(sim->debug_rename1_rs1_valid) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "rs1_ready: %s, prs1: 0x%02x", sim->debug_rename1_rs1_ready ? "true" : "false", sim->debug_rename1_prs1);
+					j["stages"]["rename1"]["rs1_ready"] = sim->debug_rename1_rs1_ready == true;
+					j["stages"]["rename1"]["prs1"] = sim->debug_rename1_prs1;
 				}
 				if(sim->debug_rename1_rs2_valid) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "rs2_ready: %s, prs2: 0x%02x", sim->debug_rename1_rs2_ready ? "true" : "false", sim->debug_rename1_prs2);
+					j["stages"]["rename1"]["rs2_ready"] = sim->debug_rename1_rs2_ready == true;
+					j["stages"]["rename1"]["prs2"] = sim->debug_rename1_prs2;
 				}
-				fprintf(stdout, "\n");
 			}
 			if(sim->debug_commit0) {
-				fprintf(stdout, "commit: pc: %08x, inst: DASM(%08x), ptr: 0x%02x, killed: %s", sim->debug_commit_pc0, sim->debug_commit_inst0, sim->debug_commit_ptr0, sim->debug_commit_kill0 ? "true" : "false");
+				j["stages"]["commit0"]["pc"] = sim->debug_commit_pc0;
+				j["stages"]["commit0"]["inst"] = sim->debug_commit_inst0;
+				j["stages"]["commit0"]["ptr"] = sim->debug_commit_ptr0;
+				j["stages"]["commit0"]["cause"] = sim->debug_commit_cause0;
+				j["stages"]["commit0"]["killed"] = sim->debug_commit_kill0 == true;
 				if(sim->debug_commit_rd_valid0) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "dreg: 0x%02x, preg: 0x%02x, ppreg: 0x%02x", sim->debug_commit_dreg0, sim->debug_commit_preg0, sim->debug_commit_ppreg0);
+					j["stages"]["commit0"]["dreg"] = sim->debug_commit_dreg0;
+					j["stages"]["commit0"]["preg"] = sim->debug_commit_preg0;
+					j["stages"]["commit0"]["ppreg"] = sim->debug_commit_ppreg0;
 				}
-				fprintf(stdout, "\n");
 			}
 			if(sim->debug_commit1) {
-				fprintf(stdout, "commit: pc: %08x, inst: DASM(%08x), ptr: 0x%02x, killed: %s", sim->debug_commit_pc1, sim->debug_commit_inst1, sim->debug_commit_ptr1, sim->debug_commit_kill1 ? "true" : "false");
-				if(sim->debug_commit_rd_valid1) {
-					fprintf(stdout, ", ");
-					fprintf(stdout, "dreg: 0x%02x, preg: 0x%02x, ppreg: 0x%02x", sim->debug_commit_dreg1, sim->debug_commit_preg1, sim->debug_commit_ppreg1);
+				j["stages"]["commit1"]["pc"] = sim->debug_commit_pc1;
+				j["stages"]["commit1"]["inst"] = sim->debug_commit_inst1;
+				j["stages"]["commit1"]["ptr"] = sim->debug_commit_ptr1;
+				j["stages"]["commit1"]["cause"] = sim->debug_commit_cause1;
+				j["stages"]["commit1"]["killed"] = sim->debug_commit_kill1 == true;
+				if(sim->debug_commit_rd_valid0) {
+					j["stages"]["commit1"]["dreg"] = sim->debug_commit_dreg1;
+					j["stages"]["commit1"]["preg"] = sim->debug_commit_preg1;
+					j["stages"]["commit1"]["ppreg"] = sim->debug_commit_ppreg1;
 				}
-				fprintf(stdout, "\n");
 			}
 			if(sim->debug_flush) {
-				fprintf(stdout, "flush: %08x\n", sim->debug_flush_newpc);
+				j["flush"]["newpc"] = sim->debug_flush_newpc;
 			}
 			if(sim->debug_rewind0) {
-				fprintf(stdout, "rewind: dreg: %02x, preg: %02x, ppreg: %02x\n", sim->debug_rewind0_dreg, sim->debug_rewind0_preg, sim->debug_rewind0_ppreg);
+				j["stages"]["rewind0"]["dreg"] = sim->debug_rewind0_dreg;
+				j["stages"]["rewind0"]["preg"] = sim->debug_rewind0_preg;
+				j["stages"]["rewind0"]["ppreg"] = sim->debug_rewind0_ppreg;
 			}
 			if(sim->debug_rewind1) {
-				fprintf(stdout, "rewind: dreg: %02x, preg: %02x, ppreg: %02x\n", sim->debug_rewind1_dreg, sim->debug_rewind1_preg, sim->debug_rewind1_ppreg);
+				j["stages"]["rewind1"]["dreg"] = sim->debug_rewind1_dreg;
+				j["stages"]["rewind1"]["preg"] = sim->debug_rewind1_preg;
+				j["stages"]["rewind1"]["ppreg"] = sim->debug_rewind1_ppreg;
 			}
+
+			std::cout << std::setw(4) << j << std::endl;
 #endif
 			sim->rsp_error = false;
 			sim->rsp_retry = false;
@@ -314,7 +338,7 @@ public:
 		}
 		return (sim_result == 1) ? 0 : sim_result;
 	}
-
+private:
     uint32_t sim_result = 0;
 	bool m_clock = false;
 	bool p_reset = false;
