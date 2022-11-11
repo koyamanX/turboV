@@ -233,7 +233,7 @@ public:
 				fprintf(stdout, "\n");
 			}
 			if(sim->debug_commit0) {
-				fprintf(stdout, "commit: pc: %08x, inst: DASM(%08x), ptr: 0x%02x", sim->debug_commit_pc0, sim->debug_commit_inst0, sim->debug_commit_ptr0);
+				fprintf(stdout, "commit: pc: %08x, inst: DASM(%08x), ptr: 0x%02x, killed: %s", sim->debug_commit_pc0, sim->debug_commit_inst0, sim->debug_commit_ptr0, sim->debug_commit_kill0 ? "true" : "false");
 				if(sim->debug_commit_rd_valid0) {
 					fprintf(stdout, ", ");
 					fprintf(stdout, "dreg: 0x%02x, preg: 0x%02x, ppreg: 0x%02x", sim->debug_commit_dreg0, sim->debug_commit_preg0, sim->debug_commit_ppreg0);
@@ -241,7 +241,7 @@ public:
 				fprintf(stdout, "\n");
 			}
 			if(sim->debug_commit1) {
-				fprintf(stdout, "commit: pc: %08x, inst: DASM(%08x), ptr: 0x%02x", sim->debug_commit_pc1, sim->debug_commit_inst1, sim->debug_commit_ptr1);
+				fprintf(stdout, "commit: pc: %08x, inst: DASM(%08x), ptr: 0x%02x, killed: %s", sim->debug_commit_pc1, sim->debug_commit_inst1, sim->debug_commit_ptr1, sim->debug_commit_kill1 ? "true" : "false");
 				if(sim->debug_commit_rd_valid1) {
 					fprintf(stdout, ", ");
 					fprintf(stdout, "dreg: 0x%02x, preg: 0x%02x, ppreg: 0x%02x", sim->debug_commit_dreg1, sim->debug_commit_preg1, sim->debug_commit_ppreg1);
