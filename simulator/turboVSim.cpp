@@ -34,6 +34,17 @@ const char *rs2_sel_str[] = {
 	"CSR_UIMM"
 };
 
+std::string to_hex(uint64_t v, uint64_t w) {
+	std::ostringstream ss;
+    ss << "0x" << std::setfill('0') << std::setw(w) << std::hex << v;
+    return ss.str();
+}
+
+std::string to_hex(uint64_t v) {
+	std::ostringstream ss;
+    ss << "0x" << std::hex << v;
+    return ss.str();
+}
 
 template <typename Sim_t, typename Trace_t>
 class Simulator {
@@ -188,185 +199,185 @@ public:
 			json j;
 			j["cycle"] = m_clock_count >> 1;
 			if(sim->debug_rename0) {
-				j["stages"]["rename0"]["pc"] = sim->debug_rename0_pc;
-				j["stages"]["rename0"]["ptr"] = sim->debug_rename0_ptr;
-				j["stages"]["rename0"]["inst"] = sim->debug_rename0_inst;
-				j["stages"]["rename0"]["cause"] = sim->debug_rename0_cause;
-				j["stages"]["rename0"]["imm"] = sim->debug_rename0_imm;
+				j["stages"]["rename0"]["pc"] = to_hex(sim->debug_rename0_pc, 8);
+				j["stages"]["rename0"]["ptr"] = to_hex(sim->debug_rename0_ptr, 2);
+				j["stages"]["rename0"]["inst"] = to_hex(sim->debug_rename0_inst, 8);
+				j["stages"]["rename0"]["cause"] = to_hex(sim->debug_rename0_cause, 8);
+				j["stages"]["rename0"]["imm"] = to_hex(sim->debug_rename0_imm, 8);
 				if(sim->debug_rename0_rd_valid) {
-					j["stages"]["rename0"]["prd"] = sim->debug_rename0_prd;
-					j["stages"]["rename0"]["pprd"] = sim->debug_rename0_pprd;
+					j["stages"]["rename0"]["prd"] = to_hex(sim->debug_rename0_prd, 2);
+					j["stages"]["rename0"]["pprd"] = to_hex(sim->debug_rename0_pprd, 2);
 				}
 				if(sim->debug_rename0_rs1_valid) {
 					j["stages"]["rename0"]["rs1_ready"] = sim->debug_rename0_rs1_ready == true;
-					j["stages"]["rename0"]["prs1"] = sim->debug_rename0_prs1;
+					j["stages"]["rename0"]["prs1"] = to_hex(sim->debug_rename0_prs1, 2);
 				}
 				if(sim->debug_rename0_rs2_valid) {
 					j["stages"]["rename0"]["rs2_ready"] = sim->debug_rename0_rs2_ready == true;
-					j["stages"]["rename0"]["prs2"] = sim->debug_rename0_prs2;
+					j["stages"]["rename0"]["prs2"] = to_hex(sim->debug_rename0_prs2, 2);
 				}
 			}
 			if(sim->debug_rename1) {
-				j["stages"]["rename1"]["pc"] = sim->debug_rename1_pc;
-				j["stages"]["rename1"]["ptr"] = sim->debug_rename1_ptr;
-				j["stages"]["rename1"]["inst"] = sim->debug_rename1_inst;
-				j["stages"]["rename1"]["cause"] = sim->debug_rename1_cause;
-				j["stages"]["rename1"]["imm"] = sim->debug_rename1_imm;
+				j["stages"]["rename1"]["pc"] = to_hex(sim->debug_rename1_pc, 8);
+				j["stages"]["rename1"]["ptr"] = to_hex(sim->debug_rename1_ptr, 2);
+				j["stages"]["rename1"]["inst"] = to_hex(sim->debug_rename1_inst, 8);
+				j["stages"]["rename1"]["cause"] = to_hex(sim->debug_rename1_cause, 8);
+				j["stages"]["rename1"]["imm"] = to_hex(sim->debug_rename1_imm, 8);
 				if(sim->debug_rename1_rd_valid) {
-					j["stages"]["rename1"]["prd"] = sim->debug_rename1_prd;
-					j["stages"]["rename1"]["pprd"] = sim->debug_rename1_pprd;
+					j["stages"]["rename1"]["prd"] = to_hex(sim->debug_rename1_prd, 2);
+					j["stages"]["rename1"]["pprd"] = to_hex(sim->debug_rename1_pprd, 2);
 				}
 				if(sim->debug_rename1_rs1_valid) {
 					j["stages"]["rename1"]["rs1_ready"] = sim->debug_rename1_rs1_ready == true;
-					j["stages"]["rename1"]["prs1"] = sim->debug_rename1_prs1;
+					j["stages"]["rename1"]["prs1"] = to_hex(sim->debug_rename1_prs1, 2);
 				}
 				if(sim->debug_rename1_rs2_valid) {
 					j["stages"]["rename1"]["rs2_ready"] = sim->debug_rename1_rs2_ready == true;
-					j["stages"]["rename1"]["prs2"] = sim->debug_rename1_prs2;
+					j["stages"]["rename1"]["prs2"] = to_hex(sim->debug_rename1_prs2, 2);
 				}
 			}
 			if(sim->debug_dispatch0) {
-				j["stages"]["dispatch0"]["ptr"] = sim->debug_dispatch0_ptr;
-				j["stages"]["dispatch0"]["pc"] = sim->debug_dispatch0_pc;
+				j["stages"]["dispatch0"]["ptr"] = to_hex(sim->debug_dispatch0_ptr, 2);
+				j["stages"]["dispatch0"]["pc"] = to_hex(sim->debug_dispatch0_pc, 8);
 
 				if(sim->debug_dispatch0_rd_valid) {
-					j["stages"]["dispatch0"]["prd"] = sim->debug_dispatch0_prd;
+					j["stages"]["dispatch0"]["prd"] = to_hex(sim->debug_dispatch0_prd, 2);
 				}
 				if(sim->debug_dispatch0_rs1_valid) {
-					j["stages"]["dispatch0"]["prs1"] = sim->debug_dispatch0_prs1;
+					j["stages"]["dispatch0"]["prs1"] = to_hex(sim->debug_dispatch0_prs1, 2);
 				}
 				j["stages"]["dispatch0"]["rs1_sel"] = rs1_sel_str[sim->debug_dispatch0_rs1_sel&0x3];
-				j["stages"]["dispatch0"]["rs1_data"] = sim->debug_dispatch0_rs1_data;
+				j["stages"]["dispatch0"]["rs1_data"] = to_hex(sim->debug_dispatch0_rs1_data, 8);
 				if(sim->debug_dispatch0_rs2_valid) {
-					j["stages"]["dispatch0"]["prs2"] = sim->debug_dispatch0_prs2;
+					j["stages"]["dispatch0"]["prs2"] = to_hex(sim->debug_dispatch0_prs2, 2);
 				}
 				j["stages"]["dispatch0"]["rs2_sel"] = rs2_sel_str[sim->debug_dispatch0_rs2_sel&0x3];
-				j["stages"]["dispatch0"]["rs2_data"] = sim->debug_dispatch0_rs2_data;
+				j["stages"]["dispatch0"]["rs2_data"] = to_hex(sim->debug_dispatch0_rs2_data, 8);
 			}
 			if(sim->debug_dispatch1) {
-				j["stages"]["dispatch1"]["ptr"] = sim->debug_dispatch1_ptr;
-				j["stages"]["dispatch1"]["pc"] = sim->debug_dispatch1_pc;
+				j["stages"]["dispatch1"]["ptr"] = to_hex(sim->debug_dispatch1_ptr, 2);
+				j["stages"]["dispatch1"]["pc"] = to_hex(sim->debug_dispatch1_pc, 8);
 
 				if(sim->debug_dispatch1_rd_valid) {
-					j["stages"]["dispatch1"]["prd"] = sim->debug_dispatch1_prd;
+					j["stages"]["dispatch1"]["prd"] = to_hex(sim->debug_dispatch1_prd, 2);
 				}
 				if(sim->debug_dispatch1_rs1_valid) {
-					j["stages"]["dispatch1"]["prs1"] = sim->debug_dispatch1_prs1;
+					j["stages"]["dispatch1"]["prs1"] = to_hex(sim->debug_dispatch1_prs1, 2);
 				}
 				j["stages"]["dispatch1"]["rs1_sel"] = rs1_sel_str[sim->debug_dispatch1_rs1_sel&0x3];
-				j["stages"]["dispatch1"]["rs1_data"] = sim->debug_dispatch1_rs1_data;
+				j["stages"]["dispatch1"]["rs1_data"] = to_hex(sim->debug_dispatch1_rs1_data, 8);
 				if(sim->debug_dispatch1_rs2_valid) {
-					j["stages"]["dispatch1"]["prs2"] = sim->debug_dispatch1_prs2;
+					j["stages"]["dispatch1"]["prs2"] = to_hex(sim->debug_dispatch1_prs2, 8);
 				}
 				j["stages"]["dispatch1"]["rs2_sel"] = rs2_sel_str[sim->debug_dispatch1_rs2_sel&0x3];
-				j["stages"]["dispatch1"]["rs2_data"] = sim->debug_dispatch1_rs2_data;
+				j["stages"]["dispatch1"]["rs2_data"] = to_hex(sim->debug_dispatch1_rs2_data, 8);
 			}
 			if(sim->debug_dispatch2) {
-				j["stages"]["dispatch2"]["ptr"] = sim->debug_dispatch2_ptr;
-				j["stages"]["dispatch2"]["pc"] = sim->debug_dispatch2_pc;
+				j["stages"]["dispatch2"]["ptr"] = to_hex(sim->debug_dispatch2_ptr, 2);
+				j["stages"]["dispatch2"]["pc"] = to_hex(sim->debug_dispatch2_pc, 8);
 
 				if(sim->debug_dispatch2_rd_valid) {
-					j["stages"]["dispatch2"]["prd"] = sim->debug_dispatch2_prd;
+					j["stages"]["dispatch2"]["prd"] = to_hex(sim->debug_dispatch2_prd, 2);
 				}
 				if(sim->debug_dispatch2_rs1_valid) {
-					j["stages"]["dispatch2"]["prs1"] = sim->debug_dispatch2_prs1;
+					j["stages"]["dispatch2"]["prs1"] = to_hex(sim->debug_dispatch2_prs1, 2);
 				}
 				j["stages"]["dispatch2"]["rs1_sel"] = rs1_sel_str[sim->debug_dispatch2_rs1_sel&0x3];
-				j["stages"]["dispatch2"]["rs1_data"] = sim->debug_dispatch2_rs1_data;
+				j["stages"]["dispatch2"]["rs1_data"] = to_hex(sim->debug_dispatch2_rs1_data, 8);
 				if(sim->debug_dispatch2_rs2_valid) {
-					j["stages"]["dispatch2"]["prs2"] = sim->debug_dispatch2_prs2;
+					j["stages"]["dispatch2"]["prs2"] = to_hex(sim->debug_dispatch2_prs2, 2);
 				}
 				j["stages"]["dispatch2"]["rs2_sel"] = rs2_sel_str[sim->debug_dispatch2_rs2_sel&0x3];
-				j["stages"]["dispatch2"]["rs2_data"] = sim->debug_dispatch2_rs2_data;
+				j["stages"]["dispatch2"]["rs2_data"] = to_hex(sim->debug_dispatch2_rs2_data, 8);
 			}
 			if(sim->debug_execute0) {
-				j["stages"]["execute0"]["ptr"] = sim->debug_execute0_ptr;
+				j["stages"]["execute0"]["ptr"] = to_hex(sim->debug_execute0_ptr, 2);
 				if(sim->debug_execute0_rd_valid) {
-					j["stages"]["execute0"]["prd"] = sim->debug_execute0_prd;
+					j["stages"]["execute0"]["prd"] = to_hex(sim->debug_execute0_prd, 2);
 				}
-				j["stages"]["execute0"]["a"] = sim->debug_execute0_a;
-				j["stages"]["execute0"]["b"] = sim->debug_execute0_b;
-				j["stages"]["execute0"]["q"] = sim->debug_execute0_q;
-				j["stages"]["execute0"]["addr"] = sim->debug_execute0_addr;
+				j["stages"]["execute0"]["a"] = to_hex(sim->debug_execute0_a, 8);
+				j["stages"]["execute0"]["b"] = to_hex(sim->debug_execute0_b, 8);
+				j["stages"]["execute0"]["q"] = to_hex(sim->debug_execute0_q, 8);
+				j["stages"]["execute0"]["addr"] = to_hex(sim->debug_execute0_addr, 8);
 			}
 			if(sim->debug_execute1) {
-				j["stages"]["execute1"]["ptr"] = sim->debug_execute1_ptr;
+				j["stages"]["execute1"]["ptr"] = to_hex(sim->debug_execute1_ptr, 2);
 				if(sim->debug_execute1_rd_valid) {
-					j["stages"]["execute1"]["prd"] = sim->debug_execute1_prd;
+					j["stages"]["execute1"]["prd"] = to_hex(sim->debug_execute1_prd, 2);
 				}
-				j["stages"]["execute1"]["a"] = sim->debug_execute1_a;
-				j["stages"]["execute1"]["b"] = sim->debug_execute1_b;
-				j["stages"]["execute1"]["q"] = sim->debug_execute1_q;
-				j["stages"]["execute1"]["addr"] = sim->debug_execute1_addr;
+				j["stages"]["execute1"]["a"] = to_hex(sim->debug_execute1_a, 8);
+				j["stages"]["execute1"]["b"] = to_hex(sim->debug_execute1_b, 8);
+				j["stages"]["execute1"]["q"] = to_hex(sim->debug_execute1_q, 8);
+				j["stages"]["execute1"]["addr"] = to_hex(sim->debug_execute1_addr, 8);
 			}
 			if(sim->debug_execute2) {
-				j["stages"]["execute2"]["ptr"] = sim->debug_execute2_ptr;
+				j["stages"]["execute2"]["ptr"] = to_hex(sim->debug_execute2_ptr, 2);
 				if(sim->debug_execute2_rd_valid) {
-					j["stages"]["execute2"]["prd"] = sim->debug_execute2_prd;
+					j["stages"]["execute2"]["prd"] = to_hex(sim->debug_execute2_prd, 2);
 				}
-				j["stages"]["execute2"]["a"] = sim->debug_execute2_a;
-				j["stages"]["execute2"]["b"] = sim->debug_execute2_b;
-				j["stages"]["execute2"]["data"] = sim->debug_execute2_data;
+				j["stages"]["execute2"]["a"] = to_hex(sim->debug_execute2_a, 8);
+				j["stages"]["execute2"]["b"] = to_hex(sim->debug_execute2_b, 8);
+				j["stages"]["execute2"]["data"] = to_hex(sim->debug_execute2_data, 8);
 			}
 			if(sim->debug_writeback0) {
-				j["stages"]["writeback0"]["ptr"] = sim->debug_writeback0_ptr;
+				j["stages"]["writeback0"]["ptr"] = to_hex(sim->debug_writeback0_ptr, 2);
 				if(sim->debug_writeback0_rd_valid) {
-					j["stages"]["writeback0"]["prd"] = sim->debug_writeback0_prd;
+					j["stages"]["writeback0"]["prd"] = to_hex(sim->debug_writeback0_prd, 2);
 				}
-				j["stages"]["writeback0"]["q"] = sim->debug_writeback0_q;
-				j["stages"]["writeback0"]["target"] = sim->debug_writeback0_target;
+				j["stages"]["writeback0"]["q"] = to_hex(sim->debug_writeback0_q, 8);
+				j["stages"]["writeback0"]["target"] = to_hex(sim->debug_writeback0_target, 8);
 			}
 			if(sim->debug_writeback1) {
-				j["stages"]["writeback1"]["ptr"] = sim->debug_writeback1_ptr;
+				j["stages"]["writeback1"]["ptr"] = to_hex(sim->debug_writeback1_ptr, 2);
 				if(sim->debug_writeback1_rd_valid) {
-					j["stages"]["writeback1"]["prd"] = sim->debug_writeback1_prd;
+					j["stages"]["writeback1"]["prd"] = to_hex(sim->debug_writeback1_prd, 2);
 				}
-				j["stages"]["writeback1"]["q"] = sim->debug_writeback1_q;
-				j["stages"]["writeback1"]["target"] = sim->debug_writeback1_target;
+				j["stages"]["writeback1"]["q"] = to_hex(sim->debug_writeback1_q, 8);
+				j["stages"]["writeback1"]["target"] = to_hex(sim->debug_writeback1_target, 8);
 			}
 			if(sim->debug_writeback2) {
-				j["stages"]["writeback2"]["ptr"] = sim->debug_writeback2_ptr;
+				j["stages"]["writeback2"]["ptr"] = to_hex(sim->debug_writeback2_ptr, 2);
 				if(sim->debug_writeback2_rd_valid) {
-					j["stages"]["writeback2"]["prd"] = sim->debug_writeback2_prd;
+					j["stages"]["writeback2"]["prd"] = to_hex(sim->debug_writeback2_prd, 2);
 				}
-				j["stages"]["writeback2"]["data"] = sim->debug_writeback2_data;
+				j["stages"]["writeback2"]["data"] = to_hex(sim->debug_writeback2_data, 8);
 			}
 			if(sim->debug_commit0) {
-				j["stages"]["commit0"]["pc"] = sim->debug_commit_pc0;
-				j["stages"]["commit0"]["inst"] = sim->debug_commit_inst0;
-				j["stages"]["commit0"]["ptr"] = sim->debug_commit_ptr0;
-				j["stages"]["commit0"]["cause"] = sim->debug_commit_cause0;
+				j["stages"]["commit0"]["pc"] = to_hex(sim->debug_commit_pc0, 8);
+				j["stages"]["commit0"]["inst"] = to_hex(sim->debug_commit_inst0, 8);
+				j["stages"]["commit0"]["ptr"] = to_hex(sim->debug_commit_ptr0, 2);
+				j["stages"]["commit0"]["cause"] = to_hex(sim->debug_commit_cause0, 8);
 				j["stages"]["commit0"]["killed"] = sim->debug_commit_kill0 == true;
 				if(sim->debug_commit_rd_valid0) {
-					j["stages"]["commit0"]["dreg"] = sim->debug_commit_dreg0;
-					j["stages"]["commit0"]["preg"] = sim->debug_commit_preg0;
-					j["stages"]["commit0"]["ppreg"] = sim->debug_commit_ppreg0;
+					j["stages"]["commit0"]["dreg"] = to_hex(sim->debug_commit_dreg0, 2);
+					j["stages"]["commit0"]["preg"] = to_hex(sim->debug_commit_preg0, 2);
+					j["stages"]["commit0"]["ppreg"] = to_hex(sim->debug_commit_ppreg0, 2);
 				}
 			}
 			if(sim->debug_commit1) {
-				j["stages"]["commit1"]["pc"] = sim->debug_commit_pc1;
-				j["stages"]["commit1"]["inst"] = sim->debug_commit_inst1;
-				j["stages"]["commit1"]["ptr"] = sim->debug_commit_ptr1;
-				j["stages"]["commit1"]["cause"] = sim->debug_commit_cause1;
+				j["stages"]["commit1"]["pc"] = to_hex(sim->debug_commit_pc1, 8);
+				j["stages"]["commit1"]["inst"] = to_hex(sim->debug_commit_inst1, 8);
+				j["stages"]["commit1"]["ptr"] = to_hex(sim->debug_commit_ptr1, 2);
+				j["stages"]["commit1"]["cause"] = to_hex(sim->debug_commit_cause1, 8);
 				j["stages"]["commit1"]["killed"] = sim->debug_commit_kill1 == true;
 				if(sim->debug_commit_rd_valid0) {
-					j["stages"]["commit1"]["dreg"] = sim->debug_commit_dreg1;
-					j["stages"]["commit1"]["preg"] = sim->debug_commit_preg1;
-					j["stages"]["commit1"]["ppreg"] = sim->debug_commit_ppreg1;
+					j["stages"]["commit1"]["dreg"] = to_hex(sim->debug_commit_dreg1, 2);
+					j["stages"]["commit1"]["preg"] = to_hex(sim->debug_commit_preg1, 2);
+					j["stages"]["commit1"]["ppreg"] = to_hex(sim->debug_commit_ppreg1, 2);
 				}
 			}
 			if(sim->debug_flush) {
-				j["flush"]["newpc"] = sim->debug_flush_newpc;
+				j["flush"]["newpc"] = to_hex(sim->debug_flush_newpc, 8);
 			}
 			if(sim->debug_rewind0) {
-				j["stages"]["rewind0"]["dreg"] = sim->debug_rewind0_dreg;
-				j["stages"]["rewind0"]["preg"] = sim->debug_rewind0_preg;
-				j["stages"]["rewind0"]["ppreg"] = sim->debug_rewind0_ppreg;
+				j["stages"]["rewind0"]["dreg"] = to_hex(sim->debug_rewind0_dreg, 2);
+				j["stages"]["rewind0"]["preg"] = to_hex(sim->debug_rewind0_preg, 2);
+				j["stages"]["rewind0"]["ppreg"] = to_hex(sim->debug_rewind0_ppreg, 2);
 			}
 			if(sim->debug_rewind1) {
-				j["stages"]["rewind1"]["dreg"] = sim->debug_rewind1_dreg;
-				j["stages"]["rewind1"]["preg"] = sim->debug_rewind1_preg;
-				j["stages"]["rewind1"]["ppreg"] = sim->debug_rewind1_ppreg;
+				j["stages"]["rewind1"]["dreg"] = to_hex(sim->debug_rewind1_dreg, 2);
+				j["stages"]["rewind1"]["preg"] = to_hex(sim->debug_rewind1_preg, 2);
+				j["stages"]["rewind1"]["ppreg"] = to_hex(sim->debug_rewind1_ppreg, 2);
 			}
 
 			std::cout << std::setw(4) << j << std::endl;
