@@ -25,6 +25,7 @@
 #define DEBUG_REWIND1(dreg, preg, ppreg) debug_rewind1(dreg, preg, ppreg)
 #define DEBUG_FLUSH(newpc) debug_flush(newpc)
 #define DEBUG_DISPATCH0(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data) debug_dispatch0(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
+#define DEBUG_DISPATCH1(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data) debug_dispatch1(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
 #else
 #define DEBUG_RENAME0(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
 #define DEBUG_RENAME1(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
@@ -34,6 +35,7 @@
 #define DEBUG_REWIND1(dreg, preg, ppreg)
 #define DEBUG_FLUSH(newpc)
 #define DEBUG_DISPATCH0(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
+#define DEBUG_DISPATCH1(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
 #endif
 
 struct issue_packet_t {
@@ -613,6 +615,9 @@ module turboV {
 			execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd,
 					iq_alu1_A, iq_alu1_B, 0, 0);
 		}
+		DEBUG_DISPATCH1(iq_alu1.dispatch_ptr, iq_alu1_PC, iq_alu1_uop.rd_valid, iq_alu1.dispatch_prd,
+				iq_alu1_uop.rs1_sel, iq_alu1_uop.rs1_valid, iq_alu1.dispatch_prs1, iq_alu1_A,
+				iq_alu1_uop.rs2_sel, iq_alu1_uop.rs2_valid, iq_alu1.dispatch_prs2, iq_alu1_B);
 	}
     proc execute_alu1 {
 		alu1.exe(execute_alu1_A, execute_alu1_B, execute_alu1_uop.uop[FN_SIZE-1:0]);

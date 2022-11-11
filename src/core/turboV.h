@@ -73,6 +73,22 @@ declare turboV {
 			debug_dispatch0_rs1_sel, debug_dispatch0_rs1_valid, debug_dispatch0_prs1, debug_dispatch0_rs1_data,
 			debug_dispatch0_rs2_sel, debug_dispatch0_rs2_valid, debug_dispatch0_prs2, debug_dispatch0_rs2_data);
 
+	output debug_dispatch1_ptr[REORDER_BUFFER_PTR_SIZE];
+	output debug_dispatch1_pc[32];
+	output debug_dispatch1_rd_valid;
+	output debug_dispatch1_prd[6];
+	output debug_dispatch1_rs1_sel[2];
+	output debug_dispatch1_rs1_valid;
+	output debug_dispatch1_prs1[6];
+	output debug_dispatch1_rs1_data[32];
+	output debug_dispatch1_rs2_sel[2];
+	output debug_dispatch1_rs2_valid;
+	output debug_dispatch1_prs2[6];
+	output debug_dispatch1_rs2_data[32];
+	func_out debug_dispatch1(debug_dispatch1_ptr, debug_dispatch1_pc, debug_dispatch1_rd_valid, debug_dispatch1_prd,
+			debug_dispatch1_rs1_sel, debug_dispatch1_rs1_valid, debug_dispatch1_prs1, debug_dispatch1_rs1_data,
+			debug_dispatch1_rs2_sel, debug_dispatch1_rs2_valid, debug_dispatch1_prs2, debug_dispatch1_rs2_data);
+
     output debug_commit_ptr0[REORDER_BUFFER_PTR_SIZE];
 	output debug_commit_kill0;
     output debug_commit_pc0[32];

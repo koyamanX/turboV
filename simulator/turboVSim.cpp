@@ -197,6 +197,26 @@ public:
 				fprintf(stdout, "rs2_sel: %s, rs2_data: 0x%08x", rs2_sel_str[sim->debug_dispatch0_rs2_sel&0x3], sim->debug_dispatch0_rs2_data);
 				fprintf(stdout, "\n");
 			}
+			if(sim->debug_dispatch1) {
+				fprintf(stdout, "dispatch1: pc: %08x,  ptr: 0x%02x", sim->debug_dispatch1_pc, sim->debug_dispatch1_ptr);
+				if(sim->debug_dispatch1_rd_valid) {
+					fprintf(stdout, ", ");
+					fprintf(stdout, "prd: 0x%02x", sim->debug_dispatch1_prd);
+				}
+				if(sim->debug_dispatch1_rs1_valid) {
+					fprintf(stdout, ", ");
+					fprintf(stdout, "prs1: 0x%02x", sim->debug_dispatch1_prs1);
+				}
+				fprintf(stdout, ", ");
+				fprintf(stdout, "rs1_sel: %s, rs1_data: 0x%08x", rs1_sel_str[sim->debug_dispatch1_rs1_sel&0x3], sim->debug_dispatch1_rs1_data);
+				if(sim->debug_dispatch1_rs2_valid) {
+					fprintf(stdout, ", ");
+					fprintf(stdout, "prs2: 0x%02x", sim->debug_dispatch1_prs2);
+				}
+				fprintf(stdout, ", ");
+				fprintf(stdout, "rs2_sel: %s, rs2_data: 0x%08x", rs2_sel_str[sim->debug_dispatch1_rs2_sel&0x3], sim->debug_dispatch1_rs2_data);
+				fprintf(stdout, "\n");
+			}
 			if(sim->debug_rename0) {
 				fprintf(stdout, "rename: pc: %08x, inst: DASM(%08x), ptr: 0x%02x", sim->debug_rename0_pc, sim->debug_rename0_inst, sim->debug_rename0_ptr);
 				if(sim->debug_rename0_rd_valid) {
