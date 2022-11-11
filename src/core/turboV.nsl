@@ -27,6 +27,10 @@
 #define DEBUG_DISPATCH0(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data) debug_dispatch0(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
 #define DEBUG_DISPATCH1(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data) debug_dispatch1(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
 #define DEBUG_DISPATCH2(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data) debug_dispatch2(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
+
+#define DEBUG_EXECUTE0(ptr, rd_valid, prd, a, b, q, addr) debug_execute0(ptr, rd_valid, prd, a, b, q, addr)
+#define DEBUG_EXECUTE1(ptr, rd_valid, prd, a, b, q, addr) debug_execute1(ptr, rd_valid, prd, a, b, q, addr)
+#define DEBUG_EXECUTE2(ptr, rd_valid, prd, a, b, data) debug_execute2(ptr, rd_valid, prd, a, b, data)
 #else
 #define DEBUG_RENAME0(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
 #define DEBUG_RENAME1(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
@@ -38,6 +42,9 @@
 #define DEBUG_DISPATCH0(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
 #define DEBUG_DISPATCH1(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
 #define DEBUG_DISPATCH2(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
+#define DEBUG_EXECUTE0(ptr, rd_valid, prd, a, b, q, addr)
+#define DEBUG_EXECUTE1(ptr, rd_valid, prd, a, b, q, addr)
+#define DEBUG_EXECUTE2(ptr, rd_valid, prd, a, b, data)
 #endif
 
 struct issue_packet_t {
@@ -584,6 +591,7 @@ module turboV {
     proc execute_alu0 {
 		alu0.exe(execute_alu0_A, execute_alu0_B, execute_alu0_uop.uop[FN_SIZE-1:0]);
 		writeback_alu0(execute_alu0_ptr, execute_alu0_uop, execute_alu0_prd, alu0.q, execute_alu0_X+execute_alu0_Y);
+		DEBUG_EXECUTE0(execute_alu0_ptr, execute_alu0_uop.rd_valid, execute_alu0_prd, execute_alu0_A, execute_alu0_B, alu0.q, execute_alu0_X+execute_alu0_Y);
     }
 	func iq_alu1.dispatch {
 		wire iq_alu1_A[32];
@@ -624,6 +632,7 @@ module turboV {
     proc execute_alu1 {
 		alu1.exe(execute_alu1_A, execute_alu1_B, execute_alu1_uop.uop[FN_SIZE-1:0]);
 		writeback_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd, alu1.q, execute_alu1_X+execute_alu1_Y);
+		DEBUG_EXECUTE1(execute_alu1_ptr, execute_alu1_uop.rd_valid, execute_alu1_prd, execute_alu1_A, execute_alu1_B, alu1.q, execute_alu1_X+execute_alu1_Y);
     }
 	func iq_lsu0.dispatch {
 		wire iq_lsu0_A[32];
@@ -662,6 +671,7 @@ module turboV {
 	}
     proc execute_lsu0 {
 		lsu0.issue(execute_lsu0_ptr, execute_lsu0_prd, execute_lsu0_uop, execute_lsu0_A+execute_lsu0_B, execute_lsu0_data);
+		DEBUG_EXECUTE2(execute_lsu0_ptr, execute_lsu0_uop.rd_valid, execute_lsu0_prd, execute_lsu0_A, execute_lsu0_B, execute_lsu0_data);
 		finish();
     }
 	func lsu0.writeback {

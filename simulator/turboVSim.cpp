@@ -185,6 +185,44 @@ public:
 			};
 			json j;
 			j["cycle"] = m_clock_count >> 1;
+			if(sim->debug_rename0) {
+				j["stages"]["rename0"]["pc"] = sim->debug_rename0_pc;
+				j["stages"]["rename0"]["ptr"] = sim->debug_rename0_ptr;
+				j["stages"]["rename0"]["inst"] = sim->debug_rename0_inst;
+				j["stages"]["rename0"]["cause"] = sim->debug_rename0_cause;
+				j["stages"]["rename0"]["imm"] = sim->debug_rename0_imm;
+				if(sim->debug_rename0_rd_valid) {
+					j["stages"]["rename0"]["prd"] = sim->debug_rename0_prd;
+					j["stages"]["rename0"]["pprd"] = sim->debug_rename0_pprd;
+				}
+				if(sim->debug_rename0_rs1_valid) {
+					j["stages"]["rename0"]["rs1_ready"] = sim->debug_rename0_rs1_ready == true;
+					j["stages"]["rename0"]["prs1"] = sim->debug_rename0_prs1;
+				}
+				if(sim->debug_rename0_rs2_valid) {
+					j["stages"]["rename0"]["rs2_ready"] = sim->debug_rename0_rs2_ready == true;
+					j["stages"]["rename0"]["prs2"] = sim->debug_rename0_prs2;
+				}
+			}
+			if(sim->debug_rename1) {
+				j["stages"]["rename1"]["pc"] = sim->debug_rename1_pc;
+				j["stages"]["rename1"]["ptr"] = sim->debug_rename1_ptr;
+				j["stages"]["rename1"]["inst"] = sim->debug_rename1_inst;
+				j["stages"]["rename1"]["cause"] = sim->debug_rename1_cause;
+				j["stages"]["rename1"]["imm"] = sim->debug_rename1_imm;
+				if(sim->debug_rename1_rd_valid) {
+					j["stages"]["rename1"]["prd"] = sim->debug_rename1_prd;
+					j["stages"]["rename1"]["pprd"] = sim->debug_rename1_pprd;
+				}
+				if(sim->debug_rename1_rs1_valid) {
+					j["stages"]["rename1"]["rs1_ready"] = sim->debug_rename1_rs1_ready == true;
+					j["stages"]["rename1"]["prs1"] = sim->debug_rename1_prs1;
+				}
+				if(sim->debug_rename1_rs2_valid) {
+					j["stages"]["rename1"]["rs2_ready"] = sim->debug_rename1_rs2_ready == true;
+					j["stages"]["rename1"]["prs2"] = sim->debug_rename1_prs2;
+				}
+			}
 			if(sim->debug_dispatch0) {
 				j["stages"]["dispatch0"]["ptr"] = sim->debug_dispatch0_ptr;
 				j["stages"]["dispatch0"]["pc"] = sim->debug_dispatch0_pc;
@@ -239,43 +277,34 @@ public:
 				j["stages"]["dispatch2"]["rs2_sel"] = rs2_sel_str[sim->debug_dispatch2_rs2_sel&0x3];
 				j["stages"]["dispatch2"]["rs2_data"] = sim->debug_dispatch2_rs2_data;
 			}
-			if(sim->debug_rename0) {
-				j["stages"]["rename0"]["pc"] = sim->debug_rename0_pc;
-				j["stages"]["rename0"]["ptr"] = sim->debug_rename0_ptr;
-				j["stages"]["rename0"]["inst"] = sim->debug_rename0_inst;
-				j["stages"]["rename0"]["cause"] = sim->debug_rename0_cause;
-				j["stages"]["rename0"]["imm"] = sim->debug_rename0_imm;
-				if(sim->debug_rename0_rd_valid) {
-					j["stages"]["rename0"]["prd"] = sim->debug_rename0_prd;
-					j["stages"]["rename0"]["pprd"] = sim->debug_rename0_pprd;
+			if(sim->debug_execute0) {
+				j["stages"]["execute0"]["ptr"] = sim->debug_execute0_ptr;
+				if(sim->debug_execute0_rd_valid) {
+					j["stages"]["execute0"]["prd"] = sim->debug_execute0_prd;
 				}
-				if(sim->debug_rename0_rs1_valid) {
-					j["stages"]["rename0"]["rs1_ready"] = sim->debug_rename0_rs1_ready == true;
-					j["stages"]["rename0"]["prs1"] = sim->debug_rename0_prs1;
-				}
-				if(sim->debug_rename0_rs2_valid) {
-					j["stages"]["rename0"]["rs2_ready"] = sim->debug_rename0_rs2_ready == true;
-					j["stages"]["rename0"]["prs2"] = sim->debug_rename0_prs2;
-				}
+				j["stages"]["execute0"]["a"] = sim->debug_execute0_a;
+				j["stages"]["execute0"]["b"] = sim->debug_execute0_b;
+				j["stages"]["execute0"]["q"] = sim->debug_execute0_q;
+				j["stages"]["execute0"]["addr"] = sim->debug_execute0_addr;
 			}
-			if(sim->debug_rename1) {
-				j["stages"]["rename1"]["pc"] = sim->debug_rename1_pc;
-				j["stages"]["rename1"]["ptr"] = sim->debug_rename1_ptr;
-				j["stages"]["rename1"]["inst"] = sim->debug_rename1_inst;
-				j["stages"]["rename1"]["cause"] = sim->debug_rename1_cause;
-				j["stages"]["rename1"]["imm"] = sim->debug_rename1_imm;
-				if(sim->debug_rename1_rd_valid) {
-					j["stages"]["rename1"]["prd"] = sim->debug_rename1_prd;
-					j["stages"]["rename1"]["pprd"] = sim->debug_rename1_pprd;
+			if(sim->debug_execute1) {
+				j["stages"]["execute1"]["ptr"] = sim->debug_execute1_ptr;
+				if(sim->debug_execute1_rd_valid) {
+					j["stages"]["execute1"]["prd"] = sim->debug_execute1_prd;
 				}
-				if(sim->debug_rename1_rs1_valid) {
-					j["stages"]["rename1"]["rs1_ready"] = sim->debug_rename1_rs1_ready == true;
-					j["stages"]["rename1"]["prs1"] = sim->debug_rename1_prs1;
+				j["stages"]["execute1"]["a"] = sim->debug_execute1_a;
+				j["stages"]["execute1"]["b"] = sim->debug_execute1_b;
+				j["stages"]["execute1"]["q"] = sim->debug_execute1_q;
+				j["stages"]["execute1"]["addr"] = sim->debug_execute1_addr;
+			}
+			if(sim->debug_execute2) {
+				j["stages"]["execute2"]["ptr"] = sim->debug_execute2_ptr;
+				if(sim->debug_execute2_rd_valid) {
+					j["stages"]["execute2"]["prd"] = sim->debug_execute2_prd;
 				}
-				if(sim->debug_rename1_rs2_valid) {
-					j["stages"]["rename1"]["rs2_ready"] = sim->debug_rename1_rs2_ready == true;
-					j["stages"]["rename1"]["prs2"] = sim->debug_rename1_prs2;
-				}
+				j["stages"]["execute2"]["a"] = sim->debug_execute2_a;
+				j["stages"]["execute2"]["b"] = sim->debug_execute2_b;
+				j["stages"]["execute2"]["data"] = sim->debug_execute2_data;
 			}
 			if(sim->debug_commit0) {
 				j["stages"]["commit0"]["pc"] = sim->debug_commit_pc0;
