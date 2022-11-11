@@ -308,6 +308,29 @@ public:
 				j["stages"]["execute2"]["b"] = sim->debug_execute2_b;
 				j["stages"]["execute2"]["data"] = sim->debug_execute2_data;
 			}
+			if(sim->debug_writeback0) {
+				j["stages"]["writeback0"]["ptr"] = sim->debug_writeback0_ptr;
+				if(sim->debug_writeback0_rd_valid) {
+					j["stages"]["writeback0"]["prd"] = sim->debug_writeback0_prd;
+				}
+				j["stages"]["writeback0"]["q"] = sim->debug_writeback0_q;
+				j["stages"]["writeback0"]["target"] = sim->debug_writeback0_target;
+			}
+			if(sim->debug_writeback1) {
+				j["stages"]["writeback1"]["ptr"] = sim->debug_writeback1_ptr;
+				if(sim->debug_writeback1_rd_valid) {
+					j["stages"]["writeback1"]["prd"] = sim->debug_writeback1_prd;
+				}
+				j["stages"]["writeback1"]["q"] = sim->debug_writeback1_q;
+				j["stages"]["writeback1"]["target"] = sim->debug_writeback1_target;
+			}
+			if(sim->debug_writeback2) {
+				j["stages"]["writeback2"]["ptr"] = sim->debug_writeback2_ptr;
+				if(sim->debug_writeback2_rd_valid) {
+					j["stages"]["writeback2"]["prd"] = sim->debug_writeback2_prd;
+				}
+				j["stages"]["writeback2"]["data"] = sim->debug_writeback2_data;
+			}
 			if(sim->debug_commit0) {
 				j["stages"]["commit0"]["pc"] = sim->debug_commit_pc0;
 				j["stages"]["commit0"]["inst"] = sim->debug_commit_inst0;

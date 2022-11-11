@@ -31,6 +31,9 @@
 #define DEBUG_EXECUTE0(ptr, rd_valid, prd, a, b, q, addr) debug_execute0(ptr, rd_valid, prd, a, b, q, addr)
 #define DEBUG_EXECUTE1(ptr, rd_valid, prd, a, b, q, addr) debug_execute1(ptr, rd_valid, prd, a, b, q, addr)
 #define DEBUG_EXECUTE2(ptr, rd_valid, prd, a, b, data) debug_execute2(ptr, rd_valid, prd, a, b, data)
+#define DEBUG_WRITEBACK0(ptr, rd_valid, prd, q, target) debug_writeback0(ptr, rd_valid, prd, q, target)
+#define DEBUG_WRITEBACK1(ptr, rd_valid, prd, q, target) debug_writeback1(ptr, rd_valid, prd, q, target)
+#define DEBUG_WRITEBACK2(ptr, rd_valid, prd, data) debug_writeback2(ptr, rd_valid, prd, data)
 #else
 #define DEBUG_RENAME0(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
 #define DEBUG_RENAME1(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
@@ -45,6 +48,9 @@
 #define DEBUG_EXECUTE0(ptr, rd_valid, prd, a, b, q, addr)
 #define DEBUG_EXECUTE1(ptr, rd_valid, prd, a, b, q, addr)
 #define DEBUG_EXECUTE2(ptr, rd_valid, prd, a, b, data)
+#define DEBUG_WRITEBACK0(ptr, rd_valid, prd, q, target, csr_write)
+#define DEBUG_WRITEBACK1(ptr, rd_valid, prd, q, target, csr_write)
+#define DEBUG_WRITEBACK2(ptr, rd_valid, prd, data)
 #endif
 
 struct issue_packet_t {
@@ -688,6 +694,7 @@ module turboV {
 				register_status_table[lsu0.writeback_prd] := READY;
 			}
 		}
+		DEBUG_WRITEBACK2(lsu0.writeback_ptr, writeback_lsu0_uop.rd_valid, lsu0.writeback_prd, lsu0.writeback_data);
 	}
     proc writeback_alu0 {
 		if(writeback_alu0_uop.rd_valid) {
@@ -711,6 +718,7 @@ module turboV {
 		} else {
 			rob.complete_alu0(writeback_alu0_ptr, 0, 0, 0);
 		}
+		DEBUG_WRITEBACK0(writeback_alu0_ptr, writeback_alu0_uop.rd_valid, writeback_alu0_prd, writeback_alu0_q, writeback_alu0_target);
 		finish();
     }
     proc writeback_alu1 {
@@ -731,6 +739,7 @@ module turboV {
 			rob.complete_alu1(writeback_alu1_ptr, 0, 0);
 		}
 		finish();
+		DEBUG_WRITEBACK1(writeback_alu1_ptr, writeback_alu1_uop.rd_valid, writeback_alu1_prd, writeback_alu1_q, writeback_alu1_target);
     }
     proc writeback_lsu0 {
     }

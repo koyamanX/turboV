@@ -131,6 +131,26 @@ declare turboV {
 	output debug_execute2_data[32];
 	func_out debug_execute2(debug_execute2_ptr, debug_execute2_rd_valid, debug_execute2_prd, debug_execute2_a, debug_execute2_b, debug_execute2_data);
 
+	output debug_writeback0_ptr[REORDER_BUFFER_PTR_SIZE];
+	output debug_writeback0_rd_valid;
+	output debug_writeback0_prd[6];
+	output debug_writeback0_q[32];
+	output debug_writeback0_target[32];
+	func_out debug_writeback0(debug_writeback0_ptr, debug_writeback0_rd_valid, debug_writeback0_prd, debug_writeback0_q, debug_writeback0_target);
+
+	output debug_writeback1_ptr[REORDER_BUFFER_PTR_SIZE];
+	output debug_writeback1_rd_valid;
+	output debug_writeback1_prd[6];
+	output debug_writeback1_q[32];
+	output debug_writeback1_target[32];
+	func_out debug_writeback1(debug_writeback1_ptr, debug_writeback1_rd_valid, debug_writeback1_prd, debug_writeback1_q, debug_writeback1_target);
+
+	output debug_writeback2_ptr[REORDER_BUFFER_PTR_SIZE];
+	output debug_writeback2_rd_valid;
+	output debug_writeback2_prd[6];
+	output debug_writeback2_data[32];
+	func_out debug_writeback2(debug_writeback2_ptr, debug_writeback2_rd_valid, debug_writeback2_prd, debug_writeback2_data);
+
     output debug_commit_ptr0[REORDER_BUFFER_PTR_SIZE];
 	output debug_commit_kill0;
     output debug_commit_pc0[32];
