@@ -164,42 +164,39 @@ public:
 	}
 	uint8_t Run(void) {
 		while(1) {
-			sim->rsp_error = false;
-			sim->rsp_retry = false;
-			sim->rsp_stall = false;
-			sim->rsp_valid = false;
-			if(sim->req_read) {
-				assert(0x80000000 <= sim->req_addr && sim->req_addr < 0x80000000+mem_size);
-				if(sim->req_sel == 0xff) {
-					sim->rsp_data = read_dword(sim->req_addr-0x80000000);
-				} else if(sim->req_sel == 0x0f) {
-					sim->rsp_data = read_word(sim->req_addr-0x80000000);
-				} else if(sim->req_sel == 0x03) {
-					sim->rsp_data = read_halfword(sim->req_addr-0x80000000);
-				} else if(sim->req_sel == 0x01) {
-					sim->rsp_data = read_byte(sim->req_addr-0x80000000);
-				}
-				sim->rsp_valid = true;
-			}
-			if(sim->req_write) {
-				assert(0x80000000 <= sim->req_addr && sim->req_addr < 0x80000000+mem_size);
-				if(sim->req_sel == 0xff) {
-					write_dword(sim->req_addr-0x80000000, sim->req_data);
-				} else if(sim->req_sel == 0x0f) {
-					write_word(sim->req_addr-0x80000000, sim->req_data);
-				} else if(sim->req_sel == 0x03) {
-					write_halfword(sim->req_addr-0x80000000, sim->req_data);
-				} else if(sim->req_sel == 0x01) {
-					write_byte(sim->req_addr-0x80000000, sim->req_data);
-				}
-				sim->rsp_valid = true;
-				if(sim->req_addr == 0x80001000) {
-					sim_result = sim->req_data;
-					Tick();
-					break;
-				}
-			}
 #ifdef ENABLE_DEBUG
+			const char *rs1_sel_str[] = {
+				"REG",
+				"UIMM",
+				"PC",
+				"UNIMP"
+			};
+			const char *rs2_sel_str[] = {
+				"REG",
+				"IMM",
+				"CSR",
+				"CSR_UIMM"
+			};
+			if(sim->debug_dispatch0) {
+				fprintf(stdout, "dispatch0: pc: %08x,  ptr: 0x%02x", sim->debug_dispatch0_pc, sim->debug_dispatch0_ptr);
+				if(sim->debug_dispatch0_rd_valid) {
+					fprintf(stdout, ", ");
+					fprintf(stdout, "prd: 0x%02x", sim->debug_dispatch0_prd);
+				}
+				if(sim->debug_dispatch0_rs1_valid) {
+					fprintf(stdout, ", ");
+					fprintf(stdout, "prs1: 0x%02x", sim->debug_dispatch0_prs1);
+				}
+				fprintf(stdout, ", ");
+				fprintf(stdout, "rs1_sel: %s, rs1_data: 0x%08x", rs1_sel_str[sim->debug_dispatch0_rs1_sel&0x3], sim->debug_dispatch0_rs1_data);
+				if(sim->debug_dispatch0_rs2_valid) {
+					fprintf(stdout, ", ");
+					fprintf(stdout, "prs2: 0x%02x", sim->debug_dispatch0_prs2);
+				}
+				fprintf(stdout, ", ");
+				fprintf(stdout, "rs2_sel: %s, rs2_data: 0x%08x", rs2_sel_str[sim->debug_dispatch0_rs2_sel&0x3], sim->debug_dispatch0_rs2_data);
+				fprintf(stdout, "\n");
+			}
 			if(sim->debug_rename0) {
 				fprintf(stdout, "rename: pc: %08x, inst: DASM(%08x), ptr: 0x%02x", sim->debug_rename0_pc, sim->debug_rename0_inst, sim->debug_rename0_ptr);
 				if(sim->debug_rename0_rd_valid) {
@@ -258,6 +255,41 @@ public:
 				fprintf(stdout, "rewind: dreg: %02x, preg: %02x, ppreg: %02x\n", sim->debug_rewind1_dreg, sim->debug_rewind1_preg, sim->debug_rewind1_ppreg);
 			}
 #endif
+			sim->rsp_error = false;
+			sim->rsp_retry = false;
+			sim->rsp_stall = false;
+			sim->rsp_valid = false;
+			if(sim->req_read) {
+				assert(0x80000000 <= sim->req_addr && sim->req_addr < 0x80000000+mem_size);
+				if(sim->req_sel == 0xff) {
+					sim->rsp_data = read_dword(sim->req_addr-0x80000000);
+				} else if(sim->req_sel == 0x0f) {
+					sim->rsp_data = read_word(sim->req_addr-0x80000000);
+				} else if(sim->req_sel == 0x03) {
+					sim->rsp_data = read_halfword(sim->req_addr-0x80000000);
+				} else if(sim->req_sel == 0x01) {
+					sim->rsp_data = read_byte(sim->req_addr-0x80000000);
+				}
+				sim->rsp_valid = true;
+			}
+			if(sim->req_write) {
+				assert(0x80000000 <= sim->req_addr && sim->req_addr < 0x80000000+mem_size);
+				if(sim->req_sel == 0xff) {
+					write_dword(sim->req_addr-0x80000000, sim->req_data);
+				} else if(sim->req_sel == 0x0f) {
+					write_word(sim->req_addr-0x80000000, sim->req_data);
+				} else if(sim->req_sel == 0x03) {
+					write_halfword(sim->req_addr-0x80000000, sim->req_data);
+				} else if(sim->req_sel == 0x01) {
+					write_byte(sim->req_addr-0x80000000, sim->req_data);
+				}
+				sim->rsp_valid = true;
+				if(sim->req_addr == 0x80001000) {
+					sim_result = sim->req_data;
+					Tick();
+					break;
+				}
+			}
 			Tick();
 		}
 		return (sim_result == 1) ? 0 : sim_result;

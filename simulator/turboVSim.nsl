@@ -98,6 +98,22 @@ declare turboVSim simulation {
 
 	output debug_flush_newpc[32];
 	func_out debug_flush(debug_flush_newpc);
+
+	output debug_dispatch0_ptr[REORDER_BUFFER_PTR_SIZE];
+	output debug_dispatch0_pc[32];
+	output debug_dispatch0_rd_valid;
+	output debug_dispatch0_prd[6];
+	output debug_dispatch0_rs1_sel[2];
+	output debug_dispatch0_rs1_valid;
+	output debug_dispatch0_prs1[6];
+	output debug_dispatch0_rs1_data[32];
+	output debug_dispatch0_rs2_sel[2];
+	output debug_dispatch0_rs2_valid;
+	output debug_dispatch0_prs2[6];
+	output debug_dispatch0_rs2_data[32];
+	func_out debug_dispatch0(debug_dispatch0_ptr, debug_dispatch0_pc, debug_dispatch0_rd_valid, debug_dispatch0_prd,
+			debug_dispatch0_rs1_sel, debug_dispatch0_rs1_valid, debug_dispatch0_prs1, debug_dispatch0_rs1_data,
+			debug_dispatch0_rs2_sel, debug_dispatch0_rs2_valid, debug_dispatch0_prs2, debug_dispatch0_rs2_data);
 #endif
 }
 module turboVSim {
@@ -239,6 +255,11 @@ module turboVSim {
 				core.debug_rename1_rs1_valid, core.debug_rename1_rs1_ready, core.debug_rename1_lrs1, core.debug_rename1_prs1,
 				core.debug_rename1_rs2_valid, core.debug_rename1_rs2_ready, core.debug_rename1_lrs2, core.debug_rename1_prs2,
 				core.debug_rename1_cause, core.debug_rename1_imm);
+	}
+	func core.debug_dispatch0 {
+		debug_dispatch0(core.debug_dispatch0_ptr, core.debug_dispatch0_pc, core.debug_dispatch0_rd_valid, core.debug_dispatch0_prd,
+				core.debug_dispatch0_rs1_sel, core.debug_dispatch0_rs1_valid, core.debug_dispatch0_prs1, core.debug_dispatch0_rs1_data,
+				core.debug_dispatch0_rs2_sel, core.debug_dispatch0_rs2_valid, core.debug_dispatch0_prs2, core.debug_dispatch0_rs2_data);
 	}
 #endif
 }
