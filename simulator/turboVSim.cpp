@@ -198,6 +198,16 @@ public:
 #ifdef ENABLE_DEBUG
 			json j;
 			j["cycle"] = m_clock_count >> 1;
+			if(sim->debug_decode0) {
+				j["stages"]["decode0"]["pc"] = to_hex(sim->debug_decode0_pc, 8);
+				j["stages"]["decode0"]["inst"] = to_hex(sim->debug_decode0_inst, 8);
+				j["stages"]["decode0"]["pred"] = sim->debug_decode0_pred == true;
+			}
+			if(sim->debug_decode1) {
+				j["stages"]["decode1"]["pc"] = to_hex(sim->debug_decode1_pc, 8);
+				j["stages"]["decode1"]["inst"] = to_hex(sim->debug_decode1_inst, 8);
+				j["stages"]["decode1"]["pred"] = sim->debug_decode1_pred == true;
+			}
 			if(sim->debug_rename0) {
 				j["stages"]["rename0"]["pc"] = to_hex(sim->debug_rename0_pc, 8);
 				j["stages"]["rename0"]["ptr"] = to_hex(sim->debug_rename0_ptr, 2);

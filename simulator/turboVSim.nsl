@@ -20,6 +20,15 @@ declare turboVSim simulation {
     func_in rsp_retry();
     func_in rsp_stall();
 #ifdef ENABLE_DEBUG
+	output debug_decode0_pc[32];
+	output debug_decode0_inst[32];
+	output debug_decode0_pred;
+	func_out debug_decode0(debug_decode0_pc, debug_decode0_inst, debug_decode0_pred);
+	output debug_decode1_pc[32];
+	output debug_decode1_inst[32];
+	output debug_decode1_pred;
+	func_out debug_decode1(debug_decode1_pc, debug_decode1_inst, debug_decode1_pred);
+
 	output debug_rename0_ptr[REORDER_BUFFER_PTR_SIZE];
 	output debug_rename0_pc[32];
 	output debug_rename0_inst[32];
@@ -367,6 +376,12 @@ module turboVSim {
 	}
 	func core.debug_writeback2 {
 		debug_writeback2(core.debug_writeback2_ptr, core.debug_writeback2_rd_valid, core.debug_writeback2_prd, core.debug_writeback2_data);
+	}
+	func core.debug_decode0 {
+		debug_decode0(core.debug_decode0_pc, core.debug_decode0_inst, core.debug_decode0_pred);
+	}
+	func core.debug_decode1 {
+		debug_decode1(core.debug_decode1_pc, core.debug_decode1_inst, core.debug_decode1_pred);
 	}
 #endif
 }

@@ -11,6 +11,15 @@ declare turboV {
 
     WISHBONE_GEN_MASTER_IF(32, 64, 8)
 #ifdef ENABLE_DEBUG
+	output debug_decode0_pc[32];
+	output debug_decode0_inst[32];
+	output debug_decode0_pred;
+	func_out debug_decode0(debug_decode0_pc, debug_decode0_inst, debug_decode0_pred);
+	output debug_decode1_pc[32];
+	output debug_decode1_inst[32];
+	output debug_decode1_pred;
+	func_out debug_decode1(debug_decode1_pc, debug_decode1_inst, debug_decode1_pred);
+
 	output debug_rename0_ptr[REORDER_BUFFER_PTR_SIZE];
 	output debug_rename0_pc[32];
 	output debug_rename0_inst[32];

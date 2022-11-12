@@ -34,6 +34,8 @@
 #define DEBUG_WRITEBACK0(ptr, rd_valid, prd, q, target) debug_writeback0(ptr, rd_valid, prd, q, target)
 #define DEBUG_WRITEBACK1(ptr, rd_valid, prd, q, target) debug_writeback1(ptr, rd_valid, prd, q, target)
 #define DEBUG_WRITEBACK2(ptr, rd_valid, prd, data) debug_writeback2(ptr, rd_valid, prd, data)
+#define DEBUG_DECODE0(pc, inst, pred) debug_decode0(pc, inst, pred)
+#define DEBUG_DECODE1(pc, inst, pred) debug_decode1(pc, inst, pred)
 #else
 #define DEBUG_RENAME0(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
 #define DEBUG_RENAME1(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
@@ -51,6 +53,8 @@
 #define DEBUG_WRITEBACK0(ptr, rd_valid, prd, q, target, csr_write)
 #define DEBUG_WRITEBACK1(ptr, rd_valid, prd, q, target, csr_write)
 #define DEBUG_WRITEBACK2(ptr, rd_valid, prd, data)
+#define DEBUG_DECODE0(pc, inst, pred)
+#define DEBUG_DECODE1(pc, inst, pred)
 #endif
 
 struct issue_packet_t {
@@ -286,6 +290,8 @@ module turboV {
 							decode0_fetch_packet.pred0, decode0_fetch_packet.pred1,
 							decode0_fetch_packet.valid0, decode0_fetch_packet.valid1},
 							udec0.packet, udec1.packet);
+						DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
+						DEBUG_DECODE1(decode0_fetch_packet.pc+4, decode0_fetch_packet.inst1, decode0_fetch_packet.pred1);
 					} else {
 						// There is structual hazard, issue first one in this cycle
 						// Send another inst to issue stage in next cycle.
@@ -296,8 +302,8 @@ module turboV {
 							udec0.packet, 0);
 						decode1_fetch_packet := decode0_fetch_packet;
 					    goto decode1;
+						DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
 					}
-
 				} else if((!decode0_fetch_packet.valid0 && decode0_fetch_packet.valid1)
 					|| (decode0_fetch_packet.valid0 && !decode0_fetch_packet.valid1)) {
 					// Either way0 or way1 is valid.
@@ -308,6 +314,7 @@ module turboV {
 						decode0_fetch_packet.pred0, 1'b0,
 						decode0_fetch_packet.valid0, 1'b0},
 						udec0.packet, 0);
+					DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
 				}
 			}
 		}
@@ -325,6 +332,7 @@ module turboV {
 					decode1_fetch_packet.valid1, 1'b0},
 					udec0.packet, 0);
 				goto decode0;
+				DEBUG_DECODE0(decode1_fetch_packet.pc+4, decode1_fetch_packet.inst1, decode1_fetch_packet.pred1);
 			}
 		}
     }
