@@ -201,7 +201,7 @@ public:
 			if(sim->debug_rename0) {
 				j["stages"]["rename0"]["pc"] = to_hex(sim->debug_rename0_pc, 8);
 				j["stages"]["rename0"]["ptr"] = to_hex(sim->debug_rename0_ptr, 2);
-				j["stages"]["rename0"]["inst"] = to_hex(sim->debug_rename0_inst, 8);
+				j["stages"]["rename0"]["inst"] = "DASM(" + to_hex(sim->debug_rename0_inst, 8) + ")";
 				j["stages"]["rename0"]["cause"] = to_hex(sim->debug_rename0_cause, 8);
 				j["stages"]["rename0"]["imm"] = to_hex(sim->debug_rename0_imm, 8);
 				if(sim->debug_rename0_rd_valid) {
@@ -220,7 +220,7 @@ public:
 			if(sim->debug_rename1) {
 				j["stages"]["rename1"]["pc"] = to_hex(sim->debug_rename1_pc, 8);
 				j["stages"]["rename1"]["ptr"] = to_hex(sim->debug_rename1_ptr, 2);
-				j["stages"]["rename1"]["inst"] = to_hex(sim->debug_rename1_inst, 8);
+				j["stages"]["rename1"]["inst"] = "DASM(" + to_hex(sim->debug_rename1_inst, 8) + ")";
 				j["stages"]["rename1"]["cause"] = to_hex(sim->debug_rename1_cause, 8);
 				j["stages"]["rename1"]["imm"] = to_hex(sim->debug_rename1_imm, 8);
 				if(sim->debug_rename1_rd_valid) {
@@ -344,7 +344,7 @@ public:
 			}
 			if(sim->debug_commit0) {
 				j["stages"]["commit0"]["pc"] = to_hex(sim->debug_commit_pc0, 8);
-				j["stages"]["commit0"]["inst"] = to_hex(sim->debug_commit_inst0, 8);
+				j["stages"]["commit0"]["inst"] = "DASM(" + to_hex(sim->debug_commit_inst0, 8) + ")";
 				j["stages"]["commit0"]["ptr"] = to_hex(sim->debug_commit_ptr0, 2);
 				j["stages"]["commit0"]["cause"] = to_hex(sim->debug_commit_cause0, 8);
 				j["stages"]["commit0"]["killed"] = sim->debug_commit_kill0 == true;
@@ -356,7 +356,7 @@ public:
 			}
 			if(sim->debug_commit1) {
 				j["stages"]["commit1"]["pc"] = to_hex(sim->debug_commit_pc1, 8);
-				j["stages"]["commit1"]["inst"] = to_hex(sim->debug_commit_inst1, 8);
+				j["stages"]["commit1"]["inst"] = "DASM(" + to_hex(sim->debug_commit_inst1, 8) + ")";
 				j["stages"]["commit1"]["ptr"] = to_hex(sim->debug_commit_ptr1, 2);
 				j["stages"]["commit1"]["cause"] = to_hex(sim->debug_commit_cause1, 8);
 				j["stages"]["commit1"]["killed"] = sim->debug_commit_kill1 == true;
