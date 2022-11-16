@@ -105,7 +105,7 @@ module reorder_buffer {
 		commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: head_entry = rob6;
 		commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: head_entry = rob7;
 	}
-	if((head_entry.valid0 || head_entry.valid1) && (!head_entry.completed0 && !head_entry.completed1)) {
+	if(!rewind && (head_entry.valid0 || head_entry.valid1) && (!head_entry.completed0 && !head_entry.completed1)) {
 		commitable();
 	}
 	if(rewind) {
