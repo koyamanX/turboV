@@ -23,18 +23,12 @@ module register_file {
        return regs[rnumF];
     }
     func writeA {
-        if(wnumA != 0) {
-            regs[wnumA] := wdataA;
-        }
+		regs[wnumA] := wdataA;
     }
     func writeB {
-        if(wnumB != 0) {
-            regs[wnumB] := wdataB;
-        }
+		regs[wnumB] := wdataB;
     }
     func writeC {
-        if(wnumC != 0) {
-            regs[wnumC] := wdataC;
-        }
+		regs[wnumC] := wdataC;
     }
 }
