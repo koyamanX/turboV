@@ -19,7 +19,7 @@
 
 #define ENABLE_DEBUG
 
-using json = nlohmann::json;
+using ordered_json = nlohmann::ordered_json;
 
 const char *rs1_sel_str[] = {
     "REG",
@@ -196,7 +196,7 @@ public:
     uint8_t Run(void) {
         while(1) {
 #ifdef ENABLE_DEBUG
-            json j;
+            ordered_json j;
             j["cycle"] = m_clock_count >> 1;
             if(sim->debug_decode0) {
                 j["stages"]["decode0"]["pc"] = to_hex(sim->debug_decode0_pc, 8);
