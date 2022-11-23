@@ -183,9 +183,9 @@ module turboV {
                     if(rewind_entry_uop1.rd_valid) {
                         if(!(rewind_entry.valid0 && rewind_entry_uop0.rd_valid && rewind_entry.dreg0 == rewind_entry.dreg1)) {
                             register_map_table[rewind_entry.dreg1] := rewind_entry.ppreg1;
+							freelist.push1(rewind_entry.preg1);
+							DEBUG_REWIND1(rewind_entry.dreg1, rewind_entry.preg1, rewind_entry.ppreg1);
                         }
-						freelist.push1(rewind_entry.preg1);
-                        DEBUG_REWIND1(rewind_entry.dreg1, rewind_entry.preg1, rewind_entry.ppreg1);
                     }
                 }
             }
