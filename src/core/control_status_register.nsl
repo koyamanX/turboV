@@ -23,7 +23,7 @@ module control_status_register {
     csr64_t reg mtime = 0;
     func_self stop_mtime();
     reg mode[2] = MACHINE;
-	csr_write_buffer_t reg wbuf = 0;
+    csr_write_buffer_t reg wbuf = 0;
     /*
         SXLEN=32
         UXLEN=32
@@ -49,21 +49,21 @@ module control_status_register {
         mstatus.mprv        := 0;
         mstatus.mpp         := MACHINE;
         mstatush.mbe        := 0;   /* Little-endian */
-		wbuf				:= 0;
+        wbuf                := 0;
     }
     func trap {
         mstatus_t wire trap_xstatus;
         mtvec_t wire trap_xtvec;
 
-		wbuf := 0;
+        wbuf := 0;
         any {
             (mode == MACHINE): {
-				if(commit && wbuf.valid && wbuf.ptr == commit_ptr && wbuf.addr == MSTATUS) {
+                if(commit && wbuf.valid && wbuf.ptr == commit_ptr && wbuf.addr == MSTATUS) {
                     trap_xstatus = wbuf.data;
                 } else {
                     trap_xstatus = mstatus;
                 }
-				if(commit && wbuf.valid && wbuf.ptr == commit_ptr && wbuf.addr == MTVEC) {
+                if(commit && wbuf.valid && wbuf.ptr == commit_ptr && wbuf.addr == MTVEC) {
                     trap_xtvec = wbuf.data;
                 } else {
                     trap_xtvec = mtvec;
@@ -88,13 +88,13 @@ module control_status_register {
         mstatus_t wire mret_mstatus;
         mepc_t wire mret_mepc;
 
-		wbuf := 0;
-		if(commit && wbuf.valid && wbuf.ptr == commit_ptr && wbuf.addr == MSTATUS) {
+        wbuf := 0;
+        if(commit && wbuf.valid && wbuf.ptr == commit_ptr && wbuf.addr == MSTATUS) {
             mret_mstatus = wbuf.data;
         } else {
             mret_mstatus = mstatus;
         }
-		if(commit && wbuf.valid && wbuf.ptr == commit_ptr && wbuf.addr == MEPC) {
+        if(commit && wbuf.valid && wbuf.ptr == commit_ptr && wbuf.addr == MEPC) {
             mret_mepc = wbuf.data;
         } else {
             mret_mepc = mepc;
@@ -182,167 +182,167 @@ module control_status_register {
             (mode >= USER) && (csr_rnum == TIME): {
                 return mtime.lo;
             }
-			else: {
-				return 0;
-				read_error();
-		    }
-		}
+            else: {
+                return 0;
+                read_error();
+            }
+        }
     }
-	func write {
-		wire wbuf_age[REORDER_BUFFER_PTR_SIZE];
-		wire write_age[REORDER_BUFFER_PTR_SIZE];
+    func write {
+        wire wbuf_age[REORDER_BUFFER_PTR_SIZE];
+        wire write_age[REORDER_BUFFER_PTR_SIZE];
 
-		wbuf_age = PTR2AGE(wbuf.ptr, rob_head_ptr);
-		write_age = PTR2AGE(write_ptr, rob_head_ptr);
-		if(~wbuf.valid) {
-			wbuf.valid := 1;
-			wbuf.addr := write_addr;
-			wbuf.data := write_data;
-			wbuf.ptr := write_ptr;
-		} else if(wbuf.valid && wbuf_age > write_age) {
-			wbuf.valid := 1;
-			wbuf.addr := write_addr;
-			wbuf.data := write_data;
-			wbuf.ptr := write_ptr;
-		}
-		any {
-				(mode >= MACHINE) && (write_addr == MISA): ;
-				(mode >= MACHINE) && (write_addr == MVENDORID): ;
-				(mode >= MACHINE) && (write_addr == MARCHID): ;
-				(mode >= MACHINE) && (write_addr == MIMPID): ;
-				(mode >= MACHINE) && (write_addr == MHARTID): ;
-				(mode >= MACHINE) && (write_addr == MSTATUSH): ;
-				(mode >= MACHINE) && (write_addr == MSTATUS): ;
-				(mode >= MACHINE) && (write_addr == MTVEC): ;
-				(mode >= MACHINE) && (write_addr == MIP): ;
-				(mode >= MACHINE) && (write_addr == MIE): ;
-				(mode >= MACHINE) && (write_addr == MSCRATCH): ;
-				(mode >= MACHINE) && (write_addr == MEPC): ;
-				(mode >= MACHINE) && (write_addr == MCAUSE): ;
-				(mode >= MACHINE) && (write_addr == MTVAL): ;
-				(mode >= MACHINE) && (write_addr == MCYCLEH): ;
-				(mode >= MACHINE) && (write_addr == MCYCLE): ;
-				(mode >= MACHINE) && (write_addr == MINSTRETH): ;
-				(mode >= MACHINE) && (write_addr == MINSTRET): ;
-				else: write_error();
-		}
-	}
+        wbuf_age = PTR2AGE(wbuf.ptr, rob_head_ptr);
+        write_age = PTR2AGE(write_ptr, rob_head_ptr);
+        if(~wbuf.valid) {
+            wbuf.valid := 1;
+            wbuf.addr := write_addr;
+            wbuf.data := write_data;
+            wbuf.ptr := write_ptr;
+        } else if(wbuf.valid && wbuf_age > write_age) {
+            wbuf.valid := 1;
+            wbuf.addr := write_addr;
+            wbuf.data := write_data;
+            wbuf.ptr := write_ptr;
+        }
+        any {
+                (mode >= MACHINE) && (write_addr == MISA): ;
+                (mode >= MACHINE) && (write_addr == MVENDORID): ;
+                (mode >= MACHINE) && (write_addr == MARCHID): ;
+                (mode >= MACHINE) && (write_addr == MIMPID): ;
+                (mode >= MACHINE) && (write_addr == MHARTID): ;
+                (mode >= MACHINE) && (write_addr == MSTATUSH): ;
+                (mode >= MACHINE) && (write_addr == MSTATUS): ;
+                (mode >= MACHINE) && (write_addr == MTVEC): ;
+                (mode >= MACHINE) && (write_addr == MIP): ;
+                (mode >= MACHINE) && (write_addr == MIE): ;
+                (mode >= MACHINE) && (write_addr == MSCRATCH): ;
+                (mode >= MACHINE) && (write_addr == MEPC): ;
+                (mode >= MACHINE) && (write_addr == MCAUSE): ;
+                (mode >= MACHINE) && (write_addr == MTVAL): ;
+                (mode >= MACHINE) && (write_addr == MCYCLEH): ;
+                (mode >= MACHINE) && (write_addr == MCYCLE): ;
+                (mode >= MACHINE) && (write_addr == MINSTRETH): ;
+                (mode >= MACHINE) && (write_addr == MINSTRET): ;
+                else: write_error();
+        }
+    }
     func commit {
         mstatus_t wire xstatus;
         mtvec_t wire xtvec;
         mie_t wire xie;
 
-		if(wbuf.valid && wbuf.ptr == commit_ptr) {
-			wbuf.valid := 0;
-			any {
-				(mode >= MACHINE) && (wbuf.addr == MISA): {
-					// nop
-				}
-				(mode >= MACHINE) && (wbuf.addr == MVENDORID): {
-					// nop
-				}
-				(mode >= MACHINE) && (wbuf.addr == MARCHID): {
-					// nop
-				}
-				(mode >= MACHINE) && (wbuf.addr == MIMPID): {
-					// nop
-				}
-				(mode >= MACHINE) && (wbuf.addr == MHARTID): {
-					// nop
-				}
-				(mode >= MACHINE) && (wbuf.addr == MSTATUSH): {
-					/*
-						MBE is always 0
-						SBE is always 0
-					*/
-				}
-				(mode >= MACHINE) && (wbuf.addr == MSTATUS): {
-					xstatus = wbuf.data;
-					/*
-						UBE is always 0
-						TVM is always 0
-						TW is always 0
-						TSR is always 0
-						SPIE is always 0
-						SIE is always 0
-						MPP takes MACHINE
-						SPP is always 0
-						MPRV is always 0
-						MXR is always 0
-						SUM is always 0
-						FS is always 0
-						XS is always 0
-						VS is always 0
-						SD is always 0
-					*/
-					mstatus.mie     := xstatus.mie;
-					mstatus.mpie    := xstatus.mpie;
-					mstatus.mpp     := MACHINE;
-				}
-				(mode >= MACHINE) && (wbuf.addr == MTVEC): {
-					xtvec = wbuf.data;
+        if(wbuf.valid && wbuf.ptr == commit_ptr) {
+            wbuf.valid := 0;
+            any {
+                (mode >= MACHINE) && (wbuf.addr == MISA): {
+                    // nop
+                }
+                (mode >= MACHINE) && (wbuf.addr == MVENDORID): {
+                    // nop
+                }
+                (mode >= MACHINE) && (wbuf.addr == MARCHID): {
+                    // nop
+                }
+                (mode >= MACHINE) && (wbuf.addr == MIMPID): {
+                    // nop
+                }
+                (mode >= MACHINE) && (wbuf.addr == MHARTID): {
+                    // nop
+                }
+                (mode >= MACHINE) && (wbuf.addr == MSTATUSH): {
+                    /*
+                        MBE is always 0
+                        SBE is always 0
+                    */
+                }
+                (mode >= MACHINE) && (wbuf.addr == MSTATUS): {
+                    xstatus = wbuf.data;
+                    /*
+                        UBE is always 0
+                        TVM is always 0
+                        TW is always 0
+                        TSR is always 0
+                        SPIE is always 0
+                        SIE is always 0
+                        MPP takes MACHINE
+                        SPP is always 0
+                        MPRV is always 0
+                        MXR is always 0
+                        SUM is always 0
+                        FS is always 0
+                        XS is always 0
+                        VS is always 0
+                        SD is always 0
+                    */
+                    mstatus.mie     := xstatus.mie;
+                    mstatus.mpie    := xstatus.mpie;
+                    mstatus.mpp     := MACHINE;
+                }
+                (mode >= MACHINE) && (wbuf.addr == MTVEC): {
+                    xtvec = wbuf.data;
 
-					mtvec.base := xtvec.base;
-					any {
-						xtvec.mode == MTVEC_MODE_DIRECT: mtvec.mode := xtvec.mode;
-						xtvec.mode == MTVEC_MODE_VECTORED: mtvec.mode := xtvec.mode;
-					}
-				}
-				(mode >= MACHINE) && (wbuf.addr == MIP): {
-					/*
-						read-only and written through memory-mapped interrupt controller.
-						- MEIP
-						- MTIP
-						- MSIP
+                    mtvec.base := xtvec.base;
+                    any {
+                        xtvec.mode == MTVEC_MODE_DIRECT: mtvec.mode := xtvec.mode;
+                        xtvec.mode == MTVEC_MODE_VECTORED: mtvec.mode := xtvec.mode;
+                    }
+                }
+                (mode >= MACHINE) && (wbuf.addr == MIP): {
+                    /*
+                        read-only and written through memory-mapped interrupt controller.
+                        - MEIP
+                        - MTIP
+                        - MSIP
 
-						always 0
-						- SEIP
-						- STIP
-						- SSIP
-					*/
-				}
-				(mode >= MACHINE) && (wbuf.addr == MIE): {
-					xie = wbuf.data;
-					mie.meie := xie.meie;
-					mie.mtie := xie.mtie;
-					mie.msie := xie.msie;
-					/*
-						always 0
-						- SEIP
-						- STIP
-						- SSIP
-					*/
-				}
-				(mode >= MACHINE) && (wbuf.addr == MSCRATCH): {
-					mscratch := wbuf.data;
-				}
-				(mode >= MACHINE) && (wbuf.addr == MEPC): {
-					mepc := wbuf.data;
-				}
-				(mode >= MACHINE) && (wbuf.addr == MCAUSE): {
-					mcause := wbuf.data;
-				}
-				(mode >= MACHINE) && (wbuf.addr == MTVAL): {
-					mtval := wbuf.data;
-				}
-				(mode >= MACHINE) && (wbuf.addr == MCYCLEH): {
-					mcycle.hi := wbuf.data;
-					stop_mcycle();
-				}
-				(mode >= MACHINE) && (wbuf.addr == MCYCLE): {
-					mcycle.lo := wbuf.data;
-					stop_mcycle();
-				}
-				(mode >= MACHINE) && (wbuf.addr == MINSTRETH): {
-					minstret.hi := wbuf.data;
-					stop_minstret();
-				}
-				(mode >= MACHINE) && (wbuf.addr == MINSTRET): {
-					minstret.lo := wbuf.data;
-					stop_minstret();
-				}
-			}
-		}
+                        always 0
+                        - SEIP
+                        - STIP
+                        - SSIP
+                    */
+                }
+                (mode >= MACHINE) && (wbuf.addr == MIE): {
+                    xie = wbuf.data;
+                    mie.meie := xie.meie;
+                    mie.mtie := xie.mtie;
+                    mie.msie := xie.msie;
+                    /*
+                        always 0
+                        - SEIP
+                        - STIP
+                        - SSIP
+                    */
+                }
+                (mode >= MACHINE) && (wbuf.addr == MSCRATCH): {
+                    mscratch := wbuf.data;
+                }
+                (mode >= MACHINE) && (wbuf.addr == MEPC): {
+                    mepc := wbuf.data;
+                }
+                (mode >= MACHINE) && (wbuf.addr == MCAUSE): {
+                    mcause := wbuf.data;
+                }
+                (mode >= MACHINE) && (wbuf.addr == MTVAL): {
+                    mtval := wbuf.data;
+                }
+                (mode >= MACHINE) && (wbuf.addr == MCYCLEH): {
+                    mcycle.hi := wbuf.data;
+                    stop_mcycle();
+                }
+                (mode >= MACHINE) && (wbuf.addr == MCYCLE): {
+                    mcycle.lo := wbuf.data;
+                    stop_mcycle();
+                }
+                (mode >= MACHINE) && (wbuf.addr == MINSTRETH): {
+                    minstret.hi := wbuf.data;
+                    stop_minstret();
+                }
+                (mode >= MACHINE) && (wbuf.addr == MINSTRET): {
+                    minstret.lo := wbuf.data;
+                    stop_minstret();
+                }
+            }
+        }
     }
     func update_instret {
         if(!stop_minstret) {

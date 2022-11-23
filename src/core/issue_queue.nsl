@@ -1,7 +1,7 @@
 #include "issue_queue.h"
 
 module issue_queue {
-	// TODO: rename
+    // TODO: rename
     issue_queue_t reg rs0 = 0;
     issue_queue_t reg rs1 = 0;
     issue_queue_t reg rs2 = 0;
@@ -21,21 +21,21 @@ module issue_queue {
             new_entry.valid = 1;
             new_entry.ptr = ptr;
             new_entry.uop = uop;
-			new_entry.prs1 = prs1;
-			new_entry.prs2 = prs2;
-			new_entry.prd = prd;
-			new_entry.imm = imm;
+            new_entry.prs1 = prs1;
+            new_entry.prs2 = prs2;
+            new_entry.prd = prd;
+            new_entry.imm = imm;
             any {
                 wakeup0 && (prs1 == wakeup0_prd): {new_entry.prs1_ready = READY;}
                 wakeup1 && (prs1 == wakeup1_prd): {new_entry.prs1_ready = READY;}
                 wakeup2 && (prs1 == wakeup2_prd): {new_entry.prs1_ready = READY;}
-				else: {new_entry.prs1_ready = prs1_ready;}
+                else: {new_entry.prs1_ready = prs1_ready;}
             }
             any {
                 wakeup0 && (prs2 == wakeup0_prd): {new_entry.prs2_ready = READY;}
                 wakeup1 && (prs2 == wakeup1_prd): {new_entry.prs2_ready = READY;}
                 wakeup2 && (prs2 == wakeup2_prd): {new_entry.prs2_ready = READY;}
-				else: {new_entry.prs2_ready = prs2_ready;}
+                else: {new_entry.prs2_ready = prs2_ready;}
             }
             alt {
                 rs0_free: rs0 := new_entry;
@@ -47,7 +47,7 @@ module issue_queue {
     }
     if(!flush && !stall) {
         alt {
-			// TODO: check prs{1,2}_valid
+            // TODO: check prs{1,2}_valid
             rs3.valid && (rs3.prs1_ready == READY) && (rs3.prs2_ready == READY): {
                 dispatch_rs3();
             }

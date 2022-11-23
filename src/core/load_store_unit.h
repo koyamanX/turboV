@@ -8,7 +8,7 @@ declare load_store_unit {
     input issue_uop[SIZEOF_UOP_T];
     input issue_addr[32];
     input issue_wdata[32];
-	input issue_prd[6];
+    input issue_prd[6];
     input issue_ptr[REORDER_BUFFER_PTR_SIZE];
     func_in issue(issue_ptr, issue_prd, issue_uop, issue_addr, issue_wdata);
     func_out stall();

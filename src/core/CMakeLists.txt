@@ -15,20 +15,20 @@ add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/issue_queue_in_order.nsl ${CMAKE_CURR
 #add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/recovery_manager.nsl ${CMAKE_CURRENT_BINARY_DIR}/recovery_manager.v)
 
 add_custom_target(core
-	DEPENDS
-		${CMAKE_CURRENT_BINARY_DIR}/icache.v
-		${CMAKE_CURRENT_BINARY_DIR}/ifetch_unit.v
-		${CMAKE_CURRENT_BINARY_DIR}/inst_buffer.v
-		${CMAKE_CURRENT_BINARY_DIR}/register_file.v
-		${CMAKE_CURRENT_BINARY_DIR}/imm_gen.v
-		${CMAKE_CURRENT_BINARY_DIR}/uop_decoder.v
-		${CMAKE_CURRENT_BINARY_DIR}/alu32.v
-		${CMAKE_CURRENT_BINARY_DIR}/turboV.v
-		${CMAKE_CURRENT_BINARY_DIR}/load_store_unit.v
-		${CMAKE_CURRENT_BINARY_DIR}/control_status_register.v
-		${CMAKE_CURRENT_BINARY_DIR}/free_list.v
-		${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v
-		${CMAKE_CURRENT_BINARY_DIR}/issue_queue.v
-		${CMAKE_CURRENT_BINARY_DIR}/issue_queue_in_order.v
-#		${CMAKE_CURRENT_BINARY_DIR}/recovery_manager.v
+    DEPENDS
+        ${CMAKE_CURRENT_BINARY_DIR}/icache.v
+        ${CMAKE_CURRENT_BINARY_DIR}/ifetch_unit.v
+        ${CMAKE_CURRENT_BINARY_DIR}/inst_buffer.v
+        ${CMAKE_CURRENT_BINARY_DIR}/register_file.v
+        ${CMAKE_CURRENT_BINARY_DIR}/imm_gen.v
+        ${CMAKE_CURRENT_BINARY_DIR}/uop_decoder.v
+        ${CMAKE_CURRENT_BINARY_DIR}/alu32.v
+        ${CMAKE_CURRENT_BINARY_DIR}/turboV.v
+        ${CMAKE_CURRENT_BINARY_DIR}/load_store_unit.v
+        ${CMAKE_CURRENT_BINARY_DIR}/control_status_register.v
+        ${CMAKE_CURRENT_BINARY_DIR}/free_list.v
+        ${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v
+        ${CMAKE_CURRENT_BINARY_DIR}/issue_queue.v
+        ${CMAKE_CURRENT_BINARY_DIR}/issue_queue_in_order.v
+#        ${CMAKE_CURRENT_BINARY_DIR}/recovery_manager.v
 )

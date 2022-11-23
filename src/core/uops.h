@@ -4,7 +4,7 @@
 #include "consts.h"
 
 #define uOP_SIZE                        8
-#define FN_SIZE							5
+#define FN_SIZE                            5
 
 #define ALU_ADD    5'b00000
 #define ALU_SUB    5'b01000
@@ -70,26 +70,26 @@
 #define uOP_SYSTEM_EBREAK               7'b001_1110
 
 struct cause_t {
-	store_amo_page_fault;
-	reserved1[1];
-	load_page_fault;
-	instruction_page_fault;
-	environment_call_from_m_mode;
-	reserved2[1];
-	environment_call_from_s_mode;
-	environment_call_from_u_mode;
-	store_amo_access_fault;
-	store_amo_address_misaligned;
-	load_access_fault;
-	load_address_misaligned;
-	breakpoint;
-	illegal_instruction;
-	instruction_access_fault;
-	instruction_address_misaligned;
+    store_amo_page_fault;
+    reserved1[1];
+    load_page_fault;
+    instruction_page_fault;
+    environment_call_from_m_mode;
+    reserved2[1];
+    environment_call_from_s_mode;
+    environment_call_from_u_mode;
+    store_amo_access_fault;
+    store_amo_address_misaligned;
+    load_access_fault;
+    load_address_misaligned;
+    breakpoint;
+    illegal_instruction;
+    instruction_access_fault;
+    instruction_address_misaligned;
 #define SIZEOF_CAUSE_T 16
 };
 
-#define SIZEOF_REG_SEL		2
+#define SIZEOF_REG_SEL        2
 #define RS1_SEL_REG         2'b00
 #define RS1_SEL_UIMM        2'b01
 #define RS1_SEL_PC        2'b10
@@ -101,17 +101,17 @@ struct cause_t {
 
 struct uop_t {
     uop[uOP_SIZE];
-	rd_valid;
-	rs1_valid;
+    rd_valid;
+    rs1_valid;
     rs1_sel[SIZEOF_REG_SEL];
-	rs2_valid;
+    rs2_valid;
     rs2_sel[SIZEOF_REG_SEL];
     jal;
     jalr;
     load;
     store;
     branch;
-	csr;
+    csr;
     csr_write;
     csr_read;
     mret;

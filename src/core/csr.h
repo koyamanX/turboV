@@ -306,57 +306,57 @@ struct mtvec_t {
 #define MTVEC_MODE_VECTORED 0x1
 
 struct medeleg_t {
-	reserved0[16];
-	store_amo_page_fault;
-	reserved1[1];
-	load_page_fault;
-	instruction_page_fault;
-	environment_call_from_m_mode;
-	reserved2[1];
-	environment_call_from_s_mode;
-	environment_call_from_u_mode;
-	store_amo_access_fault;
-	store_amo_address_misaligned;
-	load_access_fault;
-	load_address_misaligned;
-	breakpoint;
-	illegal_instruction;
-	instruction_access_fault;
-	instruction_address_misaligned;
+    reserved0[16];
+    store_amo_page_fault;
+    reserved1[1];
+    load_page_fault;
+    instruction_page_fault;
+    environment_call_from_m_mode;
+    reserved2[1];
+    environment_call_from_s_mode;
+    environment_call_from_u_mode;
+    store_amo_access_fault;
+    store_amo_address_misaligned;
+    load_access_fault;
+    load_address_misaligned;
+    breakpoint;
+    illegal_instruction;
+    instruction_access_fault;
+    instruction_address_misaligned;
 };
 
 #define mideleg_t mip_t
 
 struct mip_t {
-	reserved0[20]; 
-	meip[1];
-	reserved1[1];
-	seip[1];
-	ueip[1];
-	mtip[1];
-	reserved3[1];
-	stip[1];
-	utip[1];
-	msip[1];
-	reserved5[1];
-	ssip[1];
-	usip[1];
+    reserved0[20]; 
+    meip[1];
+    reserved1[1];
+    seip[1];
+    ueip[1];
+    mtip[1];
+    reserved3[1];
+    stip[1];
+    utip[1];
+    msip[1];
+    reserved5[1];
+    ssip[1];
+    usip[1];
 };
 
 struct mie_t {
-	reserved0[20]; 
-	meie[1];
-	reserved1[1];
-	seie[1];
-	ueie[1];
-	mtie[1];
-	reserved3[1];
-	stie[1];
-	utie[1];
-	msie[1];
-	reserved5[1];
-	ssie[1];
-	usie[1];
+    reserved0[20]; 
+    meie[1];
+    reserved1[1];
+    seie[1];
+    ueie[1];
+    mtie[1];
+    reserved3[1];
+    stie[1];
+    utie[1];
+    msie[1];
+    reserved5[1];
+    ssie[1];
+    usie[1];
 };
 
 struct csr32_t {

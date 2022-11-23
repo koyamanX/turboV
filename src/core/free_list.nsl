@@ -1,93 +1,93 @@
 #include "free_list.h"
 
 module free_list {
-	mem freelist[NUMBER_OF_FREE_LIST][SIZEOF_FREE_LIST_ENTRY];
+    mem freelist[NUMBER_OF_FREE_LIST][SIZEOF_FREE_LIST_ENTRY];
     reg tail[LOG2_FREE_LIST_NUM_OF_ENTRIES+1] = 0;
     reg head[LOG2_FREE_LIST_NUM_OF_ENTRIES+1] = 0;
-	reg freelist_count[LOG2_FREE_LIST_NUM_OF_ENTRIES] = NUMBER_OF_FREE_LIST - 1;
-	wire push_count[LOG2_FREE_LIST_NUM_OF_ENTRIES];
-	wire pop_count[LOG2_FREE_LIST_NUM_OF_ENTRIES];
+    reg freelist_count[LOG2_FREE_LIST_NUM_OF_ENTRIES] = NUMBER_OF_FREE_LIST - 1;
+    wire push_count[LOG2_FREE_LIST_NUM_OF_ENTRIES];
+    wire pop_count[LOG2_FREE_LIST_NUM_OF_ENTRIES];
     wire next_tail[LOG2_FREE_LIST_NUM_OF_ENTRIES+1];
     wire next_head[LOG2_FREE_LIST_NUM_OF_ENTRIES+1];
     wire next_freelist_count[LOG2_FREE_LIST_NUM_OF_ENTRIES+1];
-	integer i_;
-	wire push, pop;
+    integer i_;
+    wire push, pop;
 
-	pop = pop0 || pop1;
-	push = push0 || push1;
+    pop = pop0 || pop1;
+    push = push0 || push1;
 
-	func reset {
-		generate(i_ = NUMBER_OF_FREE_LIST; i_ < NUMBER_OF_FREE_LIST*2; i_++) {
-			freelist[i_] := i_;
-		}
-		freelist_count := NUMBER_OF_FREE_LIST - 1;
-		head := 0;
-		tail := 0;
-	}
-	any {
-		!pop0 && pop1: {
-			// TODO: REMOVE
-			freelist[head] := 0;
-			next_head = head + 1;
-			pop1_data = freelist[head];
-		}
-		pop0 && !pop1: {
-			// TODO: REMOVE
-			freelist[head] := 0;
-			next_head = head + 1;
-			pop0_data = freelist[head];
-		}
-		pop0 && pop1: {
-			// TODO: REMOVE
-			freelist[head] := 0;
-			freelist[head+1] := 0;
-			next_head = head + 2;
-			pop0_data = freelist[head];
-			pop1_data = freelist[head+1];
-		}
-	}
-	func push0 {
-		if(!push1) {
-			next_tail = tail + 1;
-		}
-		freelist[tail] := push0_data;	
-	}
-	func push1 {
-		if(!push0) {
-			next_tail = tail + 1;
-			freelist[tail] := push1_data;
-		} else {
-			if(push0_data != push1_data) {
-				next_tail = tail + 2;
-				freelist[tail+1] := push1_data;
-			} else {
-				next_tail = tail + 1;
-			}
-		}
-	}
-	if(pop) {
-		if(next_head >= NUMBER_OF_FREE_LIST) {
-			head := next_head - NUMBER_OF_FREE_LIST;
-		} else {
-			head := next_head;
-		}
-		pop_count = (next_head - head);
-	} else {
-		pop_count = 0;
-	}
-	if(push) {
-		if(next_tail >= NUMBER_OF_FREE_LIST) {
-			tail := next_tail - NUMBER_OF_FREE_LIST;
-		} else {
-			tail := next_tail;
-		}
-		push_count = next_tail - tail;
-	} else {
-		push_count = 0; 
-	}
-	next_freelist_count = freelist_count + push_count - pop_count;
-	if((push || pop)) {
-		freelist_count := next_freelist_count;
-	}
-	count = freelist_count;
+    func reset {
+        generate(i_ = NUMBER_OF_FREE_LIST; i_ < NUMBER_OF_FREE_LIST*2; i_++) {
+            freelist[i_] := i_;
+        }
+        freelist_count := NUMBER_OF_FREE_LIST - 1;
+        head := 0;
+        tail := 0;
+    }
+    any {
+        !pop0 && pop1: {
+            // TODO: REMOVE
+            freelist[head] := 0;
+            next_head = head + 1;
+            pop1_data = freelist[head];
+        }
+        pop0 && !pop1: {
+            // TODO: REMOVE
+            freelist[head] := 0;
+            next_head = head + 1;
+            pop0_data = freelist[head];
+        }
+        pop0 && pop1: {
+            // TODO: REMOVE
+            freelist[head] := 0;
+            freelist[head+1] := 0;
+            next_head = head + 2;
+            pop0_data = freelist[head];
+            pop1_data = freelist[head+1];
+        }
+    }
+    func push0 {
+        if(!push1) {
+            next_tail = tail + 1;
+        }
+        freelist[tail] := push0_data;    
+    }
+    func push1 {
+        if(!push0) {
+            next_tail = tail + 1;
+            freelist[tail] := push1_data;
+        } else {
+            if(push0_data != push1_data) {
+                next_tail = tail + 2;
+                freelist[tail+1] := push1_data;
+            } else {
+                next_tail = tail + 1;
+            }
+        }
+    }
+    if(pop) {
+        if(next_head >= NUMBER_OF_FREE_LIST) {
+            head := next_head - NUMBER_OF_FREE_LIST;
+        } else {
+            head := next_head;
+        }
+        pop_count = (next_head - head);
+    } else {
+        pop_count = 0;
+    }
+    if(push) {
+        if(next_tail >= NUMBER_OF_FREE_LIST) {
+            tail := next_tail - NUMBER_OF_FREE_LIST;
+        } else {
+            tail := next_tail;
+        }
+        push_count = next_tail - tail;
+    } else {
+        push_count = 0; 
+    }
+    next_freelist_count = freelist_count + push_count - pop_count;
+    if((push || pop)) {
+        freelist_count := next_freelist_count;
+    }
+    count = freelist_count;
 }

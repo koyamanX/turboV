@@ -16,9 +16,9 @@
 
 #ifdef ENABLE_DEBUG
 #define DEBUG_RENAME0(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm) \
-		debug_rename0(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
+        debug_rename0(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
 #define DEBUG_RENAME1(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm) \
-		debug_rename1(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
+        debug_rename1(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
 #define DEBUG_COMMIT0(ptr, kill, pc, inst, cause, rd_valid, dreg, preg, ppreg) debug_commit0(ptr, kill, pc, inst, cause, rd_valid, dreg, preg, ppreg)
 #define DEBUG_COMMIT1(ptr, kill, pc, inst, cause, rd_valid, dreg, preg, ppreg) debug_commit1(ptr, kill, pc, inst, cause, rd_valid, dreg, preg, ppreg)
 #define DEBUG_REWIND0(dreg, preg, ppreg) debug_rewind0(dreg, preg, ppreg)
@@ -58,72 +58,72 @@
 #endif
 
 struct issue_packet_t {
-	pc[XLEN];
-	pred0;
-	pred1;
-	valid0;
-	valid1;
+    pc[XLEN];
+    pred0;
+    pred1;
+    valid0;
+    valid1;
 };
 
 module turboV {
     proc_name warm_reset();
     /* Decode stage */
     proc_name decode();
-	issue_packet_t reg issue_packet;
-	decoder_packet_t reg decoder_packet0;
-	decoder_packet_t reg decoder_packet1;
-	proc_name issue(issue_packet, decoder_packet0, decoder_packet1);
-	func_self stall_issue();
-	proc_name register_read();
-	reg execute_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
-	uop_t reg execute_alu0_uop;
-	reg execute_alu0_prd[6];
-	reg execute_alu0_A[32];
-	reg execute_alu0_B[32];
-	reg execute_alu0_X[32];
-	reg execute_alu0_Y[32];
-	reg execute_alu0_illegal_instruction;
-	proc_name execute_alu0(execute_alu0_ptr, execute_alu0_uop, execute_alu0_prd,
-			execute_alu0_A, execute_alu0_B, execute_alu0_X, execute_alu0_Y, execute_alu0_illegal_instruction);
-	reg execute_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
-	uop_t reg execute_alu1_uop;
-	reg execute_alu1_prd[6];
-	reg execute_alu1_A[32];
-	reg execute_alu1_B[32];
-	reg execute_alu1_X[32];
-	reg execute_alu1_Y[32];
-	proc_name execute_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd,
-			execute_alu1_A, execute_alu1_B, execute_alu1_X, execute_alu1_Y);
-	reg execute_lsu0_ptr[REORDER_BUFFER_PTR_SIZE];
-	uop_t reg execute_lsu0_uop;
-	reg execute_lsu0_prd[6];
-	reg execute_lsu0_A[32];
-	reg execute_lsu0_B[32];
-	reg execute_lsu0_data[32];
-	proc_name execute_lsu0(execute_lsu0_ptr, execute_lsu0_uop, execute_lsu0_prd,
-			execute_lsu0_A, execute_lsu0_B, execute_lsu0_data);
-	reg writeback_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
-	uop_t reg writeback_alu0_uop;
-	reg writeback_alu0_prd[6];
-	reg writeback_alu0_q[32];
-	reg writeback_alu0_target[32];
-	proc_name writeback_alu0(writeback_alu0_ptr, writeback_alu0_uop, writeback_alu0_prd,
-			writeback_alu0_q, writeback_alu0_target);
-	reg writeback_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
-	uop_t reg writeback_alu1_uop;
-	reg writeback_alu1_prd[6];
-	reg writeback_alu1_q[32];
-	reg writeback_alu1_target[32];
-	proc_name writeback_alu1(writeback_alu1_ptr, writeback_alu1_uop, writeback_alu1_prd,
-			writeback_alu1_q, writeback_alu1_target);
-	reg writeback_lsu0_prd[6];
-	reg writeback_lsu0_q[32];
-	proc_name writeback_lsu0(writeback_lsu0_prd, writeback_lsu0_q);
-	/* Pipeline flush */
-	wire newpc[32];
+    issue_packet_t reg issue_packet;
+    decoder_packet_t reg decoder_packet0;
+    decoder_packet_t reg decoder_packet1;
+    proc_name issue(issue_packet, decoder_packet0, decoder_packet1);
+    func_self stall_issue();
+    proc_name register_read();
+    reg execute_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
+    uop_t reg execute_alu0_uop;
+    reg execute_alu0_prd[6];
+    reg execute_alu0_A[32];
+    reg execute_alu0_B[32];
+    reg execute_alu0_X[32];
+    reg execute_alu0_Y[32];
+    reg execute_alu0_illegal_instruction;
+    proc_name execute_alu0(execute_alu0_ptr, execute_alu0_uop, execute_alu0_prd,
+            execute_alu0_A, execute_alu0_B, execute_alu0_X, execute_alu0_Y, execute_alu0_illegal_instruction);
+    reg execute_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
+    uop_t reg execute_alu1_uop;
+    reg execute_alu1_prd[6];
+    reg execute_alu1_A[32];
+    reg execute_alu1_B[32];
+    reg execute_alu1_X[32];
+    reg execute_alu1_Y[32];
+    proc_name execute_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd,
+            execute_alu1_A, execute_alu1_B, execute_alu1_X, execute_alu1_Y);
+    reg execute_lsu0_ptr[REORDER_BUFFER_PTR_SIZE];
+    uop_t reg execute_lsu0_uop;
+    reg execute_lsu0_prd[6];
+    reg execute_lsu0_A[32];
+    reg execute_lsu0_B[32];
+    reg execute_lsu0_data[32];
+    proc_name execute_lsu0(execute_lsu0_ptr, execute_lsu0_uop, execute_lsu0_prd,
+            execute_lsu0_A, execute_lsu0_B, execute_lsu0_data);
+    reg writeback_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
+    uop_t reg writeback_alu0_uop;
+    reg writeback_alu0_prd[6];
+    reg writeback_alu0_q[32];
+    reg writeback_alu0_target[32];
+    proc_name writeback_alu0(writeback_alu0_ptr, writeback_alu0_uop, writeback_alu0_prd,
+            writeback_alu0_q, writeback_alu0_target);
+    reg writeback_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
+    uop_t reg writeback_alu1_uop;
+    reg writeback_alu1_prd[6];
+    reg writeback_alu1_q[32];
+    reg writeback_alu1_target[32];
+    proc_name writeback_alu1(writeback_alu1_ptr, writeback_alu1_uop, writeback_alu1_prd,
+            writeback_alu1_q, writeback_alu1_target);
+    reg writeback_lsu0_prd[6];
+    reg writeback_lsu0_q[32];
+    proc_name writeback_lsu0(writeback_lsu0_prd, writeback_lsu0_q);
+    /* Pipeline flush */
+    wire newpc[32];
     func_self flush(newpc);
-	reg rewind_newpc[32];
-	proc_name rewind(rewind_newpc);
+    reg rewind_newpc[32];
+    proc_name rewind(rewind_newpc);
     /* Instruction Fetch Unit */
     ifetch_unit ifu;
     /* Instruction decoder */
@@ -137,19 +137,19 @@ module turboV {
     control_status_register csr;
     /* variable for generate statement */
     integer i_;
-	reorder_buffer rob;
-	free_list freelist;
-	mem register_map_table[32][6];
-	mem register_status_table[64][1] = {0};
-	issue_queue iq_alu0;
-	issue_queue iq_alu1;
-	issue_queue_in_order iq_lsu0;
-	alu32 alu0;
-	alu32 alu1;
-	wire update_register_status_table_inst0_lrd[5];
-	wire update_register_status_table_inst1_lrd[5];
-	func_self update_register_status_table_inst0(update_register_status_table_inst0_lrd);
-	func_self update_register_status_table_inst1(update_register_status_table_inst1_lrd);
+    reorder_buffer rob;
+    free_list freelist;
+    mem register_map_table[32][6];
+    mem register_status_table[64][1] = {0};
+    issue_queue iq_alu0;
+    issue_queue iq_alu1;
+    issue_queue_in_order iq_lsu0;
+    alu32 alu0;
+    alu32 alu1;
+    wire update_register_status_table_inst0_lrd[5];
+    wire update_register_status_table_inst1_lrd[5];
+    func_self update_register_status_table_inst0(update_register_status_table_inst0_lrd);
+    func_self update_register_status_table_inst1(update_register_status_table_inst1_lrd);
 
     func reset {
         if(!warm_reset) {
@@ -161,13 +161,13 @@ module turboV {
             /* Cycle 1: Reset */
             ifu.reset();
             csr.reset();
-			freelist.reset();
-			generate(i_ = 0; i_ < NUMBER_OF_FREE_LIST; i_++) {
-				register_map_table[i_] := i_;
-			}
-			generate(i_ = 0; i_ < 64; i_++) {
-				register_status_table[i_] := READY;
-			}
+            freelist.reset();
+            generate(i_ = 0; i_ < NUMBER_OF_FREE_LIST; i_++) {
+                register_map_table[i_] := i_;
+            }
+            generate(i_ = 0; i_ < 64; i_++) {
+                register_status_table[i_] := READY;
+            }
         }
         {
             /* Cycle 2: Start inst fetch */
@@ -188,673 +188,673 @@ module turboV {
         writeback_lsu0.finish();
         /* Flush ROB, RSs and LSQs */
         lsu0.flush();
-		/* Start decode */
-		generate(i_ = 0; i_ < 64; i_++) {
-			register_status_table[i_] := READY;
-		}
-		iq_alu0.flush();
-		iq_alu1.flush();
-		iq_lsu0.flush();
-		iq_alu0.stall();
-		iq_alu1.stall();
-		iq_lsu0.stall();
-		rewind.invoke(newpc);
-		DEBUG_FLUSH(newpc);
+        /* Start decode */
+        generate(i_ = 0; i_ < 64; i_++) {
+            register_status_table[i_] := READY;
+        }
+        iq_alu0.flush();
+        iq_alu1.flush();
+        iq_lsu0.flush();
+        iq_alu0.stall();
+        iq_alu1.stall();
+        iq_lsu0.stall();
+        rewind.invoke(newpc);
+        DEBUG_FLUSH(newpc);
     }
-	proc rewind seq {
-		reg i[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
-		reorder_buffer_t wire rewind_entry;
-		uop_t wire rewind_entry_uop0;
-		uop_t wire rewind_entry_uop1;
+    proc rewind seq {
+        reg i[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
+        reorder_buffer_t wire rewind_entry;
+        uop_t wire rewind_entry_uop0;
+        uop_t wire rewind_entry_uop1;
 
-		for(i := 0; i < NUMBER_OF_REORDER_BUFFER; i++) {
-			{
-				rob.rewind();
-				rewind_entry = rob.commit();
-				rewind_entry_uop0 = rewind_entry.uop0;
-				rewind_entry_uop1 = rewind_entry.uop1;
+        for(i := 0; i < NUMBER_OF_REORDER_BUFFER; i++) {
+            {
+                rob.rewind();
+                rewind_entry = rob.commit();
+                rewind_entry_uop0 = rewind_entry.uop0;
+                rewind_entry_uop1 = rewind_entry.uop1;
 
-				if(rewind_entry.valid0) {
-					if(rewind_entry_uop0.rd_valid) {
-						register_map_table[rewind_entry.dreg0] := rewind_entry.ppreg0;
-						if(rewind_entry.preg0 != 0) {
-							freelist.push0(rewind_entry.preg0);
-						}
-						DEBUG_REWIND0(rewind_entry.dreg0, rewind_entry.preg0, rewind_entry.ppreg0);
-					}
-				}
-				if(rewind_entry.valid1) {
-					if(rewind_entry_uop1.rd_valid) {
-						if(!(rewind_entry.valid0 && rewind_entry_uop0.rd_valid && rewind_entry.dreg0 == rewind_entry.dreg1)) {
-							register_map_table[rewind_entry.dreg1] := rewind_entry.ppreg1;
-						}
-						if(rewind_entry.preg1 != 0) {
-							freelist.push1(rewind_entry.preg1);
-						}
-						DEBUG_REWIND1(rewind_entry.dreg1, rewind_entry.preg1, rewind_entry.ppreg1);
-					}
-				}
-			}
-		}
-		{
-			rob.flush();
-			decode.invoke();
-			ifu.redirect(rewind_newpc);
-			finish();
-		}
-	}
+                if(rewind_entry.valid0) {
+                    if(rewind_entry_uop0.rd_valid) {
+                        register_map_table[rewind_entry.dreg0] := rewind_entry.ppreg0;
+                        if(rewind_entry.preg0 != 0) {
+                            freelist.push0(rewind_entry.preg0);
+                        }
+                        DEBUG_REWIND0(rewind_entry.dreg0, rewind_entry.preg0, rewind_entry.ppreg0);
+                    }
+                }
+                if(rewind_entry.valid1) {
+                    if(rewind_entry_uop1.rd_valid) {
+                        if(!(rewind_entry.valid0 && rewind_entry_uop0.rd_valid && rewind_entry.dreg0 == rewind_entry.dreg1)) {
+                            register_map_table[rewind_entry.dreg1] := rewind_entry.ppreg1;
+                        }
+                        if(rewind_entry.preg1 != 0) {
+                            freelist.push1(rewind_entry.preg1);
+                        }
+                        DEBUG_REWIND1(rewind_entry.dreg1, rewind_entry.preg1, rewind_entry.ppreg1);
+                    }
+                }
+            }
+        }
+        {
+            rob.flush();
+            decode.invoke();
+            ifu.redirect(rewind_newpc);
+            finish();
+        }
+    }
     proc decode {
-		state_name decode0, decode1;
-		fetch_packet_t wire decode0_fetch_packet;
-		decoder_packet_t wire decode0_decoder_packet0;
-		decoder_packet_t wire decode0_decoder_packet1;
-		uop_t wire decode0_uop0;
-		uop_t wire decode0_uop1;
-		fetch_packet_t reg decode1_fetch_packet;
+        state_name decode0, decode1;
+        fetch_packet_t wire decode0_fetch_packet;
+        decoder_packet_t wire decode0_decoder_packet0;
+        decoder_packet_t wire decode0_decoder_packet1;
+        uop_t wire decode0_uop0;
+        uop_t wire decode0_uop1;
+        fetch_packet_t reg decode1_fetch_packet;
 
-		state decode0 {
-			if(!ifu.ibuf_empty && !stall_issue && !flush) {
-				decode0_fetch_packet = ifu.ibuf_pop();
-				udec0.decode(decode0_fetch_packet.inst0);
-				udec1.decode(decode0_fetch_packet.inst1);
-				decode0_decoder_packet0 = udec0.packet;
-				decode0_decoder_packet1 = udec1.packet;
-				decode0_uop0 = decode0_decoder_packet0.uop;
-				decode0_uop1 = decode0_decoder_packet1.uop;
+        state decode0 {
+            if(!ifu.ibuf_empty && !stall_issue && !flush) {
+                decode0_fetch_packet = ifu.ibuf_pop();
+                udec0.decode(decode0_fetch_packet.inst0);
+                udec1.decode(decode0_fetch_packet.inst1);
+                decode0_decoder_packet0 = udec0.packet;
+                decode0_decoder_packet1 = udec1.packet;
+                decode0_uop0 = decode0_decoder_packet0.uop;
+                decode0_uop1 = decode0_decoder_packet1.uop;
 
-				if(decode0_fetch_packet.valid0 && decode0_fetch_packet.valid1) {
-					/* Check if structural hazard occurs, if so, issue first insts
-					   and second one goes to decode1 stage.
-					any {
-						else: {
-							// both insts can be issued.
-						}
-					}
-					INST0 | INST1 | issue?
-					ALU   | ALU   | OK
-					ALU   | LSU   | OK
-					ALU   | SYSTEM| OK
-					LSU   | ALU   | OK
-					LSU   | LSU   | NG
-					LSU   | SYSTEM| OK
-					SYSTEM| ALU   | OK
-					SYSTEM| LSU   | OK
-					SYSTEM| SYSTEM| NG
+                if(decode0_fetch_packet.valid0 && decode0_fetch_packet.valid1) {
+                    /* Check if structural hazard occurs, if so, issue first insts
+                       and second one goes to decode1 stage.
+                    any {
+                        else: {
+                            // both insts can be issued.
+                        }
+                    }
+                    INST0 | INST1 | issue?
+                    ALU   | ALU   | OK
+                    ALU   | LSU   | OK
+                    ALU   | SYSTEM| OK
+                    LSU   | ALU   | OK
+                    LSU   | LSU   | NG
+                    LSU   | SYSTEM| OK
+                    SYSTEM| ALU   | OK
+                    SYSTEM| LSU   | OK
+                    SYSTEM| SYSTEM| NG
 
-					=> if both insts are SYSTEM or LSU, split decode into
-					two stages to avoid structural hazard.
-					*/
+                    => if both insts are SYSTEM or LSU, split decode into
+                    two stages to avoid structural hazard.
+                    */
 #define IS_MEMORY(uop) (uop.load || uop.store)
 #define IS_SYSTEM(uop) (uop.csr || uop.mret || uop.ecall || uop.ebreak)
-					if((!(IS_MEMORY(decode0_uop0) && IS_MEMORY(decode0_uop1)) && (!IS_MEMORY(decode0_uop1)))
-							&& (!(IS_SYSTEM(decode0_uop0) && IS_SYSTEM(decode0_uop1)) && (!IS_SYSTEM(decode0_uop1)))) {
-						// No structual hazard, issue 2 insts
-						issue.invoke({decode0_fetch_packet.pc,
-							decode0_fetch_packet.pred0, decode0_fetch_packet.pred1,
-							decode0_fetch_packet.valid0, decode0_fetch_packet.valid1},
-							udec0.packet, udec1.packet);
-						DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
-						DEBUG_DECODE1(decode0_fetch_packet.pc+4, decode0_fetch_packet.inst1, decode0_fetch_packet.pred1);
-					} else {
-						// There is structual hazard, issue first one in this cycle
-						// Send another inst to issue stage in next cycle.
-						// decode1 takes care of issue next inst in the cycle.
-						issue.invoke({decode0_fetch_packet.pc,
-							decode0_fetch_packet.pred0, 1'b0,
-							decode0_fetch_packet.valid0, 1'b0},
-							udec0.packet, 0);
-						decode1_fetch_packet := decode0_fetch_packet;
-					    goto decode1;
-						DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
-					}
-				} else if((!decode0_fetch_packet.valid0 && decode0_fetch_packet.valid1)
-					|| (decode0_fetch_packet.valid0 && !decode0_fetch_packet.valid1)) {
-					// Either way0 or way1 is valid.
-					// Both invalid is not enter here, ifetch_unit never pushes such case.
-					// Also, currently, ifetch_unit never pushes inst1 valid && inst0 invalid.
-					// TODO: 
-					issue.invoke({decode0_fetch_packet.pc,
-						decode0_fetch_packet.pred0, 1'b0,
-						decode0_fetch_packet.valid0, 1'b0},
-						udec0.packet, 0);
-					DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
-				}
-			}
-		}
-		state decode1 {
-			// Inst1 is either SYSTEM or LSU.
-			// TODO: decode_fetch_packet
-			// CAUTION: valid1, pred1, inst1
-			// TODO: pc+4
-			if(flush) {
-				goto decode0;
-			} else if(!stall_issue && !flush) {
-				udec0.decode(decode1_fetch_packet.inst1);
-				issue.invoke({decode1_fetch_packet.pc+4,
-					decode1_fetch_packet.pred1, 1'b0,
-					decode1_fetch_packet.valid1, 1'b0},
-					udec0.packet, 0);
-				goto decode0;
-				DEBUG_DECODE0(decode1_fetch_packet.pc+4, decode1_fetch_packet.inst1, decode1_fetch_packet.pred1);
-			}
-		}
+                    if((!(IS_MEMORY(decode0_uop0) && IS_MEMORY(decode0_uop1)) && (!IS_MEMORY(decode0_uop1)))
+                            && (!(IS_SYSTEM(decode0_uop0) && IS_SYSTEM(decode0_uop1)) && (!IS_SYSTEM(decode0_uop1)))) {
+                        // No structual hazard, issue 2 insts
+                        issue.invoke({decode0_fetch_packet.pc,
+                            decode0_fetch_packet.pred0, decode0_fetch_packet.pred1,
+                            decode0_fetch_packet.valid0, decode0_fetch_packet.valid1},
+                            udec0.packet, udec1.packet);
+                        DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
+                        DEBUG_DECODE1(decode0_fetch_packet.pc+4, decode0_fetch_packet.inst1, decode0_fetch_packet.pred1);
+                    } else {
+                        // There is structual hazard, issue first one in this cycle
+                        // Send another inst to issue stage in next cycle.
+                        // decode1 takes care of issue next inst in the cycle.
+                        issue.invoke({decode0_fetch_packet.pc,
+                            decode0_fetch_packet.pred0, 1'b0,
+                            decode0_fetch_packet.valid0, 1'b0},
+                            udec0.packet, 0);
+                        decode1_fetch_packet := decode0_fetch_packet;
+                        goto decode1;
+                        DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
+                    }
+                } else if((!decode0_fetch_packet.valid0 && decode0_fetch_packet.valid1)
+                    || (decode0_fetch_packet.valid0 && !decode0_fetch_packet.valid1)) {
+                    // Either way0 or way1 is valid.
+                    // Both invalid is not enter here, ifetch_unit never pushes such case.
+                    // Also, currently, ifetch_unit never pushes inst1 valid && inst0 invalid.
+                    // TODO: 
+                    issue.invoke({decode0_fetch_packet.pc,
+                        decode0_fetch_packet.pred0, 1'b0,
+                        decode0_fetch_packet.valid0, 1'b0},
+                        udec0.packet, 0);
+                    DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
+                }
+            }
+        }
+        state decode1 {
+            // Inst1 is either SYSTEM or LSU.
+            // TODO: decode_fetch_packet
+            // CAUTION: valid1, pred1, inst1
+            // TODO: pc+4
+            if(flush) {
+                goto decode0;
+            } else if(!stall_issue && !flush) {
+                udec0.decode(decode1_fetch_packet.inst1);
+                issue.invoke({decode1_fetch_packet.pc+4,
+                    decode1_fetch_packet.pred1, 1'b0,
+                    decode1_fetch_packet.valid1, 1'b0},
+                    udec0.packet, 0);
+                goto decode0;
+                DEBUG_DECODE0(decode1_fetch_packet.pc+4, decode1_fetch_packet.inst1, decode1_fetch_packet.pred1);
+            }
+        }
     }
     proc issue {
-		reorder_buffer_t wire issue_reorder_buffer_entry;
-		wire issue_PC[30];
-		// issue slot 0
-		wire issue_inst0_valid;
-		wire issue_inst0_pc[32];
-		wire issue_inst0_ptr[REORDER_BUFFER_PTR_SIZE];
-		wire issue_inst0_lrd[5];
-		wire issue_inst0_prd[6];
-		wire issue_inst0_pprd[6];
-		wire issue_inst0_rs1_ready;
-		wire issue_inst0_rs1_sel[SIZEOF_REG_SEL];
-		wire issue_inst0_lrs1[5];
-		wire issue_inst0_prs1[6];
-		wire issue_inst0_rs2_ready;
-		wire issue_inst0_rs2_sel[SIZEOF_REG_SEL];
-		wire issue_inst0_lrs2[5];
-		wire issue_inst0_prs2[6];
-		wire issue_inst0_cause[SIZEOF_CAUSE_T];
-		uop_t wire issue_inst0_uop;
-		wire issue_inst0_imm[32];
-		// issue slot 1
-		wire issue_inst1_valid;
-		wire issue_inst1_pc[32];
-		wire issue_inst1_ptr[REORDER_BUFFER_PTR_SIZE];
-		wire issue_inst1_lrd[5];
-		wire issue_inst1_prd[6];
-		wire issue_inst1_pprd[6];
-		wire issue_inst1_rs1_ready;
-		wire issue_inst1_rs1_sel[SIZEOF_REG_SEL];
-		func_self issue_inst1_rs1_ready_bypass;
-		wire issue_inst1_lrs1[5];
-		wire issue_inst1_prs1[6];
-		wire issue_inst1_rs2_ready;
-		wire issue_inst1_rs2_sel[SIZEOF_REG_SEL];
-		func_self issue_inst1_rs2_ready_bypass;
-		wire issue_inst1_lrs2[5];
-		wire issue_inst1_prs2[6];
-		wire issue_inst1_cause[SIZEOF_CAUSE_T];
-		uop_t wire issue_inst1_uop;
-		wire issue_inst1_imm[32];
+        reorder_buffer_t wire issue_reorder_buffer_entry;
+        wire issue_PC[30];
+        // issue slot 0
+        wire issue_inst0_valid;
+        wire issue_inst0_pc[32];
+        wire issue_inst0_ptr[REORDER_BUFFER_PTR_SIZE];
+        wire issue_inst0_lrd[5];
+        wire issue_inst0_prd[6];
+        wire issue_inst0_pprd[6];
+        wire issue_inst0_rs1_ready;
+        wire issue_inst0_rs1_sel[SIZEOF_REG_SEL];
+        wire issue_inst0_lrs1[5];
+        wire issue_inst0_prs1[6];
+        wire issue_inst0_rs2_ready;
+        wire issue_inst0_rs2_sel[SIZEOF_REG_SEL];
+        wire issue_inst0_lrs2[5];
+        wire issue_inst0_prs2[6];
+        wire issue_inst0_cause[SIZEOF_CAUSE_T];
+        uop_t wire issue_inst0_uop;
+        wire issue_inst0_imm[32];
+        // issue slot 1
+        wire issue_inst1_valid;
+        wire issue_inst1_pc[32];
+        wire issue_inst1_ptr[REORDER_BUFFER_PTR_SIZE];
+        wire issue_inst1_lrd[5];
+        wire issue_inst1_prd[6];
+        wire issue_inst1_pprd[6];
+        wire issue_inst1_rs1_ready;
+        wire issue_inst1_rs1_sel[SIZEOF_REG_SEL];
+        func_self issue_inst1_rs1_ready_bypass;
+        wire issue_inst1_lrs1[5];
+        wire issue_inst1_prs1[6];
+        wire issue_inst1_rs2_ready;
+        wire issue_inst1_rs2_sel[SIZEOF_REG_SEL];
+        func_self issue_inst1_rs2_ready_bypass;
+        wire issue_inst1_lrs2[5];
+        wire issue_inst1_prs2[6];
+        wire issue_inst1_cause[SIZEOF_CAUSE_T];
+        uop_t wire issue_inst1_uop;
+        wire issue_inst1_imm[32];
 
-		issue_inst0_uop = decoder_packet0.uop;
-		issue_inst1_uop = decoder_packet1.uop;
-		// TODO: !flush
-		if(!flush && (freelist.count >= 2) && (!rob.full) && !iq_alu0.full && !iq_alu1.full && !iq_lsu0.full) {
-			issue_PC = issue_packet.pc[31:2];
-			issue_inst0_pc = {issue_PC, 2'b00};
-			// TODO:
-			issue_inst1_pc = {issue_PC, 2'b00}+4;
-			// inst0
-			issue_inst0_valid = issue_packet.valid0;
-			issue_inst0_cause = decoder_packet0.cause;
-			issue_inst0_lrd = decoder_packet0.lrd;
-			issue_inst0_rs1_sel = issue_inst0_uop.rs1_sel;
-			issue_inst0_lrs1 = decoder_packet0.lrs1;
-			issue_inst0_rs2_sel = issue_inst0_uop.rs2_sel;
-			issue_inst0_lrs2 = decoder_packet0.lrs2;
-			issue_inst0_imm = decoder_packet0.imm;
-			// inst1
-			issue_inst1_valid = issue_packet.valid1;
-			issue_inst1_cause = decoder_packet1.cause;
-			issue_inst1_lrd = decoder_packet1.lrd;
-			issue_inst1_rs1_sel = issue_inst1_uop.rs1_sel;
-			issue_inst1_lrs1 = decoder_packet1.lrs1;
-			issue_inst1_rs2_sel = issue_inst1_uop.rs2_sel;
-			issue_inst1_lrs2 = decoder_packet1.lrs2;
-			issue_inst1_imm = decoder_packet1.imm;
+        issue_inst0_uop = decoder_packet0.uop;
+        issue_inst1_uop = decoder_packet1.uop;
+        // TODO: !flush
+        if(!flush && (freelist.count >= 2) && (!rob.full) && !iq_alu0.full && !iq_alu1.full && !iq_lsu0.full) {
+            issue_PC = issue_packet.pc[31:2];
+            issue_inst0_pc = {issue_PC, 2'b00};
+            // TODO:
+            issue_inst1_pc = {issue_PC, 2'b00}+4;
+            // inst0
+            issue_inst0_valid = issue_packet.valid0;
+            issue_inst0_cause = decoder_packet0.cause;
+            issue_inst0_lrd = decoder_packet0.lrd;
+            issue_inst0_rs1_sel = issue_inst0_uop.rs1_sel;
+            issue_inst0_lrs1 = decoder_packet0.lrs1;
+            issue_inst0_rs2_sel = issue_inst0_uop.rs2_sel;
+            issue_inst0_lrs2 = decoder_packet0.lrs2;
+            issue_inst0_imm = decoder_packet0.imm;
+            // inst1
+            issue_inst1_valid = issue_packet.valid1;
+            issue_inst1_cause = decoder_packet1.cause;
+            issue_inst1_lrd = decoder_packet1.lrd;
+            issue_inst1_rs1_sel = issue_inst1_uop.rs1_sel;
+            issue_inst1_lrs1 = decoder_packet1.lrs1;
+            issue_inst1_rs2_sel = issue_inst1_uop.rs2_sel;
+            issue_inst1_lrs2 = decoder_packet1.lrs2;
+            issue_inst1_imm = decoder_packet1.imm;
 
-			// Rename destination registers
-			if(issue_packet.valid0 && issue_inst0_uop.rd_valid) {
-				issue_inst0_pprd = register_map_table[issue_inst0_lrd];
-			} else {
-				issue_inst0_pprd = 0;
-			}
-			if(issue_packet.valid0 && issue_packet.valid1 && issue_inst0_uop.rd_valid && issue_inst1_uop.rd_valid && issue_inst0_lrd == issue_inst1_lrd) {
-				issue_inst1_pprd = issue_inst0_prd;
-			} else {
-				issue_inst1_pprd = register_map_table[issue_inst1_lrd];
-			}
-			if(issue_packet.valid0 && (issue_inst0_lrd != 0)) {
-				issue_inst0_prd = freelist.pop0();
-				if(!(issue_packet.valid1 && (issue_inst1_lrd != 0)
-							&& (issue_inst0_lrd == issue_inst1_lrd))) {
-					if(!flush) {
-						register_map_table[issue_inst0_lrd] := issue_inst0_prd;
-						register_status_table[issue_inst0_prd] := BUSY;
-						update_register_status_table_inst0(issue_inst0_lrd);
-					}
-				}
-			}
-			if(issue_packet.valid1 && (issue_inst1_lrd != 0)) {
-				issue_inst1_prd = freelist.pop1();
-				if(!flush) {
-					register_map_table[issue_inst1_lrd] := issue_inst1_prd;
-					register_status_table[issue_inst1_prd] := BUSY;
-					update_register_status_table_inst1(issue_inst1_lrd);
-				}
-			}
-			// Rename source registers
-			if(issue_packet.valid0) {
-				issue_inst0_prs1 = register_map_table[issue_inst0_lrs1];
-				issue_inst0_prs2 = register_map_table[issue_inst0_lrs2];
-			}
-			if(issue_packet.valid0 && issue_packet.valid1
-					&& issue_inst0_lrd == issue_inst1_lrs1 && issue_inst0_uop.rd_valid && issue_inst1_uop.rs1_valid) {
-				issue_inst1_prs1 = issue_inst0_prd;
-				issue_inst1_rs1_ready_bypass();
-			} else {
-				issue_inst1_prs1 = register_map_table[issue_inst1_lrs1];
-			}
-			if(issue_packet.valid0 && issue_packet.valid1
-					&& issue_inst0_lrd == issue_inst1_lrs2 && issue_inst0_uop.rd_valid && issue_inst1_uop.rs2_valid) {
-				issue_inst1_prs2 = issue_inst0_prd;
-				issue_inst1_rs2_ready_bypass();
-			} else {
-				issue_inst1_prs2 = register_map_table[issue_inst1_lrs2];
-			}
-			// Source register ready
-			if(!issue_inst0_uop.rs1_valid) {
-				issue_inst0_rs1_ready = READY;
-			} else {
-				issue_inst0_rs1_ready = issue_packet.valid0 && register_status_table[issue_inst0_prs1];
-			}
-			if(!issue_inst0_uop.rs2_valid) {
-				issue_inst0_rs2_ready = READY;
-			} else {
-				issue_inst0_rs2_ready = issue_packet.valid0 && register_status_table[issue_inst0_prs2];
-			}
-			if(!issue_inst1_uop.rs1_valid) {
-				issue_inst1_rs1_ready = READY;
-			} else if(issue_inst1_rs1_ready_bypass) {
-				issue_inst1_rs1_ready = BUSY;
-			} else {
-				issue_inst1_rs1_ready = issue_packet.valid1 && register_status_table[issue_inst1_prs1];
-			}
-			if(!issue_inst1_uop.rs2_valid) {
-				issue_inst1_rs2_ready = READY;
-			} else if(issue_inst1_rs2_ready_bypass) {
-				issue_inst1_rs2_ready = BUSY;
-			} else {
-				issue_inst1_rs2_ready = issue_packet.valid1 && register_status_table[issue_inst1_prs2];
-			}
+            // Rename destination registers
+            if(issue_packet.valid0 && issue_inst0_uop.rd_valid) {
+                issue_inst0_pprd = register_map_table[issue_inst0_lrd];
+            } else {
+                issue_inst0_pprd = 0;
+            }
+            if(issue_packet.valid0 && issue_packet.valid1 && issue_inst0_uop.rd_valid && issue_inst1_uop.rd_valid && issue_inst0_lrd == issue_inst1_lrd) {
+                issue_inst1_pprd = issue_inst0_prd;
+            } else {
+                issue_inst1_pprd = register_map_table[issue_inst1_lrd];
+            }
+            if(issue_packet.valid0 && (issue_inst0_lrd != 0)) {
+                issue_inst0_prd = freelist.pop0();
+                if(!(issue_packet.valid1 && (issue_inst1_lrd != 0)
+                            && (issue_inst0_lrd == issue_inst1_lrd))) {
+                    if(!flush) {
+                        register_map_table[issue_inst0_lrd] := issue_inst0_prd;
+                        register_status_table[issue_inst0_prd] := BUSY;
+                        update_register_status_table_inst0(issue_inst0_lrd);
+                    }
+                }
+            }
+            if(issue_packet.valid1 && (issue_inst1_lrd != 0)) {
+                issue_inst1_prd = freelist.pop1();
+                if(!flush) {
+                    register_map_table[issue_inst1_lrd] := issue_inst1_prd;
+                    register_status_table[issue_inst1_prd] := BUSY;
+                    update_register_status_table_inst1(issue_inst1_lrd);
+                }
+            }
+            // Rename source registers
+            if(issue_packet.valid0) {
+                issue_inst0_prs1 = register_map_table[issue_inst0_lrs1];
+                issue_inst0_prs2 = register_map_table[issue_inst0_lrs2];
+            }
+            if(issue_packet.valid0 && issue_packet.valid1
+                    && issue_inst0_lrd == issue_inst1_lrs1 && issue_inst0_uop.rd_valid && issue_inst1_uop.rs1_valid) {
+                issue_inst1_prs1 = issue_inst0_prd;
+                issue_inst1_rs1_ready_bypass();
+            } else {
+                issue_inst1_prs1 = register_map_table[issue_inst1_lrs1];
+            }
+            if(issue_packet.valid0 && issue_packet.valid1
+                    && issue_inst0_lrd == issue_inst1_lrs2 && issue_inst0_uop.rd_valid && issue_inst1_uop.rs2_valid) {
+                issue_inst1_prs2 = issue_inst0_prd;
+                issue_inst1_rs2_ready_bypass();
+            } else {
+                issue_inst1_prs2 = register_map_table[issue_inst1_lrs2];
+            }
+            // Source register ready
+            if(!issue_inst0_uop.rs1_valid) {
+                issue_inst0_rs1_ready = READY;
+            } else {
+                issue_inst0_rs1_ready = issue_packet.valid0 && register_status_table[issue_inst0_prs1];
+            }
+            if(!issue_inst0_uop.rs2_valid) {
+                issue_inst0_rs2_ready = READY;
+            } else {
+                issue_inst0_rs2_ready = issue_packet.valid0 && register_status_table[issue_inst0_prs2];
+            }
+            if(!issue_inst1_uop.rs1_valid) {
+                issue_inst1_rs1_ready = READY;
+            } else if(issue_inst1_rs1_ready_bypass) {
+                issue_inst1_rs1_ready = BUSY;
+            } else {
+                issue_inst1_rs1_ready = issue_packet.valid1 && register_status_table[issue_inst1_prs1];
+            }
+            if(!issue_inst1_uop.rs2_valid) {
+                issue_inst1_rs2_ready = READY;
+            } else if(issue_inst1_rs2_ready_bypass) {
+                issue_inst1_rs2_ready = BUSY;
+            } else {
+                issue_inst1_rs2_ready = issue_packet.valid1 && register_status_table[issue_inst1_prs2];
+            }
 
 #ifdef ENABLE_DEBUG
-			rob.issue(issue_PC,
-					issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_prd, issue_inst0_pprd, issue_inst0_cause,
-					issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_prd, issue_inst1_pprd, issue_inst1_cause,
-					decoder_packet0.inst, decoder_packet1.inst);
+            rob.issue(issue_PC,
+                    issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_prd, issue_inst0_pprd, issue_inst0_cause,
+                    issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_prd, issue_inst1_pprd, issue_inst1_cause,
+                    decoder_packet0.inst, decoder_packet1.inst);
 #else
-			rob.issue(issue_PC,
-					issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_prd, issue_inst0_pprd, issue_inst0_cause,
-					issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_prd, issue_inst1_pprd, issue_inst1_cause);
+            rob.issue(issue_PC,
+                    issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_prd, issue_inst0_pprd, issue_inst0_cause,
+                    issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_prd, issue_inst1_pprd, issue_inst1_cause);
 #endif
-			// TODO: NSL does not support mod.sig_o[_int(N)]
-			issue_inst0_ptr = rob.ptr;
-			issue_inst1_ptr = rob.ptr+1;
+            // TODO: NSL does not support mod.sig_o[_int(N)]
+            issue_inst0_ptr = rob.ptr;
+            issue_inst1_ptr = rob.ptr+1;
 
-			// TODO:
-			if(issue_inst0_valid) {
-				DEBUG_RENAME0(issue_inst0_ptr, issue_inst0_pc, decoder_packet0.inst,
-						issue_inst0_uop.rd_valid, issue_inst0_lrd, issue_inst0_prd, issue_inst0_pprd,
-						issue_inst0_uop.rs1_valid, issue_inst0_rs1_ready, issue_inst0_lrs1, issue_inst0_prs1,
-						issue_inst0_uop.rs2_valid, issue_inst0_rs2_ready, issue_inst0_lrs2, issue_inst0_prs2,
-						issue_inst0_cause, issue_inst0_imm);
-				any {
-					issue_inst0_uop.store || issue_inst0_uop.load: {
-						iq_lsu0.issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
-								issue_inst0_rs1_ready, issue_inst0_prs1,
-								issue_inst0_rs2_ready, issue_inst0_prs2,
-								issue_inst0_imm);
-					}
-					else: {
-						iq_alu0.issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
-								issue_inst0_rs1_ready, issue_inst0_prs1,
-								issue_inst0_rs2_ready, issue_inst0_prs2,
-								issue_inst0_imm);
-					 }
-				}
-			}
-			// TODO:
-			if(issue_inst1_valid) {
-				DEBUG_RENAME1(issue_inst1_ptr, issue_inst1_pc, decoder_packet1.inst,
-						issue_inst1_uop.rd_valid, issue_inst1_lrd, issue_inst1_prd, issue_inst1_pprd,
-						issue_inst1_uop.rs1_valid, issue_inst1_rs1_ready, issue_inst1_lrs1, issue_inst1_prs1,
-						issue_inst1_uop.rs2_valid, issue_inst1_rs2_ready, issue_inst1_lrs2, issue_inst1_prs2,
-						issue_inst1_cause, issue_inst1_imm);
-				any {
-					issue_inst1_uop.store || issue_inst1_uop.load: {
-						iq_lsu0.issue(issue_inst1_ptr, issue_inst1_uop, issue_inst1_prd,
-							issue_inst1_rs1_ready, issue_inst1_prs1,
-							issue_inst1_rs2_ready, issue_inst1_prs2,
-							issue_inst1_imm);
-					}
-					else: {
-						iq_alu1.issue(issue_inst1_ptr, issue_inst1_uop, issue_inst1_prd,
-							issue_inst1_rs1_ready, issue_inst1_prs1,
-							issue_inst1_rs2_ready, issue_inst1_prs2,
-							issue_inst1_imm);
-					}
-				}
-			}
-			// TODO:
-			finish();
-		} else {
-			stall_issue();
-		}
+            // TODO:
+            if(issue_inst0_valid) {
+                DEBUG_RENAME0(issue_inst0_ptr, issue_inst0_pc, decoder_packet0.inst,
+                        issue_inst0_uop.rd_valid, issue_inst0_lrd, issue_inst0_prd, issue_inst0_pprd,
+                        issue_inst0_uop.rs1_valid, issue_inst0_rs1_ready, issue_inst0_lrs1, issue_inst0_prs1,
+                        issue_inst0_uop.rs2_valid, issue_inst0_rs2_ready, issue_inst0_lrs2, issue_inst0_prs2,
+                        issue_inst0_cause, issue_inst0_imm);
+                any {
+                    issue_inst0_uop.store || issue_inst0_uop.load: {
+                        iq_lsu0.issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
+                                issue_inst0_rs1_ready, issue_inst0_prs1,
+                                issue_inst0_rs2_ready, issue_inst0_prs2,
+                                issue_inst0_imm);
+                    }
+                    else: {
+                        iq_alu0.issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
+                                issue_inst0_rs1_ready, issue_inst0_prs1,
+                                issue_inst0_rs2_ready, issue_inst0_prs2,
+                                issue_inst0_imm);
+                     }
+                }
+            }
+            // TODO:
+            if(issue_inst1_valid) {
+                DEBUG_RENAME1(issue_inst1_ptr, issue_inst1_pc, decoder_packet1.inst,
+                        issue_inst1_uop.rd_valid, issue_inst1_lrd, issue_inst1_prd, issue_inst1_pprd,
+                        issue_inst1_uop.rs1_valid, issue_inst1_rs1_ready, issue_inst1_lrs1, issue_inst1_prs1,
+                        issue_inst1_uop.rs2_valid, issue_inst1_rs2_ready, issue_inst1_lrs2, issue_inst1_prs2,
+                        issue_inst1_cause, issue_inst1_imm);
+                any {
+                    issue_inst1_uop.store || issue_inst1_uop.load: {
+                        iq_lsu0.issue(issue_inst1_ptr, issue_inst1_uop, issue_inst1_prd,
+                            issue_inst1_rs1_ready, issue_inst1_prs1,
+                            issue_inst1_rs2_ready, issue_inst1_prs2,
+                            issue_inst1_imm);
+                    }
+                    else: {
+                        iq_alu1.issue(issue_inst1_ptr, issue_inst1_uop, issue_inst1_prd,
+                            issue_inst1_rs1_ready, issue_inst1_prs1,
+                            issue_inst1_rs2_ready, issue_inst1_prs2,
+                            issue_inst1_imm);
+                    }
+                }
+            }
+            // TODO:
+            finish();
+        } else {
+            stall_issue();
+        }
     }
-	func iq_alu0.dispatch {
-		wire iq_alu0_A[32];
-		wire iq_alu0_B[32];
-		wire iq_alu0_PC[32];
-		uop_t wire iq_alu0_uop;
+    func iq_alu0.dispatch {
+        wire iq_alu0_A[32];
+        wire iq_alu0_B[32];
+        wire iq_alu0_PC[32];
+        uop_t wire iq_alu0_uop;
 
-		iq_alu0_uop = iq_alu0.dispatch_uop;
-		iq_alu0_PC = rob.readPC0(iq_alu0.dispatch_ptr);
-		// SYSTEM instruction is dispatched in this pipe.
-		any {
-			iq_alu0_uop.rs1_sel == RS1_SEL_REG && iq_alu0_uop.rs1_valid: iq_alu0_A = gpr.readA(iq_alu0.dispatch_prs1);
-			iq_alu0_uop.rs1_sel == RS1_SEL_REG && !iq_alu0_uop.rs1_valid: iq_alu0_A = 0;
-			iq_alu0_uop.rs1_sel == RS1_SEL_UIMM: iq_alu0_A = iq_alu0.dispatch_imm[4:0];
-			iq_alu0_uop.rs1_sel == RS1_SEL_PC: iq_alu0_A = iq_alu0_PC;
-		}
-		any {
-			iq_alu0_uop.rs2_sel == RS2_SEL_REG && iq_alu0_uop.rs2_valid: iq_alu0_B = gpr.readB(iq_alu0.dispatch_prs2);
-			iq_alu0_uop.rs2_sel == RS2_SEL_REG && !iq_alu0_uop.rs2_valid: iq_alu0_B = 0;
-			iq_alu0_uop.rs2_sel == RS2_SEL_IMM: iq_alu0_B = iq_alu0.dispatch_imm;
-			iq_alu0_uop.rs2_sel == RS2_SEL_CSR: iq_alu0_B = csr.read(iq_alu0.dispatch_imm);
-			iq_alu0_uop.rs2_sel == RS2_SEL_CSR_UIMM: iq_alu0_B = csr.read(iq_alu0.dispatch_imm) & 0xffffffe0;
-		}
-		/*
-			For branch instruction, branch target is already calculated in decode stage,
-			only branch condition need to be calculated. 
-				rs1_sel == REG, rs2_sel == REG, PC+imm
-				alu_A = REG, alu_B = REG, PC, imm
-				no writeback
-			For JAL instruction, target is already calculated in decode stage (PC+imm),
-				rs1_sel == REG(x0), rs2_sel == IMM(PC+imm), PC+4
-				writeback PC+4
-				alu_A = PC, alu_B = 4, PC, 4
-			For JALR instruction, target address need to be calculated in execute stage(rs1+imm)
-				rs1_sel == REG, rs2_sel == IMM, PC+4
-				writeback PC+4
-				alu_A = PC, alu_B = 4, REG, IMM
-			For JAL and JALR instruction, write PC+4 to rd register.
-	   */
-		if(iq_alu0_uop.branch) {
-			execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
-					iq_alu0_A, iq_alu0_B, iq_alu0_PC, iq_alu0.dispatch_imm, 0);
-		} else if(iq_alu0_uop.jal) {
-			execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
-					iq_alu0_PC, 4, iq_alu0_PC, iq_alu0.dispatch_imm, 0);
-		} else if(iq_alu0_uop.jalr) {
-			execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
-					iq_alu0_PC, 4, iq_alu0_A, iq_alu0.dispatch_imm, 0);
-		} else if(iq_alu0_uop.csr) {
-			execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
-					iq_alu0_A, iq_alu0_B, iq_alu0.dispatch_imm, 0, SET_EXCEPTION(ILLEGAL_INSTRUCTION, csr.read_error));
-		} else {
-			execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
-					iq_alu0_A, iq_alu0_B, 0, 0, 0);
-		}
-		DEBUG_DISPATCH0(iq_alu0.dispatch_ptr, iq_alu0_PC, iq_alu0_uop.rd_valid, iq_alu0.dispatch_prd,
-				iq_alu0_uop.rs1_sel, iq_alu0_uop.rs1_valid, iq_alu0.dispatch_prs1, iq_alu0_A,
-				iq_alu0_uop.rs2_sel, iq_alu0_uop.rs2_valid, iq_alu0.dispatch_prs2, iq_alu0_B);
-	}
+        iq_alu0_uop = iq_alu0.dispatch_uop;
+        iq_alu0_PC = rob.readPC0(iq_alu0.dispatch_ptr);
+        // SYSTEM instruction is dispatched in this pipe.
+        any {
+            iq_alu0_uop.rs1_sel == RS1_SEL_REG && iq_alu0_uop.rs1_valid: iq_alu0_A = gpr.readA(iq_alu0.dispatch_prs1);
+            iq_alu0_uop.rs1_sel == RS1_SEL_REG && !iq_alu0_uop.rs1_valid: iq_alu0_A = 0;
+            iq_alu0_uop.rs1_sel == RS1_SEL_UIMM: iq_alu0_A = iq_alu0.dispatch_imm[4:0];
+            iq_alu0_uop.rs1_sel == RS1_SEL_PC: iq_alu0_A = iq_alu0_PC;
+        }
+        any {
+            iq_alu0_uop.rs2_sel == RS2_SEL_REG && iq_alu0_uop.rs2_valid: iq_alu0_B = gpr.readB(iq_alu0.dispatch_prs2);
+            iq_alu0_uop.rs2_sel == RS2_SEL_REG && !iq_alu0_uop.rs2_valid: iq_alu0_B = 0;
+            iq_alu0_uop.rs2_sel == RS2_SEL_IMM: iq_alu0_B = iq_alu0.dispatch_imm;
+            iq_alu0_uop.rs2_sel == RS2_SEL_CSR: iq_alu0_B = csr.read(iq_alu0.dispatch_imm);
+            iq_alu0_uop.rs2_sel == RS2_SEL_CSR_UIMM: iq_alu0_B = csr.read(iq_alu0.dispatch_imm) & 0xffffffe0;
+        }
+        /*
+            For branch instruction, branch target is already calculated in decode stage,
+            only branch condition need to be calculated. 
+                rs1_sel == REG, rs2_sel == REG, PC+imm
+                alu_A = REG, alu_B = REG, PC, imm
+                no writeback
+            For JAL instruction, target is already calculated in decode stage (PC+imm),
+                rs1_sel == REG(x0), rs2_sel == IMM(PC+imm), PC+4
+                writeback PC+4
+                alu_A = PC, alu_B = 4, PC, 4
+            For JALR instruction, target address need to be calculated in execute stage(rs1+imm)
+                rs1_sel == REG, rs2_sel == IMM, PC+4
+                writeback PC+4
+                alu_A = PC, alu_B = 4, REG, IMM
+            For JAL and JALR instruction, write PC+4 to rd register.
+       */
+        if(iq_alu0_uop.branch) {
+            execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
+                    iq_alu0_A, iq_alu0_B, iq_alu0_PC, iq_alu0.dispatch_imm, 0);
+        } else if(iq_alu0_uop.jal) {
+            execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
+                    iq_alu0_PC, 4, iq_alu0_PC, iq_alu0.dispatch_imm, 0);
+        } else if(iq_alu0_uop.jalr) {
+            execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
+                    iq_alu0_PC, 4, iq_alu0_A, iq_alu0.dispatch_imm, 0);
+        } else if(iq_alu0_uop.csr) {
+            execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
+                    iq_alu0_A, iq_alu0_B, iq_alu0.dispatch_imm, 0, SET_EXCEPTION(ILLEGAL_INSTRUCTION, csr.read_error));
+        } else {
+            execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
+                    iq_alu0_A, iq_alu0_B, 0, 0, 0);
+        }
+        DEBUG_DISPATCH0(iq_alu0.dispatch_ptr, iq_alu0_PC, iq_alu0_uop.rd_valid, iq_alu0.dispatch_prd,
+                iq_alu0_uop.rs1_sel, iq_alu0_uop.rs1_valid, iq_alu0.dispatch_prs1, iq_alu0_A,
+                iq_alu0_uop.rs2_sel, iq_alu0_uop.rs2_valid, iq_alu0.dispatch_prs2, iq_alu0_B);
+    }
     proc execute_alu0 {
-		if(!flush) {
-			alu0.exe(execute_alu0_A, execute_alu0_B, execute_alu0_uop.uop[FN_SIZE-1:0]);
-			writeback_alu0(execute_alu0_ptr, execute_alu0_uop, execute_alu0_prd, alu0.q, execute_alu0_X+execute_alu0_Y);
-			DEBUG_EXECUTE0(execute_alu0_ptr, execute_alu0_uop.rd_valid, execute_alu0_prd, execute_alu0_A, execute_alu0_B, alu0.q, execute_alu0_X+execute_alu0_Y);
-		}
+        if(!flush) {
+            alu0.exe(execute_alu0_A, execute_alu0_B, execute_alu0_uop.uop[FN_SIZE-1:0]);
+            writeback_alu0(execute_alu0_ptr, execute_alu0_uop, execute_alu0_prd, alu0.q, execute_alu0_X+execute_alu0_Y);
+            DEBUG_EXECUTE0(execute_alu0_ptr, execute_alu0_uop.rd_valid, execute_alu0_prd, execute_alu0_A, execute_alu0_B, alu0.q, execute_alu0_X+execute_alu0_Y);
+        }
     }
-	func iq_alu1.dispatch {
-		wire iq_alu1_A[32];
-		wire iq_alu1_B[32];
-		wire iq_alu1_PC[32];
-		uop_t wire iq_alu1_uop;
-		// SYSTEM instruction never dispatched here.
+    func iq_alu1.dispatch {
+        wire iq_alu1_A[32];
+        wire iq_alu1_B[32];
+        wire iq_alu1_PC[32];
+        uop_t wire iq_alu1_uop;
+        // SYSTEM instruction never dispatched here.
 
-		iq_alu1_uop = iq_alu1.dispatch_uop;
-		iq_alu1_PC = rob.readPC1(iq_alu1.dispatch_ptr);
-		any {
-			iq_alu1_uop.rs1_sel == RS1_SEL_REG && iq_alu1_uop.rs1_valid: iq_alu1_A = gpr.readC(iq_alu1.dispatch_prs1);
-			iq_alu1_uop.rs1_sel == RS1_SEL_REG && !iq_alu1_uop.rs1_valid: iq_alu1_A = 0;
-			iq_alu1_uop.rs1_sel == RS1_SEL_PC: iq_alu1_A = iq_alu1_PC;
-		}
-		any {
-			iq_alu1_uop.rs2_sel == RS2_SEL_REG && iq_alu1_uop.rs2_valid: iq_alu1_B = gpr.readD(iq_alu1.dispatch_prs2);
-			iq_alu1_uop.rs2_sel == RS2_SEL_REG && !iq_alu1_uop.rs2_valid: iq_alu1_B = 0;
-			iq_alu1_uop.rs2_sel == RS2_SEL_IMM: iq_alu1_B = iq_alu1.dispatch_imm;
-		}
-		if(iq_alu1_uop.branch) {
-			execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd,
-					iq_alu1_A, iq_alu1_B, iq_alu1_PC, iq_alu1.dispatch_imm);
-		} else if(iq_alu1_uop.jal) {
-			execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd,
-					iq_alu1_PC, 4, iq_alu1_PC, iq_alu1.dispatch_imm);
-		} else if(iq_alu1_uop.jalr) {
-			execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd,
-					iq_alu1_PC, 4, iq_alu1_A, iq_alu1.dispatch_imm);
-		} else {
-			execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd,
-					iq_alu1_A, iq_alu1_B, 0, 0);
-		}
-		DEBUG_DISPATCH1(iq_alu1.dispatch_ptr, iq_alu1_PC, iq_alu1_uop.rd_valid, iq_alu1.dispatch_prd,
-				iq_alu1_uop.rs1_sel, iq_alu1_uop.rs1_valid, iq_alu1.dispatch_prs1, iq_alu1_A,
-				iq_alu1_uop.rs2_sel, iq_alu1_uop.rs2_valid, iq_alu1.dispatch_prs2, iq_alu1_B);
-	}
+        iq_alu1_uop = iq_alu1.dispatch_uop;
+        iq_alu1_PC = rob.readPC1(iq_alu1.dispatch_ptr);
+        any {
+            iq_alu1_uop.rs1_sel == RS1_SEL_REG && iq_alu1_uop.rs1_valid: iq_alu1_A = gpr.readC(iq_alu1.dispatch_prs1);
+            iq_alu1_uop.rs1_sel == RS1_SEL_REG && !iq_alu1_uop.rs1_valid: iq_alu1_A = 0;
+            iq_alu1_uop.rs1_sel == RS1_SEL_PC: iq_alu1_A = iq_alu1_PC;
+        }
+        any {
+            iq_alu1_uop.rs2_sel == RS2_SEL_REG && iq_alu1_uop.rs2_valid: iq_alu1_B = gpr.readD(iq_alu1.dispatch_prs2);
+            iq_alu1_uop.rs2_sel == RS2_SEL_REG && !iq_alu1_uop.rs2_valid: iq_alu1_B = 0;
+            iq_alu1_uop.rs2_sel == RS2_SEL_IMM: iq_alu1_B = iq_alu1.dispatch_imm;
+        }
+        if(iq_alu1_uop.branch) {
+            execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd,
+                    iq_alu1_A, iq_alu1_B, iq_alu1_PC, iq_alu1.dispatch_imm);
+        } else if(iq_alu1_uop.jal) {
+            execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd,
+                    iq_alu1_PC, 4, iq_alu1_PC, iq_alu1.dispatch_imm);
+        } else if(iq_alu1_uop.jalr) {
+            execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd,
+                    iq_alu1_PC, 4, iq_alu1_A, iq_alu1.dispatch_imm);
+        } else {
+            execute_alu1.invoke(iq_alu1.dispatch_ptr, iq_alu1_uop, iq_alu1.dispatch_prd,
+                    iq_alu1_A, iq_alu1_B, 0, 0);
+        }
+        DEBUG_DISPATCH1(iq_alu1.dispatch_ptr, iq_alu1_PC, iq_alu1_uop.rd_valid, iq_alu1.dispatch_prd,
+                iq_alu1_uop.rs1_sel, iq_alu1_uop.rs1_valid, iq_alu1.dispatch_prs1, iq_alu1_A,
+                iq_alu1_uop.rs2_sel, iq_alu1_uop.rs2_valid, iq_alu1.dispatch_prs2, iq_alu1_B);
+    }
     proc execute_alu1 {
-		if(!flush) {
-			alu1.exe(execute_alu1_A, execute_alu1_B, execute_alu1_uop.uop[FN_SIZE-1:0]);
-			writeback_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd, alu1.q, execute_alu1_X+execute_alu1_Y);
-			DEBUG_EXECUTE1(execute_alu1_ptr, execute_alu1_uop.rd_valid, execute_alu1_prd, execute_alu1_A, execute_alu1_B, alu1.q, execute_alu1_X+execute_alu1_Y);
-		}
+        if(!flush) {
+            alu1.exe(execute_alu1_A, execute_alu1_B, execute_alu1_uop.uop[FN_SIZE-1:0]);
+            writeback_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd, alu1.q, execute_alu1_X+execute_alu1_Y);
+            DEBUG_EXECUTE1(execute_alu1_ptr, execute_alu1_uop.rd_valid, execute_alu1_prd, execute_alu1_A, execute_alu1_B, alu1.q, execute_alu1_X+execute_alu1_Y);
+        }
     }
-	func iq_lsu0.dispatch {
-		wire iq_lsu0_A[32];
-		wire iq_lsu0_B[32];
-		wire iq_lsu0_PC[32];
-		uop_t wire iq_lsu0_uop;
-		// SYSTEM instruction never dispatched here.
+    func iq_lsu0.dispatch {
+        wire iq_lsu0_A[32];
+        wire iq_lsu0_B[32];
+        wire iq_lsu0_PC[32];
+        uop_t wire iq_lsu0_uop;
+        // SYSTEM instruction never dispatched here.
 
-		iq_lsu0_uop = iq_lsu0.dispatch_uop;
-		iq_lsu0_PC = rob.readPC1(iq_lsu0.dispatch_ptr);
-		any {
-			iq_lsu0_uop.rs1_sel == RS1_SEL_REG && iq_lsu0_uop.rs1_valid: iq_lsu0_A = gpr.readE(iq_lsu0.dispatch_prs1);
-			iq_lsu0_uop.rs1_sel == RS1_SEL_REG && !iq_lsu0_uop.rs1_valid: iq_lsu0_A = 0;
-		}
-		any {
-			iq_lsu0_uop.rs2_sel == RS2_SEL_REG && iq_lsu0_uop.rs2_valid: iq_lsu0_B = gpr.readF(iq_lsu0.dispatch_prs2);
-			iq_lsu0_uop.rs2_sel == RS2_SEL_REG && !iq_lsu0_uop.rs2_valid: iq_lsu0_B = 0;
-			iq_lsu0_uop.rs2_sel == RS2_SEL_IMM: iq_lsu0_B = iq_lsu0.dispatch_imm;
-		}
-		any {
-			iq_lsu0_uop.store: {
-				execute_lsu0.invoke(iq_lsu0.dispatch_ptr, iq_lsu0_uop, iq_lsu0.dispatch_prd,
-						iq_lsu0_A, iq_lsu0.dispatch_imm, iq_lsu0_B);
-			}
-			iq_lsu0_uop.load: {
-				execute_lsu0.invoke(iq_lsu0.dispatch_ptr, iq_lsu0_uop, iq_lsu0.dispatch_prd,
-						iq_lsu0_A, iq_lsu0_B, 0);
-			}
-		}
-		DEBUG_DISPATCH2(iq_lsu0.dispatch_ptr, iq_lsu0_PC, iq_lsu0_uop.rd_valid, iq_lsu0.dispatch_prd,
-				iq_alu0_uop.rs1_sel, iq_lsu0_uop.rs1_valid, iq_lsu0.dispatch_prs1, iq_lsu0_A,
-				iq_alu0_uop.rs2_sel, iq_lsu0_uop.rs2_valid, iq_lsu0.dispatch_prs2, iq_lsu0_B);
-	}
-	func lsu0.full {
-		iq_lsu0.stall();
-	}
+        iq_lsu0_uop = iq_lsu0.dispatch_uop;
+        iq_lsu0_PC = rob.readPC1(iq_lsu0.dispatch_ptr);
+        any {
+            iq_lsu0_uop.rs1_sel == RS1_SEL_REG && iq_lsu0_uop.rs1_valid: iq_lsu0_A = gpr.readE(iq_lsu0.dispatch_prs1);
+            iq_lsu0_uop.rs1_sel == RS1_SEL_REG && !iq_lsu0_uop.rs1_valid: iq_lsu0_A = 0;
+        }
+        any {
+            iq_lsu0_uop.rs2_sel == RS2_SEL_REG && iq_lsu0_uop.rs2_valid: iq_lsu0_B = gpr.readF(iq_lsu0.dispatch_prs2);
+            iq_lsu0_uop.rs2_sel == RS2_SEL_REG && !iq_lsu0_uop.rs2_valid: iq_lsu0_B = 0;
+            iq_lsu0_uop.rs2_sel == RS2_SEL_IMM: iq_lsu0_B = iq_lsu0.dispatch_imm;
+        }
+        any {
+            iq_lsu0_uop.store: {
+                execute_lsu0.invoke(iq_lsu0.dispatch_ptr, iq_lsu0_uop, iq_lsu0.dispatch_prd,
+                        iq_lsu0_A, iq_lsu0.dispatch_imm, iq_lsu0_B);
+            }
+            iq_lsu0_uop.load: {
+                execute_lsu0.invoke(iq_lsu0.dispatch_ptr, iq_lsu0_uop, iq_lsu0.dispatch_prd,
+                        iq_lsu0_A, iq_lsu0_B, 0);
+            }
+        }
+        DEBUG_DISPATCH2(iq_lsu0.dispatch_ptr, iq_lsu0_PC, iq_lsu0_uop.rd_valid, iq_lsu0.dispatch_prd,
+                iq_alu0_uop.rs1_sel, iq_lsu0_uop.rs1_valid, iq_lsu0.dispatch_prs1, iq_lsu0_A,
+                iq_alu0_uop.rs2_sel, iq_lsu0_uop.rs2_valid, iq_lsu0.dispatch_prs2, iq_lsu0_B);
+    }
+    func lsu0.full {
+        iq_lsu0.stall();
+    }
     proc execute_lsu0 {
-		if(!flush) {
-			lsu0.issue(execute_lsu0_ptr, execute_lsu0_prd, execute_lsu0_uop, execute_lsu0_A+execute_lsu0_B, execute_lsu0_data);
-			DEBUG_EXECUTE2(execute_lsu0_ptr, execute_lsu0_uop.rd_valid, execute_lsu0_prd, execute_lsu0_A, execute_lsu0_B, execute_lsu0_data);
-			finish();
-		}
+        if(!flush) {
+            lsu0.issue(execute_lsu0_ptr, execute_lsu0_prd, execute_lsu0_uop, execute_lsu0_A+execute_lsu0_B, execute_lsu0_data);
+            DEBUG_EXECUTE2(execute_lsu0_ptr, execute_lsu0_uop.rd_valid, execute_lsu0_prd, execute_lsu0_A, execute_lsu0_B, execute_lsu0_data);
+            finish();
+        }
     }
-	func lsu0.writeback {
-		uop_t wire writeback_lsu0_uop;
+    func lsu0.writeback {
+        uop_t wire writeback_lsu0_uop;
 
-		if(!flush) {
-			writeback_lsu0_uop = lsu0.writeback_uop;
-			rob.complete_lsu0(lsu0.writeback_ptr);
-			if(writeback_lsu0_uop.rd_valid) {
-				gpr.writeC(lsu0.writeback_prd, lsu0.writeback_data);
-				iq_alu0.wakeup2(lsu0.writeback_prd);
-				iq_alu1.wakeup2(lsu0.writeback_prd);
-				iq_lsu0.wakeup2(lsu0.writeback_prd);
-				register_status_table[lsu0.writeback_prd] := READY;
-			}
-			DEBUG_WRITEBACK2(lsu0.writeback_ptr, writeback_lsu0_uop.rd_valid, lsu0.writeback_prd, lsu0.writeback_data);
-		}
-	}
+        if(!flush) {
+            writeback_lsu0_uop = lsu0.writeback_uop;
+            rob.complete_lsu0(lsu0.writeback_ptr);
+            if(writeback_lsu0_uop.rd_valid) {
+                gpr.writeC(lsu0.writeback_prd, lsu0.writeback_data);
+                iq_alu0.wakeup2(lsu0.writeback_prd);
+                iq_alu1.wakeup2(lsu0.writeback_prd);
+                iq_lsu0.wakeup2(lsu0.writeback_prd);
+                register_status_table[lsu0.writeback_prd] := READY;
+            }
+            DEBUG_WRITEBACK2(lsu0.writeback_ptr, writeback_lsu0_uop.rd_valid, lsu0.writeback_prd, lsu0.writeback_data);
+        }
+    }
     proc writeback_alu0 {
-		if(!flush) {
-			if(writeback_alu0_uop.rd_valid) {
-				gpr.writeA(writeback_alu0_prd, writeback_alu0_q);
-				iq_alu0.wakeup0(writeback_alu0_prd);
-				iq_alu1.wakeup0(writeback_alu0_prd);
-				iq_lsu0.wakeup0(writeback_alu0_prd);
-				register_status_table[writeback_alu0_prd] := READY;
-			}
-			if(writeback_alu0_uop.branch) {
-				rob.complete_alu0(writeback_alu0_ptr, writeback_alu0_q, writeback_alu0_target, 0);
-			} else if(writeback_alu0_uop.jal || writeback_alu0_uop.jalr) {
-				rob.complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target, 0);
-			} else if(writeback_alu0_uop.csr) {
-				if(writeback_alu0_uop.csr_write) {
-					csr.write(rob.head_ptr, writeback_alu0_ptr, writeback_alu0_target, writeback_alu0_q);
-				}
-				rob.complete_alu0(writeback_alu0_ptr, 0, 0, csr.write_error);
-			} else {
-				rob.complete_alu0(writeback_alu0_ptr, 0, 0, 0);
-			}
-			DEBUG_WRITEBACK0(writeback_alu0_ptr, writeback_alu0_uop.rd_valid, writeback_alu0_prd, writeback_alu0_q, writeback_alu0_target);
-			finish();
-		}
+        if(!flush) {
+            if(writeback_alu0_uop.rd_valid) {
+                gpr.writeA(writeback_alu0_prd, writeback_alu0_q);
+                iq_alu0.wakeup0(writeback_alu0_prd);
+                iq_alu1.wakeup0(writeback_alu0_prd);
+                iq_lsu0.wakeup0(writeback_alu0_prd);
+                register_status_table[writeback_alu0_prd] := READY;
+            }
+            if(writeback_alu0_uop.branch) {
+                rob.complete_alu0(writeback_alu0_ptr, writeback_alu0_q, writeback_alu0_target, 0);
+            } else if(writeback_alu0_uop.jal || writeback_alu0_uop.jalr) {
+                rob.complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target, 0);
+            } else if(writeback_alu0_uop.csr) {
+                if(writeback_alu0_uop.csr_write) {
+                    csr.write(rob.head_ptr, writeback_alu0_ptr, writeback_alu0_target, writeback_alu0_q);
+                }
+                rob.complete_alu0(writeback_alu0_ptr, 0, 0, csr.write_error);
+            } else {
+                rob.complete_alu0(writeback_alu0_ptr, 0, 0, 0);
+            }
+            DEBUG_WRITEBACK0(writeback_alu0_ptr, writeback_alu0_uop.rd_valid, writeback_alu0_prd, writeback_alu0_q, writeback_alu0_target);
+            finish();
+        }
     }
     proc writeback_alu1 {
-		if(!flush) {
-			if(writeback_alu1_uop.rd_valid) {
-				gpr.writeB(writeback_alu1_prd, writeback_alu1_q);
-				iq_alu0.wakeup1(writeback_alu1_prd);
-				iq_alu1.wakeup1(writeback_alu1_prd);
-				iq_lsu0.wakeup1(writeback_alu1_prd);
-				register_status_table[writeback_alu1_prd] := READY;
-			}
-			if(writeback_alu1_uop.branch) {
-				rob.complete_alu1(writeback_alu1_ptr, writeback_alu1_q, writeback_alu1_target);
-			} else if(writeback_alu1_uop.jal || writeback_alu1_uop.jalr) {
-				rob.complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target);
-			} else {
-				rob.complete_alu1(writeback_alu1_ptr, 0, 0);
-			}
-			finish();
-			DEBUG_WRITEBACK1(writeback_alu1_ptr, writeback_alu1_uop.rd_valid, writeback_alu1_prd, writeback_alu1_q, writeback_alu1_target);
-		}
+        if(!flush) {
+            if(writeback_alu1_uop.rd_valid) {
+                gpr.writeB(writeback_alu1_prd, writeback_alu1_q);
+                iq_alu0.wakeup1(writeback_alu1_prd);
+                iq_alu1.wakeup1(writeback_alu1_prd);
+                iq_lsu0.wakeup1(writeback_alu1_prd);
+                register_status_table[writeback_alu1_prd] := READY;
+            }
+            if(writeback_alu1_uop.branch) {
+                rob.complete_alu1(writeback_alu1_ptr, writeback_alu1_q, writeback_alu1_target);
+            } else if(writeback_alu1_uop.jal || writeback_alu1_uop.jalr) {
+                rob.complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target);
+            } else {
+                rob.complete_alu1(writeback_alu1_ptr, 0, 0);
+            }
+            finish();
+            DEBUG_WRITEBACK1(writeback_alu1_ptr, writeback_alu1_uop.rd_valid, writeback_alu1_prd, writeback_alu1_q, writeback_alu1_target);
+        }
     }
     proc writeback_lsu0 {
     }
-	func rob.commitable {
-		reorder_buffer_t wire commit_entry;
-		uop_t wire commit_uop0;
-		uop_t wire commit_uop1;
-		wire commit_PC0[32];
-		wire commit_PC1[32];
-		cause_t wire commit_cause0;
-		cause_t wire commit_cause1;
-		func_self commit_kill_inst0;
-		func_self commit_kill_inst1;
+    func rob.commitable {
+        reorder_buffer_t wire commit_entry;
+        uop_t wire commit_uop0;
+        uop_t wire commit_uop1;
+        wire commit_PC0[32];
+        wire commit_PC1[32];
+        cause_t wire commit_cause0;
+        cause_t wire commit_cause1;
+        func_self commit_kill_inst0;
+        func_self commit_kill_inst1;
 
-		if(!rewind) {
-			commit_entry = rob.commit();
-			commit_uop0 = commit_entry.uop0;
-			commit_uop1 = commit_entry.uop1;
-			commit_PC0 = {commit_entry.PC, 2'b00};
-			// TODO:
-			commit_PC1 = {commit_entry.PC, 2'b00}+4;
-			commit_cause0 = commit_entry.cause0;
-			commit_cause1 = commit_entry.cause1;
+        if(!rewind) {
+            commit_entry = rob.commit();
+            commit_uop0 = commit_entry.uop0;
+            commit_uop1 = commit_entry.uop1;
+            commit_PC0 = {commit_entry.PC, 2'b00};
+            // TODO:
+            commit_PC1 = {commit_entry.PC, 2'b00}+4;
+            commit_cause0 = commit_entry.cause0;
+            commit_cause1 = commit_entry.cause1;
 
-			if(commit_entry.valid0) {
-				if(commit_uop0.rd_valid) {
-					if(commit_kill_inst0) {
-						if(commit_entry.preg0 != 0) {
-							register_map_table[commit_entry.dreg0] := commit_entry.ppreg0;
-							freelist.push0(commit_entry.preg0);
-						}
-					} else {
-						if(commit_entry.ppreg0 != 0) {
-							freelist.push0(commit_entry.ppreg0);
-						}
-					}
-				}
-				if(commit_uop0.csr_write) {
-					csr.commit(rob.head_ptr);
-					flush(commit_PC0+4);
-					commit_kill_inst1();
-				}
-				if(commit_uop0.ecall) {
-					flush(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, commit_PC0+4, 0));
-					commit_kill_inst1();
-				}
-				if(commit_uop0.ebreak) {
-					flush(csr.trap(BREAKPOINT, commit_PC0, 0));
-					commit_kill_inst1();
-				}
-				if(commit_uop0.mret) {
-					flush(csr.mret());
-					commit_kill_inst1();
-				}
-				if(commit_uop0.jal || commit_uop0.jalr || (commit_uop0.branch && commit_entry.taken0)) {
-					flush(commit_entry.target0);
-					commit_kill_inst1();
-				}
-				if(commit_uop0.store) {
-					lsu0.commit(rob.head_ptr);
-				}
-				if(commit_cause0.illegal_instruction) {
-					commit_kill_inst1();
-					commit_kill_inst0();
-					//TODO: inst0 debug only
-					flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0));
-				}
-			}
-			if(commit_entry.valid1 && commit_kill_inst1) {
-				if(commit_uop1.rd_valid) {
-					register_map_table[commit_entry.dreg1] := commit_entry.ppreg1;
-					if(commit_entry.preg1 != 0) {
-						freelist.push1(commit_entry.preg1);
-					}
-				}
-			}
-			if(commit_entry.valid1 && !commit_kill_inst0 && !commit_kill_inst1) {
-				if(commit_uop1.rd_valid) {
-					if(commit_entry.ppreg1 != 0) {
-						freelist.push1(commit_entry.ppreg1);
-					}
-				}
-				if(commit_uop1.jal || commit_uop1.jalr || (commit_uop1.branch && commit_entry.taken1)) {
-					flush(commit_entry.target1);
-				}
-				if(commit_cause1.illegal_instruction) {
-					//TODO: inst0 debug only
-					flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC1, commit_entry.inst1));
-				}
-			}
-		}
-		if(!rewind && !flush && commit_entry.valid0) {
-			DEBUG_COMMIT0(rob.head_ptr, commit_kill_inst0, commit_PC0, commit_entry.inst0, commit_entry.cause0, commit_uop0.rd_valid, commit_entry.dreg0, commit_entry.preg0, commit_entry.ppreg0);
-		}
-		if(!rewind && !flush && commit_entry.valid1) {
-			DEBUG_COMMIT1(rob.head_ptr+1, commit_kill_inst1, commit_PC1, commit_entry.inst1, commit_entry.cause1, commit_uop1.rd_valid, commit_entry.dreg1, commit_entry.preg1, commit_entry.ppreg1);
-		}
-	}
+            if(commit_entry.valid0) {
+                if(commit_uop0.rd_valid) {
+                    if(commit_kill_inst0) {
+                        if(commit_entry.preg0 != 0) {
+                            register_map_table[commit_entry.dreg0] := commit_entry.ppreg0;
+                            freelist.push0(commit_entry.preg0);
+                        }
+                    } else {
+                        if(commit_entry.ppreg0 != 0) {
+                            freelist.push0(commit_entry.ppreg0);
+                        }
+                    }
+                }
+                if(commit_uop0.csr_write) {
+                    csr.commit(rob.head_ptr);
+                    flush(commit_PC0+4);
+                    commit_kill_inst1();
+                }
+                if(commit_uop0.ecall) {
+                    flush(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, commit_PC0+4, 0));
+                    commit_kill_inst1();
+                }
+                if(commit_uop0.ebreak) {
+                    flush(csr.trap(BREAKPOINT, commit_PC0, 0));
+                    commit_kill_inst1();
+                }
+                if(commit_uop0.mret) {
+                    flush(csr.mret());
+                    commit_kill_inst1();
+                }
+                if(commit_uop0.jal || commit_uop0.jalr || (commit_uop0.branch && commit_entry.taken0)) {
+                    flush(commit_entry.target0);
+                    commit_kill_inst1();
+                }
+                if(commit_uop0.store) {
+                    lsu0.commit(rob.head_ptr);
+                }
+                if(commit_cause0.illegal_instruction) {
+                    commit_kill_inst1();
+                    commit_kill_inst0();
+                    //TODO: inst0 debug only
+                    flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0));
+                }
+            }
+            if(commit_entry.valid1 && commit_kill_inst1) {
+                if(commit_uop1.rd_valid) {
+                    register_map_table[commit_entry.dreg1] := commit_entry.ppreg1;
+                    if(commit_entry.preg1 != 0) {
+                        freelist.push1(commit_entry.preg1);
+                    }
+                }
+            }
+            if(commit_entry.valid1 && !commit_kill_inst0 && !commit_kill_inst1) {
+                if(commit_uop1.rd_valid) {
+                    if(commit_entry.ppreg1 != 0) {
+                        freelist.push1(commit_entry.ppreg1);
+                    }
+                }
+                if(commit_uop1.jal || commit_uop1.jalr || (commit_uop1.branch && commit_entry.taken1)) {
+                    flush(commit_entry.target1);
+                }
+                if(commit_cause1.illegal_instruction) {
+                    //TODO: inst0 debug only
+                    flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC1, commit_entry.inst1));
+                }
+            }
+        }
+        if(!rewind && !flush && commit_entry.valid0) {
+            DEBUG_COMMIT0(rob.head_ptr, commit_kill_inst0, commit_PC0, commit_entry.inst0, commit_entry.cause0, commit_uop0.rd_valid, commit_entry.dreg0, commit_entry.preg0, commit_entry.ppreg0);
+        }
+        if(!rewind && !flush && commit_entry.valid1) {
+            DEBUG_COMMIT1(rob.head_ptr+1, commit_kill_inst1, commit_PC1, commit_entry.inst1, commit_entry.cause1, commit_uop1.rd_valid, commit_entry.dreg1, commit_entry.preg1, commit_entry.ppreg1);
+        }
+    }
     /*
         Interrupts
     */
