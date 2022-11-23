@@ -13,49 +13,7 @@
 #include "free_list.h"
 #include "issue_queue.h"
 #include "issue_queue_in_order.h"
-
-#ifdef ENABLE_DEBUG
-#define DEBUG_RENAME0(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm) \
-        debug_rename0(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
-#define DEBUG_RENAME1(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm) \
-        debug_rename1(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
-#define DEBUG_COMMIT0(ptr, kill, pc, inst, cause, rd_valid, dreg, preg, ppreg) debug_commit0(ptr, kill, pc, inst, cause, rd_valid, dreg, preg, ppreg)
-#define DEBUG_COMMIT1(ptr, kill, pc, inst, cause, rd_valid, dreg, preg, ppreg) debug_commit1(ptr, kill, pc, inst, cause, rd_valid, dreg, preg, ppreg)
-#define DEBUG_REWIND0(dreg, preg, ppreg) debug_rewind0(dreg, preg, ppreg)
-#define DEBUG_REWIND1(dreg, preg, ppreg) debug_rewind1(dreg, preg, ppreg)
-#define DEBUG_FLUSH(newpc) debug_flush(newpc)
-#define DEBUG_DISPATCH0(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data) debug_dispatch0(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
-#define DEBUG_DISPATCH1(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data) debug_dispatch1(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
-#define DEBUG_DISPATCH2(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data) debug_dispatch2(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
-
-#define DEBUG_EXECUTE0(ptr, rd_valid, prd, a, b, q, addr) debug_execute0(ptr, rd_valid, prd, a, b, q, addr)
-#define DEBUG_EXECUTE1(ptr, rd_valid, prd, a, b, q, addr) debug_execute1(ptr, rd_valid, prd, a, b, q, addr)
-#define DEBUG_EXECUTE2(ptr, rd_valid, prd, a, b, data) debug_execute2(ptr, rd_valid, prd, a, b, data)
-#define DEBUG_WRITEBACK0(ptr, rd_valid, prd, q, target) debug_writeback0(ptr, rd_valid, prd, q, target)
-#define DEBUG_WRITEBACK1(ptr, rd_valid, prd, q, target) debug_writeback1(ptr, rd_valid, prd, q, target)
-#define DEBUG_WRITEBACK2(ptr, rd_valid, prd, data) debug_writeback2(ptr, rd_valid, prd, data)
-#define DEBUG_DECODE0(pc, inst, pred) debug_decode0(pc, inst, pred)
-#define DEBUG_DECODE1(pc, inst, pred) debug_decode1(pc, inst, pred)
-#else
-#define DEBUG_RENAME0(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
-#define DEBUG_RENAME1(ptr, pc, inst, rd_valid, lrd, prd, pprd, rs1_valid, rs1_ready, lrs1, prs1, rs2_valid, rs2_ready, lrs2, prs2, cause, imm)
-#define DEBUG_COMMIT0(ptr, kill, pc, inst, cause, rd_valid, dreg, preg, ppreg)
-#define DEBUG_COMMIT1(ptr, kill, pc, inst, cause, rd_valid, dreg, preg, ppreg)
-#define DEBUG_REWIND0(dreg, preg, ppreg)
-#define DEBUG_REWIND1(dreg, preg, ppreg)
-#define DEBUG_FLUSH(newpc)
-#define DEBUG_DISPATCH0(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
-#define DEBUG_DISPATCH1(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
-#define DEBUG_DISPATCH2(ptr, pc, rd_valid, prd, rs1_sel, rs1_valid, prs1, rs1_data, rs2_sel, rs2_valid, prs2, rs2_data)
-#define DEBUG_EXECUTE0(ptr, rd_valid, prd, a, b, q, addr)
-#define DEBUG_EXECUTE1(ptr, rd_valid, prd, a, b, q, addr)
-#define DEBUG_EXECUTE2(ptr, rd_valid, prd, a, b, data)
-#define DEBUG_WRITEBACK0(ptr, rd_valid, prd, q, target, csr_write)
-#define DEBUG_WRITEBACK1(ptr, rd_valid, prd, q, target, csr_write)
-#define DEBUG_WRITEBACK2(ptr, rd_valid, prd, data)
-#define DEBUG_DECODE0(pc, inst, pred)
-#define DEBUG_DECODE1(pc, inst, pred)
-#endif
+#include "debug_log.h"
 
 struct issue_packet_t {
     pc[XLEN];
