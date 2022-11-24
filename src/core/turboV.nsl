@@ -336,7 +336,7 @@ module turboV {
         issue_inst0_uop = decoder_packet0.uop;
         issue_inst1_uop = decoder_packet1.uop;
         // TODO: !flush
-        if(!flush && (freelist.count >= 2) && (!rob.full) && !iq_alu0.full && !iq_alu1.full && !iq_lsu0.full) {
+        if(!flush && (freelist.count >= 2) && !rob.full && !iq_alu0.full && !iq_alu1.full && !iq_lsu0.full) {
             issue_PC = issue_packet.pc[31:2];
             issue_inst0_pc = {issue_PC, 2'b00};
             // TODO:
@@ -367,14 +367,15 @@ module turboV {
                 issue_inst0_pprd = 0;
             }
             if(issue_packet.valid0 && issue_packet.valid1 && issue_inst0_uop.rd_valid && issue_inst1_uop.rd_valid && issue_inst0_lrd == issue_inst1_lrd) {
+				// If inst0.rd == inst1.rd, forward inst0.prd to inst1.pprd
                 issue_inst1_pprd = issue_inst0_prd;
             } else {
                 issue_inst1_pprd = register_map_table[issue_inst1_lrd];
             }
-            if(issue_packet.valid0 && (issue_inst0_lrd != 0)) {
+            if(issue_packet.valid0 && issue_inst0_uop.rd_valid && (issue_inst0_lrd != 0)) {
                 issue_inst0_prd = freelist.pop0();
-                if(!(issue_packet.valid1 && (issue_inst1_lrd != 0)
-                            && (issue_inst0_lrd == issue_inst1_lrd))) {
+                if(!(issue_packet.valid1 && issue_inst0_uop.rd_valid && issue_inst1_uop.rd_valid
+					&& (issue_inst1_lrd != 0) && (issue_inst0_lrd == issue_inst1_lrd))) {
                     if(!flush) {
                         register_map_table[issue_inst0_lrd] := issue_inst0_prd;
                         register_status_table[issue_inst0_prd] := BUSY;
@@ -382,7 +383,7 @@ module turboV {
                     }
                 }
             }
-            if(issue_packet.valid1 && (issue_inst1_lrd != 0)) {
+            if(issue_packet.valid1 && issue_inst1_uop.rd_valid && (issue_inst1_lrd != 0)) {
                 issue_inst1_prd = freelist.pop1();
                 if(!flush) {
                     register_map_table[issue_inst1_lrd] := issue_inst1_prd;
