@@ -240,13 +240,12 @@ module turboV {
                     */
 #define IS_MEMORY(uop) (uop.load || uop.store)
 #define IS_SYSTEM(uop) (uop.csr || uop.mret || uop.ecall || uop.ebreak)
-                    if((!(IS_MEMORY(decode0_uop0) && IS_MEMORY(decode0_uop1)) && (!IS_MEMORY(decode0_uop1)))
-                            && (!(IS_SYSTEM(decode0_uop0) && IS_SYSTEM(decode0_uop1)) && (!IS_SYSTEM(decode0_uop1)))) {
+                    if(!IS_MEMORY(decode0_uop1) && !IS_SYSTEM(decode0_uop1)) {
                         // No structual hazard, issue 2 insts
                         issue.invoke({decode0_fetch_packet.pc,
-                            decode0_fetch_packet.pred0, decode0_fetch_packet.pred1,
-                            decode0_fetch_packet.valid0, decode0_fetch_packet.valid1},
-                            udec0.packet, udec1.packet);
+								decode0_fetch_packet.pred0, decode0_fetch_packet.pred1,
+								decode0_fetch_packet.valid0, decode0_fetch_packet.valid1},
+								udec0.packet, udec1.packet);
                         DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
                         DEBUG_DECODE1(decode0_fetch_packet.pc+4, decode0_fetch_packet.inst1, decode0_fetch_packet.pred1);
                     } else {
@@ -254,23 +253,22 @@ module turboV {
                         // Send another inst to issue stage in next cycle.
                         // decode1 takes care of issue next inst in the cycle.
                         issue.invoke({decode0_fetch_packet.pc,
-                            decode0_fetch_packet.pred0, 1'b0,
-                            decode0_fetch_packet.valid0, 1'b0},
-                            udec0.packet, 0);
+								decode0_fetch_packet.pred0, 1'b0,
+								decode0_fetch_packet.valid0, 1'b0},
+								udec0.packet, 0);
                         decode1_fetch_packet := decode0_fetch_packet;
                         goto decode1;
                         DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
                     }
-                } else if((!decode0_fetch_packet.valid0 && decode0_fetch_packet.valid1)
-                    || (decode0_fetch_packet.valid0 && !decode0_fetch_packet.valid1)) {
+				} else {
                     // Either way0 or way1 is valid.
                     // Both invalid is not enter here, ifetch_unit never pushes such case.
                     // Also, currently, ifetch_unit never pushes inst1 valid && inst0 invalid.
                     // TODO: 
                     issue.invoke({decode0_fetch_packet.pc,
-                        decode0_fetch_packet.pred0, 1'b0,
-                        decode0_fetch_packet.valid0, 1'b0},
-                        udec0.packet, 0);
+							decode0_fetch_packet.pred0, 1'b0,
+							decode0_fetch_packet.valid0, 1'b0},
+							udec0.packet, 0);
                     DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
                 }
             }
@@ -285,9 +283,9 @@ module turboV {
             } else if(!stall_issue && !flush) {
                 udec0.decode(decode1_fetch_packet.inst1);
                 issue.invoke({decode1_fetch_packet.pc+4,
-                    decode1_fetch_packet.pred1, 1'b0,
-                    decode1_fetch_packet.valid1, 1'b0},
-                    udec0.packet, 0);
+						decode1_fetch_packet.pred1, 1'b0,
+						decode1_fetch_packet.valid1, 1'b0},
+						udec0.packet, 0);
                 goto decode0;
                 DEBUG_DECODE0(decode1_fetch_packet.pc+4, decode1_fetch_packet.inst1, decode1_fetch_packet.pred1);
             }
