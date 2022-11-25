@@ -611,7 +611,7 @@ module turboV {
         // SYSTEM instruction never dispatched here.
 
         iq_lsu0_uop = iq_lsu0.dispatch_uop;
-        iq_lsu0_PC = rob.readPC1(iq_lsu0.dispatch_ptr);
+        //iq_lsu0_PC = rob.readPC1(iq_lsu0.dispatch_ptr);
         any {
             iq_lsu0_uop.rs1_sel == RS1_SEL_REG && iq_lsu0_uop.rs1_valid: iq_lsu0_A = gpr.readE(iq_lsu0.dispatch_prs1);
             iq_lsu0_uop.rs1_sel == RS1_SEL_REG && !iq_lsu0_uop.rs1_valid: iq_lsu0_A = 0;
