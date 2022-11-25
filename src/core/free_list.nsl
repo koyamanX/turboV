@@ -64,6 +64,7 @@ module free_list {
                 next_tail = tail + 1;
             }
         }
+
     }
     if(pop) {
         if(next_head >= NUMBER_OF_FREE_LIST) {

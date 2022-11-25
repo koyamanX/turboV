@@ -55,6 +55,7 @@ module reorder_buffer {
 	proc_name rollback();
 	wire redirect_pc[32];
 	func_self redirect(redirect_pc);
+	func_self internal_full();
     
     next_tail = tail + 1;
     next_head = head + 1;
@@ -250,6 +251,11 @@ module reorder_buffer {
 	func will_rollback {
 		stall_pipeline();
 		rollback.invoke();
+		if(internal_full) {
+			// If full, tail points to head entry.
+			// so subtract by 1
+			tail := tail - 1;
+		}
 	}
 	proc rollback seq {
 		reorder_buffer_t wire rollback_entry;
@@ -312,6 +318,60 @@ module reorder_buffer {
 			}
 		}
 		{
+			//TODO:
+			any {
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: rob0 := 0;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: rob1 := 0;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: rob2 := 0;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: rob3 := 0;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: rob4 := 0;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: rob5 := 0;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: rob6 := 0;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: rob7 := 0;
+			}
+			any {
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: rollback_entry = rob0;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: rollback_entry = rob1;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: rollback_entry = rob2;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: rollback_entry = rob3;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: rollback_entry = rob4;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: rollback_entry = rob5;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: rollback_entry = rob6;
+				tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: rollback_entry = rob7;
+			}
+			rollback_entry_uop0 = rollback_entry.uop0;
+			rollback_entry_uop1 = rollback_entry.uop1;
+
+			if(rollback_entry.valid0 && rollback_entry.valid1) {
+				if(rollback_entry_uop0.rd_valid && rollback_entry_uop1.rd_valid && rollback_entry.dreg0 == rollback_entry.dreg1) {
+					rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
+				} else {
+					if(rollback_entry_uop0.rd_valid) {
+						rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
+					}
+					if(rollback_entry_uop1.rd_valid) {
+						rmt_update1(rollback_entry.dreg1, rollback_entry.ppreg1);
+					}
+				}
+				if(rollback_entry_uop0.rd_valid) {
+					freelist_push0(rollback_entry.preg0);
+				}
+				if(rollback_entry_uop1.rd_valid) {
+					freelist_push1(rollback_entry.preg1);
+				}
+			} else {
+				if(rollback_entry.valid0 && rollback_entry_uop0.rd_valid) {
+					rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
+					freelist_push0(rollback_entry.preg0);
+				}
+				if(rollback_entry.valid1 && rollback_entry_uop1.rd_valid) {
+					rmt_update0(rollback_entry.dreg1, rollback_entry.ppreg1);
+					freelist_push1(rollback_entry.preg1);
+				}
+			}
+			tail := tail - 1;
+		}
+		{
 			head := 0;
 			tail := 0;
 			finish();
@@ -322,6 +382,9 @@ module reorder_buffer {
 	}
 	if((tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0])
 		&& (tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES] != head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES])) {
+		internal_full();
+	}
+	func internal_full {
 		full();
 	}
     func complete_alu0 {
