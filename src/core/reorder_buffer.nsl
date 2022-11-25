@@ -235,7 +235,7 @@ module reorder_buffer {
 					commit_entry.preg0, commit_entry.ppreg0);
 		}
 		if(commit_entry.valid1) {
-			debug_commit1(head<<1, commit_kill_inst1,
+			debug_commit1((head<<1)+1, commit_kill_inst1,
 					{commit_entry.PC,2'b00}+4, commit_entry.inst1, commit_entry.cause1,
 					commit_entry_uop1.rd_valid, commit_entry.dreg1,
 					commit_entry.preg1, commit_entry.ppreg1);
