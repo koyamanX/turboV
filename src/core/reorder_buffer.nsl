@@ -226,6 +226,21 @@ module reorder_buffer {
 			head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: {if(commit0) rob6.valid0 := 0; if(commit1) rob6.valid1 := 0;}
 			head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: {if(commit0) rob7.valid0 := 0; if(commit1) rob7.valid1 := 0;}
 		}
+#ifdef ENABLE_DEBUG
+		if(commit_entry.valid0) {
+			debug_commit0(head<<1, commit_kill_inst0,
+					{commit_entry.PC,2'b00}, commit_entry.inst0, commit_entry.cause0,
+					commit_entry_uop0.rd_valid, commit_entry.dreg0,
+					commit_entry.preg0, commit_entry.ppreg0);
+		}
+		if(commit_entry.valid1) {
+			debug_commit1(head<<1, commit_kill_inst1,
+					{commit_entry.PC,2'b00}+4, commit_entry.inst1, commit_entry.cause1,
+					commit_entry_uop1.rd_valid, commit_entry.dreg1,
+					commit_entry.preg1, commit_entry.ppreg1);
+		}
+#endif
+
     }
 	func redirect {
 		stall_pipeline();

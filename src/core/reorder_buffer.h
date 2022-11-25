@@ -61,10 +61,29 @@ declare reorder_buffer {
     input inst1[32];
     func_in issue(PC, valid0, uop0, dreg0, preg0, ppreg0, cause0,
                       valid1, uop1, dreg1, preg1, ppreg1, cause1, inst0, inst1): ptr;
+    output debug_commit_ptr0[REORDER_BUFFER_PTR_SIZE];
+    output debug_commit_kill0;
+    output debug_commit_pc0[32];
+    output debug_commit_inst0[32];
+    output debug_commit_cause0[06];
+    output debug_commit_rd_valid0;
+    output debug_commit_dreg0[5];
+    output debug_commit_preg0[6];
+    output debug_commit_ppreg0[6];
+    func_out debug_commit0(debug_commit_ptr0, debug_commit_kill0, debug_commit_pc0, debug_commit_inst0, debug_commit_cause0, debug_commit_rd_valid0, debug_commit_dreg0, debug_commit_preg0, debug_commit_ppreg0);
+    output debug_commit_ptr1[REORDER_BUFFER_PTR_SIZE];
+    output debug_commit_kill1;
+    output debug_commit_pc1[32];
+    output debug_commit_inst1[32];
+    output debug_commit_cause1[16];
+    output debug_commit_rd_valid1;
+    output debug_commit_dreg1[5];
+    output debug_commit_preg1[6];
+    output debug_commit_ppreg1[6];
+    func_out debug_commit1(debug_commit_ptr1, debug_commit_kill1, debug_commit_pc1, debug_commit_inst1, debug_commit_cause1, debug_commit_rd_valid1, debug_commit_dreg1, debug_commit_preg1, debug_commit_ppreg1);
 #else
     func_in issue(PC, valid0, uop0, dreg0, preg0, ppreg0, cause0,
                       valid1, uop1, dreg1, preg1, ppreg1, cause1): ptr;
-
 #endif
     input complete_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
     input complete_alu0_taken;

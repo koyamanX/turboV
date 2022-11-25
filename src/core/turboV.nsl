@@ -785,4 +785,18 @@ module turboV {
             }
         }
     }
+#ifdef ENABLE_DEBUG
+    func rob.debug_commit0 {
+        debug_commit0(rob.debug_commit_ptr0, rob.debug_commit_kill0,
+						rob.debug_commit_pc0, rob.debug_commit_inst0, rob.debug_commit_cause0,
+						rob.debug_commit_rd_valid0, rob.debug_commit_dreg0,
+						rob.debug_commit_preg0, rob.debug_commit_ppreg0);
+    }
+    func rob.debug_commit1 {
+        debug_commit1(rob.debug_commit_ptr1, rob.debug_commit_kill1,
+						rob.debug_commit_pc1, rob.debug_commit_inst1, rob.debug_commit_cause1,
+						rob.debug_commit_rd_valid1, rob.debug_commit_dreg1,
+						rob.debug_commit_preg1, rob.debug_commit_ppreg1);
+    }
+#endif
 }
