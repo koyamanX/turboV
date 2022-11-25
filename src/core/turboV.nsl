@@ -635,7 +635,7 @@ module turboV {
                 iq_alu0_uop.rs1_sel, iq_lsu0_uop.rs1_valid, iq_lsu0.dispatch_prs1, iq_lsu0_A,
                 iq_alu0_uop.rs2_sel, iq_lsu0_uop.rs2_valid, iq_lsu0.dispatch_prs2, iq_lsu0_B);
     }
-    func lsu0.full {
+	if(lsu0.full || execute_lsu0) {
         iq_lsu0.stall();
     }
     proc execute_lsu0 {

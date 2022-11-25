@@ -174,24 +174,24 @@ public:
         mem[addr+0] = data;
     }
     inline void write_halfword(uint64_t addr, uint16_t data) {
-        mem[addr+1] = data << 8;
-        mem[addr+0] = data << 0;
+        mem[addr+1] = (data >> 8) & 0xff;
+        mem[addr+0] = (data >> 0) & 0xff;
     }
     inline void write_word(uint64_t addr, uint32_t data) {
-        mem[addr+3] = data << 24;
-        mem[addr+2] = data << 16;
-        mem[addr+1] = data << 8;
-        mem[addr+0] = data << 0;
+        mem[addr+3] = (data >> 24) & 0xff;
+        mem[addr+2] = (data >> 16) & 0xff;
+        mem[addr+1] = (data >> 8)  & 0xff;
+        mem[addr+0] = (data >> 0)  & 0xff;
     }
     inline void write_dword(uint64_t addr, uint64_t data) {
-        mem[addr+7] = data << 56;
-        mem[addr+6] = data << 48;
-        mem[addr+5] = data << 40;
-        mem[addr+4] = data << 32;
-        mem[addr+3] = data << 24;
-        mem[addr+2] = data << 16;
-        mem[addr+1] = data << 8;
-        mem[addr+0] = data << 0;
+        mem[addr+7] = (data >> 56) & 0xff;
+        mem[addr+6] = (data >> 48) & 0xff;
+        mem[addr+5] = (data >> 40) & 0xff;
+        mem[addr+4] = (data >> 32) & 0xff;
+        mem[addr+3] = (data >> 24) & 0xff;
+        mem[addr+2] = (data >> 16) & 0xff;
+        mem[addr+1] = (data >> 8)  & 0xff;
+        mem[addr+0] = (data >> 0)  & 0xff;
     }
     uint8_t Run(void) {
         while(1) {
