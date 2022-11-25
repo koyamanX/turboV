@@ -2,7 +2,7 @@
 #define REORDER_BUFFER_H
 
 #include "uops.h"
-#define PTR2AGE(ptr, head) (if(ptr<head) ptr+NUMBER_OF_REORDER_BUFFER*2 else ptr)
+#define PTR2AGE(ptr, head) (if(ptr<head) ptr+((NUMBER_OF_REORDER_BUFFER*2)-1) else ptr)
 
 struct reorder_buffer_t {
     PC[30];        // {PC[29:0], 2'b00}
