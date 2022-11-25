@@ -78,10 +78,7 @@ module turboV {
     reg writeback_lsu0_q[32];
     proc_name writeback_lsu0(writeback_lsu0_prd, writeback_lsu0_q);
     /* Pipeline flush */
-    wire newpc[32];
-    func_self flush(newpc);
-    reg rewind_newpc[32];
-    proc_name rewind(rewind_newpc);
+	func_self flush();
     /* Instruction Fetch Unit */
     ifetch_unit ifu;
     /* Instruction decoder */
@@ -156,47 +153,42 @@ module turboV {
         iq_alu0.stall();
         iq_alu1.stall();
         iq_lsu0.stall();
-        rewind.invoke(newpc);
-        DEBUG_FLUSH(newpc);
     }
-    proc rewind seq {
-        reg i[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
-        reorder_buffer_t wire rewind_entry;
-        uop_t wire rewind_entry_uop0;
-        uop_t wire rewind_entry_uop1;
-
-        for(i := 0; i < NUMBER_OF_REORDER_BUFFER; i++) {
-            {
-                rob.rewind();
-                rewind_entry = rob.commit();
-                rewind_entry_uop0 = rewind_entry.uop0;
-                rewind_entry_uop1 = rewind_entry.uop1;
-
-                if(rewind_entry.valid0) {
-                    if(rewind_entry_uop0.rd_valid) {
-                        register_map_table[rewind_entry.dreg0] := rewind_entry.ppreg0;
-						freelist.push0(rewind_entry.preg0);
-                        DEBUG_REWIND0(rewind_entry.dreg0, rewind_entry.preg0, rewind_entry.ppreg0);
-                    }
-                }
-                if(rewind_entry.valid1) {
-                    if(rewind_entry_uop1.rd_valid) {
-                        if(!(rewind_entry.valid0 && rewind_entry_uop0.rd_valid && rewind_entry.dreg0 == rewind_entry.dreg1)) {
-                            register_map_table[rewind_entry.dreg1] := rewind_entry.ppreg1;
-							freelist.push1(rewind_entry.preg1);
-							DEBUG_REWIND1(rewind_entry.dreg1, rewind_entry.preg1, rewind_entry.ppreg1);
-                        }
-                    }
-                }
-            }
-        }
-        {
-            rob.flush();
-            decode.invoke();
-            ifu.redirect(rewind_newpc);
-            finish();
-        }
+	func rob.redirect_frontend {
+		decode.invoke();
+		ifu.redirect(rob.redirect_frontend_pc);
+		// TODO: rename DEBUG_FLUSH
+        DEBUG_FLUSH(rob.redirect_frontend_pc);
     }
+	func rob.flush_pipeline {
+		flush();
+	}
+	func rob.lsu_commit {
+		lsu0.commit(rob.lsu_commit_ptr);
+	}
+	func rob.csr_commit {
+		csr.commit(rob.csr_commit_ptr);
+	}
+	func rob.freelist_push0 {
+		freelist.push0(rob.freelist_push0_data);
+	}
+	func rob.freelist_push1 {
+		freelist.push1(rob.freelist_push1_data);
+	}
+	func rob.rmt_update0 {
+		register_map_table[rob.rmt_update0_dreg] := rob.rmt_update0_preg;
+	}
+	func rob.rmt_update1 {
+		register_map_table[rob.rmt_update1_dreg] := rob.rmt_update1_preg;
+	}
+	func rob.csr_trap {
+		decode.invoke();
+		ifu.redirect(csr.trap(rob.csr_trap_cause, rob.csr_trap_pc, rob.csr_trap_val));
+	}
+	func rob.csr_mret {
+		decode.invoke();
+		ifu.redirect(csr.mret());
+	}
     proc decode {
         state_name decode0, decode1;
         fetch_packet_t wire decode0_fetch_packet;
@@ -207,7 +199,7 @@ module turboV {
         fetch_packet_t reg decode1_fetch_packet;
 
         state decode0 {
-            if(!ifu.ibuf_empty && !stall_issue && !flush) {
+            if(!rob.stall_pipeline && !ifu.ibuf_empty && !stall_issue && !flush) {
                 decode0_fetch_packet = ifu.ibuf_pop();
                 udec0.decode(decode0_fetch_packet.inst0);
                 udec1.decode(decode0_fetch_packet.inst1);
@@ -718,97 +710,6 @@ module turboV {
         }
     }
     proc writeback_lsu0 {
-    }
-    func rob.commitable {
-        reorder_buffer_t wire commit_entry;
-        uop_t wire commit_uop0;
-        uop_t wire commit_uop1;
-        wire commit_PC0[32];
-        wire commit_PC1[32];
-        cause_t wire commit_cause0;
-        cause_t wire commit_cause1;
-        func_self commit_kill_inst0;
-        func_self commit_kill_inst1;
-
-        if(!rewind) {
-            commit_entry = rob.commit();
-            commit_uop0 = commit_entry.uop0;
-            commit_uop1 = commit_entry.uop1;
-            commit_PC0 = {commit_entry.PC, 2'b00};
-            // TODO:
-            commit_PC1 = {commit_entry.PC, 2'b00}+4;
-            commit_cause0 = commit_entry.cause0;
-            commit_cause1 = commit_entry.cause1;
-
-            if(commit_entry.valid0) {
-                if(commit_uop0.rd_valid) {
-                    if(commit_kill_inst0) {
-						register_map_table[commit_entry.dreg0] := commit_entry.ppreg0;
-						freelist.push0(commit_entry.preg0);
-                    } else {
-						freelist.push0(commit_entry.ppreg0);
-                    }
-                }
-                if(commit_uop0.csr_write) {
-                    csr.commit(rob.head_ptr);
-                    flush(commit_PC0+4);
-                    commit_kill_inst1();
-                }
-                if(commit_uop0.ecall) {
-                    flush(csr.trap(ENVIRONMENT_CALL_FROM_M_MODE, commit_PC0+4, 0));
-                    commit_kill_inst1();
-                }
-                if(commit_uop0.ebreak) {
-                    flush(csr.trap(BREAKPOINT, commit_PC0, 0));
-                    commit_kill_inst1();
-                }
-                if(commit_uop0.mret) {
-                    flush(csr.mret());
-                    commit_kill_inst1();
-                }
-                if(commit_uop0.jal || commit_uop0.jalr || (commit_uop0.branch && commit_entry.taken0)) {
-                    flush(commit_entry.target0);
-                    commit_kill_inst1();
-                }
-                if(commit_uop0.store) {
-                    lsu0.commit(rob.head_ptr);
-                }
-                if(commit_cause0.illegal_instruction) {
-                    commit_kill_inst1();
-                    commit_kill_inst0();
-                    //TODO: inst0 debug only
-                    flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0));
-                }
-            }
-            if(commit_entry.valid1 && commit_kill_inst1) {
-                if(commit_uop1.rd_valid) {
-                    register_map_table[commit_entry.dreg1] := commit_entry.ppreg1;
-					freelist.push1(commit_entry.preg1);
-                }
-            }
-            if(commit_entry.valid1 && !commit_kill_inst0 && !commit_kill_inst1) {
-                if(commit_uop1.rd_valid) {
-					freelist.push1(commit_entry.ppreg1);
-                }
-                if(commit_uop1.jal || commit_uop1.jalr || (commit_uop1.branch && commit_entry.taken1)) {
-                    flush(commit_entry.target1);
-                }
-                if(commit_cause1.illegal_instruction) {
-                    //TODO: inst0 debug only
-                    flush(csr.trap(ILLEGAL_INSTRUCTION, commit_PC1, commit_entry.inst1));
-                }
-            }
-        }
-        if(!rewind && !flush && commit_entry.valid0) {
-            DEBUG_COMMIT0(rob.head_ptr, commit_kill_inst0, commit_PC0, commit_entry.inst0,
-							commit_entry.cause0, commit_uop0.rd_valid, commit_entry.dreg0,
-							commit_entry.preg0, commit_entry.ppreg0);
-        }
-        if(!rewind && !flush && commit_entry.valid1) {
-            DEBUG_COMMIT1(rob.head_ptr+1, commit_kill_inst1, commit_PC1, commit_entry.inst1,
-							commit_entry.cause1, commit_uop1.rd_valid, commit_entry.dreg1,
-							commit_entry.preg1, commit_entry.ppreg1);
-        }
     }
     /*
         Interrupts

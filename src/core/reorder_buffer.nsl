@@ -1,4 +1,6 @@
 #include "reorder_buffer.h"
+#include "uops.h"
+#include "csr.h"
 
 // TODO: Re-implement with LVT based multi-ported RAM
 /*
@@ -47,16 +49,19 @@ module reorder_buffer {
     reorder_buffer_t reg rob7 = 0;
     reg tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1] = 0;
     reg head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1] = 0;
-    wire commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
     wire next_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
     wire next_tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
     reorder_buffer_t wire head_entry;
+	proc_name rollback();
+	wire redirect_pc[32];
+	func_self redirect(redirect_pc);
     
     next_tail = tail + 1;
     next_head = head + 1;
     head_ptr = head << 1;
     head_o = head;
     tail_o = tail;
+
     func issue {
         reorder_buffer_t wire new_entry;
 
@@ -80,131 +85,289 @@ module reorder_buffer {
         new_entry.inst1 = inst1;
 #endif
 
-        if(!flush) {
-            any {
-                tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: rob0 := new_entry;
-                tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: rob1 := new_entry;
-                tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: rob2 := new_entry;
-                tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: rob3 := new_entry;
-                tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: rob4 := new_entry;
-                tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: rob5 := new_entry;
-                tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: rob6 := new_entry;
-                tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: rob7 := new_entry;
-            }
-            tail := next_tail;
-        }
+		any {
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: rob0 := new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: rob1 := new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: rob2 := new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: rob3 := new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: rob4 := new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: rob5 := new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: rob6 := new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: rob7 := new_entry;
+		}
+		tail := next_tail;
         return tail  << 1;
     }
     any {
-        commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: head_entry = rob0;
-        commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: head_entry = rob1;
-        commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: head_entry = rob2;
-        commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: head_entry = rob3;
-        commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: head_entry = rob4;
-        commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: head_entry = rob5;
-        commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: head_entry = rob6;
-        commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: head_entry = rob7;
+        head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: head_entry = rob0;
+        head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: head_entry = rob1;
+        head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: head_entry = rob2;
+        head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: head_entry = rob3;
+        head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: head_entry = rob4;
+        head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: head_entry = rob5;
+        head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: head_entry = rob6;
+        head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: head_entry = rob7;
     }
-    if(!rewind && (head_entry.valid0 || head_entry.valid1) && (!head_entry.completed0 && !head_entry.completed1)) {
-        commitable();
+    if(!rollback && (head_entry.valid0 || head_entry.valid1) && (!head_entry.completed0 && !head_entry.completed1)) {
+		reorder_buffer_t wire commit_entry;
+		uop_t wire commit_entry_uop0;
+		uop_t wire commit_entry_uop1;
+		cause_t wire commit_entry_cause0;
+		cause_t wire commit_entry_cause1;
+		func_self commit_kill_inst0();
+		func_self commit_kill_inst1();
+		func_self will_rollback();
+		wire commit_PC0[32];
+		wire commit_PC1[32];
+		func_self commit0();
+		func_self commit1();
+
+		commit_entry = head_entry;
+		commit_entry_uop0 = commit_entry.uop0;
+		commit_entry_uop1 = commit_entry.uop1;
+		commit_entry_cause0 = commit_entry.cause0;
+		commit_entry_cause1 = commit_entry.cause1;
+		commit_PC0 = {commit_entry.PC, 2'b00};
+		commit_PC1 = {commit_entry.PC, 2'b00}+4;
+
+		if(commit_entry.valid0) {
+			if(commit_entry_uop0.rd_valid && commit0) {
+				freelist_push0(commit_entry.ppreg0);
+			}
+			any {
+				commit_entry_uop0.csr_write: {
+					csr_commit(head<<1);
+					redirect(commit_PC0+4);
+					will_rollback();
+					commit_kill_inst1();
+					commit0();
+				}
+				commit_entry_uop0.ecall: {
+					stall_pipeline();
+					flush_pipeline();
+					csr_trap(ENVIRONMENT_CALL_FROM_M_MODE, commit_PC0+4, 0);
+					commit_kill_inst1();
+					commit0();
+					will_rollback();
+				}
+				commit_entry_uop0.ebreak: {
+					stall_pipeline();
+					flush_pipeline();
+					csr_trap(BREAKPOINT, commit_PC0+4, 0);
+					commit_kill_inst1();
+					commit0();
+					will_rollback();
+				}
+				commit_entry_uop0.mret: {
+					stall_pipeline();
+					flush_pipeline();
+					csr_mret();
+					commit_kill_inst1();
+					commit0();
+					will_rollback();
+				}
+				(commit_entry_uop0.branch && commit_entry.taken0)
+					|| commit_entry_uop0.jalr || commit_entry_uop0.jal: {
+					redirect(commit_entry.target0);
+					will_rollback();
+					commit_kill_inst1();
+					commit0();
+				}
+				commit_entry_uop0.store: {
+					commit0();
+					lsu_commit(head<<1);
+				}
+				commit_entry_cause0.illegal_instruction: {
+					csr_trap(ILLEGAL_INSTRUCTION, commit_PC0+4, 0);
+					stall_pipeline();
+					flush_pipeline();
+					will_rollback();
+					commit_kill_inst0();
+					commit_kill_inst1();
+				}
+				else: {
+					commit0();
+				}
+			}
+		}
+		if(commit_entry.valid1 && !commit_kill_inst1) {
+			if(commit_entry_uop1.rd_valid && commit1) {
+				freelist_push1(commit_entry.ppreg1);
+			}
+			any {
+				(commit_entry_uop1.branch && commit_entry.taken1)
+					|| commit_entry_uop1.jalr || commit_entry_uop1.jal: {
+						commit1();
+						redirect(commit_entry.target1);
+						will_rollback();
+				}
+				commit_entry_cause1.illegal_instruction: {
+					csr_trap(ILLEGAL_INSTRUCTION, commit_PC1+4, 0);
+					stall_pipeline();
+					flush_pipeline();
+					will_rollback();
+				}
+				else: {
+					commit1();
+			    }
+			}
+		}
+		if(!will_rollback) {
+			head := next_head;
+		}
+		// TODO:
+		any {
+			head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: {if(commit0) rob0.valid0 := 0; if(commit1) rob0.valid1 := 0;}
+			head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: {if(commit0) rob1.valid0 := 0; if(commit1) rob1.valid1 := 0;}
+			head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: {if(commit0) rob2.valid0 := 0; if(commit1) rob2.valid1 := 0;}
+			head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: {if(commit0) rob3.valid0 := 0; if(commit1) rob3.valid1 := 0;}
+			head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: {if(commit0) rob4.valid0 := 0; if(commit1) rob4.valid1 := 0;}
+			head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: {if(commit0) rob5.valid0 := 0; if(commit1) rob5.valid1 := 0;}
+			head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: {if(commit0) rob6.valid0 := 0; if(commit1) rob6.valid1 := 0;}
+			head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: {if(commit0) rob7.valid0 := 0; if(commit1) rob7.valid1 := 0;}
+		}
     }
-    if(rewind) {
-        commit_head = tail;
-    } else {
-        commit_head = head;
-    }
-    func commit {
-        if(!flush) {
-            // TODO:
-            any {
-                commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: rob0 := 0;
-                commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: rob1 := 0;
-                commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: rob2 := 0;
-                commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: rob3 := 0;
-                commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: rob4 := 0;
-                commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: rob5 := 0;
-                commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: rob6 := 0;
-                commit_head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: rob7 := 0;
-            }
-            if(rewind) {
-                tail := tail - 1;
-            } else {
-                head := next_head;
-            }
-        }
-        return head_entry;
-    }
-    if(!flush) {
-        if((tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0])
-            && (tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES] != head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES])) {
-            full();
-        }
-    }
+	func redirect {
+		stall_pipeline();
+		flush_pipeline();
+		redirect_frontend(redirect_pc);
+	}
+	func will_rollback {
+		stall_pipeline();
+		rollback.invoke();
+	}
+	proc rollback seq {
+		reorder_buffer_t wire rollback_entry;
+		uop_t wire rollback_entry_uop0;
+		uop_t wire rollback_entry_uop1;
+
+		while(head != tail) {
+			{
+				any {
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: rob0 := 0;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: rob1 := 0;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: rob2 := 0;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: rob3 := 0;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: rob4 := 0;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: rob5 := 0;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: rob6 := 0;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: rob7 := 0;
+				}
+				any {
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: rollback_entry = rob0;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: rollback_entry = rob1;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: rollback_entry = rob2;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: rollback_entry = rob3;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: rollback_entry = rob4;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: rollback_entry = rob5;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: rollback_entry = rob6;
+					tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: rollback_entry = rob7;
+				}
+				rollback_entry_uop0 = rollback_entry.uop0;
+				rollback_entry_uop1 = rollback_entry.uop1;
+
+				if(rollback_entry.valid0 && rollback_entry.valid1) {
+					if(rollback_entry_uop0.rd_valid && rollback_entry_uop1.rd_valid && rollback_entry.dreg0 == rollback_entry.dreg1) {
+						rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
+					} else {
+						if(rollback_entry_uop0.rd_valid) {
+							rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
+						}
+						if(rollback_entry_uop1.rd_valid) {
+							rmt_update1(rollback_entry.dreg1, rollback_entry.ppreg1);
+						}
+					}
+					if(rollback_entry_uop0.rd_valid) {
+						freelist_push0(rollback_entry.preg0);
+					}
+					if(rollback_entry_uop1.rd_valid) {
+						freelist_push1(rollback_entry.preg1);
+					}
+				} else {
+					if(rollback_entry.valid0 && rollback_entry_uop0.rd_valid) {
+						rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
+						freelist_push0(rollback_entry.preg0);
+					}
+					if(rollback_entry.valid1 && rollback_entry_uop1.rd_valid) {
+						rmt_update0(rollback_entry.dreg1, rollback_entry.ppreg1);
+						freelist_push1(rollback_entry.preg1);
+					}
+				}
+				tail := tail - 1;
+			}
+		}
+		{
+			head := 0;
+			tail := 0;
+			finish();
+		}
+	}
+	if(rollback) {
+		stall_pipeline();
+	}
+	if((tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0])
+		&& (tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES] != head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES])) {
+		full();
+	}
     func complete_alu0 {
-        if(!flush) {
-            any {
-                complete_alu0_ptr ==  0: {rob0.completed0 := 0; rob0.target0 := complete_alu0_target; rob0.taken0 := complete_alu0_taken;}
-                complete_alu0_ptr ==  1: {rob0.completed1 := 0; rob0.target1 := complete_alu0_target; rob0.taken1 := complete_alu0_taken;}
-                complete_alu0_ptr ==  2: {rob1.completed0 := 0; rob1.target0 := complete_alu0_target; rob1.taken0 := complete_alu0_taken;}
-                complete_alu0_ptr ==  3: {rob1.completed1 := 0; rob1.target1 := complete_alu0_target; rob1.taken1 := complete_alu0_taken;}
-                complete_alu0_ptr ==  4: {rob2.completed0 := 0; rob2.target0 := complete_alu0_target; rob2.taken0 := complete_alu0_taken;}
-                complete_alu0_ptr ==  5: {rob2.completed1 := 0; rob2.target1 := complete_alu0_target; rob2.taken1 := complete_alu0_taken;}
-                complete_alu0_ptr ==  6: {rob3.completed0 := 0; rob3.target0 := complete_alu0_target; rob3.taken0 := complete_alu0_taken;}
-                complete_alu0_ptr ==  7: {rob3.completed1 := 0; rob3.target1 := complete_alu0_target; rob3.taken1 := complete_alu0_taken;}
-                complete_alu0_ptr ==  8: {rob4.completed0 := 0; rob4.target0 := complete_alu0_target; rob4.taken0 := complete_alu0_taken;}
-                complete_alu0_ptr ==  9: {rob4.completed1 := 0; rob4.target1 := complete_alu0_target; rob4.taken1 := complete_alu0_taken;}
-                complete_alu0_ptr == 10: {rob5.completed0 := 0; rob5.target0 := complete_alu0_target; rob5.taken0 := complete_alu0_taken;}
-                complete_alu0_ptr == 11: {rob5.completed1 := 0; rob5.target1 := complete_alu0_target; rob5.taken1 := complete_alu0_taken;}
-                complete_alu0_ptr == 12: {rob6.completed0 := 0; rob6.target0 := complete_alu0_target; rob6.taken0 := complete_alu0_taken;}
-                complete_alu0_ptr == 13: {rob6.completed1 := 0; rob6.target1 := complete_alu0_target; rob6.taken1 := complete_alu0_taken;}
-                complete_alu0_ptr == 14: {rob7.completed0 := 0; rob7.target0 := complete_alu0_target; rob7.taken0 := complete_alu0_taken;}
-                complete_alu0_ptr == 15: {rob7.completed1 := 0; rob7.target1 := complete_alu0_target; rob7.taken1 := complete_alu0_taken;}
-            }
+		any {
+			complete_alu0_ptr ==  0: {rob0.completed0 := 0; rob0.target0 := complete_alu0_target; rob0.taken0 := complete_alu0_taken;}
+			complete_alu0_ptr ==  1: {rob0.completed1 := 0; rob0.target1 := complete_alu0_target; rob0.taken1 := complete_alu0_taken;}
+			complete_alu0_ptr ==  2: {rob1.completed0 := 0; rob1.target0 := complete_alu0_target; rob1.taken0 := complete_alu0_taken;}
+			complete_alu0_ptr ==  3: {rob1.completed1 := 0; rob1.target1 := complete_alu0_target; rob1.taken1 := complete_alu0_taken;}
+			complete_alu0_ptr ==  4: {rob2.completed0 := 0; rob2.target0 := complete_alu0_target; rob2.taken0 := complete_alu0_taken;}
+			complete_alu0_ptr ==  5: {rob2.completed1 := 0; rob2.target1 := complete_alu0_target; rob2.taken1 := complete_alu0_taken;}
+			complete_alu0_ptr ==  6: {rob3.completed0 := 0; rob3.target0 := complete_alu0_target; rob3.taken0 := complete_alu0_taken;}
+			complete_alu0_ptr ==  7: {rob3.completed1 := 0; rob3.target1 := complete_alu0_target; rob3.taken1 := complete_alu0_taken;}
+			complete_alu0_ptr ==  8: {rob4.completed0 := 0; rob4.target0 := complete_alu0_target; rob4.taken0 := complete_alu0_taken;}
+			complete_alu0_ptr ==  9: {rob4.completed1 := 0; rob4.target1 := complete_alu0_target; rob4.taken1 := complete_alu0_taken;}
+			complete_alu0_ptr == 10: {rob5.completed0 := 0; rob5.target0 := complete_alu0_target; rob5.taken0 := complete_alu0_taken;}
+			complete_alu0_ptr == 11: {rob5.completed1 := 0; rob5.target1 := complete_alu0_target; rob5.taken1 := complete_alu0_taken;}
+			complete_alu0_ptr == 12: {rob6.completed0 := 0; rob6.target0 := complete_alu0_target; rob6.taken0 := complete_alu0_taken;}
+			complete_alu0_ptr == 13: {rob6.completed1 := 0; rob6.target1 := complete_alu0_target; rob6.taken1 := complete_alu0_taken;}
+			complete_alu0_ptr == 14: {rob7.completed0 := 0; rob7.target0 := complete_alu0_target; rob7.taken0 := complete_alu0_taken;}
+			complete_alu0_ptr == 15: {rob7.completed1 := 0; rob7.target1 := complete_alu0_target; rob7.taken1 := complete_alu0_taken;}
         }
     }
     func complete_alu1 {
-        if(!flush) {
-            any {
-                complete_alu1_ptr ==  0: {rob0.completed0 := 0; rob0.target0 := complete_alu1_target; rob0.taken0 := complete_alu1_taken;}
-                complete_alu1_ptr ==  1: {rob0.completed1 := 0; rob0.target1 := complete_alu1_target; rob0.taken1 := complete_alu1_taken;}
-                complete_alu1_ptr ==  2: {rob1.completed0 := 0; rob1.target0 := complete_alu1_target; rob1.taken0 := complete_alu1_taken;}
-                complete_alu1_ptr ==  3: {rob1.completed1 := 0; rob1.target1 := complete_alu1_target; rob1.taken1 := complete_alu1_taken;}
-                complete_alu1_ptr ==  4: {rob2.completed0 := 0; rob2.target0 := complete_alu1_target; rob2.taken0 := complete_alu1_taken;}
-                complete_alu1_ptr ==  5: {rob2.completed1 := 0; rob2.target1 := complete_alu1_target; rob2.taken1 := complete_alu1_taken;}
-                complete_alu1_ptr ==  6: {rob3.completed0 := 0; rob3.target0 := complete_alu1_target; rob3.taken0 := complete_alu1_taken;}
-                complete_alu1_ptr ==  7: {rob3.completed1 := 0; rob3.target1 := complete_alu1_target; rob3.taken1 := complete_alu1_taken;}
-                complete_alu1_ptr ==  8: {rob4.completed0 := 0; rob4.target0 := complete_alu1_target; rob4.taken0 := complete_alu1_taken;}
-                complete_alu1_ptr ==  9: {rob4.completed1 := 0; rob4.target1 := complete_alu1_target; rob4.taken1 := complete_alu1_taken;}
-                complete_alu1_ptr == 10: {rob5.completed0 := 0; rob5.target0 := complete_alu1_target; rob5.taken0 := complete_alu1_taken;}
-                complete_alu1_ptr == 11: {rob5.completed1 := 0; rob5.target1 := complete_alu1_target; rob5.taken1 := complete_alu1_taken;}
-                complete_alu1_ptr == 12: {rob6.completed0 := 0; rob6.target0 := complete_alu1_target; rob6.taken0 := complete_alu1_taken;}
-                complete_alu1_ptr == 13: {rob6.completed1 := 0; rob6.target1 := complete_alu1_target; rob6.taken1 := complete_alu1_taken;}
-                complete_alu1_ptr == 14: {rob7.completed0 := 0; rob7.target0 := complete_alu1_target; rob7.taken0 := complete_alu1_taken;}
-                complete_alu1_ptr == 15: {rob7.completed1 := 0; rob7.target1 := complete_alu1_target; rob7.taken1 := complete_alu1_taken;}
-            }
-        }
+		any {
+			complete_alu1_ptr ==  0: {rob0.completed0 := 0; rob0.target0 := complete_alu1_target; rob0.taken0 := complete_alu1_taken;}
+			complete_alu1_ptr ==  1: {rob0.completed1 := 0; rob0.target1 := complete_alu1_target; rob0.taken1 := complete_alu1_taken;}
+			complete_alu1_ptr ==  2: {rob1.completed0 := 0; rob1.target0 := complete_alu1_target; rob1.taken0 := complete_alu1_taken;}
+			complete_alu1_ptr ==  3: {rob1.completed1 := 0; rob1.target1 := complete_alu1_target; rob1.taken1 := complete_alu1_taken;}
+			complete_alu1_ptr ==  4: {rob2.completed0 := 0; rob2.target0 := complete_alu1_target; rob2.taken0 := complete_alu1_taken;}
+			complete_alu1_ptr ==  5: {rob2.completed1 := 0; rob2.target1 := complete_alu1_target; rob2.taken1 := complete_alu1_taken;}
+			complete_alu1_ptr ==  6: {rob3.completed0 := 0; rob3.target0 := complete_alu1_target; rob3.taken0 := complete_alu1_taken;}
+			complete_alu1_ptr ==  7: {rob3.completed1 := 0; rob3.target1 := complete_alu1_target; rob3.taken1 := complete_alu1_taken;}
+			complete_alu1_ptr ==  8: {rob4.completed0 := 0; rob4.target0 := complete_alu1_target; rob4.taken0 := complete_alu1_taken;}
+			complete_alu1_ptr ==  9: {rob4.completed1 := 0; rob4.target1 := complete_alu1_target; rob4.taken1 := complete_alu1_taken;}
+			complete_alu1_ptr == 10: {rob5.completed0 := 0; rob5.target0 := complete_alu1_target; rob5.taken0 := complete_alu1_taken;}
+			complete_alu1_ptr == 11: {rob5.completed1 := 0; rob5.target1 := complete_alu1_target; rob5.taken1 := complete_alu1_taken;}
+			complete_alu1_ptr == 12: {rob6.completed0 := 0; rob6.target0 := complete_alu1_target; rob6.taken0 := complete_alu1_taken;}
+			complete_alu1_ptr == 13: {rob6.completed1 := 0; rob6.target1 := complete_alu1_target; rob6.taken1 := complete_alu1_taken;}
+			complete_alu1_ptr == 14: {rob7.completed0 := 0; rob7.target0 := complete_alu1_target; rob7.taken0 := complete_alu1_taken;}
+			complete_alu1_ptr == 15: {rob7.completed1 := 0; rob7.target1 := complete_alu1_target; rob7.taken1 := complete_alu1_taken;}
+		}
     }
     func complete_lsu0 {
-        if(!flush) {
-            any {
-                complete_lsu0_ptr ==  0: rob0.completed0 := 0;
-                complete_lsu0_ptr ==  1: rob0.completed1 := 0;
-                complete_lsu0_ptr ==  2: rob1.completed0 := 0;
-                complete_lsu0_ptr ==  3: rob1.completed1 := 0;
-                complete_lsu0_ptr ==  4: rob2.completed0 := 0;
-                complete_lsu0_ptr ==  5: rob2.completed1 := 0;
-                complete_lsu0_ptr ==  6: rob3.completed0 := 0;
-                complete_lsu0_ptr ==  7: rob3.completed1 := 0;
-                complete_lsu0_ptr ==  8: rob4.completed0 := 0;
-                complete_lsu0_ptr ==  9: rob4.completed1 := 0;
-                complete_lsu0_ptr == 10: rob5.completed0 := 0;
-                complete_lsu0_ptr == 11: rob5.completed1 := 0;
-                complete_lsu0_ptr == 12: rob6.completed0 := 0;
-                complete_lsu0_ptr == 13: rob6.completed1 := 0;
-                complete_lsu0_ptr == 14: rob7.completed0 := 0;
-                complete_lsu0_ptr == 15: rob7.completed1 := 0;
-            }
-        }
+		any {
+			complete_lsu0_ptr ==  0: rob0.completed0 := 0;
+			complete_lsu0_ptr ==  1: rob0.completed1 := 0;
+			complete_lsu0_ptr ==  2: rob1.completed0 := 0;
+			complete_lsu0_ptr ==  3: rob1.completed1 := 0;
+			complete_lsu0_ptr ==  4: rob2.completed0 := 0;
+			complete_lsu0_ptr ==  5: rob2.completed1 := 0;
+			complete_lsu0_ptr ==  6: rob3.completed0 := 0;
+			complete_lsu0_ptr ==  7: rob3.completed1 := 0;
+			complete_lsu0_ptr ==  8: rob4.completed0 := 0;
+			complete_lsu0_ptr ==  9: rob4.completed1 := 0;
+			complete_lsu0_ptr == 10: rob5.completed0 := 0;
+			complete_lsu0_ptr == 11: rob5.completed1 := 0;
+			complete_lsu0_ptr == 12: rob6.completed0 := 0;
+			complete_lsu0_ptr == 13: rob6.completed1 := 0;
+			complete_lsu0_ptr == 14: rob7.completed0 := 0;
+			complete_lsu0_ptr == 15: rob7.completed1 := 0;
+		}
     }
     func readPC0 {
         // TODO:
@@ -247,17 +410,5 @@ module reorder_buffer {
             readPC1_ptr == 14: return {rob7.PC, 2'b00};
             readPC1_ptr == 15: return {rob7.PC, 2'b00}+4;
         }
-    }
-    func flush {
-        head := 0;
-        tail := 0;
-        rob0 := 0;
-        rob1 := 0;
-        rob2 := 0;
-        rob3 := 0;
-        rob4 := 0;
-        rob5 := 0;
-        rob6 := 0;
-        rob7 := 0;
     }
 }

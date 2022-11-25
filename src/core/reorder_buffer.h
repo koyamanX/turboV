@@ -66,10 +66,6 @@ declare reorder_buffer {
                       valid1, uop1, dreg1, preg1, ppreg1, cause1): ptr;
 
 #endif
-    output commit_entry[SIZEOF_REORDER_BUFFER_T];
-    func_in commit(): commit_entry;
-    func_out commitable();
-    func_in rewind();
     input complete_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
     input complete_alu0_taken;
     input complete_alu0_target[32];
@@ -87,8 +83,37 @@ declare reorder_buffer {
     input readPC1_ptr[REORDER_BUFFER_PTR_SIZE];
     output PC1[32];
     func_in readPC1(readPC1_ptr): PC1;
-    func_in flush();
-    func_out full();
+	func_out full();
+
+	// to frontend
+	output redirect_frontend_pc[32];
+	func_out redirect_frontend(redirect_frontend_pc);
+	// to pipeline
+	func_out stall_pipeline();
+	func_out flush_pipeline();
+	// to LSU
+	output lsu_commit_ptr[REORDER_BUFFER_PTR_SIZE];
+	func_out lsu_commit(lsu_commit_ptr);
+	// TO CSR
+	output csr_commit_ptr[REORDER_BUFFER_PTR_SIZE];
+	func_out csr_commit(csr_commit_ptr);
+    output csr_trap_cause[32];
+    output csr_trap_pc[32];
+    output csr_trap_val[32];
+    func_out csr_trap(csr_trap_cause, csr_trap_pc, csr_trap_val);
+	func_out csr_mret();
+	// to Freelist
+	output freelist_push0_data[6];
+	func_out freelist_push0(freelist_push0_data);
+	output freelist_push1_data[6];
+	func_out freelist_push1(freelist_push1_data);
+	// to RMT(Register Map Table)
+	output rmt_update0_dreg[5];
+	output rmt_update0_preg[6];
+	func_out rmt_update0(rmt_update0_dreg, rmt_update0_preg);
+	output rmt_update1_dreg[5];
+	output rmt_update1_preg[6];
+	func_out rmt_update1(rmt_update1_dreg, rmt_update1_preg);
 }
 
 #endif
