@@ -51,6 +51,9 @@ module control_status_register {
         mstatush.mbe        := 0;   /* Little-endian */
         wbuf                := 0;
     }
+	func flush {
+		wbuf := 0;
+	}
     func trap {
         mstatus_t wire trap_xstatus;
         mtvec_t wire trap_xtvec;

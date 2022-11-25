@@ -29,6 +29,7 @@ declare control_status_register {
     input commit_ptr[REORDER_BUFFER_PTR_SIZE];
     func_in commit(commit_ptr);
     func_in reset();
+	func_in flush();
     func_in timer_interrupt_req_hart0();
     func_in software_interrupt_req_hart0();
 

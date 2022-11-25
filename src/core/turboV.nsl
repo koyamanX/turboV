@@ -147,6 +147,7 @@ module turboV {
         generate(i_ = 0; i_ < 64; i_++) {
             register_status_table[i_] := READY;
         }
+		csr.flush();
         iq_alu0.flush();
         iq_alu1.flush();
         iq_lsu0.flush();
