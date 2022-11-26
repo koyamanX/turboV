@@ -70,9 +70,6 @@ list(APPEND rv32mi_p
 )
 
 list(APPEND will_fail_tests
-    rv32ui-p-fence_i
-    rv32mi-p-breakpoint
-    rv32mi-p-ma_addr
 )
 
 set(riscv_tests ${rv32ui_p} ${rv32mi_p})
