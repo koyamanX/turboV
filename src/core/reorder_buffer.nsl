@@ -135,7 +135,7 @@ module reorder_buffer {
 			if(commit_entry_uop0.rd_valid && commit0) {
 				freelist_push0(commit_entry.ppreg0);
 			}
-			any {
+			alt {
 				commit_entry_uop0.csr_write: {
 					csr_commit(head<<1);
 					redirect(commit_PC0+4);
@@ -167,19 +167,28 @@ module reorder_buffer {
 					commit0();
 					will_rollback();
 				}
-				(commit_entry_uop0.branch && commit_entry.taken0)
-					|| commit_entry_uop0.jalr || commit_entry_uop0.jal: {
-					redirect(commit_entry.target0);
-					will_rollback();
-					commit_kill_inst1();
-					commit0();
-				}
 				commit_entry_uop0.store: {
 					commit0();
 					lsu_commit(head<<1);
 				}
+				(commit_entry_uop0.branch && commit_entry.taken0)
+					|| commit_entry_uop0.jalr || commit_entry_uop0.jal: {
+					if(commit_entry.target0[1:0] == 2'b00) {
+						redirect(commit_entry.target0);
+						will_rollback();
+						commit_kill_inst1();
+						commit0();
+					} else {
+						csr_trap(INSTRUCTION_ADDRESS_MISALIGNED, commit_PC0, commit_entry.target0);
+						commit0();
+						stall_pipeline();
+						flush_pipeline();
+						will_rollback();
+						commit_kill_inst1();
+					}
+				}
 				commit_entry_cause0.illegal_instruction: {
-					csr_trap(ILLEGAL_INSTRUCTION, commit_PC0+4, 0);
+					csr_trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0);
 					stall_pipeline();
 					flush_pipeline();
 					will_rollback();
@@ -195,15 +204,23 @@ module reorder_buffer {
 			if(commit_entry_uop1.rd_valid && commit1) {
 				freelist_push1(commit_entry.ppreg1);
 			}
-			any {
+			alt {
 				(commit_entry_uop1.branch && commit_entry.taken1)
 					|| commit_entry_uop1.jalr || commit_entry_uop1.jal: {
-						commit1();
-						redirect(commit_entry.target1);
-						will_rollback();
+						if(commit_entry.target1[1:0] == 2'b00) {
+							commit1();
+							redirect(commit_entry.target1);
+							will_rollback();
+						} else {
+							csr_trap(INSTRUCTION_ADDRESS_MISALIGNED, commit_PC1, commit_entry.target1);
+							commit1();
+							stall_pipeline();
+							flush_pipeline();
+							will_rollback();
+						}
 				}
 				commit_entry_cause1.illegal_instruction: {
-					csr_trap(ILLEGAL_INSTRUCTION, commit_PC1+4, 0);
+					csr_trap(ILLEGAL_INSTRUCTION, commit_PC1, commit_entry.inst1);
 					stall_pipeline();
 					flush_pipeline();
 					will_rollback();
