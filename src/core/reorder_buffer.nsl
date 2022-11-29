@@ -136,6 +136,22 @@ module reorder_buffer {
 				freelist_push0(commit_entry.ppreg0);
 			}
 			alt {
+				(commit_entry_cause0.instruction_address_misaligned): {
+					csr_trap(INSTRUCTION_ADDRESS_MISALIGNED, commit_PC0, commit_entry.target0);
+					commit0();
+					stall_pipeline();
+					flush_pipeline();
+					will_rollback();
+					commit_kill_inst1();
+				}
+				commit_entry_cause0.illegal_instruction: {
+					csr_trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0);
+					stall_pipeline();
+					flush_pipeline();
+					will_rollback();
+					commit_kill_inst0();
+					commit_kill_inst1();
+				}
 				commit_entry_uop0.csr_write: {
 					csr_commit(head<<1);
 					redirect(commit_PC0+4);
@@ -173,27 +189,10 @@ module reorder_buffer {
 				}
 				(commit_entry_uop0.branch && commit_entry.taken0)
 					|| commit_entry_uop0.jalr || commit_entry_uop0.jal: {
-					if(commit_entry.target0[1:0] == 2'b00) {
-						redirect(commit_entry.target0);
-						will_rollback();
-						commit_kill_inst1();
-						commit0();
-					} else {
-						csr_trap(INSTRUCTION_ADDRESS_MISALIGNED, commit_PC0, commit_entry.target0);
-						commit0();
-						stall_pipeline();
-						flush_pipeline();
-						will_rollback();
-						commit_kill_inst1();
-					}
-				}
-				commit_entry_cause0.illegal_instruction: {
-					csr_trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0);
-					stall_pipeline();
-					flush_pipeline();
+					redirect(commit_entry.target0);
 					will_rollback();
-					commit_kill_inst0();
 					commit_kill_inst1();
+					commit0();
 				}
 				else: {
 					commit0();
@@ -205,24 +204,23 @@ module reorder_buffer {
 				freelist_push1(commit_entry.ppreg1);
 			}
 			alt {
-				(commit_entry_uop1.branch && commit_entry.taken1)
-					|| commit_entry_uop1.jalr || commit_entry_uop1.jal: {
-						if(commit_entry.target1[1:0] == 2'b00) {
-							commit1();
-							redirect(commit_entry.target1);
-							will_rollback();
-						} else {
-							csr_trap(INSTRUCTION_ADDRESS_MISALIGNED, commit_PC1, commit_entry.target1);
-							commit1();
-							stall_pipeline();
-							flush_pipeline();
-							will_rollback();
-						}
+				(commit_entry_cause1.instruction_address_misaligned): {
+					csr_trap(INSTRUCTION_ADDRESS_MISALIGNED, commit_PC1, commit_entry.target1);
+					commit1();
+					stall_pipeline();
+					flush_pipeline();
+					will_rollback();
 				}
 				commit_entry_cause1.illegal_instruction: {
 					csr_trap(ILLEGAL_INSTRUCTION, commit_PC1, commit_entry.inst1);
 					stall_pipeline();
 					flush_pipeline();
+					will_rollback();
+				}
+				(commit_entry_uop1.branch && commit_entry.taken1)
+					|| commit_entry_uop1.jalr || commit_entry_uop1.jal: {
+					commit1();
+					redirect(commit_entry.target1);
 					will_rollback();
 				}
 				else: {
@@ -406,42 +404,42 @@ module reorder_buffer {
 	}
     func complete_alu0 {
 		any {
-			complete_alu0_ptr ==  0: {rob0.completed0 := 0; rob0.target0 := complete_alu0_target; rob0.taken0 := complete_alu0_taken;}
-			complete_alu0_ptr ==  1: {rob0.completed1 := 0; rob0.target1 := complete_alu0_target; rob0.taken1 := complete_alu0_taken;}
-			complete_alu0_ptr ==  2: {rob1.completed0 := 0; rob1.target0 := complete_alu0_target; rob1.taken0 := complete_alu0_taken;}
-			complete_alu0_ptr ==  3: {rob1.completed1 := 0; rob1.target1 := complete_alu0_target; rob1.taken1 := complete_alu0_taken;}
-			complete_alu0_ptr ==  4: {rob2.completed0 := 0; rob2.target0 := complete_alu0_target; rob2.taken0 := complete_alu0_taken;}
-			complete_alu0_ptr ==  5: {rob2.completed1 := 0; rob2.target1 := complete_alu0_target; rob2.taken1 := complete_alu0_taken;}
-			complete_alu0_ptr ==  6: {rob3.completed0 := 0; rob3.target0 := complete_alu0_target; rob3.taken0 := complete_alu0_taken;}
-			complete_alu0_ptr ==  7: {rob3.completed1 := 0; rob3.target1 := complete_alu0_target; rob3.taken1 := complete_alu0_taken;}
-			complete_alu0_ptr ==  8: {rob4.completed0 := 0; rob4.target0 := complete_alu0_target; rob4.taken0 := complete_alu0_taken;}
-			complete_alu0_ptr ==  9: {rob4.completed1 := 0; rob4.target1 := complete_alu0_target; rob4.taken1 := complete_alu0_taken;}
-			complete_alu0_ptr == 10: {rob5.completed0 := 0; rob5.target0 := complete_alu0_target; rob5.taken0 := complete_alu0_taken;}
-			complete_alu0_ptr == 11: {rob5.completed1 := 0; rob5.target1 := complete_alu0_target; rob5.taken1 := complete_alu0_taken;}
-			complete_alu0_ptr == 12: {rob6.completed0 := 0; rob6.target0 := complete_alu0_target; rob6.taken0 := complete_alu0_taken;}
-			complete_alu0_ptr == 13: {rob6.completed1 := 0; rob6.target1 := complete_alu0_target; rob6.taken1 := complete_alu0_taken;}
-			complete_alu0_ptr == 14: {rob7.completed0 := 0; rob7.target0 := complete_alu0_target; rob7.taken0 := complete_alu0_taken;}
-			complete_alu0_ptr == 15: {rob7.completed1 := 0; rob7.target1 := complete_alu0_target; rob7.taken1 := complete_alu0_taken;}
+			complete_alu0_ptr ==  0: {rob0.completed0 := 0; rob0.target0 := complete_alu0_target; rob0.taken0 := complete_alu0_taken; rob0.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr ==  1: {rob0.completed1 := 0; rob0.target1 := complete_alu0_target; rob0.taken1 := complete_alu0_taken; rob0.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr ==  2: {rob1.completed0 := 0; rob1.target0 := complete_alu0_target; rob1.taken0 := complete_alu0_taken; rob1.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr ==  3: {rob1.completed1 := 0; rob1.target1 := complete_alu0_target; rob1.taken1 := complete_alu0_taken; rob1.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr ==  4: {rob2.completed0 := 0; rob2.target0 := complete_alu0_target; rob2.taken0 := complete_alu0_taken; rob2.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr ==  5: {rob2.completed1 := 0; rob2.target1 := complete_alu0_target; rob2.taken1 := complete_alu0_taken; rob2.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr ==  6: {rob3.completed0 := 0; rob3.target0 := complete_alu0_target; rob3.taken0 := complete_alu0_taken; rob3.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr ==  7: {rob3.completed1 := 0; rob3.target1 := complete_alu0_target; rob3.taken1 := complete_alu0_taken; rob3.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr ==  8: {rob4.completed0 := 0; rob4.target0 := complete_alu0_target; rob4.taken0 := complete_alu0_taken; rob4.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr ==  9: {rob4.completed1 := 0; rob4.target1 := complete_alu0_target; rob4.taken1 := complete_alu0_taken; rob4.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr == 10: {rob5.completed0 := 0; rob5.target0 := complete_alu0_target; rob5.taken0 := complete_alu0_taken; rob5.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr == 11: {rob5.completed1 := 0; rob5.target1 := complete_alu0_target; rob5.taken1 := complete_alu0_taken; rob5.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr == 12: {rob6.completed0 := 0; rob6.target0 := complete_alu0_target; rob6.taken0 := complete_alu0_taken; rob6.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr == 13: {rob6.completed1 := 0; rob6.target1 := complete_alu0_target; rob6.taken1 := complete_alu0_taken; rob6.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr == 14: {rob7.completed0 := 0; rob7.target0 := complete_alu0_target; rob7.taken0 := complete_alu0_taken; rob7.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			complete_alu0_ptr == 15: {rob7.completed1 := 0; rob7.target1 := complete_alu0_target; rob7.taken1 := complete_alu0_taken; rob7.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
         }
     }
     func complete_alu1 {
 		any {
-			complete_alu1_ptr ==  0: {rob0.completed0 := 0; rob0.target0 := complete_alu1_target; rob0.taken0 := complete_alu1_taken;}
-			complete_alu1_ptr ==  1: {rob0.completed1 := 0; rob0.target1 := complete_alu1_target; rob0.taken1 := complete_alu1_taken;}
-			complete_alu1_ptr ==  2: {rob1.completed0 := 0; rob1.target0 := complete_alu1_target; rob1.taken0 := complete_alu1_taken;}
-			complete_alu1_ptr ==  3: {rob1.completed1 := 0; rob1.target1 := complete_alu1_target; rob1.taken1 := complete_alu1_taken;}
-			complete_alu1_ptr ==  4: {rob2.completed0 := 0; rob2.target0 := complete_alu1_target; rob2.taken0 := complete_alu1_taken;}
-			complete_alu1_ptr ==  5: {rob2.completed1 := 0; rob2.target1 := complete_alu1_target; rob2.taken1 := complete_alu1_taken;}
-			complete_alu1_ptr ==  6: {rob3.completed0 := 0; rob3.target0 := complete_alu1_target; rob3.taken0 := complete_alu1_taken;}
-			complete_alu1_ptr ==  7: {rob3.completed1 := 0; rob3.target1 := complete_alu1_target; rob3.taken1 := complete_alu1_taken;}
-			complete_alu1_ptr ==  8: {rob4.completed0 := 0; rob4.target0 := complete_alu1_target; rob4.taken0 := complete_alu1_taken;}
-			complete_alu1_ptr ==  9: {rob4.completed1 := 0; rob4.target1 := complete_alu1_target; rob4.taken1 := complete_alu1_taken;}
-			complete_alu1_ptr == 10: {rob5.completed0 := 0; rob5.target0 := complete_alu1_target; rob5.taken0 := complete_alu1_taken;}
-			complete_alu1_ptr == 11: {rob5.completed1 := 0; rob5.target1 := complete_alu1_target; rob5.taken1 := complete_alu1_taken;}
-			complete_alu1_ptr == 12: {rob6.completed0 := 0; rob6.target0 := complete_alu1_target; rob6.taken0 := complete_alu1_taken;}
-			complete_alu1_ptr == 13: {rob6.completed1 := 0; rob6.target1 := complete_alu1_target; rob6.taken1 := complete_alu1_taken;}
-			complete_alu1_ptr == 14: {rob7.completed0 := 0; rob7.target0 := complete_alu1_target; rob7.taken0 := complete_alu1_taken;}
-			complete_alu1_ptr == 15: {rob7.completed1 := 0; rob7.target1 := complete_alu1_target; rob7.taken1 := complete_alu1_taken;}
+			complete_alu1_ptr ==  0: {rob0.completed0 := 0; rob0.target0 := complete_alu1_target; rob0.taken0 := complete_alu1_taken; rob0.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr ==  1: {rob0.completed1 := 0; rob0.target1 := complete_alu1_target; rob0.taken1 := complete_alu1_taken; rob0.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr ==  2: {rob1.completed0 := 0; rob1.target0 := complete_alu1_target; rob1.taken0 := complete_alu1_taken; rob1.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr ==  3: {rob1.completed1 := 0; rob1.target1 := complete_alu1_target; rob1.taken1 := complete_alu1_taken; rob1.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr ==  4: {rob2.completed0 := 0; rob2.target0 := complete_alu1_target; rob2.taken0 := complete_alu1_taken; rob2.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr ==  5: {rob2.completed1 := 0; rob2.target1 := complete_alu1_target; rob2.taken1 := complete_alu1_taken; rob2.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr ==  6: {rob3.completed0 := 0; rob3.target0 := complete_alu1_target; rob3.taken0 := complete_alu1_taken; rob3.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr ==  7: {rob3.completed1 := 0; rob3.target1 := complete_alu1_target; rob3.taken1 := complete_alu1_taken; rob3.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr ==  8: {rob4.completed0 := 0; rob4.target0 := complete_alu1_target; rob4.taken0 := complete_alu1_taken; rob4.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr ==  9: {rob4.completed1 := 0; rob4.target1 := complete_alu1_target; rob4.taken1 := complete_alu1_taken; rob4.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr == 10: {rob5.completed0 := 0; rob5.target0 := complete_alu1_target; rob5.taken0 := complete_alu1_taken; rob5.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr == 11: {rob5.completed1 := 0; rob5.target1 := complete_alu1_target; rob5.taken1 := complete_alu1_taken; rob5.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr == 12: {rob6.completed0 := 0; rob6.target0 := complete_alu1_target; rob6.taken0 := complete_alu1_taken; rob6.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr == 13: {rob6.completed1 := 0; rob6.target1 := complete_alu1_target; rob6.taken1 := complete_alu1_taken; rob6.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr == 14: {rob7.completed0 := 0; rob7.target0 := complete_alu1_target; rob7.taken0 := complete_alu1_taken; rob7.cause0 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			complete_alu1_ptr == 15: {rob7.completed1 := 0; rob7.target1 := complete_alu1_target; rob7.taken1 := complete_alu1_taken; rob7.cause1 := SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
 		}
     }
     func complete_lsu0 {

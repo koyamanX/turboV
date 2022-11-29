@@ -671,23 +671,29 @@ module turboV {
     proc writeback_alu0 {
         if(!flush) {
             if(writeback_alu0_uop.rd_valid) {
-                gpr.writeA(writeback_alu0_prd, writeback_alu0_q);
+				if((writeback_alu0_uop.jal || writeback_alu0_uop.jalr || (writeback_alu0_uop.branch && writeback_alu0_q)) && ((writeback_alu0_target[1:0] & csr.ialign) != 2'b00)) {
+					gpr.writeA(writeback_alu0_prd, 0);
+				} else {
+					gpr.writeA(writeback_alu0_prd, writeback_alu0_q);
+				}
                 iq_alu0.wakeup0(writeback_alu0_prd);
                 iq_alu1.wakeup0(writeback_alu0_prd);
                 iq_lsu0.wakeup0(writeback_alu0_prd);
                 register_status_table[writeback_alu0_prd] := READY;
             }
             if(writeback_alu0_uop.branch) {
-                rob.complete_alu0(writeback_alu0_ptr, writeback_alu0_q, writeback_alu0_target);
-            } else if(writeback_alu0_uop.jal || writeback_alu0_uop.jalr) {
-                rob.complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target);
+                rob.complete_alu0(writeback_alu0_ptr, writeback_alu0_q, writeback_alu0_target, (writeback_alu0_q && ((writeback_alu0_target[1:0] & csr.ialign) != 2'b00)));
+            } else if(writeback_alu0_uop.jal) {
+                rob.complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target, ((writeback_alu0_target[1:0] & csr.ialign) != 2'b00));
+			} else if(writeback_alu0_uop.jalr) {
+                rob.complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target & 0xfffffffe, (((writeback_alu0_target[1:0]&0x2) & csr.ialign) != 2'b00));
             } else if(writeback_alu0_uop.csr) {
                 if(writeback_alu0_uop.csr_write) {
                     csr.write(rob.head_ptr, writeback_alu0_ptr, writeback_alu0_target, writeback_alu0_q);
                 }
-                rob.complete_alu0(writeback_alu0_ptr, 0, 0);
+                rob.complete_alu0(writeback_alu0_ptr, 0, 0, 0);
             } else {
-                rob.complete_alu0(writeback_alu0_ptr, 0, 0);
+                rob.complete_alu0(writeback_alu0_ptr, 0, 0, 0);
             }
             DEBUG_WRITEBACK0(writeback_alu0_ptr, writeback_alu0_uop.rd_valid,
 								writeback_alu0_prd, writeback_alu0_q, writeback_alu0_target);
@@ -697,18 +703,24 @@ module turboV {
     proc writeback_alu1 {
         if(!flush) {
             if(writeback_alu1_uop.rd_valid) {
-                gpr.writeB(writeback_alu1_prd, writeback_alu1_q);
+				if((writeback_alu1_uop.jal || writeback_alu1_uop.jalr || (writeback_alu1_uop.branch && writeback_alu1_q)) && ((writeback_alu1_target[1:0] & csr.ialign) != 2'b00)) {
+					gpr.writeB(writeback_alu1_prd, 0);
+				} else {
+					gpr.writeB(writeback_alu1_prd, writeback_alu1_q);
+				}
                 iq_alu0.wakeup1(writeback_alu1_prd);
                 iq_alu1.wakeup1(writeback_alu1_prd);
                 iq_lsu0.wakeup1(writeback_alu1_prd);
                 register_status_table[writeback_alu1_prd] := READY;
             }
             if(writeback_alu1_uop.branch) {
-                rob.complete_alu1(writeback_alu1_ptr, writeback_alu1_q, writeback_alu1_target);
-            } else if(writeback_alu1_uop.jal || writeback_alu1_uop.jalr) {
-                rob.complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target);
+                rob.complete_alu1(writeback_alu1_ptr, writeback_alu1_q, writeback_alu1_target, (writeback_alu1_q && ((writeback_alu1_target[1:0] & csr.ialign) != 2'b00)));
+            } else if(writeback_alu1_uop.jal) {
+                rob.complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target, ((writeback_alu1_target[1:0] & csr.ialign) != 2'b00));
+			} else if(writeback_alu1_uop.jalr) {
+                rob.complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target & 0xfffffffe, (((writeback_alu1_target[1:0]&0x2) & csr.ialign) != 2'b00));
             } else {
-                rob.complete_alu1(writeback_alu1_ptr, 0, 0);
+                rob.complete_alu1(writeback_alu1_ptr, 0, 0, 0);
             }
             finish();
             DEBUG_WRITEBACK1(writeback_alu1_ptr, writeback_alu1_uop.rd_valid,

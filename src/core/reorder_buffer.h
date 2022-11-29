@@ -2,7 +2,7 @@
 #define REORDER_BUFFER_H
 
 #include "uops.h"
-#define PTR2AGE(ptr, head) (if(ptr<head) ptr+((NUMBER_OF_REORDER_BUFFER*2)-1) else ptr)
+#define PTR2AGE(ptr, head) (if(ptr<head) ptr+((NUMBER_OF_REORDER_BUFFER*2)) else ptr)
 
 struct reorder_buffer_t {
     PC[30];        // {PC[29:0], 2'b00}
@@ -101,11 +101,13 @@ declare reorder_buffer {
     input complete_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
     input complete_alu0_taken;
     input complete_alu0_target[32];
-    func_in complete_alu0(complete_alu0_ptr, complete_alu0_taken, complete_alu0_target);
+	input complete_alu0_instruction_address_misaligned;
+    func_in complete_alu0(complete_alu0_ptr, complete_alu0_taken, complete_alu0_target, complete_alu0_instruction_address_misaligned);
     input complete_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
     input complete_alu1_taken;
     input complete_alu1_target[32];
-    func_in complete_alu1(complete_alu1_ptr, complete_alu1_taken, complete_alu1_target);
+	input complete_alu1_instruction_address_misaligned;
+    func_in complete_alu1(complete_alu1_ptr, complete_alu1_taken, complete_alu1_target, complete_alu1_instruction_address_misaligned);
     input complete_lsu0_ptr[REORDER_BUFFER_PTR_SIZE];
     func_in complete_lsu0(complete_lsu0_ptr);
     input readPC0_ptr[REORDER_BUFFER_PTR_SIZE];

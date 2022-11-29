@@ -240,8 +240,8 @@ module control_status_register {
         }
     }
     func write {
-        wire wbuf_age[REORDER_BUFFER_PTR_SIZE];
-        wire write_age[REORDER_BUFFER_PTR_SIZE];
+        wire wbuf_age[REORDER_BUFFER_PTR_SIZE+1];
+        wire write_age[REORDER_BUFFER_PTR_SIZE+1];
 
         wbuf_age = PTR2AGE(wbuf.ptr, rob_head_ptr);
         write_age = PTR2AGE(write_ptr, rob_head_ptr);
