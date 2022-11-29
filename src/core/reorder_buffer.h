@@ -89,6 +89,16 @@ declare reorder_buffer {
     func_in issue(PC, valid0, uop0, dreg0, preg0, ppreg0, cause0,
                       valid1, uop1, dreg1, preg1, ppreg1, cause1): ptr;
 #endif
+	/* Execution time exception
+	 * Illegal instruction
+	 * Instruction address misaligned
+	 * Load address misaligned
+	 * Load access fault
+	 * Store/AMO address misaligned
+	 * Store/AMO access fault
+	 * Load page fault
+	 * Store/AMO page fault
+	 */
     input complete_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
     input complete_alu0_taken;
     input complete_alu0_target[32];
