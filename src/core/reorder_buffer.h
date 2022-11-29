@@ -90,7 +90,6 @@ declare reorder_buffer {
                       valid1, uop1, dreg1, preg1, ppreg1, cause1): ptr;
 #endif
 	/* Execution time exception
-	 * Illegal instruction
 	 * Instruction address misaligned
 	 * Load address misaligned
 	 * Load access fault
