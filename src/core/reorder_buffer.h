@@ -102,8 +102,7 @@ declare reorder_buffer {
     input complete_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
     input complete_alu0_taken;
     input complete_alu0_target[32];
-    input complete_alu0_illegal;
-    func_in complete_alu0(complete_alu0_ptr, complete_alu0_taken, complete_alu0_target, complete_alu0_illegal);
+    func_in complete_alu0(complete_alu0_ptr, complete_alu0_taken, complete_alu0_target);
     input complete_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
     input complete_alu1_taken;
     input complete_alu1_target[32];

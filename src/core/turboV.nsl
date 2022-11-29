@@ -40,9 +40,8 @@ module turboV {
     reg execute_alu0_B[32];
     reg execute_alu0_X[32];
     reg execute_alu0_Y[32];
-    reg execute_alu0_illegal_instruction;
     proc_name execute_alu0(execute_alu0_ptr, execute_alu0_uop, execute_alu0_prd,
-            execute_alu0_A, execute_alu0_B, execute_alu0_X, execute_alu0_Y, execute_alu0_illegal_instruction);
+            execute_alu0_A, execute_alu0_B, execute_alu0_X, execute_alu0_Y);
     reg execute_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
     uop_t reg execute_alu1_uop;
     reg execute_alu1_prd[6];
@@ -284,6 +283,12 @@ module turboV {
             }
         }
     }
+	func udec0.decode_csr {
+		return csr.decode(udec0.decode_csr_num, udec0.decode_csr_rw);	
+	}
+	func udec1.decode_csr {
+		return 0;	
+	}
     proc issue {
         reorder_buffer_t wire issue_reorder_buffer_entry;
         wire issue_PC[30];
@@ -533,19 +538,19 @@ module turboV {
        */
         if(iq_alu0_uop.branch) {
             execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
-                    iq_alu0_A, iq_alu0_B, iq_alu0_PC, iq_alu0.dispatch_imm, 0);
+                    iq_alu0_A, iq_alu0_B, iq_alu0_PC, iq_alu0.dispatch_imm);
         } else if(iq_alu0_uop.jal) {
             execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
-                    iq_alu0_PC, 4, iq_alu0_PC, iq_alu0.dispatch_imm, 0);
+                    iq_alu0_PC, 4, iq_alu0_PC, iq_alu0.dispatch_imm);
         } else if(iq_alu0_uop.jalr) {
             execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
-                    iq_alu0_PC, 4, iq_alu0_A, iq_alu0.dispatch_imm, 0);
+                    iq_alu0_PC, 4, iq_alu0_A, iq_alu0.dispatch_imm);
         } else if(iq_alu0_uop.csr) {
             execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
-					iq_alu0_A, iq_alu0_B, iq_alu0.dispatch_imm, 0, SET_EXCEPTION(ILLEGAL_INSTRUCTION, csr.read_error));
+					iq_alu0_A, iq_alu0_B, iq_alu0.dispatch_imm, 0);
 		} else {
             execute_alu0.invoke(iq_alu0.dispatch_ptr, iq_alu0_uop, iq_alu0.dispatch_prd,
-                    iq_alu0_A, iq_alu0_B, 0, 0, 0);
+                    iq_alu0_A, iq_alu0_B, 0, 0);
         }
         DEBUG_DISPATCH0(iq_alu0.dispatch_ptr, iq_alu0_PC, iq_alu0_uop.rd_valid, iq_alu0.dispatch_prd,
                 iq_alu0_uop.rs1_sel, iq_alu0_uop.rs1_valid, iq_alu0.dispatch_prs1, iq_alu0_A,
@@ -673,16 +678,16 @@ module turboV {
                 register_status_table[writeback_alu0_prd] := READY;
             }
             if(writeback_alu0_uop.branch) {
-                rob.complete_alu0(writeback_alu0_ptr, writeback_alu0_q, writeback_alu0_target, 0);
+                rob.complete_alu0(writeback_alu0_ptr, writeback_alu0_q, writeback_alu0_target);
             } else if(writeback_alu0_uop.jal || writeback_alu0_uop.jalr) {
-                rob.complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target, 0);
+                rob.complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target);
             } else if(writeback_alu0_uop.csr) {
                 if(writeback_alu0_uop.csr_write) {
                     csr.write(rob.head_ptr, writeback_alu0_ptr, writeback_alu0_target, writeback_alu0_q);
                 }
-                rob.complete_alu0(writeback_alu0_ptr, 0, 0, csr.write_error);
+                rob.complete_alu0(writeback_alu0_ptr, 0, 0);
             } else {
-                rob.complete_alu0(writeback_alu0_ptr, 0, 0, 0);
+                rob.complete_alu0(writeback_alu0_ptr, 0, 0);
             }
             DEBUG_WRITEBACK0(writeback_alu0_ptr, writeback_alu0_uop.rd_valid,
 								writeback_alu0_prd, writeback_alu0_q, writeback_alu0_target);

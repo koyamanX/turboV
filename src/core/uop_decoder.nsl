@@ -73,7 +73,8 @@ module uop_decoder {
         decode_packet.imm = imm;
         decode_packet.cause = SET_EXCEPTION(ENVIRONMENT_CALL_FROM_M_MODE, ecall)
             | SET_EXCEPTION(BREAKPOINT, ebreak)
-            | SET_EXCEPTION(ILLEGAL_INSTRUCTION, illegal_instruction);
+            | SET_EXCEPTION(ILLEGAL_INSTRUCTION, illegal_instruction)
+			| SET_EXCEPTION(ILLEGAL_INSTRUCTION, decode_csr_illegal);
 #ifdef ENABLE_DEBUG
         decode_packet.inst = inst;
 #endif
@@ -240,6 +241,7 @@ module uop_decoder {
                         csr_write();
 
                         uop_system(decode_packet);
+						decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRW) && (inst_itype.rd == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRW;
@@ -255,6 +257,7 @@ module uop_decoder {
                         csr_write();
 
                         uop_system(decode_packet);
+						decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRS) && (inst_itype.rs1 != 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRS;
@@ -271,6 +274,7 @@ module uop_decoder {
                         csr_write();
 
                         uop_system(decode_packet);
+						decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRS) && (inst_itype.rs1 == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRS;
@@ -286,6 +290,7 @@ module uop_decoder {
                         csr_read();
 
                         uop_system(decode_packet);
+						decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRC) && (inst_itype.rs1 != 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRC;
@@ -302,6 +307,7 @@ module uop_decoder {
                         csr_write();
 
                         uop_system(decode_packet);
+						decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRC) && (inst_itype.rs1 == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRC;
@@ -317,6 +323,7 @@ module uop_decoder {
                         csr_read();
 
                         uop_system(decode_packet);
+						decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd != 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRW;
@@ -332,6 +339,7 @@ module uop_decoder {
                         csr_write();
 
                         uop_system(decode_packet);
+						decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRW;
@@ -346,6 +354,7 @@ module uop_decoder {
                         csr_write();
 
                         uop_system(decode_packet);
+						decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRSI) && (inst_itype.rs1 != 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRS;
@@ -361,6 +370,7 @@ module uop_decoder {
                         csr_write();
 
                         uop_system(decode_packet);
+						decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRSI) && (inst_itype.rs1 == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRS;
@@ -375,6 +385,7 @@ module uop_decoder {
                         csr_read();
 
                         uop_system(decode_packet);
+						decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 != 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRC;
@@ -390,6 +401,7 @@ module uop_decoder {
                         csr_write();
 
                         uop_system(decode_packet);
+						decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRC;
@@ -404,6 +416,7 @@ module uop_decoder {
                         csr_read();
 
                         uop_system(decode_packet);
+						decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_MRET && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
                         decode_uop.uop = uOP_SYSTEM_MRET;

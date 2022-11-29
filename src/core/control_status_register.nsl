@@ -2,6 +2,12 @@
 #include "csr.h"
 
 module control_status_register {
+	wire is_exist_csr_num[12];
+	wire exist;
+	func_self is_exist_csr(is_exist_csr_num): exist;
+	wire is_readonly_csr_num[12];
+	wire readonly;
+	func_self is_readonly(is_readonly_csr_num): readonly;
     misa_t reg misa = 0;
     mvendorid_t reg mvendorid = 0;
     marchid_t reg marchid = 0;
@@ -111,6 +117,52 @@ module control_status_register {
 
         return mret_mepc & ~IALIGN;
     }
+	func is_exist_csr {
+		any {
+            (mode >= MACHINE) && (is_exist_csr_num == MISA): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MVENDORID): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MARCHID): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MIMPID): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MHARTID): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MSTATUSH): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MSTATUS): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MTVEC): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MIP): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MIE): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MSCRATCH): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MEPC): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MCAUSE): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MTVAL): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MCYCLEH): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MCYCLE): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MINSTRETH): return 1;
+            (mode >= MACHINE) && (is_exist_csr_num == MINSTRET): return 1;
+            (mode >= USER) && (is_exist_csr_num == CYCLEH): return 1;
+            (mode >= USER) && (is_exist_csr_num == CYCLE): return 1;
+            (mode >= USER) && (is_exist_csr_num == INSTRETH): return 1;
+            (mode >= USER) && (is_exist_csr_num == INSTRET): return 1;
+            (mode >= USER) && (is_exist_csr_num == TIMEH): return 1;
+            (mode >= USER) && (is_exist_csr_num == TIME): return 1;
+			else: return 0;
+        }
+	}
+	func is_readonly {
+		if(is_readonly_csr_num[11:10] == 2'b11) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+	func decode {
+		is_readonly(decode_csr_num);
+		is_exist_csr(decode_csr_num);
+		any {
+			decode_csr_rw == DECODE_CSR_RW && (readonly || exist): return 1;
+			decode_csr_rw == DECODE_CSR_WO && (readonly || !exist): return 1;
+			decode_csr_rw == DECODE_CSR_RO && !exist: return 1;
+			else: return 0;
+		}
+	}
     func read {
         any {
             (mode >= MACHINE) && (csr_rnum == MISA): {
@@ -185,10 +237,6 @@ module control_status_register {
             (mode >= USER) && (csr_rnum == TIME): {
                 return mtime.lo;
             }
-            else: {
-                return 0;
-                read_error();
-            }
         }
     }
     func write {
@@ -227,7 +275,6 @@ module control_status_register {
                 (mode >= MACHINE) && (write_addr == MCYCLE): ;
                 (mode >= MACHINE) && (write_addr == MINSTRETH): ;
                 (mode >= MACHINE) && (write_addr == MINSTRET): ;
-                else: write_error();
         }
     }
     func commit {

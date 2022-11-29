@@ -7,6 +7,10 @@
 
 #define IALIGN (if(misa.extensions & MISA_EXTENSIONS_C) 2'b01 else 2'b11)
 
+#define DECODE_CSR_RO	2'b00
+#define DECODE_CSR_WO	2'b01
+#define DECODE_CSR_RW	2'b11
+
 struct csr_write_buffer_t {
     valid;
     addr[12];
@@ -16,16 +20,18 @@ struct csr_write_buffer_t {
 };
 
 declare control_status_register {
+	input decode_csr_num[12];
+	input decode_csr_rw[2];
+	output decode_illegal;
+	func_in decode(decode_csr_num, decode_csr_rw): decode_illegal;
     input csr_rnum[12];
     output csr_rdata[32];
     func_in read(csr_rnum): csr_rdata;
-    func_out read_error();
     input rob_head_ptr[REORDER_BUFFER_PTR_SIZE];
     input write_ptr[REORDER_BUFFER_PTR_SIZE];
     input write_addr[12];
     input write_data[32];
     func_in write(rob_head_ptr, write_ptr, write_addr, write_data);
-    func_out write_error();
     input commit_ptr[REORDER_BUFFER_PTR_SIZE];
     func_in commit(commit_ptr);
     func_in reset();
