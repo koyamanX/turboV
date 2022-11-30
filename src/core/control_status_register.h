@@ -31,7 +31,8 @@ declare control_status_register {
     input write_ptr[REORDER_BUFFER_PTR_SIZE];
     input write_addr[12];
     input write_data[32];
-    func_in write(rob_head_ptr, write_ptr, write_addr, write_data);
+	output write_old_data[32];
+    func_in write(rob_head_ptr, write_ptr, write_addr, write_data): write_old_data;
     input commit_ptr[REORDER_BUFFER_PTR_SIZE];
     func_in commit(commit_ptr);
     func_in reset();

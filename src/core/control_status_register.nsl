@@ -257,24 +257,24 @@ module control_status_register {
             wbuf.ptr := write_ptr;
         }
         any {
-                (mode >= MACHINE) && (write_addr == MISA): ;
-                (mode >= MACHINE) && (write_addr == MVENDORID): ;
-                (mode >= MACHINE) && (write_addr == MARCHID): ;
-                (mode >= MACHINE) && (write_addr == MIMPID): ;
-                (mode >= MACHINE) && (write_addr == MHARTID): ;
-                (mode >= MACHINE) && (write_addr == MSTATUSH): ;
-                (mode >= MACHINE) && (write_addr == MSTATUS): ;
-                (mode >= MACHINE) && (write_addr == MTVEC): ;
-                (mode >= MACHINE) && (write_addr == MIP): ;
-                (mode >= MACHINE) && (write_addr == MIE): ;
-                (mode >= MACHINE) && (write_addr == MSCRATCH): ;
-                (mode >= MACHINE) && (write_addr == MEPC): ;
-                (mode >= MACHINE) && (write_addr == MCAUSE): ;
-                (mode >= MACHINE) && (write_addr == MTVAL): ;
-                (mode >= MACHINE) && (write_addr == MCYCLEH): ;
-                (mode >= MACHINE) && (write_addr == MCYCLE): ;
-                (mode >= MACHINE) && (write_addr == MINSTRETH): ;
-                (mode >= MACHINE) && (write_addr == MINSTRET): ;
+                (mode >= MACHINE) && (write_addr == MISA): return misa;
+                (mode >= MACHINE) && (write_addr == MVENDORID): return mvendorid;
+                (mode >= MACHINE) && (write_addr == MARCHID): return marchid;
+                (mode >= MACHINE) && (write_addr == MIMPID): return mimpid;
+                (mode >= MACHINE) && (write_addr == MHARTID): return mhartid;
+                (mode >= MACHINE) && (write_addr == MSTATUSH): return mstatush;
+                (mode >= MACHINE) && (write_addr == MSTATUS): return mstatus;
+                (mode >= MACHINE) && (write_addr == MTVEC): return mtvec;
+                (mode >= MACHINE) && (write_addr == MIP): return mip;
+                (mode >= MACHINE) && (write_addr == MIE): return mie;
+                (mode >= MACHINE) && (write_addr == MSCRATCH): return mscratch;
+                (mode >= MACHINE) && (write_addr == MEPC): return mepc;
+                (mode >= MACHINE) && (write_addr == MCAUSE): return mcause;
+                (mode >= MACHINE) && (write_addr == MTVAL): return mtval;
+                (mode >= MACHINE) && (write_addr == MCYCLEH): return mcycle.hi;
+                (mode >= MACHINE) && (write_addr == MCYCLE): return mcycle.lo;
+                (mode >= MACHINE) && (write_addr == MINSTRETH): return minstret.hi;
+                (mode >= MACHINE) && (write_addr == MINSTRET): return minstret.lo;
         }
     }
     func commit {

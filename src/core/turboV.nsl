@@ -510,7 +510,7 @@ module turboV {
         any {
             iq_alu0_uop.rs1_sel == RS1_SEL_REG && iq_alu0_uop.rs1_valid: iq_alu0_A = gpr.readA(iq_alu0.dispatch_prs1);
             iq_alu0_uop.rs1_sel == RS1_SEL_REG && !iq_alu0_uop.rs1_valid: iq_alu0_A = 0;
-            iq_alu0_uop.rs1_sel == RS1_SEL_UIMM: iq_alu0_A = iq_alu0.dispatch_imm[4:0];
+            iq_alu0_uop.rs1_sel == RS1_SEL_UIMM: iq_alu0_A = iq_alu0_uop.uimm;
             iq_alu0_uop.rs1_sel == RS1_SEL_PC: iq_alu0_A = iq_alu0_PC;
         }
         any {
@@ -673,6 +673,8 @@ module turboV {
             if(writeback_alu0_uop.rd_valid) {
 				if((writeback_alu0_uop.jal || writeback_alu0_uop.jalr || (writeback_alu0_uop.branch && writeback_alu0_q)) && ((writeback_alu0_target[1:0] & csr.ialign) != 2'b00)) {
 					gpr.writeA(writeback_alu0_prd, 0);
+				} else if(writeback_alu0_uop.csr_write) {
+					gpr.writeA(writeback_alu0_prd, csr.write_old_data);
 				} else {
 					gpr.writeA(writeback_alu0_prd, writeback_alu0_q);
 				}

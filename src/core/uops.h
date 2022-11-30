@@ -106,6 +106,7 @@ struct uop_t {
     rs1_sel[SIZEOF_REG_SEL];
     rs2_valid;
     rs2_sel[SIZEOF_REG_SEL];
+	// TODO: 
     jal;
     jalr;
     load;
@@ -117,7 +118,8 @@ struct uop_t {
     mret;
     ecall;
     ebreak;
-#define SIZEOF_UOP_T uOP_SIZE+13+SIZEOF_REG_SEL+SIZEOF_REG_SEL+1
+	uimm[5];
+#define SIZEOF_UOP_T uOP_SIZE+13+SIZEOF_REG_SEL+SIZEOF_REG_SEL+1+5
 };
 
 #endif
