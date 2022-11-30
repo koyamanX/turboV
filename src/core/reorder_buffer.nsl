@@ -170,7 +170,7 @@ module reorder_buffer {
 				commit_entry_uop0.ebreak: {
 					stall_pipeline();
 					flush_pipeline();
-					csr_trap(BREAKPOINT, commit_PC0+4, 0);
+					csr_trap(BREAKPOINT, commit_PC0, 0);
 					commit_kill_inst1();
 					commit0();
 					will_rollback();
