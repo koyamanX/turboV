@@ -103,8 +103,9 @@ module uop_decoder {
                         || (inst_itype.funct3 == ALU_SRL)) {inst_rtype.funct7[5], inst_itype.funct3}
                     else {1'b0, inst_itype.funct3};
                 if(((inst_itype.funct3 == ALU_SLL) || (inst_itype.funct3 == ALU_SRA)
-                    || (inst_itype.funct3 == ALU_SRL)) && (imm_gen0.imm[5] != 0))
+                    || (inst_itype.funct3 == ALU_SRL)) && (imm_gen0.imm[5] == 1)) {
                     illegal_instruction();
+				}
 
                 decode_uop.uop = {uOP_ALU, fn};
                 rd_valid();

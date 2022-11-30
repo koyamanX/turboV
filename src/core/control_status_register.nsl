@@ -157,7 +157,7 @@ module control_status_register {
 		is_readonly(decode_csr_num);
 		is_exist_csr(decode_csr_num);
 		any {
-			decode_csr_rw == DECODE_CSR_RW && (readonly || exist): return 1;
+			decode_csr_rw == DECODE_CSR_RW && (readonly || !exist): return 1;
 			decode_csr_rw == DECODE_CSR_WO && (readonly || !exist): return 1;
 			decode_csr_rw == DECODE_CSR_RO && !exist: return 1;
 			else: return 0;
