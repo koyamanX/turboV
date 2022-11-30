@@ -28,7 +28,7 @@ list(APPEND rv32ui_p
     rv32ui-p-blt
     rv32ui-p-bltu
     rv32ui-p-bne
-    rv32ui-p-fence_i
+#   rv32ui-p-fence_i
     rv32ui-p-jal
     rv32ui-p-jalr
     rv32ui-p-lb
@@ -58,11 +58,11 @@ list(APPEND rv32ui_p
     rv32ui-p-xori
 )
 list(APPEND rv32mi_p
-    rv32mi-p-breakpoint
+#   rv32mi-p-breakpoint
     rv32mi-p-csr
     rv32mi-p-illegal
     rv32mi-p-ma_fetch
-    rv32mi-p-ma_addr
+#   rv32mi-p-ma_addr
     rv32mi-p-mcsr
     rv32mi-p-sbreak
     rv32mi-p-scall
