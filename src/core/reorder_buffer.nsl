@@ -1,6 +1,7 @@
 #include "reorder_buffer.h"
 #include "uops.h"
 #include "csr.h"
+#include "priv.h"
 
 // TODO: Re-implement with LVT based multi-ported RAM
 /*
@@ -136,6 +137,30 @@ module reorder_buffer {
 				freelist_push0(commit_entry.ppreg0);
 			}
 			alt {
+				(meip && meie && ((mstatus_mie && priv_mode == MACHINE) || priv_mode < MACHINE)): {
+					csr_trap(MACHINE_EXTERNAL_INTERRUPT, commit_PC0, 0);
+					stall_pipeline();
+					flush_pipeline();
+					will_rollback();
+					commit_kill_inst0();
+					commit_kill_inst1();
+				}
+				(msip && msie && ((mstatus_mie && priv_mode == MACHINE) || priv_mode < MACHINE)): {
+					csr_trap(MACHINE_SOFTWARE_INTERRUPT, commit_PC0, 0);
+					stall_pipeline();
+					flush_pipeline();
+					will_rollback();
+					commit_kill_inst0();
+					commit_kill_inst1();
+				}
+				(mtip && mtie && ((mstatus_mie && priv_mode == MACHINE) || priv_mode < MACHINE)): {
+					csr_trap(MACHINE_TIMER_INTERRUPT, commit_PC0, 0);
+					stall_pipeline();
+					flush_pipeline();
+					will_rollback();
+					commit_kill_inst0();
+					commit_kill_inst1();
+				}	
 				(commit_entry_cause0.instruction_address_misaligned): {
 					csr_trap(INSTRUCTION_ADDRESS_MISALIGNED, commit_PC0, commit_entry.target0);
 					commit0();

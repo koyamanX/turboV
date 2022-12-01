@@ -118,6 +118,15 @@ declare reorder_buffer {
     func_in readPC1(readPC1_ptr): PC1;
 	func_out full();
 
+    input meip;
+    input msip;
+    input mtip;
+    input meie;
+    input msie;
+    input mtie;
+    input mstatus_mie;
+    input priv_mode[2];
+
 	// to frontend
 	output redirect_frontend_pc[32];
 	func_out redirect_frontend(redirect_frontend_pc);

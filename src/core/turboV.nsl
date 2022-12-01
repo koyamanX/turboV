@@ -740,6 +740,14 @@ module turboV {
     func software_interrupt_req_hart0 {
         csr.software_interrupt_req_hart0();
     }
+	rob.meip = csr.meip;
+	rob.msip = csr.msip;
+	rob.mtip = csr.mtip;
+	rob.meie = csr.meie;
+	rob.msie = csr.msie;
+	rob.mtie = csr.mtie;
+	rob.mstatus_mie = csr.mstatus_mie;
+	rob.priv_mode = csr.priv_mode;
 
     /*
         Bus arbiter for instruction fetch unit and load store unit.
