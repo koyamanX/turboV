@@ -1,0 +1,9 @@
+project(jsonfilter)
+
+add_executable(jsonfilter ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/jsonfilter
+    PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+    CONFIGURATIONS Debug
+    RUNTIME DESTINATION Debug/tools/jsonfilter
+)

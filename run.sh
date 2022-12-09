@@ -6,11 +6,6 @@ docker run -it --rm \
     --privileged \
     -v /sys:/sys:ro \
     -v /opt/intelFPGA_lite/21.1:/opt/intelFPGA_lite/latest \
-	-v $(pwd)/src:/root/src \
-	-v $(pwd)/simulator:/root/simulator \
-	-v $(pwd)/tools:/root/tools \
-	-v $(pwd)/tests:/root/tests \
-    -v $(pwd)/image/scripts/env.sh:/root/.env.sh \
-	-v $(pwd)/CMakeLists.txt:/root/CMakeLists.txt \
-	-v $(pwd)/build:/root/build \
-	koyamanx/turbov_dev:v1.2 $1
+	-v $(pwd):/work \
+	-w /work \
+	koyamanx/turbov_dev:v1.3 $1

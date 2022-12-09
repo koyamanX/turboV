@@ -1,8 +1,15 @@
 #include "alu32.h"
 
 module alu32 {
-    wire result[33];
+    wire eq;
+    wire lt;
+    wire ltu;
+
     func exe {
+        eq = a == b;
+        lt = (33#(a) - 33#(b))[32];
+        ltu = (33'(a) - 33'(b))[32];
+
         any {
             fn == ALU_ADD: {
                 return a + b;
@@ -14,14 +21,10 @@ module alu32 {
                 return (a << b[4:0]);
             }
             fn == ALU_SLT: {
-                result = 32'((33#(a) - 33#(b))[32]);
-                if(result == 0) zero();
-                return result;
+                return 32'(lt);
             }
             fn == ALU_SLTU: {
-                result = (33'(a) - 33'(b))[32];
-                if(result == 0) zero();
-                return result;
+                return 32'(ltu);
             }
             fn == ALU_XOR: {
                 return a ^ b;
@@ -40,6 +43,30 @@ module alu32 {
             }
             fn == ALU_NAAND: {
                 return ~a & b;
+            }
+            fn == BRU_EQ: {
+                return 32'(eq);
+            }
+            fn == BRU_NE: {
+                return 32'(!eq);
+            }
+            fn == BRU_LT: {
+                return 32'(lt);
+            }
+            fn == BRU_LTU: {
+                return 32'(ltu);
+            }
+            fn == BRU_GE: {
+                return 32'(!lt);
+            }
+            fn == BRU_GEU: {
+                return 32'(!ltu);
+            }
+            fn == BRU_JALR: {
+                return 32'(1'b1);
+            }
+            fn == BRU_JAL: {
+                return 32'(1'b1);
             }
         }
     }

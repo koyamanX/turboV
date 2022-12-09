@@ -1,58 +1,34 @@
 #include "register_file.h"
 #include "riscv.h"
 
-// Implement LVT based multi ported RAM
-// Efficient Multi-Ported Memories for FPGAs
-// Charles Eric LaForest and J. Gregory Steffan
 module register_file {
-    mem bank_w0_r0[32][XLEN] = {0};
-    mem bank_w0_r1[32][XLEN] = {0};
-    mem bank_w0_r2[32][XLEN] = {0};
-    mem bank_w0_r3[32][XLEN] = {0};
-    mem bank_w1_r0[32][XLEN] = {0};
-    mem bank_w1_r1[32][XLEN] = {0};
-    mem bank_w1_r2[32][XLEN] = {0};
-    mem bank_w1_r3[32][XLEN] = {0};
-    mem lvt[32] = {0};
+    mem regs[64][XLEN] = {0};
 
     func readA {
-        any {
-            lvt[rnumA] == 0: return bank_w0_r0[rnumA];
-            lvt[rnumA] == 1: return bank_w1_r0[rnumA];
-        }
+       return regs[rnumA];
     }
     func readB {
-        any {
-            lvt[rnumB] == 0: return bank_w0_r1[rnumB];
-            lvt[rnumB] == 1: return bank_w1_r1[rnumB];
-        }
+       return regs[rnumB];
     }
     func readC {
-        any {
-            lvt[rnumC] == 0: return bank_w0_r2[rnumC];
-            lvt[rnumC] == 1: return bank_w1_r2[rnumC];
-        }
+       return regs[rnumC];
     }
     func readD {
-        any {
-            lvt[rnumD] == 0: return bank_w0_r3[rnumD];
-            lvt[rnumD] == 1: return bank_w1_r3[rnumD];
-        }
+       return regs[rnumD];
+    }
+    func readE {
+       return regs[rnumE];
+    }
+    func readF {
+       return regs[rnumF];
     }
     func writeA {
-        if(!(writeB && (wnumA == wnumB))) {
-            lvt[wnumA] := 0;
-            bank_w0_r0[wnumA] := wdataA;
-            bank_w0_r1[wnumA] := wdataA;
-            bank_w0_r2[wnumA] := wdataA;
-            bank_w0_r3[wnumA] := wdataA;
-        }
+		regs[wnumA] := wdataA;
     }
     func writeB {
-        lvt[wnumB] := 1;
-        bank_w1_r0[wnumB] := wdataB;
-        bank_w1_r1[wnumB] := wdataB;
-        bank_w1_r2[wnumB] := wdataB;
-        bank_w1_r3[wnumB] := wdataB;
+		regs[wnumB] := wdataB;
+    }
+    func writeC {
+		regs[wnumC] := wdataC;
     }
 }

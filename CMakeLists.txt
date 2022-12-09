@@ -18,23 +18,11 @@ list(APPEND NSL_INCLUDE
 	"-I${CMAKE_SOURCE_DIR}/src/wishbone"
 	"-I${CMAKE_CURRENT_SOURCE_DIR}"
 )
-list(APPEND NSL_FLAGS
-	"-O2"
-    "-DENABLE_DEBUG"
-)
-list(APPEND IVERILOG_FLAGS
-	""
-)
-list(APPEND VERILATOR_FLAGS
-	""
-)
-list(APPEND GTKWAVE_FLAGS
-	""
-)
-list(APPEND CMAKE_CXX_FLAGS
-	"-DENABLE_DEBUG"
-    "-O3"
-)
+set(NSL_FLAGS "-O2 -DENABLE_DEBUG")
+set(IVERILOG_FLAGS "")
+set(VERILATOR_FLAGS "")
+set(GTKWAVE_FLAGS "")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_DEBUG -O3")
 # add_nsl_target("src" "out")
 # or
 # add_nsl_target("src" "out" "depends")

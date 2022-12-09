@@ -1,0 +1,79 @@
+#include "recovery_manager.h"
+
+/*
+   Recovery Manager(RM) tracks oldest instruction
+   which flushes pipeline and requires recovery 
+   of latest state before faulted instruction.
+   Such instructions includes taken branch/jump,
+   instruction causes exception, privileged instructions.
+
+   RM resides in ROB module.
+   And there is only one oldest entry.
+
+   In writeback stage, If pointer to rob of instruction completed
+   are compared to the entry in RM. If pointer to ROB in RM is older than
+   that of completed instructions, replace the entry.
+   Otherwise, ignore. 
+   CAUTION: pointer to ROB wraps around. Besides, there are multiple ports,
+   it should be bypassed among those ports.
+
+   In commit stage, pointer to ROB of instructions to commit are sent to
+   RM, and compare to entry, if match, that instruction requires redirect
+   and flush. the older instruction in the commit bundle must be killed.
+   Invalidate entry.
+   CAUTION: Ignore compare ports.
+*/
+
+
+module recovery_manager {
+    recovery_manager_t reg rm_entry = 0;    
+    wire complete0_age[REORDER_BUFFER_PTR_SIZE+1];
+    wire complete1_age[REORDER_BUFFER_PTR_SIZE+1];
+    wire complete2_age[REORDER_BUFFER_PTR_SIZE+1];
+    wire update_rm_ptr[REORDER_BUFFER_PTR_SIZE+1];
+    wire update_rm_entry[SIZEOF_RECOVERY_MANAGER_T];
+    func_self update_rm(update_rm_ptr, update_rm_entry);
+
+    func flush {
+        rm_entry := 0;
+    }
+    complete0_age = if(complete0) PTR2AGE(complete0_ptr, head) else -1;
+    complete1_age = if(complete1) PTR2AGE(complete1_ptr, head) else -1;
+    complete2_age = if(complete2) PTR2AGE(complete2_ptr, head) else -1;
+
+    alt {
+        complete0_age < complete1_age && complete1_age < complete2_age: update_rm(complete0_ptr, complete0_entry);
+        complete1_age < complete2_age && complete2_age < complete0_age: update_rm(complete1_ptr, complete2_entry);
+        complete2_age < complete0_age && complete0_age < complete1_age: update_rm(complete2_ptr, complete2_entry);
+    }
+    func update_rm {
+        wire update_rm_age[REORDER_BUFFER_PTR_SIZE+1];
+        wire update_rm_entry_age[REORDER_BUFFER_PTR_SIZE+1];
+
+        update_rm_age = PTR2AGE(update_rm_ptr, head);
+        update_rm_entry_age = PTR2AGE(rm_entry.ptr, head);
+        if(rm_entry.valid) {
+            if(update_rm_age < update_rm_entry_age) {
+                rm_entry := update_rm_entry;
+            }
+        } else {
+            rm_entry := update_rm_entry;
+        }
+    }
+    func commit0 {
+        if(rm_entry.valid && rm_entry.ptr == commit0_ptr) {
+            recovery(rm_entry);        
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    func commit1 {
+        if(!(commit0 && rm_entry.valid && rm_entry.ptr == commit0_ptr)) {
+            recovery(rm_entry);
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+}

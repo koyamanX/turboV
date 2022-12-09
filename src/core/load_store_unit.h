@@ -5,19 +5,22 @@
 #include "reorder_buffer.h"
 
 declare load_store_unit {
-    input issue_A[32];
-    input issue_uOp[7];
-    input issue_Vj[32];
-    input issue_RobId[ROB_TAG_SIZE];
-    func_in issue(issue_A, issue_uOp, issue_Vj, issue_RobId);
+    input issue_uop[SIZEOF_UOP_T];
+    input issue_addr[32];
+    input issue_wdata[32];
+    input issue_prd[6];
+    input issue_ptr[REORDER_BUFFER_PTR_SIZE];
+    func_in issue(issue_ptr, issue_prd, issue_uop, issue_addr, issue_wdata);
     func_out stall();
     func_out full();
     func_in flush();
-    output CDBOutId[ROB_TAG_SIZE];
-    output CDBOutVal[32];
-    func_out CDBOut(CDBOutId, CDBOutVal);
-    input commitId[ROB_TAG_SIZE];
-    func_in commit(commitId);
+    output writeback_ptr[REORDER_BUFFER_PTR_SIZE];
+    output writeback_uop[SIZEOF_UOP_T];
+    output writeback_prd[6];
+    output writeback_data[32];
+    func_out writeback(writeback_ptr, writeback_uop, writeback_prd, writeback_data);
+    input commit_ptr[REORDER_BUFFER_PTR_SIZE];
+    func_in commit(commit_ptr);
 
     WISHBONE_GEN_MASTER_IF(32, 64, 8)
 }
