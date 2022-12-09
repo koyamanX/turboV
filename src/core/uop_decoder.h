@@ -4,6 +4,12 @@
 #include "uops.h"
 #include "control_status_register.h"
 
+#define IMM_GEN_ITYPE(inst) (inst[31:20])
+#define IMM_GEN_STYPE(inst) ({inst[31:25], inst[11:7]})
+#define IMM_GEN_BTYPE(inst) ({inst[31], inst[7], inst[30:25], inst[11:8], 1'b0})
+#define IMM_GEN_UTYPE(inst) ({inst[31:12], 12'b000000000000})
+#define IMM_GEN_JTYPE(inst) ({inst[31], inst[19:12], inst[20], inst[30:21], 1'b0})
+
 struct decoder_packet_t {
     uop[SIZEOF_UOP_T];
     lrd[5];
