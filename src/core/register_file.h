@@ -4,33 +4,33 @@
 
 declare register_file {
     // 6 reads/ 3 writes
-    input rnumA[6];
-    output rdataA[XLEN];
-    func_in readA(rnumA): rdataA;
-    input rnumB[6];
-    output rdataB[XLEN];
-    func_in readB(rnumB): rdataB;
-    input rnumC[6];
-    output rdataC[XLEN];
-    func_in readC(rnumC): rdataC;
-    input rnumD[6];
-    output rdataD[XLEN];
-    func_in readD(rnumD): rdataD;
-    input rnumE[6];
-    output rdataE[XLEN];
-    func_in readE(rnumE): rdataE;
-    input rnumF[6];
-    output rdataF[XLEN];
-    func_in readF(rnumF): rdataF;
-    input wnumA[6];
-    input wdataA[XLEN];
-    func_in writeA(wnumA, wdataA);
-    input wnumB[6];
-    input wdataB[XLEN];
-    func_in writeB(wnumB, wdataB);
-    input wnumC[6];
-    input wdataC[XLEN];
-    func_in writeC(wnumC, wdataC);
+    input req_readA_addr[6];
+    output rsp_readA_data[XLEN];
+    func_in req_readA(req_readA_addr): rsp_readA_data;
+    input req_readB_addr[6];
+    output rsp_readB_data[XLEN];
+    func_in req_readB(req_readB_addr): rsp_readB_data;
+    input req_readC_addr[6];
+    output rsp_readC_data[XLEN];
+    func_in req_readC(req_readC_addr): rsp_readC_data;
+    input req_readD_addr[6];
+    output rsp_readD_data[XLEN];
+    func_in req_readD(req_readD_addr): rsp_readD_data;
+    input req_readE_addr[6];
+    output rsp_readE_data[XLEN];
+    func_in req_readE(req_readE_addr): rsp_readE_data;
+    input req_readF_addr[6];
+    output rsp_readF_data[XLEN];
+    func_in req_readF(req_readF_addr): rsp_readF_data;
+    input req_writeA_addr[6];
+    input req_writeA_data[XLEN];
+    func_in req_writeA(req_writeA_addr, req_writeA_data);
+    input req_writeB_addr[6];
+    input req_writeB_data[XLEN];
+    func_in req_writeB(req_writeB_addr, req_writeB_data);
+    input req_writeC_addr[6];
+    input req_writeC_data[XLEN];
+    func_in req_writeC(req_writeC_addr, req_writeC_data);
 }
 
 #endif

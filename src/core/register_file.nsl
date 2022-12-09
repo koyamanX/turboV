@@ -4,31 +4,31 @@
 module register_file {
     mem regs[64][XLEN] = {0};
 
-    func readA {
-       return regs[rnumA];
+    func req_readA {
+       return regs[req_readA_addr];
     }
-    func readB {
-       return regs[rnumB];
+    func req_readB {
+       return regs[req_readB_addr];
     }
-    func readC {
-       return regs[rnumC];
+    func req_readC {
+       return regs[req_readC_addr];
     }
-    func readD {
-       return regs[rnumD];
+    func req_readD {
+       return regs[req_readD_addr];
     }
-    func readE {
-       return regs[rnumE];
+    func req_readE {
+       return regs[req_readE_addr];
     }
-    func readF {
-       return regs[rnumF];
+    func req_readF {
+       return regs[req_readF_addr];
     }
-    func writeA {
-		regs[wnumA] := wdataA;
+    func req_writeA {
+		regs[req_writeA_addr] := req_writeA_data;
     }
-    func writeB {
-		regs[wnumB] := wdataB;
+    func req_writeB {
+		regs[req_writeB_addr] := req_writeB_data;
     }
-    func writeC {
-		regs[wnumC] := wdataC;
+    func req_writeC {
+		regs[req_writeC_addr] := req_writeC_data;
     }
 }
