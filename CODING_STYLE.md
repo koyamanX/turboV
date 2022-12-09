@@ -51,6 +51,7 @@
 - Name of func\_in should be prefixed with 'req_'.
 - Name of func\_in response(signal for return value) should be prefixed with 'rsp_<func_in_name>_'.
 - Name of func\_in arguments also should be prefixed with 'req_<func_in_name>_'
+- Name of func\_in arguments should not be suffixed with '_i',  '_o' for input, output respecitivly.
 - If no argument is present, '()' can be ommited.
 
 #### Declaration of func\_in
@@ -69,6 +70,7 @@ declare mod {
 - Name of func\_out should be prefixed with 'req_'.
 - Name of func\_out response(signal for return value) should be prefixed with 'rsp_<func_out_name>_'.
 - Name of func\_out arguments also should be prefixed with 'req_<func_out_name>_'
+- Name of func\_out arguments should not be suffixed with '_i',  '_o' for input, output respecitivly.
 - If no argument is present, '()' can be ommited.
 
 #### Declaration of func\_in
