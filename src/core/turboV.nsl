@@ -201,10 +201,10 @@ module turboV {
         state decode0 {
             if(!rob.stall_pipeline && !ifu.ibuf_empty && !stall_issue && !flush) {
                 decode0_fetch_packet = ifu.ibuf_pop();
-                udec0.decode(decode0_fetch_packet.inst0);
-                udec1.decode(decode0_fetch_packet.inst1);
-                decode0_decoder_packet0 = udec0.packet;
-                decode0_decoder_packet1 = udec1.packet;
+                udec0.req_decode(decode0_fetch_packet.inst0);
+                udec1.req_decode(decode0_fetch_packet.inst1);
+                decode0_decoder_packet0 = udec0.rsp_decode_packet;
+                decode0_decoder_packet1 = udec1.rsp_decode_packet;
                 decode0_uop0 = decode0_decoder_packet0.uop;
                 decode0_uop1 = decode0_decoder_packet1.uop;
 
@@ -237,7 +237,7 @@ module turboV {
                         issue.invoke({decode0_fetch_packet.pc,
 								decode0_fetch_packet.pred0, decode0_fetch_packet.pred1,
 								decode0_fetch_packet.valid0, decode0_fetch_packet.valid1},
-								udec0.packet, udec1.packet);
+								udec0.rsp_decode_packet, udec1.rsp_decode_packet);
                         DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
                         DEBUG_DECODE1(decode0_fetch_packet.pc+4, decode0_fetch_packet.inst1, decode0_fetch_packet.pred1);
                     } else {
@@ -247,7 +247,7 @@ module turboV {
                         issue.invoke({decode0_fetch_packet.pc,
 								decode0_fetch_packet.pred0, 1'b0,
 								decode0_fetch_packet.valid0, 1'b0},
-								udec0.packet, 0);
+								udec0.rsp_decode_packet, 0);
                         decode1_fetch_packet := decode0_fetch_packet;
                         goto decode1;
                         DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
@@ -260,7 +260,7 @@ module turboV {
                     issue.invoke({decode0_fetch_packet.pc,
 							decode0_fetch_packet.pred0, 1'b0,
 							decode0_fetch_packet.valid0, 1'b0},
-							udec0.packet, 0);
+							udec0.rsp_decode_packet, 0);
                     DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
                 }
             }
@@ -273,20 +273,20 @@ module turboV {
             if(flush) {
                 goto decode0;
             } else if(!stall_issue && !flush) {
-                udec0.decode(decode1_fetch_packet.inst1);
+                udec0.req_decode(decode1_fetch_packet.inst1);
                 issue.invoke({decode1_fetch_packet.pc+4,
 						decode1_fetch_packet.pred1, 1'b0,
 						decode1_fetch_packet.valid1, 1'b0},
-						udec0.packet, 0);
+						udec0.rsp_decode_packet, 0);
                 goto decode0;
                 DEBUG_DECODE0(decode1_fetch_packet.pc+4, decode1_fetch_packet.inst1, decode1_fetch_packet.pred1);
             }
         }
     }
-	func udec0.decode_csr {
-		return csr.req_decode(udec0.decode_csr_num, udec0.decode_csr_rw);	
+	func udec0.req_decode_csr {
+		return csr.req_decode(udec0.req_decode_csr_addr, udec0.req_decode_csr_rw);	
 	}
-	func udec1.decode_csr {
+	func udec1.req_decode_csr {
 		return 0;	
 	}
     proc issue {
