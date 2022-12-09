@@ -39,28 +39,28 @@ struct reorder_buffer_t {
 #define REORDER_BUFFER_PTR_SIZE LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1
 
 declare reorder_buffer {
-    input PC[30];
-    input valid0;
-    input uop0[SIZEOF_UOP_T];
-    input dreg0[5];
-    input preg0[6];
-    input ppreg0[6];
-    input cause0[SIZEOF_CAUSE_T];
-    input valid1;
-    input uop1[SIZEOF_UOP_T];
-    input dreg1[5];
-    input preg1[6];
-    input ppreg1[6];
-    input cause1[SIZEOF_CAUSE_T];
-    output ptr[REORDER_BUFFER_PTR_SIZE];
+    input req_issue_PC[30];
+    input req_issue_valid0;
+    input req_issue_uop0[SIZEOF_UOP_T];
+    input req_issue_dreg0[5];
+    input req_issue_preg0[6];
+    input req_issue_ppreg0[6];
+    input req_issue_cause0[SIZEOF_CAUSE_T];
+    input req_issue_valid1;
+    input req_issue_uop1[SIZEOF_UOP_T];
+    input req_issue_dreg1[5];
+    input req_issue_preg1[6];
+    input req_issue_ppreg1[6];
+    input req_issue_cause1[SIZEOF_CAUSE_T];
+    output rsp_issue_ptr[REORDER_BUFFER_PTR_SIZE];
     output head_ptr[REORDER_BUFFER_PTR_SIZE];
     output head_o[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
     output tail_o[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
 #ifdef ENABLE_DEBUG
-    input inst0[32];
-    input inst1[32];
-    func_in issue(PC, valid0, uop0, dreg0, preg0, ppreg0, cause0,
-                      valid1, uop1, dreg1, preg1, ppreg1, cause1, inst0, inst1): ptr;
+    input req_issue_inst0[32];
+    input req_issue_inst1[32];
+    func_in req_issue(req_issue_PC, req_issue_valid0, req_issue_uop0, req_issue_dreg0, req_issue_preg0, req_issue_ppreg0, req_issue_cause0,
+                      req_issue_valid1, req_issue_uop1, req_issue_dreg1, req_issue_preg1, req_issue_ppreg1, req_issue_cause1, req_issue_inst0, req_issue_inst1): rsp_issue_ptr;
     output debug_commit_ptr0[REORDER_BUFFER_PTR_SIZE];
     output debug_commit_kill0;
     output debug_commit_pc0[32];
@@ -86,8 +86,8 @@ declare reorder_buffer {
 							debug_commit_inst1, debug_commit_cause1, debug_commit_rd_valid1,
 							debug_commit_dreg1, debug_commit_preg1, debug_commit_ppreg1);
 #else
-    func_in issue(PC, valid0, uop0, dreg0, preg0, ppreg0, cause0,
-                      valid1, uop1, dreg1, preg1, ppreg1, cause1): ptr;
+    func_in req_issue(req_issue_PC, req_issue_valid0, req_issue_uop0, req_issue_dreg0, req_issue_preg0, req_issue_ppreg0, req_issue_cause0,
+                      req_issue_valid1, req_issue_uop1, req_issue_dreg1, req_issue_preg1, req_issue_ppreg1, req_issue_cause1): rsp_issue_ptr;
 #endif
 	/* Execution time exception
 	 * Instruction address misaligned
@@ -98,25 +98,25 @@ declare reorder_buffer {
 	 * Load page fault
 	 * Store/AMO page fault
 	 */
-    input complete_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
-    input complete_alu0_taken;
-    input complete_alu0_target[32];
-	input complete_alu0_instruction_address_misaligned;
-    func_in complete_alu0(complete_alu0_ptr, complete_alu0_taken, complete_alu0_target, complete_alu0_instruction_address_misaligned);
-    input complete_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
-    input complete_alu1_taken;
-    input complete_alu1_target[32];
-	input complete_alu1_instruction_address_misaligned;
-    func_in complete_alu1(complete_alu1_ptr, complete_alu1_taken, complete_alu1_target, complete_alu1_instruction_address_misaligned);
-    input complete_lsu0_ptr[REORDER_BUFFER_PTR_SIZE];
-    func_in complete_lsu0(complete_lsu0_ptr);
-    input readPC0_ptr[REORDER_BUFFER_PTR_SIZE];
-    output PC0[32];
-    func_in readPC0(readPC0_ptr): PC0;
-    input readPC1_ptr[REORDER_BUFFER_PTR_SIZE];
-    output PC1[32];
-    func_in readPC1(readPC1_ptr): PC1;
-	func_out full();
+    input req_complete_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
+    input req_complete_alu0_taken;
+    input req_complete_alu0_target[32];
+	input req_complete_alu0_instruction_address_misaligned;
+    func_in req_complete_alu0(req_complete_alu0_ptr, req_complete_alu0_taken, req_complete_alu0_target, req_complete_alu0_instruction_address_misaligned);
+    input req_complete_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
+    input req_complete_alu1_taken;
+    input req_complete_alu1_target[32];
+	input req_complete_alu1_instruction_address_misaligned;
+    func_in req_complete_alu1(req_complete_alu1_ptr, req_complete_alu1_taken, req_complete_alu1_target, req_complete_alu1_instruction_address_misaligned);
+    input req_complete_lsu0_ptr[REORDER_BUFFER_PTR_SIZE];
+    func_in req_complete_lsu0(req_complete_lsu0_ptr);
+    input req_readPC0_ptr[REORDER_BUFFER_PTR_SIZE];
+    output rsp_readPC0_PC[32];
+    func_in req_readPC0(req_readPC0_ptr): rsp_readPC0_PC;
+    input req_readPC1_ptr[REORDER_BUFFER_PTR_SIZE];
+    output rsp_readPC1_PC[32];
+    func_in req_readPC1(req_readPC1_ptr): rsp_readPC1_PC;
+	output full;
 
     input meip;
     input msip;
@@ -128,34 +128,34 @@ declare reorder_buffer {
     input priv_mode[2];
 
 	// to frontend
-	output redirect_frontend_pc[32];
-	func_out redirect_frontend(redirect_frontend_pc);
+	output req_redirect_frontend_pc[32];
+	func_out req_redirect_frontend(req_redirect_frontend_pc);
 	// to pipeline
-	func_out stall_pipeline();
-	func_out flush_pipeline();
+	func_out req_stall_pipeline();
+	func_out req_flush_pipeline();
 	// to LSU
-	output lsu_commit_ptr[REORDER_BUFFER_PTR_SIZE];
-	func_out lsu_commit(lsu_commit_ptr);
+	output req_lsu_commit_ptr[REORDER_BUFFER_PTR_SIZE];
+	func_out req_lsu_commit(req_lsu_commit_ptr);
 	// TO CSR
-	output csr_commit_ptr[REORDER_BUFFER_PTR_SIZE];
-	func_out csr_commit(csr_commit_ptr);
-    output csr_trap_cause[32];
-    output csr_trap_pc[32];
-    output csr_trap_val[32];
-    func_out csr_trap(csr_trap_cause, csr_trap_pc, csr_trap_val);
-	func_out csr_mret();
+	output req_csr_commit_ptr[REORDER_BUFFER_PTR_SIZE];
+	func_out req_csr_commit(req_csr_commit_ptr);
+    output req_csr_trap_cause[32];
+    output req_csr_trap_pc[32];
+    output req_csr_trap_val[32];
+    func_out req_csr_trap(req_csr_trap_cause, req_csr_trap_pc, req_csr_trap_val);
+	func_out req_csr_mret();
 	// to Freelist
-	output freelist_push0_data[6];
-	func_out freelist_push0(freelist_push0_data);
-	output freelist_push1_data[6];
-	func_out freelist_push1(freelist_push1_data);
+	output req_freelist_push0_data[6];
+	func_out req_freelist_push0(req_freelist_push0_data);
+	output req_freelist_push1_data[6];
+	func_out req_freelist_push1(req_freelist_push1_data);
 	// to RMT(Register Map Table)
-	output rmt_update0_dreg[5];
-	output rmt_update0_preg[6];
-	func_out rmt_update0(rmt_update0_dreg, rmt_update0_preg);
-	output rmt_update1_dreg[5];
-	output rmt_update1_preg[6];
-	func_out rmt_update1(rmt_update1_dreg, rmt_update1_preg);
+	output req_rmt_update0_dreg[5];
+	output req_rmt_update0_preg[6];
+	func_out req_rmt_update0(req_rmt_update0_dreg, req_rmt_update0_preg);
+	output req_rmt_update1_dreg[5];
+	output req_rmt_update1_preg[6];
+	func_out req_rmt_update1(req_rmt_update1_dreg, req_rmt_update1_preg);
 }
 
 #endif

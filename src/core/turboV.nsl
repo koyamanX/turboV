@@ -154,38 +154,38 @@ module turboV {
         iq_alu1.req_stall();
         iq_lsu0.req_stall();
     }
-	func rob.redirect_frontend {
+	func rob.req_redirect_frontend {
 		decode.invoke();
-		ifu.redirect(rob.redirect_frontend_pc);
+		ifu.redirect(rob.req_redirect_frontend_pc);
 		// TODO: rename DEBUG_FLUSH
-        DEBUG_FLUSH(rob.redirect_frontend_pc);
+        DEBUG_FLUSH(rob.req_redirect_frontend_pc);
     }
-	func rob.flush_pipeline {
+	func rob.req_flush_pipeline {
 		flush();
 	}
-	func rob.lsu_commit {
-		lsu0.commit(rob.lsu_commit_ptr);
+	func rob.req_lsu_commit {
+		lsu0.commit(rob.req_lsu_commit_ptr);
 	}
-	func rob.csr_commit {
-		csr.req_commit(rob.csr_commit_ptr);
+	func rob.req_csr_commit {
+		csr.req_commit(rob.req_csr_commit_ptr);
 	}
-	func rob.freelist_push0 {
-		freelist.req_push0(rob.freelist_push0_data);
+	func rob.req_freelist_push0 {
+		freelist.req_push0(rob.req_freelist_push0_data);
 	}
-	func rob.freelist_push1 {
-		freelist.req_push1(rob.freelist_push1_data);
+	func rob.req_freelist_push1 {
+		freelist.req_push1(rob.req_freelist_push1_data);
 	}
-	func rob.rmt_update0 {
-		register_map_table[rob.rmt_update0_dreg] := rob.rmt_update0_preg;
+	func rob.req_rmt_update0 {
+		register_map_table[rob.req_rmt_update0_dreg] := rob.req_rmt_update0_preg;
 	}
-	func rob.rmt_update1 {
-		register_map_table[rob.rmt_update1_dreg] := rob.rmt_update1_preg;
+	func rob.req_rmt_update1 {
+		register_map_table[rob.req_rmt_update1_dreg] := rob.req_rmt_update1_preg;
 	}
-	func rob.csr_trap {
+	func rob.req_csr_trap {
 		decode.invoke();
-		ifu.redirect(csr.req_trap(rob.csr_trap_cause, rob.csr_trap_pc, rob.csr_trap_val));
+		ifu.redirect(csr.req_trap(rob.req_csr_trap_cause, rob.req_csr_trap_pc, rob.req_csr_trap_val));
 	}
-	func rob.csr_mret {
+	func rob.req_csr_mret {
 		decode.invoke();
 		ifu.redirect(csr.req_mret());
 	}
@@ -199,7 +199,7 @@ module turboV {
         fetch_packet_t reg decode1_fetch_packet;
 
         state decode0 {
-            if(!rob.stall_pipeline && !ifu.ibuf_empty && !stall_issue && !flush) {
+            if(!rob.req_stall_pipeline && !ifu.ibuf_empty && !stall_issue && !flush) {
                 decode0_fetch_packet = ifu.ibuf_pop();
                 udec0.req_decode(decode0_fetch_packet.inst0);
                 udec1.req_decode(decode0_fetch_packet.inst1);
@@ -435,18 +435,18 @@ module turboV {
             }
 
 #ifdef ENABLE_DEBUG
-            rob.issue(issue_PC,
+            rob.req_issue(issue_PC,
                     issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_prd, issue_inst0_pprd, issue_inst0_cause,
                     issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_prd, issue_inst1_pprd, issue_inst1_cause,
                     decoder_packet0.inst, decoder_packet1.inst);
 #else
-            rob.issue(issue_PC,
+            rob.req_issue(issue_PC,
                     issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_prd, issue_inst0_pprd, issue_inst0_cause,
                     issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_prd, issue_inst1_pprd, issue_inst1_cause);
 #endif
             // TODO: NSL does not support mod.sig_o[_int(N)]
-            issue_inst0_ptr = rob.ptr;
-            issue_inst1_ptr = rob.ptr+1;
+            issue_inst0_ptr = rob.rsp_issue_ptr;
+            issue_inst1_ptr = rob.rsp_issue_ptr+1;
 
             // TODO:
             if(issue_inst0_valid) {
@@ -505,7 +505,7 @@ module turboV {
         uop_t wire iq_alu0_uop;
 
         iq_alu0_uop = iq_alu0.req_dispatch_uop;
-        iq_alu0_PC = rob.readPC0(iq_alu0.req_dispatch_ptr);
+        iq_alu0_PC = rob.req_readPC0(iq_alu0.req_dispatch_ptr);
         // SYSTEM instruction is req_dispatched in this pipe.
         any {
             iq_alu0_uop.rs1_sel == RS1_SEL_REG && iq_alu0_uop.rs1_valid: iq_alu0_A = gpr.req_readA(iq_alu0.req_dispatch_prs1);
@@ -572,7 +572,7 @@ module turboV {
         // SYSTEM instruction never req_dispatched here.
 
         iq_alu1_uop = iq_alu1.req_dispatch_uop;
-        iq_alu1_PC = rob.readPC1(iq_alu1.req_dispatch_ptr);
+        iq_alu1_PC = rob.req_readPC1(iq_alu1.req_dispatch_ptr);
         any {
             iq_alu1_uop.rs1_sel == RS1_SEL_REG && iq_alu1_uop.rs1_valid: iq_alu1_A = gpr.req_readC(iq_alu1.req_dispatch_prs1);
             iq_alu1_uop.rs1_sel == RS1_SEL_REG && !iq_alu1_uop.rs1_valid: iq_alu1_A = 0;
@@ -616,7 +616,7 @@ module turboV {
         // SYSTEM instruction never dispatched here.
 
         iq_lsu0_uop = iq_lsu0.req_dispatch_uop;
-        //iq_lsu0_PC = rob.readPC1(iq_lsu0.req_dispatch_ptr);
+        //iq_lsu0_PC = rob.req_readPC1(iq_lsu0.req_dispatch_ptr);
         any {
             iq_lsu0_uop.rs1_sel == RS1_SEL_REG && iq_lsu0_uop.rs1_valid: iq_lsu0_A = gpr.req_readE(iq_lsu0.req_dispatch_prs1);
             iq_lsu0_uop.rs1_sel == RS1_SEL_REG && !iq_lsu0_uop.rs1_valid: iq_lsu0_A = 0;
@@ -656,7 +656,7 @@ module turboV {
 
         if(!flush) {
             writeback_lsu0_uop = lsu0.writeback_uop;
-            rob.complete_lsu0(lsu0.writeback_ptr);
+            rob.req_complete_lsu0(lsu0.writeback_ptr);
             if(writeback_lsu0_uop.rd_valid) {
                 gpr.req_writeC(lsu0.writeback_prd, lsu0.writeback_data);
                 iq_alu0.req_wakeup2(lsu0.writeback_prd);
@@ -684,18 +684,18 @@ module turboV {
                 register_status_table[writeback_alu0_prd] := READY;
             }
             if(writeback_alu0_uop.branch) {
-                rob.complete_alu0(writeback_alu0_ptr, writeback_alu0_q, writeback_alu0_target, (writeback_alu0_q && ((writeback_alu0_target[1:0] & csr.ialign) != 2'b00)));
+                rob.req_complete_alu0(writeback_alu0_ptr, writeback_alu0_q, writeback_alu0_target, (writeback_alu0_q && ((writeback_alu0_target[1:0] & csr.ialign) != 2'b00)));
             } else if(writeback_alu0_uop.jal) {
-                rob.complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target, ((writeback_alu0_target[1:0] & csr.ialign) != 2'b00));
+                rob.req_complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target, ((writeback_alu0_target[1:0] & csr.ialign) != 2'b00));
 			} else if(writeback_alu0_uop.jalr) {
-                rob.complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target & 0xfffffffe, (((writeback_alu0_target[1:0]&0x2) & csr.ialign) != 2'b00));
+                rob.req_complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target & 0xfffffffe, (((writeback_alu0_target[1:0]&0x2) & csr.ialign) != 2'b00));
             } else if(writeback_alu0_uop.csr) {
                 if(writeback_alu0_uop.csr_write) {
                     csr.req_write(rob.head_ptr, writeback_alu0_ptr, writeback_alu0_target, writeback_alu0_q);
                 }
-                rob.complete_alu0(writeback_alu0_ptr, 0, 0, 0);
+                rob.req_complete_alu0(writeback_alu0_ptr, 0, 0, 0);
             } else {
-                rob.complete_alu0(writeback_alu0_ptr, 0, 0, 0);
+                rob.req_complete_alu0(writeback_alu0_ptr, 0, 0, 0);
             }
             DEBUG_WRITEBACK0(writeback_alu0_ptr, writeback_alu0_uop.rd_valid,
 								writeback_alu0_prd, writeback_alu0_q, writeback_alu0_target);
@@ -716,13 +716,13 @@ module turboV {
                 register_status_table[writeback_alu1_prd] := READY;
             }
             if(writeback_alu1_uop.branch) {
-                rob.complete_alu1(writeback_alu1_ptr, writeback_alu1_q, writeback_alu1_target, (writeback_alu1_q && ((writeback_alu1_target[1:0] & csr.ialign) != 2'b00)));
+                rob.req_complete_alu1(writeback_alu1_ptr, writeback_alu1_q, writeback_alu1_target, (writeback_alu1_q && ((writeback_alu1_target[1:0] & csr.ialign) != 2'b00)));
             } else if(writeback_alu1_uop.jal) {
-                rob.complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target, ((writeback_alu1_target[1:0] & csr.ialign) != 2'b00));
+                rob.req_complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target, ((writeback_alu1_target[1:0] & csr.ialign) != 2'b00));
 			} else if(writeback_alu1_uop.jalr) {
-                rob.complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target & 0xfffffffe, (((writeback_alu1_target[1:0]&0x2) & csr.ialign) != 2'b00));
+                rob.req_complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target & 0xfffffffe, (((writeback_alu1_target[1:0]&0x2) & csr.ialign) != 2'b00));
             } else {
-                rob.complete_alu1(writeback_alu1_ptr, 0, 0, 0);
+                rob.req_complete_alu1(writeback_alu1_ptr, 0, 0, 0);
             }
             finish();
             DEBUG_WRITEBACK1(writeback_alu1_ptr, writeback_alu1_uop.rd_valid,
