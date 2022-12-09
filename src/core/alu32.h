@@ -4,11 +4,11 @@
 #include "uops.h"
 
 declare alu32 {
-    input a[32];
-    input b[32];
-    input fn[FN_SIZE];
-    output q[32];
-    func_in exe(a, b, fn): q;
+    input req_exe_a[32];
+    input req_exe_b[32];
+    input req_exe_fn[FN_SIZE];
+    output rsp_exe_q[32];
+    func_in req_exe(req_exe_a, req_exe_b, req_exe_fn): rsp_exe_q;
 }
 
 #endif
