@@ -115,7 +115,7 @@ module turboV {
             /* Cycle 1: Reset */
             ifu.reset();
             csr.req_reset();
-            freelist.reset();
+            freelist.req_reset();
             generate(i_ = 0; i_ < NUMBER_OF_FREE_LIST; i_++) {
                 register_map_table[i_] := i_;
             }
@@ -170,10 +170,10 @@ module turboV {
 		csr.req_commit(rob.csr_commit_ptr);
 	}
 	func rob.freelist_push0 {
-		freelist.push0(rob.freelist_push0_data);
+		freelist.req_push0(rob.freelist_push0_data);
 	}
 	func rob.freelist_push1 {
-		freelist.push1(rob.freelist_push1_data);
+		freelist.req_push1(rob.freelist_push1_data);
 	}
 	func rob.rmt_update0 {
 		register_map_table[rob.rmt_update0_dreg] := rob.rmt_update0_preg;
@@ -371,7 +371,7 @@ module turboV {
                 issue_inst1_pprd = register_map_table[issue_inst1_lrd];
             }
             if(issue_packet.valid0 && issue_inst0_uop.rd_valid && (issue_inst0_lrd != 0)) {
-                issue_inst0_prd = freelist.pop0();
+                issue_inst0_prd = freelist.req_pop0();
                 if(!(issue_packet.valid1 && issue_inst0_uop.rd_valid && issue_inst1_uop.rd_valid
 					&& (issue_inst1_lrd != 0) && (issue_inst0_lrd == issue_inst1_lrd))) {
                     if(!flush) {
@@ -382,7 +382,7 @@ module turboV {
                 }
             }
             if(issue_packet.valid1 && issue_inst1_uop.rd_valid && (issue_inst1_lrd != 0)) {
-                issue_inst1_prd = freelist.pop1();
+                issue_inst1_prd = freelist.req_pop1();
                 if(!flush) {
                     register_map_table[issue_inst1_lrd] := issue_inst1_prd;
                     register_status_table[issue_inst1_prd] := BUSY;
