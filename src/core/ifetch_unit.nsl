@@ -61,24 +61,24 @@ module ifetch_unit {
         flush_st1();
         flush_st2();
         stall_ifetch.finish();
-        ibuf.flush();
+        ibuf.req_flush();
     }
     func stall {
         stall_st0();
         stall_st1();
         stall_st2();
     }
-    func ibuf.full {
+    if(ibuf.full) {
         ibuf_full();
     }
-    func ibuf.empty {
+    if(ibuf.empty) {
         ibuf_empty();
     }
     func ibuf_flush {
-        ibuf.flush();
+        ibuf.req_flush();
     }
     func ibuf_pop {
-        return ibuf.pop();
+        return ibuf.req_pop();
     }
 
     if(ibuf.full && !redirect) {
@@ -129,10 +129,10 @@ module ifetch_unit {
             finish();
             any {
                 st2_vpc[2]: {
-                    ibuf.push({(st2_vpc)[XLEN-1:0], {st2_fetch_packet[63:32], st2_fetch_packet[31:0]}, 2'b00, 2'b10});
+                    ibuf.req_push({(st2_vpc)[XLEN-1:0], {st2_fetch_packet[63:32], st2_fetch_packet[31:0]}, 2'b00, 2'b10});
                 }
                 ~st2_vpc[2]: {
-                    ibuf.push({(st2_vpc)[XLEN-1:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b11});
+                    ibuf.req_push({(st2_vpc)[XLEN-1:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b11});
                 }
             }
         }

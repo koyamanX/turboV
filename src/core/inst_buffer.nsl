@@ -9,19 +9,19 @@ module inst_buffer {
     func_self internal_full();
     func_self internal_empty();
 
-    func push {
-        if(~internal_full && ~flush) {
-            ibuf[wptr] := idata;
+    func req_push {
+        if(~internal_full && ~req_flush) {
+            ibuf[wptr] := req_push_data;
             wptr := next_wptr;
         }
     }
-    func pop {
-        if(~internal_empty && ~flush) {
+    func req_pop {
+        if(~internal_empty && ~req_flush) {
             rptr := next_rptr;
             return ibuf[rptr];
         }
     }
-    func flush {
+    func req_flush {
         rptr := 0;
         wptr := 0;
     }
@@ -35,11 +35,6 @@ module inst_buffer {
     if(rptr == wptr) {
         internal_empty();
     }
-    func internal_full {
-        full();
-    }
-    func internal_empty {
-        empty();
-    }
-
+	full = internal_full;
+	empty = internal_empty;
 }
