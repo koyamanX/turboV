@@ -114,7 +114,7 @@ module turboV {
         {
             /* Cycle 1: Reset */
             ifu.reset();
-            csr.reset();
+            csr.req_reset();
             freelist.reset();
             generate(i_ = 0; i_ < NUMBER_OF_FREE_LIST; i_++) {
                 register_map_table[i_] := i_;
@@ -125,7 +125,7 @@ module turboV {
         }
         {
             /* Cycle 2: Start inst fetch */
-            ifu.redirect(csr.trap(0, 0, 0));
+            ifu.redirect(csr.req_trap(0, 0, 0));
             decode();
             finish();
         }
@@ -146,7 +146,7 @@ module turboV {
         generate(i_ = 0; i_ < 64; i_++) {
             register_status_table[i_] := READY;
         }
-		csr.flush();
+		csr.req_flush();
         iq_alu0.flush();
         iq_alu1.flush();
         iq_lsu0.flush();
@@ -167,7 +167,7 @@ module turboV {
 		lsu0.commit(rob.lsu_commit_ptr);
 	}
 	func rob.csr_commit {
-		csr.commit(rob.csr_commit_ptr);
+		csr.req_commit(rob.csr_commit_ptr);
 	}
 	func rob.freelist_push0 {
 		freelist.push0(rob.freelist_push0_data);
@@ -183,11 +183,11 @@ module turboV {
 	}
 	func rob.csr_trap {
 		decode.invoke();
-		ifu.redirect(csr.trap(rob.csr_trap_cause, rob.csr_trap_pc, rob.csr_trap_val));
+		ifu.redirect(csr.req_trap(rob.csr_trap_cause, rob.csr_trap_pc, rob.csr_trap_val));
 	}
 	func rob.csr_mret {
 		decode.invoke();
-		ifu.redirect(csr.mret());
+		ifu.redirect(csr.req_mret());
 	}
     proc decode {
         state_name decode0, decode1;
@@ -284,7 +284,7 @@ module turboV {
         }
     }
 	func udec0.decode_csr {
-		return csr.decode(udec0.decode_csr_num, udec0.decode_csr_rw);	
+		return csr.req_decode(udec0.decode_csr_num, udec0.decode_csr_rw);	
 	}
 	func udec1.decode_csr {
 		return 0;	
@@ -517,8 +517,8 @@ module turboV {
             iq_alu0_uop.rs2_sel == RS2_SEL_REG && iq_alu0_uop.rs2_valid: iq_alu0_B = gpr.readB(iq_alu0.dispatch_prs2);
             iq_alu0_uop.rs2_sel == RS2_SEL_REG && !iq_alu0_uop.rs2_valid: iq_alu0_B = 0;
             iq_alu0_uop.rs2_sel == RS2_SEL_IMM: iq_alu0_B = iq_alu0.dispatch_imm;
-            iq_alu0_uop.rs2_sel == RS2_SEL_CSR: iq_alu0_B = csr.read(iq_alu0.dispatch_imm);
-            iq_alu0_uop.rs2_sel == RS2_SEL_CSR_UIMM: iq_alu0_B = csr.read(iq_alu0.dispatch_imm) & 0xffffffe0;
+            iq_alu0_uop.rs2_sel == RS2_SEL_CSR: iq_alu0_B = csr.req_read(iq_alu0.dispatch_imm);
+            iq_alu0_uop.rs2_sel == RS2_SEL_CSR_UIMM: iq_alu0_B = csr.req_read(iq_alu0.dispatch_imm) & 0xffffffe0;
         }
         /*
             For branch instruction, branch target is already calculated in decode stage,
@@ -674,7 +674,7 @@ module turboV {
 				if((writeback_alu0_uop.jal || writeback_alu0_uop.jalr || (writeback_alu0_uop.branch && writeback_alu0_q)) && ((writeback_alu0_target[1:0] & csr.ialign) != 2'b00)) {
 					gpr.writeA(writeback_alu0_prd, 0);
 				} else if(writeback_alu0_uop.csr_write) {
-					gpr.writeA(writeback_alu0_prd, csr.write_old_data);
+					gpr.writeA(writeback_alu0_prd, csr.rsp_write_old_data);
 				} else {
 					gpr.writeA(writeback_alu0_prd, writeback_alu0_q);
 				}
@@ -691,7 +691,7 @@ module turboV {
                 rob.complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target & 0xfffffffe, (((writeback_alu0_target[1:0]&0x2) & csr.ialign) != 2'b00));
             } else if(writeback_alu0_uop.csr) {
                 if(writeback_alu0_uop.csr_write) {
-                    csr.write(rob.head_ptr, writeback_alu0_ptr, writeback_alu0_target, writeback_alu0_q);
+                    csr.req_write(rob.head_ptr, writeback_alu0_ptr, writeback_alu0_target, writeback_alu0_q);
                 }
                 rob.complete_alu0(writeback_alu0_ptr, 0, 0, 0);
             } else {
@@ -735,10 +735,10 @@ module turboV {
         Interrupts
     */
     func timer_interrupt_req_hart0 {
-        csr.timer_interrupt_req_hart0();
+        csr.req_timer_interrupt_req_hart0();
     }
     func software_interrupt_req_hart0 {
-        csr.software_interrupt_req_hart0();
+        csr.req_software_interrupt_req_hart0();
     }
 	rob.meip = csr.meip;
 	rob.msip = csr.msip;
