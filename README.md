@@ -12,7 +12,7 @@ $ popd
 $ ./run.sh # Now, you can enter development container 
 ```
 
-## Unit Test
+## Integration Test
 ```bash
 ./run.sh
 mkdir build
