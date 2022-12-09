@@ -1,8 +1,6 @@
 #ifndef UOPS_H
 #define UOPS_H
 
-#include "consts.h"
-
 #define uOP_SIZE                        8
 #define FN_SIZE                            5
 

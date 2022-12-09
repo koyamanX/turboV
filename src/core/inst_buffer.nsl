@@ -1,5 +1,4 @@
 #include "inst_buffer.h"
-#include "consts.h"
 
 module inst_buffer {
     mem ibuf[NUMBER_OF_INST_BUFFER][SIZEOF_FETCH_PACKET_T] = {0};
