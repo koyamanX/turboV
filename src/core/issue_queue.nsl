@@ -15,37 +15,37 @@ module issue_queue {
     func_self dispatch_rs2();
     func_self dispatch_rs3();
 
-    func issue {
-        issue_queue_t wire new_entry;
-        if(!flush) {
-            new_entry.valid = 1;
-            new_entry.ptr = ptr;
-            new_entry.uop = uop;
-            new_entry.prs1 = prs1;
-            new_entry.prs2 = prs2;
-            new_entry.prd = prd;
-            new_entry.imm = imm;
+    func req_issue {
+        issue_queue_t wire req_issue_new_entry;
+        if(!req_flush) {
+            req_issue_new_entry.valid = 1;
+            req_issue_new_entry.ptr = req_issue_ptr;
+            req_issue_new_entry.uop = req_issue_uop;
+            req_issue_new_entry.prs1 = req_issue_prs1;
+            req_issue_new_entry.prs2 = req_issue_prs2;
+            req_issue_new_entry.prd = req_issue_prd;
+            req_issue_new_entry.imm = req_issue_imm;
             any {
-                wakeup0 && (prs1 == wakeup0_prd): {new_entry.prs1_ready = READY;}
-                wakeup1 && (prs1 == wakeup1_prd): {new_entry.prs1_ready = READY;}
-                wakeup2 && (prs1 == wakeup2_prd): {new_entry.prs1_ready = READY;}
-                else: {new_entry.prs1_ready = prs1_ready;}
+                req_wakeup0 && (req_issue_prs1 == req_wakeup0_prd): {req_issue_new_entry.prs1_ready = READY;}
+                req_wakeup1 && (req_issue_prs1 == req_wakeup1_prd): {req_issue_new_entry.prs1_ready = READY;}
+                req_wakeup2 && (req_issue_prs1 == req_wakeup2_prd): {req_issue_new_entry.prs1_ready = READY;}
+                else: {req_issue_new_entry.prs1_ready = req_issue_prs1_ready;}
             }
             any {
-                wakeup0 && (prs2 == wakeup0_prd): {new_entry.prs2_ready = READY;}
-                wakeup1 && (prs2 == wakeup1_prd): {new_entry.prs2_ready = READY;}
-                wakeup2 && (prs2 == wakeup2_prd): {new_entry.prs2_ready = READY;}
-                else: {new_entry.prs2_ready = prs2_ready;}
+                req_wakeup0 && (req_issue_prs2 == req_wakeup0_prd): {req_issue_new_entry.prs2_ready = READY;}
+                req_wakeup1 && (req_issue_prs2 == req_wakeup1_prd): {req_issue_new_entry.prs2_ready = READY;}
+                req_wakeup2 && (req_issue_prs2 == req_wakeup2_prd): {req_issue_new_entry.prs2_ready = READY;}
+                else: {req_issue_new_entry.prs2_ready = req_issue_prs2_ready;}
             }
             alt {
-                rs0_free: rs0 := new_entry;
-                rs1_free: rs1 := new_entry;
-                rs2_free: rs2 := new_entry;
-                rs3_free: rs3 := new_entry;
+                rs0_free: rs0 := req_issue_new_entry;
+                rs1_free: rs1 := req_issue_new_entry;
+                rs2_free: rs2 := req_issue_new_entry;
+                rs3_free: rs3 := req_issue_new_entry;
             }
         }
     }
-    if(!flush && !stall) {
+    if(!req_flush && !req_stall) {
         alt {
             // TODO: check prs{1,2}_valid
             rs3.valid && (rs3.prs1_ready == READY) && (rs3.prs2_ready == READY): {
@@ -64,71 +64,69 @@ module issue_queue {
     }
     func dispatch_rs0 {
         rs0 := 0;
-        dispatch(rs0.ptr, rs0.uop, rs0.prd, rs0.prs1, rs0.prs2, rs0.imm);
+        req_dispatch(rs0.ptr, rs0.uop, rs0.prd, rs0.prs1, rs0.prs2, rs0.imm);
     }
     func dispatch_rs1 {
         rs1 := 0;
-        dispatch(rs1.ptr, rs1.uop, rs1.prd, rs1.prs1, rs1.prs2, rs1.imm);
+        req_dispatch(rs1.ptr, rs1.uop, rs1.prd, rs1.prs1, rs1.prs2, rs1.imm);
     }
     func dispatch_rs2 {
         rs2 := 0;
-        dispatch(rs2.ptr, rs2.uop, rs2.prd, rs2.prs1, rs2.prs2, rs2.imm);
+        req_dispatch(rs2.ptr, rs2.uop, rs2.prd, rs2.prs1, rs2.prs2, rs2.imm);
     }
     func dispatch_rs3 {
         rs3 := 0;
-        dispatch(rs3.ptr, rs3.uop, rs3.prd, rs3.prs1, rs3.prs2, rs3.imm);
+        req_dispatch(rs3.ptr, rs3.uop, rs3.prd, rs3.prs1, rs3.prs2, rs3.imm);
     }
-    func wakeup0 {
-        if(!flush) {
+    func req_wakeup0 {
+        if(!req_flush) {
             any {
-                (rs3.valid && rs3.prs1 == wakeup0_prd) && rs3.valid: {rs3.prs1_ready := READY;}
-                (rs3.valid && rs3.prs2 == wakeup0_prd) && rs3.valid: {rs3.prs2_ready := READY;}
-                (rs2.valid && rs2.prs1 == wakeup0_prd) && rs2.valid: {rs2.prs1_ready := READY;}
-                (rs2.valid && rs2.prs2 == wakeup0_prd) && rs2.valid: {rs2.prs2_ready := READY;}
-                (rs1.valid && rs1.prs1 == wakeup0_prd) && rs1.valid: {rs1.prs1_ready := READY;}
-                (rs1.valid && rs1.prs2 == wakeup0_prd) && rs1.valid: {rs1.prs2_ready := READY;}
-                (rs0.valid && rs0.prs1 == wakeup0_prd) && rs0.valid: {rs0.prs1_ready := READY;}
-                (rs0.valid && rs0.prs2 == wakeup0_prd) && rs0.valid: {rs0.prs2_ready := READY;}
+                (rs3.valid && rs3.prs1 == req_wakeup0_prd) && rs3.valid: {rs3.prs1_ready := READY;}
+                (rs3.valid && rs3.prs2 == req_wakeup0_prd) && rs3.valid: {rs3.prs2_ready := READY;}
+                (rs2.valid && rs2.prs1 == req_wakeup0_prd) && rs2.valid: {rs2.prs1_ready := READY;}
+                (rs2.valid && rs2.prs2 == req_wakeup0_prd) && rs2.valid: {rs2.prs2_ready := READY;}
+                (rs1.valid && rs1.prs1 == req_wakeup0_prd) && rs1.valid: {rs1.prs1_ready := READY;}
+                (rs1.valid && rs1.prs2 == req_wakeup0_prd) && rs1.valid: {rs1.prs2_ready := READY;}
+                (rs0.valid && rs0.prs1 == req_wakeup0_prd) && rs0.valid: {rs0.prs1_ready := READY;}
+                (rs0.valid && rs0.prs2 == req_wakeup0_prd) && rs0.valid: {rs0.prs2_ready := READY;}
             }
         }
     }
-    func wakeup1 {
-        if(!flush) {
+    func req_wakeup1 {
+        if(!req_flush) {
             any {
-                (rs3.valid && rs3.prs1 == wakeup1_prd) && rs3.valid: {rs3.prs1_ready := READY;}
-                (rs3.valid && rs3.prs2 == wakeup1_prd) && rs3.valid: {rs3.prs2_ready := READY;}
-                (rs2.valid && rs2.prs1 == wakeup1_prd) && rs2.valid: {rs2.prs1_ready := READY;}
-                (rs2.valid && rs2.prs2 == wakeup1_prd) && rs2.valid: {rs2.prs2_ready := READY;}
-                (rs1.valid && rs1.prs1 == wakeup1_prd) && rs1.valid: {rs1.prs1_ready := READY;}
-                (rs1.valid && rs1.prs2 == wakeup1_prd) && rs1.valid: {rs1.prs2_ready := READY;}
-                (rs0.valid && rs0.prs1 == wakeup1_prd) && rs0.valid: {rs0.prs1_ready := READY;}
-                (rs0.valid && rs0.prs2 == wakeup1_prd) && rs0.valid: {rs0.prs2_ready := READY;}
+                (rs3.valid && rs3.prs1 == req_wakeup1_prd) && rs3.valid: {rs3.prs1_ready := READY;}
+                (rs3.valid && rs3.prs2 == req_wakeup1_prd) && rs3.valid: {rs3.prs2_ready := READY;}
+                (rs2.valid && rs2.prs1 == req_wakeup1_prd) && rs2.valid: {rs2.prs1_ready := READY;}
+                (rs2.valid && rs2.prs2 == req_wakeup1_prd) && rs2.valid: {rs2.prs2_ready := READY;}
+                (rs1.valid && rs1.prs1 == req_wakeup1_prd) && rs1.valid: {rs1.prs1_ready := READY;}
+                (rs1.valid && rs1.prs2 == req_wakeup1_prd) && rs1.valid: {rs1.prs2_ready := READY;}
+                (rs0.valid && rs0.prs1 == req_wakeup1_prd) && rs0.valid: {rs0.prs1_ready := READY;}
+                (rs0.valid && rs0.prs2 == req_wakeup1_prd) && rs0.valid: {rs0.prs2_ready := READY;}
             }
         }
     }
-    func wakeup2 {
-        if(!flush) {
+    func req_wakeup2 {
+        if(!req_flush) {
             any {
-                (rs3.valid && rs3.prs1 == wakeup2_prd) && rs3.valid: {rs3.prs1_ready := READY;}
-                (rs3.valid && rs3.prs2 == wakeup2_prd) && rs3.valid: {rs3.prs2_ready := READY;}
-                (rs2.valid && rs2.prs1 == wakeup2_prd) && rs2.valid: {rs2.prs1_ready := READY;}
-                (rs2.valid && rs2.prs2 == wakeup2_prd) && rs2.valid: {rs2.prs2_ready := READY;}
-                (rs1.valid && rs1.prs1 == wakeup2_prd) && rs1.valid: {rs1.prs1_ready := READY;}
-                (rs1.valid && rs1.prs2 == wakeup2_prd) && rs1.valid: {rs1.prs2_ready := READY;}
-                (rs0.valid && rs0.prs1 == wakeup2_prd) && rs0.valid: {rs0.prs1_ready := READY;}
-                (rs0.valid && rs0.prs2 == wakeup2_prd) && rs0.valid: {rs0.prs2_ready := READY;}
+                (rs3.valid && rs3.prs1 == req_wakeup2_prd) && rs3.valid: {rs3.prs1_ready := READY;}
+                (rs3.valid && rs3.prs2 == req_wakeup2_prd) && rs3.valid: {rs3.prs2_ready := READY;}
+                (rs2.valid && rs2.prs1 == req_wakeup2_prd) && rs2.valid: {rs2.prs1_ready := READY;}
+                (rs2.valid && rs2.prs2 == req_wakeup2_prd) && rs2.valid: {rs2.prs2_ready := READY;}
+                (rs1.valid && rs1.prs1 == req_wakeup2_prd) && rs1.valid: {rs1.prs1_ready := READY;}
+                (rs1.valid && rs1.prs2 == req_wakeup2_prd) && rs1.valid: {rs1.prs2_ready := READY;}
+                (rs0.valid && rs0.prs1 == req_wakeup2_prd) && rs0.valid: {rs0.prs1_ready := READY;}
+                (rs0.valid && rs0.prs2 == req_wakeup2_prd) && rs0.valid: {rs0.prs2_ready := READY;}
             }
         }
     }
-    func flush {
+    func req_flush {
         rs3 := 0;
         rs2 := 0;
         rs1 := 0;
         rs0 := 0;
     }
-    if(!flush && (!rs3_free && !rs2_free && !rs1_free && !rs0_free)) {
-        full();
-    }
+    full = (!req_flush && (!rs3_free && !rs2_free && !rs1_free && !rs0_free));
     any {
         (!rs3.valid): rs3_free();
         (!rs2.valid): rs2_free();
