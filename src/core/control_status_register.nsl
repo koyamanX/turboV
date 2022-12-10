@@ -35,15 +35,15 @@ module control_status_register {
         UXLEN=32
     */
 
-    ialign = IALIGN;
-    meip = mip.meip;
-    msip = req_software_interrupt_req_hart0;
-    mtip = req_timer_interrupt_req_hart0;
-    meie = mie.meie;
-    msie = mie.msie;
-    mtie = mie.mtie;
-    mstatus_mie  = mstatus.mie;
-    priv_mode = mode;
+    ialign_o = IALIGN;
+    meip_o = mip.meip;
+    msip_o = req_software_interrupt_req_hart0;
+    mtip_o = req_timer_interrupt_req_hart0;
+    meie_o = mie.meie;
+    msie_o = mie.msie;
+    mtie_o = mie.mtie;
+    mstatus_mie_o  = mstatus.mie;
+    priv_mode_o = mode;
     func req_reset {
         /* TODO: */
         mode                := MACHINE;

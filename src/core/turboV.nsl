@@ -671,7 +671,7 @@ module turboV {
     proc writeback_alu0 {
         if(!flush) {
             if(writeback_alu0_uop.rd_valid) {
-				if((writeback_alu0_uop.jal || writeback_alu0_uop.jalr || (writeback_alu0_uop.branch && writeback_alu0_q)) && ((writeback_alu0_target[1:0] & csr.ialign) != 2'b00)) {
+				if((writeback_alu0_uop.jal || writeback_alu0_uop.jalr || (writeback_alu0_uop.branch && writeback_alu0_q)) && ((writeback_alu0_target[1:0] & csr.ialign_o) != 2'b00)) {
 					gpr.req_writeA(writeback_alu0_prd, 0);
 				} else if(writeback_alu0_uop.csr_write) {
 					gpr.req_writeA(writeback_alu0_prd, csr.rsp_write_old_data);
@@ -684,11 +684,11 @@ module turboV {
                 register_status_table[writeback_alu0_prd] := READY;
             }
             if(writeback_alu0_uop.branch) {
-                rob.req_complete_alu0(writeback_alu0_ptr, writeback_alu0_q, writeback_alu0_target, (writeback_alu0_q && ((writeback_alu0_target[1:0] & csr.ialign) != 2'b00)));
+                rob.req_complete_alu0(writeback_alu0_ptr, writeback_alu0_q, writeback_alu0_target, (writeback_alu0_q && ((writeback_alu0_target[1:0] & csr.ialign_o) != 2'b00)));
             } else if(writeback_alu0_uop.jal) {
-                rob.req_complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target, ((writeback_alu0_target[1:0] & csr.ialign) != 2'b00));
+                rob.req_complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target, ((writeback_alu0_target[1:0] & csr.ialign_o) != 2'b00));
 			} else if(writeback_alu0_uop.jalr) {
-                rob.req_complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target & 0xfffffffe, (((writeback_alu0_target[1:0]&0x2) & csr.ialign) != 2'b00));
+                rob.req_complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target & 0xfffffffe, (((writeback_alu0_target[1:0]&0x2) & csr.ialign_o) != 2'b00));
             } else if(writeback_alu0_uop.csr) {
                 if(writeback_alu0_uop.csr_write) {
                     csr.req_write(rob.head_ptr, writeback_alu0_ptr, writeback_alu0_target, writeback_alu0_q);
@@ -705,7 +705,7 @@ module turboV {
     proc writeback_alu1 {
         if(!flush) {
             if(writeback_alu1_uop.rd_valid) {
-				if((writeback_alu1_uop.jal || writeback_alu1_uop.jalr || (writeback_alu1_uop.branch && writeback_alu1_q)) && ((writeback_alu1_target[1:0] & csr.ialign) != 2'b00)) {
+				if((writeback_alu1_uop.jal || writeback_alu1_uop.jalr || (writeback_alu1_uop.branch && writeback_alu1_q)) && ((writeback_alu1_target[1:0] & csr.ialign_o) != 2'b00)) {
 					gpr.req_writeB(writeback_alu1_prd, 0);
 				} else {
 					gpr.req_writeB(writeback_alu1_prd, writeback_alu1_q);
@@ -716,11 +716,11 @@ module turboV {
                 register_status_table[writeback_alu1_prd] := READY;
             }
             if(writeback_alu1_uop.branch) {
-                rob.req_complete_alu1(writeback_alu1_ptr, writeback_alu1_q, writeback_alu1_target, (writeback_alu1_q && ((writeback_alu1_target[1:0] & csr.ialign) != 2'b00)));
+                rob.req_complete_alu1(writeback_alu1_ptr, writeback_alu1_q, writeback_alu1_target, (writeback_alu1_q && ((writeback_alu1_target[1:0] & csr.ialign_o) != 2'b00)));
             } else if(writeback_alu1_uop.jal) {
-                rob.req_complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target, ((writeback_alu1_target[1:0] & csr.ialign) != 2'b00));
+                rob.req_complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target, ((writeback_alu1_target[1:0] & csr.ialign_o) != 2'b00));
 			} else if(writeback_alu1_uop.jalr) {
-                rob.req_complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target & 0xfffffffe, (((writeback_alu1_target[1:0]&0x2) & csr.ialign) != 2'b00));
+                rob.req_complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target & 0xfffffffe, (((writeback_alu1_target[1:0]&0x2) & csr.ialign_o) != 2'b00));
             } else {
                 rob.req_complete_alu1(writeback_alu1_ptr, 0, 0, 0);
             }
@@ -740,14 +740,14 @@ module turboV {
     func software_interrupt_req_hart0 {
         csr.req_software_interrupt_req_hart0();
     }
-	rob.meip = csr.meip;
-	rob.msip = csr.msip;
-	rob.mtip = csr.mtip;
-	rob.meie = csr.meie;
-	rob.msie = csr.msie;
-	rob.mtie = csr.mtie;
-	rob.mstatus_mie = csr.mstatus_mie;
-	rob.priv_mode = csr.priv_mode;
+	rob.meip = csr.meip_o;
+	rob.msip = csr.msip_o;
+	rob.mtip = csr.mtip_o;
+	rob.meie = csr.meie_o;
+	rob.msie = csr.msie_o;
+	rob.mtie = csr.mtie_o;
+	rob.mstatus_mie = csr.mstatus_mie_o;
+	rob.priv_mode = csr.priv_mode_o;
 
     /*
         Bus arbiter for instruction fetch unit and load store unit.

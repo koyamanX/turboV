@@ -20,15 +20,15 @@ struct csr_write_buffer_t {
 };
 
 declare control_status_register {
-    output meip;
-    output msip;
-    output mtip;
-    output meie;
-    output msie;
-    output mtie;
-    output mstatus_mie;
-    output priv_mode[2];
-    output ialign[2];
+    output meip_o;
+    output msip_o;
+    output mtip_o;
+    output meie_o;
+    output msie_o;
+    output mtie_o;
+    output mstatus_mie_o;
+    output priv_mode_o[2];
+    output ialign_o[2];
 
 	input req_decode_csr_num[12];
 	input req_decode_csr_rw[2];
