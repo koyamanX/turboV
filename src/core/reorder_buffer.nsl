@@ -60,7 +60,7 @@ module reorder_buffer {
     
     next_tail = tail + 1;
     next_head = head + 1;
-    head_ptr = head << 1;
+    head_ptr_o = head << 1;
     head_o = head;
     tail_o = tail;
 
@@ -137,7 +137,7 @@ module reorder_buffer {
 				req_freelist_push0(commit_entry.ppreg0);
 			}
 			alt {
-				(meip && meie && ((mstatus_mie && priv_mode == MACHINE) || priv_mode < MACHINE)): {
+				(meip_i && meie_i && ((mstatus_mie_i && priv_mode_i == MACHINE) || priv_mode_i < MACHINE)): {
 					req_csr_trap(MACHINE_EXTERNAL_INTERRUPT, commit_PC0, 0);
 					req_stall_pipeline();
 					req_flush_pipeline();
@@ -145,7 +145,7 @@ module reorder_buffer {
 					commit_kill_inst0();
 					commit_kill_inst1();
 				}
-				(msip && msie && ((mstatus_mie && priv_mode == MACHINE) || priv_mode < MACHINE)): {
+				(msip_i && msie_i && ((mstatus_mie_i && priv_mode_i == MACHINE) || priv_mode_i < MACHINE)): {
 					req_csr_trap(MACHINE_SOFTWARE_INTERRUPT, commit_PC0, 0);
 					req_stall_pipeline();
 					req_flush_pipeline();
@@ -153,7 +153,7 @@ module reorder_buffer {
 					commit_kill_inst0();
 					commit_kill_inst1();
 				}
-				(mtip && mtie && ((mstatus_mie && priv_mode == MACHINE) || priv_mode < MACHINE)): {
+				(mtip_i && mtie_i && ((mstatus_mie_i && priv_mode_i == MACHINE) || priv_mode_i < MACHINE)): {
 					req_csr_trap(MACHINE_TIMER_INTERRUPT, commit_PC0, 0);
 					req_stall_pipeline();
 					req_flush_pipeline();
@@ -424,7 +424,7 @@ module reorder_buffer {
 		&& (tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES] != head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES])) {
 		internal_full();
 	}
-	full = internal_full;
+	full_o = internal_full;
     func req_complete_alu0 {
 		any {
 			req_complete_alu0_ptr ==  0: {rob0.completed0 := 0; rob0.target0 := req_complete_alu0_target; rob0.taken0 := req_complete_alu0_taken; rob0.cause0 := rob0.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}

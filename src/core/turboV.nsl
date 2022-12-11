@@ -334,7 +334,7 @@ module turboV {
         issue_inst0_uop = decoder_packet0.uop;
         issue_inst1_uop = decoder_packet1.uop;
         // TODO: !flush
-        if(!flush && (freelist.count_o >= 2) && !rob.full && !iq_alu0.full_o && !iq_alu1.full_o && !iq_lsu0.full_o) {
+        if(!flush && (freelist.count_o >= 2) && !rob.full_o && !iq_alu0.full_o && !iq_alu1.full_o && !iq_lsu0.full_o) {
             issue_PC = issue_packet.pc[31:2];
             issue_inst0_pc = {issue_PC, 2'b00};
             // TODO:
@@ -691,7 +691,7 @@ module turboV {
                 rob.req_complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target & 0xfffffffe, (((writeback_alu0_target[1:0]&0x2) & csr.ialign_o) != 2'b00));
             } else if(writeback_alu0_uop.csr) {
                 if(writeback_alu0_uop.csr_write) {
-                    csr.req_write(rob.head_ptr, writeback_alu0_ptr, writeback_alu0_target, writeback_alu0_q);
+                    csr.req_write(rob.head_ptr_o, writeback_alu0_ptr, writeback_alu0_target, writeback_alu0_q);
                 }
                 rob.req_complete_alu0(writeback_alu0_ptr, 0, 0, 0);
             } else {
@@ -740,14 +740,14 @@ module turboV {
     func software_interrupt_req_hart0 {
         csr.req_software_interrupt_req_hart0();
     }
-	rob.meip = csr.meip_o;
-	rob.msip = csr.msip_o;
-	rob.mtip = csr.mtip_o;
-	rob.meie = csr.meie_o;
-	rob.msie = csr.msie_o;
-	rob.mtie = csr.mtie_o;
-	rob.mstatus_mie = csr.mstatus_mie_o;
-	rob.priv_mode = csr.priv_mode_o;
+	rob.meip_i = csr.meip_o;
+	rob.msip_i = csr.msip_o;
+	rob.mtip_i = csr.mtip_o;
+	rob.meie_i = csr.meie_o;
+	rob.msie_i = csr.msie_o;
+	rob.mtie_i = csr.mtie_o;
+	rob.mstatus_mie_i = csr.mstatus_mie_o;
+	rob.priv_mode_i = csr.priv_mode_o;
 
     /*
         Bus arbiter for instruction fetch unit and load store unit.

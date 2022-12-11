@@ -53,7 +53,7 @@ declare reorder_buffer {
     input req_issue_ppreg1[6];
     input req_issue_cause1[SIZEOF_CAUSE_T];
     output rsp_issue_ptr[REORDER_BUFFER_PTR_SIZE];
-    output head_ptr[REORDER_BUFFER_PTR_SIZE];
+    output head_ptr_o[REORDER_BUFFER_PTR_SIZE];
     output head_o[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
     output tail_o[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES+1];
 #ifdef ENABLE_DEBUG
@@ -116,16 +116,16 @@ declare reorder_buffer {
     input req_readPC1_ptr[REORDER_BUFFER_PTR_SIZE];
     output rsp_readPC1_PC[32];
     func_in req_readPC1(req_readPC1_ptr): rsp_readPC1_PC;
-	output full;
+	output full_o;
 
-    input meip;
-    input msip;
-    input mtip;
-    input meie;
-    input msie;
-    input mtie;
-    input mstatus_mie;
-    input priv_mode[2];
+    input meip_i;
+    input msip_i;
+    input mtip_i;
+    input meie_i;
+    input msie_i;
+    input mtie_i;
+    input mstatus_mie_i;
+    input priv_mode_i[2];
 
 	// to frontend
 	output req_redirect_frontend_pc[32];
