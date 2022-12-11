@@ -39,7 +39,7 @@ declare issue_queue_in_order {
 			req_issue_prs2_ready, req_issue_prs2,
 			req_issue_imm);
     func_in req_flush();
-    output full;
+    output full_o;
     func_in req_stall();
     output req_dispatch_ptr[REORDER_BUFFER_PTR_SIZE];
     output req_dispatch_uop[SIZEOF_UOP_T];

@@ -135,6 +135,6 @@ module issue_queue_in_order {
         head := 0;
         tail := 0;
     }
-	full = !req_flush && ((tail[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES-1:0] == head[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES-1:0])
+	full_o = !req_flush && ((tail[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES-1:0] == head[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES-1:0])
 			&& (tail[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES] != head[LOG2_ISSUE_QUEUE_IN_ORDER_NUM_OF_ENTRIES]));
 }

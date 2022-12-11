@@ -126,7 +126,7 @@ module issue_queue {
         rs1 := 0;
         rs0 := 0;
     }
-    full = (!req_flush && (!rs3_free && !rs2_free && !rs1_free && !rs0_free));
+    full_o = (!req_flush && (!rs3_free && !rs2_free && !rs1_free && !rs0_free));
     any {
         (!rs3.valid): rs3_free();
         (!rs2.valid): rs2_free();
