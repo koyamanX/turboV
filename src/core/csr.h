@@ -217,6 +217,7 @@ struct misa_t {
     mxl[2];
     reserved0[4];
     extensions[26]; 
+#define SIZEOF_MISA_T 32
 };
 #define MISA_MXL_XLEN32     0x1
 #define MISA_MXL_XLEN64     0x2
@@ -252,18 +253,22 @@ struct misa_t {
 struct mvendorid_t {
     bank[25];
     offset[7];
+#define SIZEOF_MVENDERID_T 32
 };
 
 struct marchid_t {
     architecture_id[32];
+#define SIZEOF_MHARTID_T 32
 };
 
 struct mimpid_t {
     implementation[32];
+#define SIZEOF_MIMPID_T 32
 };
 
 struct mhartid_t {
     hart_id[32];
+#define SIZEOF_MHARTID_T 32
 };
 
 struct mstatus_t {
@@ -288,6 +293,7 @@ struct mstatus_t {
     reserved2;
     sie;
     reserved3;
+#define SIZEOF_MSTATUS_T 32
 };
 
 struct mstatush_t {
@@ -295,11 +301,13 @@ struct mstatush_t {
     mbe;
     sbe;
     reserved1[4];
+#define SIZEOF_MSTATUSH_T 32
 };
 
 struct mtvec_t {
     base[30];
     mode[2];
+#define SIZEOF_MTVEC_T 32
 };
 
 #define MTVEC_MODE_DIRECT   0x0
@@ -323,9 +331,11 @@ struct medeleg_t {
     illegal_instruction;
     instruction_access_fault;
     instruction_address_misaligned;
+#define SIZEOF_MEDELEG_T 32
 };
 
 #define mideleg_t mip_t
+#define SIZEOF_MIDELEG_T SIZEOF_MIP_T
 
 struct mip_t {
     reserved0[20]; 
@@ -341,6 +351,7 @@ struct mip_t {
     reserved5[1];
     ssip[1];
     usip[1];
+#define SIZEOF_MIP_T 32
 };
 
 struct mie_t {
@@ -357,23 +368,32 @@ struct mie_t {
     reserved5[1];
     ssie[1];
     usie[1];
+#define SIZEOF_MIE_T 32
 };
 
 struct csr32_t {
     v[32];
+#define SIZEOF_CSR32_T 32
 };
 struct csr64_t {
     hi[32];
     lo[32];
+#define SIZEOF_CSR64_T 64
 };
 
 #define mscratch_t csr32_t
+#define SIZEOF_MSCRATCH_T SIZEOF_CSR32_T
+
 #define mepc_t csr32_t
+#define SIZEOF_MEPC_T SIZEOF_CSR32_T
+
 #define mtval_t csr32_t
+#define SIZEOF_MTVAL_T SIZEOF_CSR32_T
 
 struct mcause_t {
     interrupt;
     exception_code[31];
+#define SIZEOF_MCAUSE_T 32
 };
 
 #define USER_SOFTWARE_INTERRUPT         0x8000_0000

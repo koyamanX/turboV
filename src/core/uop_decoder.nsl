@@ -1,15 +1,13 @@
 #include "uop_decoder.h"
 #include "inst.h"
 #include "opcode_map.h"
-#include "imm_gen.h"
 #include "uops.h"
 #include "alu32.h"
 #include "csr.h"
 
 module uop_decoder {
-    imm_gen imm_gen0;
 
-    func decode {
+    func req_decode {
         wire opcode[7];
         wire fn[4];
         wire lrd[5];
@@ -42,13 +40,13 @@ module uop_decoder {
         func_self rs1_valid;
         func_self rs2_valid;
 
-        opcode = inst[6:0];
-        inst_rtype = inst;
-        inst_itype = inst;
-        inst_utype = inst;
-        inst_jtype = inst;
-        inst_btype = inst;
-        inst_stype = inst;
+        opcode = req_decode_inst[6:0];
+        inst_rtype = req_decode_inst;
+        inst_itype = req_decode_inst;
+        inst_utype = req_decode_inst;
+        inst_jtype = req_decode_inst;
+        inst_btype = req_decode_inst;
+        inst_stype = req_decode_inst;
 
         decode_uop.rd_valid = if(lrd != 0) rd_valid else 0;
         decode_uop.rs1_valid = if(lrs1 != 0) rs1_valid else 0;
@@ -75,9 +73,9 @@ module uop_decoder {
         decode_packet.cause = SET_EXCEPTION(ENVIRONMENT_CALL_FROM_M_MODE, ecall)
             | SET_EXCEPTION(BREAKPOINT, ebreak)
             | SET_EXCEPTION(ILLEGAL_INSTRUCTION, illegal_instruction)
-			| SET_EXCEPTION(ILLEGAL_INSTRUCTION, decode_csr_illegal);
+			| SET_EXCEPTION(ILLEGAL_INSTRUCTION, rsp_decode_csr_illegal);
 #ifdef ENABLE_DEBUG
-        decode_packet.inst = inst;
+        decode_packet.inst = req_decode_inst;
 #endif
 
         any {
@@ -94,16 +92,14 @@ module uop_decoder {
                 rs2_valid();
                 lrs2 = inst_rtype.rs2;
                 imm = 0;
-                uop_alu(decode_packet);
             }
             opcode == OP_IMM: {
-                imm_gen0.i_type(inst);
                 fn = if((inst_itype.funct3 == ALU_SLL)
                         || (inst_itype.funct3 == ALU_SRA)
                         || (inst_itype.funct3 == ALU_SRL)) {inst_rtype.funct7[5], inst_itype.funct3}
                     else {1'b0, inst_itype.funct3};
                 if(((inst_itype.funct3 == ALU_SLL) || (inst_itype.funct3 == ALU_SRA)
-                    || (inst_itype.funct3 == ALU_SRL)) && (imm_gen0.imm[5] == 1)) {
+                    || (inst_itype.funct3 == ALU_SRL)) && ((32#IMM_GEN_ITYPE(req_decode_inst))[5] == 1)) {
                     illegal_instruction();
 				}
 
@@ -115,12 +111,9 @@ module uop_decoder {
                 lrs1 = inst_itype.rs1;
                 rs2_sel = RS2_SEL_IMM;
                 lrs2 = 0;
-                imm = imm_gen0.imm;
-                uop_alu(decode_packet);
+                imm = (32#IMM_GEN_ITYPE(req_decode_inst));
             }
             opcode == LUI: {
-                imm_gen0.u_type(inst);
-
                 decode_uop.uop = uOP_ALU_OR;
                 rd_valid();
                 lrd = inst_utype.rd;
@@ -128,12 +121,9 @@ module uop_decoder {
                 lrs1 = 0;
                 rs2_sel = RS2_SEL_IMM;
                 lrs2 = 0;
-                imm = imm_gen0.imm;
-                uop_alu(decode_packet);
+                imm = (32'IMM_GEN_UTYPE(req_decode_inst));
             }
             opcode == AUIPC: {
-                imm_gen0.u_type(inst);
-
                 decode_uop.uop = uOP_ALU_ADD;
                 rd_valid();
                 lrd = inst_utype.rd;
@@ -141,12 +131,9 @@ module uop_decoder {
                 lrs1 = 0;
                 rs2_sel = RS2_SEL_IMM;
                 lrs2 = 0;
-                imm = imm_gen0.imm;
-                uop_alu(decode_packet);
+                imm = (32'IMM_GEN_UTYPE(req_decode_inst));
             }
             opcode == JAL: {
-                imm_gen0.j_type(inst);
-
                 decode_uop.uop = uOP_ALU_ADD;
                 rd_valid();
                 lrd = inst_jtype.rd;
@@ -154,14 +141,10 @@ module uop_decoder {
                 lrs1 = 0;
                 rs2_sel = RS2_SEL_IMM;
                 lrs2 = 0;
-                imm = imm_gen0.imm;
+                imm = (32#IMM_GEN_JTYPE(req_decode_inst));
                 jal();
-
-                uop_bru(decode_packet);
             }
             opcode == JALR: {
-                imm_gen0.i_type(inst);
-
                 decode_uop.uop = uOP_ALU_ADD;
                 rd_valid();
                 lrd = inst_itype.rd;
@@ -170,13 +153,10 @@ module uop_decoder {
                 lrs1 = inst_itype.rs1;
                 rs2_sel = RS2_SEL_IMM;
                 lrs2 = 0;
-                imm = imm_gen0.imm;
+                imm = (32#IMM_GEN_ITYPE(req_decode_inst));
                 jalr();
-
-                uop_bru(decode_packet);
             }
             opcode == BRANCH: {
-                imm_gen0.b_type(inst);
                 fn = {1'b0, inst_btype.funct3};
 
                 decode_uop.uop = {uOP_BRU, fn};
@@ -187,13 +167,10 @@ module uop_decoder {
                 rs2_sel = RS2_SEL_REG;
                 rs2_valid();
                 lrs2 = inst_btype.rs2;
-                imm = imm_gen0.imm;
+                imm = (32#IMM_GEN_BTYPE(req_decode_inst));
                 branch();
-
-                uop_bru(decode_packet);
             }
             opcode == LOAD: {
-                imm_gen0.i_type(inst);
                 fn = {1'b0, inst_itype.funct3};
 
                 decode_uop.uop = {uOP_LSU, fn};
@@ -204,13 +181,10 @@ module uop_decoder {
                 lrs1 = inst_itype.rs1;
                 rs2_sel = RS2_SEL_IMM;
                 lrs2 = 0;
-                imm = imm_gen0.imm;
+                imm = (32#IMM_GEN_ITYPE(req_decode_inst));
                 load();
-
-                uop_lsu(decode_packet);
             }
             opcode == STORE: {
-                imm_gen0.s_type(inst);
                 fn = {1'b1, inst_stype.funct3};
 
                 decode_uop.uop = {uOP_LSU, fn};
@@ -221,10 +195,8 @@ module uop_decoder {
                 rs2_sel = RS2_SEL_REG;
                 rs2_valid();
                 lrs2 = inst_stype.rs2;
-                imm = imm_gen0.imm;
+                imm = (32#IMM_GEN_STYPE(req_decode_inst));
                 store();
-
-                uop_lsu(decode_packet);
             }
             opcode == SYSTEM: {
                 any {
@@ -240,9 +212,7 @@ module uop_decoder {
                         imm = inst_itype.imm0;
                         csr();
                         csr_write();
-
-                        uop_system(decode_packet);
-						decode_csr(imm[11:0], {csr_read, csr_write});
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRW) && (inst_itype.rd == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRW;
@@ -256,9 +226,7 @@ module uop_decoder {
                         imm = inst_itype.imm0;
                         csr();
                         csr_write();
-
-                        uop_system(decode_packet);
-						decode_csr(imm[11:0], {csr_read, csr_write});
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRS) && (inst_itype.rs1 != 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRS;
@@ -273,9 +241,7 @@ module uop_decoder {
                         csr();
                         csr_read();
                         csr_write();
-
-                        uop_system(decode_packet);
-						decode_csr(imm[11:0], {csr_read, csr_write});
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRS) && (inst_itype.rs1 == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRS;
@@ -289,9 +255,7 @@ module uop_decoder {
                         imm = inst_itype.imm0;
                         csr();
                         csr_read();
-
-                        uop_system(decode_packet);
-						decode_csr(imm[11:0], {csr_read, csr_write});
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRC) && (inst_itype.rs1 != 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRC;
@@ -306,9 +270,7 @@ module uop_decoder {
                         csr();
                         csr_read();
                         csr_write();
-
-                        uop_system(decode_packet);
-						decode_csr(imm[11:0], {csr_read, csr_write});
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRC) && (inst_itype.rs1 == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRC;
@@ -322,9 +284,7 @@ module uop_decoder {
                         imm = inst_itype.imm0;
                         csr();
                         csr_read();
-
-                        uop_system(decode_packet);
-						decode_csr(imm[11:0], {csr_read, csr_write});
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd != 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRW;
@@ -338,9 +298,7 @@ module uop_decoder {
                         csr();
                         csr_read();
                         csr_write();
-
-                        uop_system(decode_packet);
-						decode_csr(imm[11:0], {csr_read, csr_write});
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRW;
@@ -353,9 +311,7 @@ module uop_decoder {
                         imm = inst_itype.imm0;
                         csr();
                         csr_write();
-
-                        uop_system(decode_packet);
-						decode_csr(imm[11:0], {csr_read, csr_write});
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRSI) && (inst_itype.rs1 != 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRS;
@@ -369,9 +325,7 @@ module uop_decoder {
                         csr();
                         csr_read();
                         csr_write();
-
-                        uop_system(decode_packet);
-						decode_csr(imm[11:0], {csr_read, csr_write});
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRSI) && (inst_itype.rs1 == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRS;
@@ -384,9 +338,7 @@ module uop_decoder {
                         imm = inst_itype.imm0;
                         csr();
                         csr_read();
-
-                        uop_system(decode_packet);
-						decode_csr(imm[11:0], {csr_read, csr_write});
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 != 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRC;
@@ -400,9 +352,7 @@ module uop_decoder {
                         csr();
                         csr_read();
                         csr_write();
-
-                        uop_system(decode_packet);
-						decode_csr(imm[11:0], {csr_read, csr_write});
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRC;
@@ -415,9 +365,7 @@ module uop_decoder {
                         imm = inst_itype.imm0;
                         csr();
                         csr_read();
-
-                        uop_system(decode_packet);
-						decode_csr(imm[11:0], {csr_read, csr_write});
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
                     }
                     inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_MRET && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
                         decode_uop.uop = uOP_SYSTEM_MRET;
@@ -428,8 +376,6 @@ module uop_decoder {
                         lrs2 = 0;
                         imm = 0;
                         mret();
-
-                        uop_system(decode_packet);
                     }
                     inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_ECALL && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
                         decode_uop.uop = uOP_SYSTEM_ECALL;
@@ -440,8 +386,6 @@ module uop_decoder {
                         lrs2 = 0;
                         imm = 0;
                         ecall();
-
-                        uop_system(decode_packet);
                     }
                     inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_EBREAK && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
                         decode_uop.uop = uOP_SYSTEM_EBREAK;
@@ -452,8 +396,6 @@ module uop_decoder {
                         lrs2 = 0;
                         imm = 0;
                         ebreak();
-
-                        uop_system(decode_packet);
                     }
                     else: {
                         illegal_instruction();
@@ -467,5 +409,6 @@ module uop_decoder {
                 illegal_instruction();
             }
         }
+		return decode_packet;
     }
 }

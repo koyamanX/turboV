@@ -13,10 +13,10 @@ module free_list {
     integer i_;
     wire push, pop;
 
-    pop = pop0 || pop1;
-    push = push0 || push1;
+    pop = req_pop0 || req_pop1;
+    push = req_push0 || req_push1;
 
-    func reset {
+    func req_reset {
         generate(i_ = NUMBER_OF_FREE_LIST; i_ < NUMBER_OF_FREE_LIST*2; i_++) {
             freelist[i_] := i_;
         }
@@ -25,41 +25,41 @@ module free_list {
         tail := 0;
     }
     any {
-        !pop0 && pop1: {
+        !req_pop0 && req_pop1: {
             // TODO: REMOVE
             freelist[head] := 0;
             next_head = head + 1;
-            pop1_data = freelist[head];
+            rsp_pop1_data = freelist[head];
         }
-        pop0 && !pop1: {
+        req_pop0 && !req_pop1: {
             // TODO: REMOVE
             freelist[head] := 0;
             next_head = head + 1;
-            pop0_data = freelist[head];
+            rsp_pop0_data = freelist[head];
         }
-        pop0 && pop1: {
+        req_pop0 && req_pop1: {
             // TODO: REMOVE
             freelist[head] := 0;
             freelist[head+1] := 0;
             next_head = head + 2;
-            pop0_data = freelist[head];
-            pop1_data = freelist[head+1];
+            rsp_pop0_data = freelist[head];
+            rsp_pop1_data = freelist[head+1];
         }
     }
-    func push0 {
-        if(!push1) {
+    func req_push0 {
+        if(!req_push1) {
             next_tail = tail + 1;
         }
-        freelist[tail] := push0_data;    
+        freelist[tail] := req_push0_data;    
     }
-    func push1 {
-        if(!push0) {
+    func req_push1 {
+        if(!req_push0) {
             next_tail = tail + 1;
-            freelist[tail] := push1_data;
+            freelist[tail] := req_push1_data;
         } else {
-            if(push0_data != push1_data) {
+            if(req_push0_data != req_push1_data) {
                 next_tail = tail + 2;
-                freelist[tail+1] := push1_data;
+                freelist[tail+1] := req_push1_data;
             } else {
                 next_tail = tail + 1;
             }
@@ -90,5 +90,5 @@ module free_list {
     if((push || pop)) {
         freelist_count := next_freelist_count;
     }
-    count = freelist_count;
+    count_o = freelist_count;
 }

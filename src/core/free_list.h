@@ -7,15 +7,15 @@
 #define LOG2_FREE_LIST_NUM_OF_ENTRIES _int(_log10(FREE_LIST_NUM_OF_ENTRIES)/_log10(2.0))
 
 declare free_list {
-    func_in reset();
-    input push0_data[SIZEOF_FREE_LIST_ENTRY];
-    func_in push0(push0_data);
-    input push1_data[SIZEOF_FREE_LIST_ENTRY];
-    func_in push1(push1_data);
-    output pop0_data[SIZEOF_FREE_LIST_ENTRY];
-    func_in pop0(): pop0_data;
-    output pop1_data[SIZEOF_FREE_LIST_ENTRY];
-    func_in pop1(): pop1_data;
-    output count[SIZEOF_FREE_LIST_ENTRY];
+    func_in req_reset();
+    input req_push0_data[SIZEOF_FREE_LIST_ENTRY];
+    func_in req_push0(req_push0_data);
+    input req_push1_data[SIZEOF_FREE_LIST_ENTRY];
+    func_in req_push1(req_push1_data);
+    output rsp_pop0_data[SIZEOF_FREE_LIST_ENTRY];
+    func_in req_pop0(): rsp_pop0_data;
+    output rsp_pop1_data[SIZEOF_FREE_LIST_ENTRY];
+    func_in req_pop1(): rsp_pop1_data;
+    output count_o[SIZEOF_FREE_LIST_ENTRY];
 }
 #endif

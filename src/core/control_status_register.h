@@ -20,45 +20,43 @@ struct csr_write_buffer_t {
 };
 
 declare control_status_register {
-	input decode_csr_num[12];
-	input decode_csr_rw[2];
-	output decode_illegal;
-	func_in decode(decode_csr_num, decode_csr_rw): decode_illegal;
-    input csr_rnum[12];
-    output csr_rdata[32];
-    func_in read(csr_rnum): csr_rdata;
-    input rob_head_ptr[REORDER_BUFFER_PTR_SIZE];
-    input write_ptr[REORDER_BUFFER_PTR_SIZE];
-    input write_addr[12];
-    input write_data[32];
-	output write_old_data[32];
-    func_in write(rob_head_ptr, write_ptr, write_addr, write_data): write_old_data;
-    input commit_ptr[REORDER_BUFFER_PTR_SIZE];
-    func_in commit(commit_ptr);
-    func_in reset();
-	func_in flush();
-    func_in timer_interrupt_req_hart0();
-    func_in software_interrupt_req_hart0();
+    output meip_o;
+    output msip_o;
+    output mtip_o;
+    output meie_o;
+    output msie_o;
+    output mtie_o;
+    output mstatus_mie_o;
+    output priv_mode_o[2];
+    output ialign_o[2];
 
-    output meip;
-    output msip;
-    output mtip;
-    output meie;
-    output msie;
-    output mtie;
-    output mstatus_mie;
-    output priv_mode[2];
-
-    input trap_cause[32];
-    input trap_pc[32];
-    input trap_val[32];
-    output trap_vector[32];
-    func_in trap(trap_cause, trap_pc, trap_val): trap_vector;
-    output mret_pc[32];
-    func_in mret(): mret_pc;
-    output ialign[2];
-
-    func_in update_instret();
+	input req_decode_csr_num[12];
+	input req_decode_csr_rw[2];
+	output rsp_decode_illegal;
+	func_in req_decode(req_decode_csr_num, req_decode_csr_rw): rsp_decode_illegal;
+    input req_read_csr_num[12];
+    output req_read_csr_data[32];
+    func_in req_read(req_read_csr_num): req_read_csr_data;
+    input req_write_rob_head_ptr[REORDER_BUFFER_PTR_SIZE];
+    input req_write_ptr[REORDER_BUFFER_PTR_SIZE];
+    input req_write_addr[12];
+    input req_write_data[32];
+	output rsp_write_old_data[32];
+    func_in req_write(req_write_rob_head_ptr, req_write_ptr, req_write_addr, req_write_data): rsp_write_old_data;
+    input req_commit_ptr[REORDER_BUFFER_PTR_SIZE];
+    func_in req_commit(req_commit_ptr);
+    func_in req_reset();
+	func_in req_flush();
+    func_in req_timer_interrupt_req_hart0();
+    func_in req_software_interrupt_req_hart0();
+    input req_trap_cause[32];
+    input req_trap_pc[32];
+    input req_trap_val[32];
+    output rsp_trap_vector[32];
+    func_in req_trap(req_trap_cause, req_trap_pc, req_trap_val): rsp_trap_vector;
+    output rsp_mret_pc[32];
+    func_in req_mret(): rsp_mret_pc;
+    func_in req_update_instret();
 }
 
 #endif

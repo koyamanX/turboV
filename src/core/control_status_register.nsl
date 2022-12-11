@@ -35,16 +35,16 @@ module control_status_register {
         UXLEN=32
     */
 
-    ialign = IALIGN;
-    meip = mip.meip;
-    msip = software_interrupt_req_hart0;
-    mtip = timer_interrupt_req_hart0;
-    meie = mie.meie;
-    msie = mie.msie;
-    mtie = mie.mtie;
-    mstatus_mie  = mstatus.mie;
-    priv_mode = mode;
-    func reset {
+    ialign_o = IALIGN;
+    meip_o = mip.meip;
+    msip_o = req_software_interrupt_req_hart0;
+    mtip_o = req_timer_interrupt_req_hart0;
+    meie_o = mie.meie;
+    msie_o = mie.msie;
+    mtie_o = mie.mtie;
+    mstatus_mie_o  = mstatus.mie;
+    priv_mode_o = mode;
+    func req_reset {
         /* TODO: */
         mode                := MACHINE;
         misa.mxl            := MISA_MXL_XLEN32;
@@ -57,65 +57,65 @@ module control_status_register {
         mstatush.mbe        := 0;   /* Little-endian */
         wbuf                := 0;
     }
-	func flush {
+	func req_flush {
 		wbuf := 0;
 	}
-    func trap {
-        mstatus_t wire trap_xstatus;
-        mtvec_t wire trap_xtvec;
+    func req_trap {
+        mstatus_t wire req_trap_xstatus;
+        mtvec_t wire req_trap_xtvec;
 
         wbuf := 0;
         any {
             (mode == MACHINE): {
-                if(commit && wbuf.valid && wbuf.ptr == commit_ptr && wbuf.addr == MSTATUS) {
-                    trap_xstatus = wbuf.data;
+                if(req_commit && wbuf.valid && wbuf.ptr == req_commit_ptr && wbuf.addr == MSTATUS) {
+                    req_trap_xstatus = wbuf.data;
                 } else {
-                    trap_xstatus = mstatus;
+                    req_trap_xstatus = mstatus;
                 }
-                if(commit && wbuf.valid && wbuf.ptr == commit_ptr && wbuf.addr == MTVEC) {
-                    trap_xtvec = wbuf.data;
+                if(req_commit && wbuf.valid && wbuf.ptr == req_commit_ptr && wbuf.addr == MTVEC) {
+                    req_trap_xtvec = wbuf.data;
                 } else {
-                    trap_xtvec = mtvec;
+                    req_trap_xtvec = mtvec;
                 }
-                mstatus.mpie    := trap_xstatus.mie;
+                mstatus.mpie    := req_trap_xstatus.mie;
                 mstatus.mie     := 0;
                 mstatus.mpp     := MACHINE;
                 mode            := MACHINE;
-                mcause          := trap_cause;
-                mepc            := trap_pc;
-                mtval           := trap_val;
+                mcause          := req_trap_cause;
+                mepc            := req_trap_pc;
+                mtval           := req_trap_val;
 
                 any {
-                    (mtvec.mode == MTVEC_MODE_DIRECT): return {trap_xtvec.base, 2'b00} & ~IALIGN;
-                    (mtvec.mode == MTVEC_MODE_VECTORED) && !trap_cause[31]: return {trap_xtvec.base, 2'b00} & ~IALIGN;
-                    (mtvec.mode == MTVEC_MODE_VECTORED) && trap_cause[31]: return {trap_xtvec.base, 2'b00} + 32'({trap_cause[9:0], 2'b00}) & ~IALIGN;
+                    (mtvec.mode == MTVEC_MODE_DIRECT): return {req_trap_xtvec.base, 2'b00} & ~IALIGN;
+                    (mtvec.mode == MTVEC_MODE_VECTORED) && !req_trap_cause[31]: return {req_trap_xtvec.base, 2'b00} & ~IALIGN;
+                    (mtvec.mode == MTVEC_MODE_VECTORED) && req_trap_cause[31]: return {req_trap_xtvec.base, 2'b00} + 32'({req_trap_cause[9:0], 2'b00}) & ~IALIGN;
                 }
             }
         }
     }
-    func mret {
-        mstatus_t wire mret_mstatus;
-        mepc_t wire mret_mepc;
+    func req_mret {
+        mstatus_t wire req_mret_mstatus;
+        mepc_t wire req_mret_mepc;
 
         wbuf := 0;
-        if(commit && wbuf.valid && wbuf.ptr == commit_ptr && wbuf.addr == MSTATUS) {
-            mret_mstatus = wbuf.data;
+        if(req_commit && wbuf.valid && wbuf.ptr == req_commit_ptr && wbuf.addr == MSTATUS) {
+            req_mret_mstatus = wbuf.data;
         } else {
-            mret_mstatus = mstatus;
+            req_mret_mstatus = mstatus;
         }
-        if(commit && wbuf.valid && wbuf.ptr == commit_ptr && wbuf.addr == MEPC) {
-            mret_mepc = wbuf.data;
+        if(req_commit && wbuf.valid && wbuf.ptr == req_commit_ptr && wbuf.addr == MEPC) {
+            req_mret_mepc = wbuf.data;
         } else {
-            mret_mepc = mepc;
+            req_mret_mepc = mepc;
         }
 
-        mstatus.mie     := mret_mstatus.mpie;
+        mstatus.mie     := req_mret_mstatus.mpie;
         mstatus.mpie    := 1;
         mstatus.mpp     := MACHINE;
         mstatus.mprv    := 0;
-        mode            := mret_mstatus.mpp;
+        mode            := req_mret_mstatus.mpp;
 
-        return mret_mepc & ~IALIGN;
+        return req_mret_mepc & ~IALIGN;
     }
 	func is_exist_csr {
 		any {
@@ -153,136 +153,136 @@ module control_status_register {
 			return 0;
 		}
 	}
-	func decode {
-		is_readonly(decode_csr_num);
-		is_exist_csr(decode_csr_num);
+	func req_decode {
+		is_readonly(req_decode_csr_num);
+		is_exist_csr(req_decode_csr_num);
 		any {
-			decode_csr_rw == DECODE_CSR_RW && (readonly || !exist): return 1;
-			decode_csr_rw == DECODE_CSR_WO && (readonly || !exist): return 1;
-			decode_csr_rw == DECODE_CSR_RO && !exist: return 1;
+			req_decode_csr_rw == DECODE_CSR_RW && (readonly || !exist): return 1;
+			req_decode_csr_rw == DECODE_CSR_WO && (readonly || !exist): return 1;
+			req_decode_csr_rw == DECODE_CSR_RO && !exist: return 1;
 			else: return 0;
 		}
 	}
-    func read {
+    func req_read {
         any {
-            (mode >= MACHINE) && (csr_rnum == MISA): {
+            (mode >= MACHINE) && (req_read_csr_num == MISA): {
                 return misa;
             }
-            (mode >= MACHINE) && (csr_rnum == MVENDORID): {
+            (mode >= MACHINE) && (req_read_csr_num == MVENDORID): {
                 return mvendorid;
             }
-            (mode >= MACHINE) && (csr_rnum == MARCHID): {
+            (mode >= MACHINE) && (req_read_csr_num == MARCHID): {
                 return marchid;
             }
-            (mode >= MACHINE) && (csr_rnum == MIMPID): {
+            (mode >= MACHINE) && (req_read_csr_num == MIMPID): {
                 return mimpid;
             }
-            (mode >= MACHINE) && (csr_rnum == MHARTID): {
+            (mode >= MACHINE) && (req_read_csr_num == MHARTID): {
                 return mhartid;
             }
-            (mode >= MACHINE) && (csr_rnum == MSTATUSH): {
+            (mode >= MACHINE) && (req_read_csr_num == MSTATUSH): {
                 return mstatush;
             }
-            (mode >= MACHINE) && (csr_rnum == MSTATUS): {
+            (mode >= MACHINE) && (req_read_csr_num == MSTATUS): {
                 return mstatus;
             }
-            (mode >= MACHINE) && (csr_rnum == MTVEC): {
+            (mode >= MACHINE) && (req_read_csr_num == MTVEC): {
                 return mtvec;
             }
-            (mode >= MACHINE) && (csr_rnum == MIP): {
-                return mip | (timer_interrupt_req_hart0 << 7) | (software_interrupt_req_hart0 << 3);
+            (mode >= MACHINE) && (req_read_csr_num == MIP): {
+                return mip | (req_timer_interrupt_req_hart0 << 7) | (req_software_interrupt_req_hart0 << 3);
             }
-            (mode >= MACHINE) && (csr_rnum == MIE): {
+            (mode >= MACHINE) && (req_read_csr_num == MIE): {
                 return mie;
             }
-            (mode >= MACHINE) && (csr_rnum == MSCRATCH): {
+            (mode >= MACHINE) && (req_read_csr_num == MSCRATCH): {
                 return mscratch;
             }
-            (mode >= MACHINE) && (csr_rnum == MEPC): {
+            (mode >= MACHINE) && (req_read_csr_num == MEPC): {
                 return mepc & ~IALIGN;
             }
-            (mode >= MACHINE) && (csr_rnum == MCAUSE): {
+            (mode >= MACHINE) && (req_read_csr_num == MCAUSE): {
                 return mcause;
             }
-            (mode >= MACHINE) && (csr_rnum == MTVAL): {
+            (mode >= MACHINE) && (req_read_csr_num == MTVAL): {
                 return mtval;
             }
-            (mode >= MACHINE) && (csr_rnum == MCYCLEH): {
+            (mode >= MACHINE) && (req_read_csr_num == MCYCLEH): {
                 return mcycle.hi;
             }
-            (mode >= MACHINE) && (csr_rnum == MCYCLE): {
+            (mode >= MACHINE) && (req_read_csr_num == MCYCLE): {
                 return mcycle.lo;
             }
-            (mode >= MACHINE) && (csr_rnum == MINSTRETH): {
+            (mode >= MACHINE) && (req_read_csr_num == MINSTRETH): {
                 return minstret.hi;
             }
-            (mode >= MACHINE) && (csr_rnum == MINSTRET): {
+            (mode >= MACHINE) && (req_read_csr_num == MINSTRET): {
                 return minstret.lo;
             }
-            (mode >= USER) && (csr_rnum == CYCLEH): {
+            (mode >= USER) && (req_read_csr_num == CYCLEH): {
                 return mcycle.hi;
             }
-            (mode >= USER) && (csr_rnum == CYCLE): {
+            (mode >= USER) && (req_read_csr_num == CYCLE): {
                 return mcycle.lo;
             }
-            (mode >= USER) && (csr_rnum == INSTRETH): {
+            (mode >= USER) && (req_read_csr_num == INSTRETH): {
                 return minstret.hi;
             }
-            (mode >= USER) && (csr_rnum == INSTRET): {
+            (mode >= USER) && (req_read_csr_num == INSTRET): {
                 return minstret.lo;
             }
-            (mode >= USER) && (csr_rnum == TIMEH): {
+            (mode >= USER) && (req_read_csr_num == TIMEH): {
                 return mtime.hi;
             }
-            (mode >= USER) && (csr_rnum == TIME): {
+            (mode >= USER) && (req_read_csr_num == TIME): {
                 return mtime.lo;
             }
         }
     }
-    func write {
-        wire wbuf_age[REORDER_BUFFER_PTR_SIZE+1];
-        wire write_age[REORDER_BUFFER_PTR_SIZE+1];
+    func req_write {
+        wire req_write_wbuf_age[REORDER_BUFFER_PTR_SIZE+1];
+        wire req_write_age[REORDER_BUFFER_PTR_SIZE+1];
 
-        wbuf_age = PTR2AGE(wbuf.ptr, rob_head_ptr);
-        write_age = PTR2AGE(write_ptr, rob_head_ptr);
+        req_write_wbuf_age = PTR2AGE(wbuf.ptr, req_write_rob_head_ptr);
+        req_write_age = PTR2AGE(req_write_ptr, req_write_rob_head_ptr);
         if(~wbuf.valid) {
             wbuf.valid := 1;
-            wbuf.addr := write_addr;
-            wbuf.data := write_data;
-            wbuf.ptr := write_ptr;
-        } else if(wbuf.valid && wbuf_age > write_age) {
+            wbuf.addr := req_write_addr;
+            wbuf.data := req_write_data;
+            wbuf.ptr := req_write_ptr;
+        } else if(wbuf.valid && req_write_wbuf_age > req_write_age) {
             wbuf.valid := 1;
-            wbuf.addr := write_addr;
-            wbuf.data := write_data;
-            wbuf.ptr := write_ptr;
+            wbuf.addr := req_write_addr;
+            wbuf.data := req_write_data;
+            wbuf.ptr := req_write_ptr;
         }
         any {
-                (mode >= MACHINE) && (write_addr == MISA): return misa;
-                (mode >= MACHINE) && (write_addr == MVENDORID): return mvendorid;
-                (mode >= MACHINE) && (write_addr == MARCHID): return marchid;
-                (mode >= MACHINE) && (write_addr == MIMPID): return mimpid;
-                (mode >= MACHINE) && (write_addr == MHARTID): return mhartid;
-                (mode >= MACHINE) && (write_addr == MSTATUSH): return mstatush;
-                (mode >= MACHINE) && (write_addr == MSTATUS): return mstatus;
-                (mode >= MACHINE) && (write_addr == MTVEC): return mtvec;
-                (mode >= MACHINE) && (write_addr == MIP): return mip;
-                (mode >= MACHINE) && (write_addr == MIE): return mie;
-                (mode >= MACHINE) && (write_addr == MSCRATCH): return mscratch;
-                (mode >= MACHINE) && (write_addr == MEPC): return mepc;
-                (mode >= MACHINE) && (write_addr == MCAUSE): return mcause;
-                (mode >= MACHINE) && (write_addr == MTVAL): return mtval;
-                (mode >= MACHINE) && (write_addr == MCYCLEH): return mcycle.hi;
-                (mode >= MACHINE) && (write_addr == MCYCLE): return mcycle.lo;
-                (mode >= MACHINE) && (write_addr == MINSTRETH): return minstret.hi;
-                (mode >= MACHINE) && (write_addr == MINSTRET): return minstret.lo;
+                (mode >= MACHINE) && (req_write_addr == MISA): return misa;
+                (mode >= MACHINE) && (req_write_addr == MVENDORID): return mvendorid;
+                (mode >= MACHINE) && (req_write_addr == MARCHID): return marchid;
+                (mode >= MACHINE) && (req_write_addr == MIMPID): return mimpid;
+                (mode >= MACHINE) && (req_write_addr == MHARTID): return mhartid;
+                (mode >= MACHINE) && (req_write_addr == MSTATUSH): return mstatush;
+                (mode >= MACHINE) && (req_write_addr == MSTATUS): return mstatus;
+                (mode >= MACHINE) && (req_write_addr == MTVEC): return mtvec;
+                (mode >= MACHINE) && (req_write_addr == MIP): return mip;
+                (mode >= MACHINE) && (req_write_addr == MIE): return mie;
+                (mode >= MACHINE) && (req_write_addr == MSCRATCH): return mscratch;
+                (mode >= MACHINE) && (req_write_addr == MEPC): return mepc;
+                (mode >= MACHINE) && (req_write_addr == MCAUSE): return mcause;
+                (mode >= MACHINE) && (req_write_addr == MTVAL): return mtval;
+                (mode >= MACHINE) && (req_write_addr == MCYCLEH): return mcycle.hi;
+                (mode >= MACHINE) && (req_write_addr == MCYCLE): return mcycle.lo;
+                (mode >= MACHINE) && (req_write_addr == MINSTRETH): return minstret.hi;
+                (mode >= MACHINE) && (req_write_addr == MINSTRET): return minstret.lo;
         }
     }
-    func commit {
-        mstatus_t wire xstatus;
-        mtvec_t wire xtvec;
-        mie_t wire xie;
+    func req_commit {
+        mstatus_t wire req_commit_xstatus;
+        mtvec_t wire req_commit_xtvec;
+        mie_t wire req_commit_xie;
 
-        if(wbuf.valid && wbuf.ptr == commit_ptr) {
+        if(wbuf.valid && wbuf.ptr == req_commit_ptr) {
             wbuf.valid := 0;
             any {
                 (mode >= MACHINE) && (wbuf.addr == MISA): {
@@ -307,7 +307,7 @@ module control_status_register {
                     */
                 }
                 (mode >= MACHINE) && (wbuf.addr == MSTATUS): {
-                    xstatus = wbuf.data;
+                    req_commit_xstatus = wbuf.data;
                     /*
                         UBE is always 0
                         TVM is always 0
@@ -325,17 +325,17 @@ module control_status_register {
                         VS is always 0
                         SD is always 0
                     */
-                    mstatus.mie     := xstatus.mie;
-                    mstatus.mpie    := xstatus.mpie;
+                    mstatus.mie     := req_commit_xstatus.mie;
+                    mstatus.mpie    := req_commit_xstatus.mpie;
                     mstatus.mpp     := MACHINE;
                 }
                 (mode >= MACHINE) && (wbuf.addr == MTVEC): {
-                    xtvec = wbuf.data;
+                    req_commit_xtvec = wbuf.data;
 
-                    mtvec.base := xtvec.base;
+                    mtvec.base := req_commit_xtvec.base;
                     any {
-                        xtvec.mode == MTVEC_MODE_DIRECT: mtvec.mode := xtvec.mode;
-                        xtvec.mode == MTVEC_MODE_VECTORED: mtvec.mode := xtvec.mode;
+                        req_commit_xtvec.mode == MTVEC_MODE_DIRECT: mtvec.mode := req_commit_xtvec.mode;
+                        req_commit_xtvec.mode == MTVEC_MODE_VECTORED: mtvec.mode := req_commit_xtvec.mode;
                     }
                 }
                 (mode >= MACHINE) && (wbuf.addr == MIP): {
@@ -352,10 +352,10 @@ module control_status_register {
                     */
                 }
                 (mode >= MACHINE) && (wbuf.addr == MIE): {
-                    xie = wbuf.data;
-                    mie.meie := xie.meie;
-                    mie.mtie := xie.mtie;
-                    mie.msie := xie.msie;
+                    req_commit_xie = wbuf.data;
+                    mie.meie := req_commit_xie.meie;
+                    mie.mtie := req_commit_xie.mtie;
+                    mie.msie := req_commit_xie.msie;
                     /*
                         always 0
                         - SEIP
@@ -394,7 +394,7 @@ module control_status_register {
             }
         }
     }
-    func update_instret {
+    func req_update_instret {
         if(!stop_minstret) {
             minstret := minstret + 2;
         }

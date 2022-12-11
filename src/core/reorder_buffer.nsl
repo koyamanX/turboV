@@ -60,42 +60,42 @@ module reorder_buffer {
     
     next_tail = tail + 1;
     next_head = head + 1;
-    head_ptr = head << 1;
+    head_ptr_o = head << 1;
     head_o = head;
     tail_o = tail;
 
-    func issue {
-        reorder_buffer_t wire new_entry;
+    func req_issue {
+        reorder_buffer_t wire req_issue_new_entry;
 
-        new_entry.PC = PC;
-        new_entry.valid0 = valid0;
-        new_entry.uop0 = uop0;
-        new_entry.dreg0 = dreg0;
-        new_entry.preg0 = preg0;
-        new_entry.ppreg0 = ppreg0;
-        new_entry.cause0 = cause0;
-        new_entry.completed0 = valid0;
-        new_entry.valid1 = valid1;
-        new_entry.uop1 = uop1;
-        new_entry.dreg1 = dreg1;
-        new_entry.preg1 = preg1;
-        new_entry.ppreg1 = ppreg1;
-        new_entry.cause1 = cause1;
-        new_entry.completed1 = valid1;
+        req_issue_new_entry.PC = req_issue_PC;
+        req_issue_new_entry.valid0 = req_issue_valid0;
+        req_issue_new_entry.uop0 = req_issue_uop0;
+        req_issue_new_entry.dreg0 = req_issue_dreg0;
+        req_issue_new_entry.preg0 = req_issue_preg0;
+        req_issue_new_entry.ppreg0 = req_issue_ppreg0;
+        req_issue_new_entry.cause0 = req_issue_cause0;
+        req_issue_new_entry.completed0 = req_issue_valid0;
+        req_issue_new_entry.valid1 = req_issue_valid1;
+        req_issue_new_entry.uop1 = req_issue_uop1;
+        req_issue_new_entry.dreg1 = req_issue_dreg1;
+        req_issue_new_entry.preg1 = req_issue_preg1;
+        req_issue_new_entry.ppreg1 = req_issue_ppreg1;
+        req_issue_new_entry.cause1 = req_issue_cause1;
+        req_issue_new_entry.completed1 = req_issue_valid1;
 #ifdef ENABLE_DEBUG
-        new_entry.inst0 = inst0;
-        new_entry.inst1 = inst1;
+        req_issue_new_entry.inst0 = req_issue_inst0;
+        req_issue_new_entry.inst1 = req_issue_inst1;
 #endif
 
 		any {
-			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: rob0 := new_entry;
-			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: rob1 := new_entry;
-			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: rob2 := new_entry;
-			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: rob3 := new_entry;
-			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: rob4 := new_entry;
-			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: rob5 := new_entry;
-			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: rob6 := new_entry;
-			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: rob7 := new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 0: rob0 := req_issue_new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 1: rob1 := req_issue_new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 2: rob2 := req_issue_new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 3: rob3 := req_issue_new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 4: rob4 := req_issue_new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 5: rob5 := req_issue_new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 6: rob6 := req_issue_new_entry;
+			tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == 7: rob7 := req_issue_new_entry;
 		}
 		tail := next_tail;
         return tail  << 1;
@@ -134,83 +134,83 @@ module reorder_buffer {
 
 		if(commit_entry.valid0) {
 			if(commit_entry_uop0.rd_valid && commit0) {
-				freelist_push0(commit_entry.ppreg0);
+				req_freelist_push0(commit_entry.ppreg0);
 			}
 			alt {
-				(meip && meie && ((mstatus_mie && priv_mode == MACHINE) || priv_mode < MACHINE)): {
-					csr_trap(MACHINE_EXTERNAL_INTERRUPT, commit_PC0, 0);
-					stall_pipeline();
-					flush_pipeline();
+				(meip_i && meie_i && ((mstatus_mie_i && priv_mode_i == MACHINE) || priv_mode_i < MACHINE)): {
+					req_csr_trap(MACHINE_EXTERNAL_INTERRUPT, commit_PC0, 0);
+					req_stall_pipeline();
+					req_flush_pipeline();
 					will_rollback();
 					commit_kill_inst0();
 					commit_kill_inst1();
 				}
-				(msip && msie && ((mstatus_mie && priv_mode == MACHINE) || priv_mode < MACHINE)): {
-					csr_trap(MACHINE_SOFTWARE_INTERRUPT, commit_PC0, 0);
-					stall_pipeline();
-					flush_pipeline();
+				(msip_i && msie_i && ((mstatus_mie_i && priv_mode_i == MACHINE) || priv_mode_i < MACHINE)): {
+					req_csr_trap(MACHINE_SOFTWARE_INTERRUPT, commit_PC0, 0);
+					req_stall_pipeline();
+					req_flush_pipeline();
 					will_rollback();
 					commit_kill_inst0();
 					commit_kill_inst1();
 				}
-				(mtip && mtie && ((mstatus_mie && priv_mode == MACHINE) || priv_mode < MACHINE)): {
-					csr_trap(MACHINE_TIMER_INTERRUPT, commit_PC0, 0);
-					stall_pipeline();
-					flush_pipeline();
+				(mtip_i && mtie_i && ((mstatus_mie_i && priv_mode_i == MACHINE) || priv_mode_i < MACHINE)): {
+					req_csr_trap(MACHINE_TIMER_INTERRUPT, commit_PC0, 0);
+					req_stall_pipeline();
+					req_flush_pipeline();
 					will_rollback();
 					commit_kill_inst0();
 					commit_kill_inst1();
 				}	
 				(commit_entry_cause0.instruction_address_misaligned): {
-					csr_trap(INSTRUCTION_ADDRESS_MISALIGNED, commit_PC0, commit_entry.target0);
+					req_csr_trap(INSTRUCTION_ADDRESS_MISALIGNED, commit_PC0, commit_entry.target0);
 					commit0();
-					stall_pipeline();
-					flush_pipeline();
+					req_stall_pipeline();
+					req_flush_pipeline();
 					will_rollback();
 					commit_kill_inst1();
 				}
 				commit_entry_cause0.illegal_instruction: {
-					csr_trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0);
-					stall_pipeline();
-					flush_pipeline();
+					req_csr_trap(ILLEGAL_INSTRUCTION, commit_PC0, commit_entry.inst0);
+					req_stall_pipeline();
+					req_flush_pipeline();
 					will_rollback();
 					commit_kill_inst0();
 					commit_kill_inst1();
 				}
 				commit_entry_uop0.csr_write: {
-					csr_commit(head<<1);
+					req_csr_commit(head<<1);
 					redirect(commit_PC0+4);
 					will_rollback();
 					commit_kill_inst1();
 					commit0();
 				}
 				commit_entry_uop0.ecall: {
-					stall_pipeline();
-					flush_pipeline();
-					csr_trap(ENVIRONMENT_CALL_FROM_M_MODE, commit_PC0+4, 0);
+					req_stall_pipeline();
+					req_flush_pipeline();
+					req_csr_trap(ENVIRONMENT_CALL_FROM_M_MODE, commit_PC0+4, 0);
 					commit_kill_inst1();
 					commit0();
 					will_rollback();
 				}
 				commit_entry_uop0.ebreak: {
-					stall_pipeline();
-					flush_pipeline();
-					csr_trap(BREAKPOINT, commit_PC0, 0);
+					req_stall_pipeline();
+					req_flush_pipeline();
+					req_csr_trap(BREAKPOINT, commit_PC0, 0);
 					commit_kill_inst1();
 					commit0();
 					will_rollback();
 				}
 				commit_entry_uop0.mret: {
-					stall_pipeline();
-					flush_pipeline();
-					csr_mret();
+					req_stall_pipeline();
+					req_flush_pipeline();
+					req_csr_mret();
 					commit_kill_inst1();
 					commit0();
 					will_rollback();
 				}
 				commit_entry_uop0.store: {
 					commit0();
-					lsu_commit(head<<1);
+					req_lsu_commit(head<<1);
 				}
 				(commit_entry_uop0.branch && commit_entry.taken0)
 					|| commit_entry_uop0.jalr || commit_entry_uop0.jal: {
@@ -226,20 +226,20 @@ module reorder_buffer {
 		}
 		if(commit_entry.valid1 && !commit_kill_inst1) {
 			if(commit_entry_uop1.rd_valid && commit1) {
-				freelist_push1(commit_entry.ppreg1);
+				req_freelist_push1(commit_entry.ppreg1);
 			}
 			alt {
 				(commit_entry_cause1.instruction_address_misaligned): {
-					csr_trap(INSTRUCTION_ADDRESS_MISALIGNED, commit_PC1, commit_entry.target1);
+					req_csr_trap(INSTRUCTION_ADDRESS_MISALIGNED, commit_PC1, commit_entry.target1);
 					commit1();
-					stall_pipeline();
-					flush_pipeline();
+					req_stall_pipeline();
+					req_flush_pipeline();
 					will_rollback();
 				}
 				commit_entry_cause1.illegal_instruction: {
-					csr_trap(ILLEGAL_INSTRUCTION, commit_PC1, commit_entry.inst1);
-					stall_pipeline();
-					flush_pipeline();
+					req_csr_trap(ILLEGAL_INSTRUCTION, commit_PC1, commit_entry.inst1);
+					req_stall_pipeline();
+					req_flush_pipeline();
 					will_rollback();
 				}
 				(commit_entry_uop1.branch && commit_entry.taken1)
@@ -284,12 +284,12 @@ module reorder_buffer {
 
     }
 	func redirect {
-		stall_pipeline();
-		flush_pipeline();
-		redirect_frontend(redirect_pc);
+		req_stall_pipeline();
+		req_flush_pipeline();
+		req_redirect_frontend(redirect_pc);
 	}
 	func will_rollback {
-		stall_pipeline();
+		req_stall_pipeline();
 		rollback.invoke();
 		if(internal_full) {
 			// If full, tail points to head entry.
@@ -329,29 +329,29 @@ module reorder_buffer {
 
 				if(rollback_entry.valid0 && rollback_entry.valid1) {
 					if(rollback_entry_uop0.rd_valid && rollback_entry_uop1.rd_valid && rollback_entry.dreg0 == rollback_entry.dreg1) {
-						rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
+						req_rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
 					} else {
 						if(rollback_entry_uop0.rd_valid) {
-							rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
+							req_rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
 						}
 						if(rollback_entry_uop1.rd_valid) {
-							rmt_update1(rollback_entry.dreg1, rollback_entry.ppreg1);
+							req_rmt_update1(rollback_entry.dreg1, rollback_entry.ppreg1);
 						}
 					}
 					if(rollback_entry_uop0.rd_valid) {
-						freelist_push0(rollback_entry.preg0);
+						req_freelist_push0(rollback_entry.preg0);
 					}
 					if(rollback_entry_uop1.rd_valid) {
-						freelist_push1(rollback_entry.preg1);
+						req_freelist_push1(rollback_entry.preg1);
 					}
 				} else {
 					if(rollback_entry.valid0 && rollback_entry_uop0.rd_valid) {
-						rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
-						freelist_push0(rollback_entry.preg0);
+						req_rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
+						req_freelist_push0(rollback_entry.preg0);
 					}
 					if(rollback_entry.valid1 && rollback_entry_uop1.rd_valid) {
-						rmt_update0(rollback_entry.dreg1, rollback_entry.ppreg1);
-						freelist_push1(rollback_entry.preg1);
+						req_rmt_update0(rollback_entry.dreg1, rollback_entry.ppreg1);
+						req_freelist_push1(rollback_entry.preg1);
 					}
 				}
 				tail := tail - 1;
@@ -384,29 +384,29 @@ module reorder_buffer {
 
 			if(rollback_entry.valid0 && rollback_entry.valid1) {
 				if(rollback_entry_uop0.rd_valid && rollback_entry_uop1.rd_valid && rollback_entry.dreg0 == rollback_entry.dreg1) {
-					rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
+					req_rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
 				} else {
 					if(rollback_entry_uop0.rd_valid) {
-						rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
+						req_rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
 					}
 					if(rollback_entry_uop1.rd_valid) {
-						rmt_update1(rollback_entry.dreg1, rollback_entry.ppreg1);
+						req_rmt_update1(rollback_entry.dreg1, rollback_entry.ppreg1);
 					}
 				}
 				if(rollback_entry_uop0.rd_valid) {
-					freelist_push0(rollback_entry.preg0);
+					req_freelist_push0(rollback_entry.preg0);
 				}
 				if(rollback_entry_uop1.rd_valid) {
-					freelist_push1(rollback_entry.preg1);
+					req_freelist_push1(rollback_entry.preg1);
 				}
 			} else {
 				if(rollback_entry.valid0 && rollback_entry_uop0.rd_valid) {
-					rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
-					freelist_push0(rollback_entry.preg0);
+					req_rmt_update0(rollback_entry.dreg0, rollback_entry.ppreg0);
+					req_freelist_push0(rollback_entry.preg0);
 				}
 				if(rollback_entry.valid1 && rollback_entry_uop1.rd_valid) {
-					rmt_update0(rollback_entry.dreg1, rollback_entry.ppreg1);
-					freelist_push1(rollback_entry.preg1);
+					req_rmt_update0(rollback_entry.dreg1, rollback_entry.ppreg1);
+					req_freelist_push1(rollback_entry.preg1);
 				}
 			}
 			tail := tail - 1;
@@ -418,115 +418,113 @@ module reorder_buffer {
 		}
 	}
 	if(rollback) {
-		stall_pipeline();
+		req_stall_pipeline();
 	}
 	if((tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0] == head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES-1:0])
 		&& (tail[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES] != head[LOG2_REORDER_BUFFER_NUM_OF_ENTRIES])) {
 		internal_full();
 	}
-	func internal_full {
-		full();
-	}
-    func complete_alu0 {
+	full_o = internal_full;
+    func req_complete_alu0 {
 		any {
-			complete_alu0_ptr ==  0: {rob0.completed0 := 0; rob0.target0 := complete_alu0_target; rob0.taken0 := complete_alu0_taken; rob0.cause0 := rob0.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr ==  1: {rob0.completed1 := 0; rob0.target1 := complete_alu0_target; rob0.taken1 := complete_alu0_taken; rob0.cause1 := rob0.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr ==  2: {rob1.completed0 := 0; rob1.target0 := complete_alu0_target; rob1.taken0 := complete_alu0_taken; rob1.cause0 := rob1.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr ==  3: {rob1.completed1 := 0; rob1.target1 := complete_alu0_target; rob1.taken1 := complete_alu0_taken; rob1.cause1 := rob1.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr ==  4: {rob2.completed0 := 0; rob2.target0 := complete_alu0_target; rob2.taken0 := complete_alu0_taken; rob2.cause0 := rob2.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr ==  5: {rob2.completed1 := 0; rob2.target1 := complete_alu0_target; rob2.taken1 := complete_alu0_taken; rob2.cause1 := rob2.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr ==  6: {rob3.completed0 := 0; rob3.target0 := complete_alu0_target; rob3.taken0 := complete_alu0_taken; rob3.cause0 := rob3.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr ==  7: {rob3.completed1 := 0; rob3.target1 := complete_alu0_target; rob3.taken1 := complete_alu0_taken; rob3.cause1 := rob3.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr ==  8: {rob4.completed0 := 0; rob4.target0 := complete_alu0_target; rob4.taken0 := complete_alu0_taken; rob4.cause0 := rob4.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr ==  9: {rob4.completed1 := 0; rob4.target1 := complete_alu0_target; rob4.taken1 := complete_alu0_taken; rob4.cause1 := rob4.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr == 10: {rob5.completed0 := 0; rob5.target0 := complete_alu0_target; rob5.taken0 := complete_alu0_taken; rob5.cause0 := rob5.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr == 11: {rob5.completed1 := 0; rob5.target1 := complete_alu0_target; rob5.taken1 := complete_alu0_taken; rob5.cause1 := rob5.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr == 12: {rob6.completed0 := 0; rob6.target0 := complete_alu0_target; rob6.taken0 := complete_alu0_taken; rob6.cause0 := rob6.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr == 13: {rob6.completed1 := 0; rob6.target1 := complete_alu0_target; rob6.taken1 := complete_alu0_taken; rob6.cause1 := rob6.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr == 14: {rob7.completed0 := 0; rob7.target0 := complete_alu0_target; rob7.taken0 := complete_alu0_taken; rob7.cause0 := rob7.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
-			complete_alu0_ptr == 15: {rob7.completed1 := 0; rob7.target1 := complete_alu0_target; rob7.taken1 := complete_alu0_taken; rob7.cause1 := rob7.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr ==  0: {rob0.completed0 := 0; rob0.target0 := req_complete_alu0_target; rob0.taken0 := req_complete_alu0_taken; rob0.cause0 := rob0.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr ==  1: {rob0.completed1 := 0; rob0.target1 := req_complete_alu0_target; rob0.taken1 := req_complete_alu0_taken; rob0.cause1 := rob0.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr ==  2: {rob1.completed0 := 0; rob1.target0 := req_complete_alu0_target; rob1.taken0 := req_complete_alu0_taken; rob1.cause0 := rob1.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr ==  3: {rob1.completed1 := 0; rob1.target1 := req_complete_alu0_target; rob1.taken1 := req_complete_alu0_taken; rob1.cause1 := rob1.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr ==  4: {rob2.completed0 := 0; rob2.target0 := req_complete_alu0_target; rob2.taken0 := req_complete_alu0_taken; rob2.cause0 := rob2.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr ==  5: {rob2.completed1 := 0; rob2.target1 := req_complete_alu0_target; rob2.taken1 := req_complete_alu0_taken; rob2.cause1 := rob2.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr ==  6: {rob3.completed0 := 0; rob3.target0 := req_complete_alu0_target; rob3.taken0 := req_complete_alu0_taken; rob3.cause0 := rob3.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr ==  7: {rob3.completed1 := 0; rob3.target1 := req_complete_alu0_target; rob3.taken1 := req_complete_alu0_taken; rob3.cause1 := rob3.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr ==  8: {rob4.completed0 := 0; rob4.target0 := req_complete_alu0_target; rob4.taken0 := req_complete_alu0_taken; rob4.cause0 := rob4.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr ==  9: {rob4.completed1 := 0; rob4.target1 := req_complete_alu0_target; rob4.taken1 := req_complete_alu0_taken; rob4.cause1 := rob4.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr == 10: {rob5.completed0 := 0; rob5.target0 := req_complete_alu0_target; rob5.taken0 := req_complete_alu0_taken; rob5.cause0 := rob5.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr == 11: {rob5.completed1 := 0; rob5.target1 := req_complete_alu0_target; rob5.taken1 := req_complete_alu0_taken; rob5.cause1 := rob5.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr == 12: {rob6.completed0 := 0; rob6.target0 := req_complete_alu0_target; rob6.taken0 := req_complete_alu0_taken; rob6.cause0 := rob6.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr == 13: {rob6.completed1 := 0; rob6.target1 := req_complete_alu0_target; rob6.taken1 := req_complete_alu0_taken; rob6.cause1 := rob6.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr == 14: {rob7.completed0 := 0; rob7.target0 := req_complete_alu0_target; rob7.taken0 := req_complete_alu0_taken; rob7.cause0 := rob7.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
+			req_complete_alu0_ptr == 15: {rob7.completed1 := 0; rob7.target1 := req_complete_alu0_target; rob7.taken1 := req_complete_alu0_taken; rob7.cause1 := rob7.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu0_instruction_address_misaligned);}
         }
     }
-    func complete_alu1 {
+    func req_complete_alu1 {
 		any {
-			complete_alu1_ptr ==  0: {rob0.completed0 := 0; rob0.target0 := complete_alu1_target; rob0.taken0 := complete_alu1_taken; rob0.cause0 := rob0.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr ==  1: {rob0.completed1 := 0; rob0.target1 := complete_alu1_target; rob0.taken1 := complete_alu1_taken; rob0.cause1 := rob0.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr ==  2: {rob1.completed0 := 0; rob1.target0 := complete_alu1_target; rob1.taken0 := complete_alu1_taken; rob1.cause0 := rob1.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr ==  3: {rob1.completed1 := 0; rob1.target1 := complete_alu1_target; rob1.taken1 := complete_alu1_taken; rob1.cause1 := rob1.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr ==  4: {rob2.completed0 := 0; rob2.target0 := complete_alu1_target; rob2.taken0 := complete_alu1_taken; rob2.cause0 := rob2.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr ==  5: {rob2.completed1 := 0; rob2.target1 := complete_alu1_target; rob2.taken1 := complete_alu1_taken; rob2.cause1 := rob2.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr ==  6: {rob3.completed0 := 0; rob3.target0 := complete_alu1_target; rob3.taken0 := complete_alu1_taken; rob3.cause0 := rob3.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr ==  7: {rob3.completed1 := 0; rob3.target1 := complete_alu1_target; rob3.taken1 := complete_alu1_taken; rob3.cause1 := rob3.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr ==  8: {rob4.completed0 := 0; rob4.target0 := complete_alu1_target; rob4.taken0 := complete_alu1_taken; rob4.cause0 := rob4.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr ==  9: {rob4.completed1 := 0; rob4.target1 := complete_alu1_target; rob4.taken1 := complete_alu1_taken; rob4.cause1 := rob4.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr == 10: {rob5.completed0 := 0; rob5.target0 := complete_alu1_target; rob5.taken0 := complete_alu1_taken; rob5.cause0 := rob5.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr == 11: {rob5.completed1 := 0; rob5.target1 := complete_alu1_target; rob5.taken1 := complete_alu1_taken; rob5.cause1 := rob5.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr == 12: {rob6.completed0 := 0; rob6.target0 := complete_alu1_target; rob6.taken0 := complete_alu1_taken; rob6.cause0 := rob6.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr == 13: {rob6.completed1 := 0; rob6.target1 := complete_alu1_target; rob6.taken1 := complete_alu1_taken; rob6.cause1 := rob6.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr == 14: {rob7.completed0 := 0; rob7.target0 := complete_alu1_target; rob7.taken0 := complete_alu1_taken; rob7.cause0 := rob7.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
-			complete_alu1_ptr == 15: {rob7.completed1 := 0; rob7.target1 := complete_alu1_target; rob7.taken1 := complete_alu1_taken; rob7.cause1 := rob7.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr ==  0: {rob0.completed0 := 0; rob0.target0 := req_complete_alu1_target; rob0.taken0 := req_complete_alu1_taken; rob0.cause0 := rob0.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr ==  1: {rob0.completed1 := 0; rob0.target1 := req_complete_alu1_target; rob0.taken1 := req_complete_alu1_taken; rob0.cause1 := rob0.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr ==  2: {rob1.completed0 := 0; rob1.target0 := req_complete_alu1_target; rob1.taken0 := req_complete_alu1_taken; rob1.cause0 := rob1.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr ==  3: {rob1.completed1 := 0; rob1.target1 := req_complete_alu1_target; rob1.taken1 := req_complete_alu1_taken; rob1.cause1 := rob1.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr ==  4: {rob2.completed0 := 0; rob2.target0 := req_complete_alu1_target; rob2.taken0 := req_complete_alu1_taken; rob2.cause0 := rob2.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr ==  5: {rob2.completed1 := 0; rob2.target1 := req_complete_alu1_target; rob2.taken1 := req_complete_alu1_taken; rob2.cause1 := rob2.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr ==  6: {rob3.completed0 := 0; rob3.target0 := req_complete_alu1_target; rob3.taken0 := req_complete_alu1_taken; rob3.cause0 := rob3.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr ==  7: {rob3.completed1 := 0; rob3.target1 := req_complete_alu1_target; rob3.taken1 := req_complete_alu1_taken; rob3.cause1 := rob3.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr ==  8: {rob4.completed0 := 0; rob4.target0 := req_complete_alu1_target; rob4.taken0 := req_complete_alu1_taken; rob4.cause0 := rob4.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr ==  9: {rob4.completed1 := 0; rob4.target1 := req_complete_alu1_target; rob4.taken1 := req_complete_alu1_taken; rob4.cause1 := rob4.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr == 10: {rob5.completed0 := 0; rob5.target0 := req_complete_alu1_target; rob5.taken0 := req_complete_alu1_taken; rob5.cause0 := rob5.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr == 11: {rob5.completed1 := 0; rob5.target1 := req_complete_alu1_target; rob5.taken1 := req_complete_alu1_taken; rob5.cause1 := rob5.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr == 12: {rob6.completed0 := 0; rob6.target0 := req_complete_alu1_target; rob6.taken0 := req_complete_alu1_taken; rob6.cause0 := rob6.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr == 13: {rob6.completed1 := 0; rob6.target1 := req_complete_alu1_target; rob6.taken1 := req_complete_alu1_taken; rob6.cause1 := rob6.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr == 14: {rob7.completed0 := 0; rob7.target0 := req_complete_alu1_target; rob7.taken0 := req_complete_alu1_taken; rob7.cause0 := rob7.cause0 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
+			req_complete_alu1_ptr == 15: {rob7.completed1 := 0; rob7.target1 := req_complete_alu1_target; rob7.taken1 := req_complete_alu1_taken; rob7.cause1 := rob7.cause1 | SET_EXCEPTION(INSTRUCTION_ADDRESS_MISALIGNED, req_complete_alu1_instruction_address_misaligned);}
 		}
     }
-    func complete_lsu0 {
+    func req_complete_lsu0 {
 		any {
-			complete_lsu0_ptr ==  0: rob0.completed0 := 0;
-			complete_lsu0_ptr ==  1: rob0.completed1 := 0;
-			complete_lsu0_ptr ==  2: rob1.completed0 := 0;
-			complete_lsu0_ptr ==  3: rob1.completed1 := 0;
-			complete_lsu0_ptr ==  4: rob2.completed0 := 0;
-			complete_lsu0_ptr ==  5: rob2.completed1 := 0;
-			complete_lsu0_ptr ==  6: rob3.completed0 := 0;
-			complete_lsu0_ptr ==  7: rob3.completed1 := 0;
-			complete_lsu0_ptr ==  8: rob4.completed0 := 0;
-			complete_lsu0_ptr ==  9: rob4.completed1 := 0;
-			complete_lsu0_ptr == 10: rob5.completed0 := 0;
-			complete_lsu0_ptr == 11: rob5.completed1 := 0;
-			complete_lsu0_ptr == 12: rob6.completed0 := 0;
-			complete_lsu0_ptr == 13: rob6.completed1 := 0;
-			complete_lsu0_ptr == 14: rob7.completed0 := 0;
-			complete_lsu0_ptr == 15: rob7.completed1 := 0;
+			req_complete_lsu0_ptr ==  0: rob0.completed0 := 0;
+			req_complete_lsu0_ptr ==  1: rob0.completed1 := 0;
+			req_complete_lsu0_ptr ==  2: rob1.completed0 := 0;
+			req_complete_lsu0_ptr ==  3: rob1.completed1 := 0;
+			req_complete_lsu0_ptr ==  4: rob2.completed0 := 0;
+			req_complete_lsu0_ptr ==  5: rob2.completed1 := 0;
+			req_complete_lsu0_ptr ==  6: rob3.completed0 := 0;
+			req_complete_lsu0_ptr ==  7: rob3.completed1 := 0;
+			req_complete_lsu0_ptr ==  8: rob4.completed0 := 0;
+			req_complete_lsu0_ptr ==  9: rob4.completed1 := 0;
+			req_complete_lsu0_ptr == 10: rob5.completed0 := 0;
+			req_complete_lsu0_ptr == 11: rob5.completed1 := 0;
+			req_complete_lsu0_ptr == 12: rob6.completed0 := 0;
+			req_complete_lsu0_ptr == 13: rob6.completed1 := 0;
+			req_complete_lsu0_ptr == 14: rob7.completed0 := 0;
+			req_complete_lsu0_ptr == 15: rob7.completed1 := 0;
 		}
     }
-    func readPC0 {
+    func req_readPC0 {
         // TODO:
         any {
-            readPC0_ptr ==  0: return {rob0.PC, 2'b00};
-            readPC0_ptr ==  1: return {rob0.PC, 2'b00}+4;
-            readPC0_ptr ==  2: return {rob1.PC, 2'b00};
-            readPC0_ptr ==  3: return {rob1.PC, 2'b00}+4;
-            readPC0_ptr ==  4: return {rob2.PC, 2'b00};
-            readPC0_ptr ==  5: return {rob2.PC, 2'b00}+4;
-            readPC0_ptr ==  6: return {rob3.PC, 2'b00};
-            readPC0_ptr ==  7: return {rob3.PC, 2'b00}+4;
-            readPC0_ptr ==  8: return {rob4.PC, 2'b00};
-            readPC0_ptr ==  9: return {rob4.PC, 2'b00}+4;
-            readPC0_ptr == 10: return {rob5.PC, 2'b00};
-            readPC0_ptr == 11: return {rob5.PC, 2'b00}+4;
-            readPC0_ptr == 12: return {rob6.PC, 2'b00};
-            readPC0_ptr == 13: return {rob6.PC, 2'b00}+4;
-            readPC0_ptr == 14: return {rob7.PC, 2'b00};
-            readPC0_ptr == 15: return {rob7.PC, 2'b00}+4;
+            req_readPC0_ptr ==  0: return {rob0.PC, 2'b00};
+            req_readPC0_ptr ==  1: return {rob0.PC, 2'b00}+4;
+            req_readPC0_ptr ==  2: return {rob1.PC, 2'b00};
+            req_readPC0_ptr ==  3: return {rob1.PC, 2'b00}+4;
+            req_readPC0_ptr ==  4: return {rob2.PC, 2'b00};
+            req_readPC0_ptr ==  5: return {rob2.PC, 2'b00}+4;
+            req_readPC0_ptr ==  6: return {rob3.PC, 2'b00};
+            req_readPC0_ptr ==  7: return {rob3.PC, 2'b00}+4;
+            req_readPC0_ptr ==  8: return {rob4.PC, 2'b00};
+            req_readPC0_ptr ==  9: return {rob4.PC, 2'b00}+4;
+            req_readPC0_ptr == 10: return {rob5.PC, 2'b00};
+            req_readPC0_ptr == 11: return {rob5.PC, 2'b00}+4;
+            req_readPC0_ptr == 12: return {rob6.PC, 2'b00};
+            req_readPC0_ptr == 13: return {rob6.PC, 2'b00}+4;
+            req_readPC0_ptr == 14: return {rob7.PC, 2'b00};
+            req_readPC0_ptr == 15: return {rob7.PC, 2'b00}+4;
         }
     }
-    func readPC1 {
+    func req_readPC1 {
         // TODO:
         any {
-            readPC1_ptr ==  0: return {rob0.PC, 2'b00};
-            readPC1_ptr ==  1: return {rob0.PC, 2'b00}+4;
-            readPC1_ptr ==  2: return {rob1.PC, 2'b00};
-            readPC1_ptr ==  3: return {rob1.PC, 2'b00}+4;
-            readPC1_ptr ==  4: return {rob2.PC, 2'b00};
-            readPC1_ptr ==  5: return {rob2.PC, 2'b00}+4;
-            readPC1_ptr ==  6: return {rob3.PC, 2'b00};
-            readPC1_ptr ==  7: return {rob3.PC, 2'b00}+4;
-            readPC1_ptr ==  8: return {rob4.PC, 2'b00};
-            readPC1_ptr ==  9: return {rob4.PC, 2'b00}+4;
-            readPC1_ptr == 10: return {rob5.PC, 2'b00};
-            readPC1_ptr == 11: return {rob5.PC, 2'b00}+4;
-            readPC1_ptr == 12: return {rob6.PC, 2'b00};
-            readPC1_ptr == 13: return {rob6.PC, 2'b00}+4;
-            readPC1_ptr == 14: return {rob7.PC, 2'b00};
-            readPC1_ptr == 15: return {rob7.PC, 2'b00}+4;
+            req_readPC1_ptr ==  0: return {rob0.PC, 2'b00};
+            req_readPC1_ptr ==  1: return {rob0.PC, 2'b00}+4;
+            req_readPC1_ptr ==  2: return {rob1.PC, 2'b00};
+            req_readPC1_ptr ==  3: return {rob1.PC, 2'b00}+4;
+            req_readPC1_ptr ==  4: return {rob2.PC, 2'b00};
+            req_readPC1_ptr ==  5: return {rob2.PC, 2'b00}+4;
+            req_readPC1_ptr ==  6: return {rob3.PC, 2'b00};
+            req_readPC1_ptr ==  7: return {rob3.PC, 2'b00}+4;
+            req_readPC1_ptr ==  8: return {rob4.PC, 2'b00};
+            req_readPC1_ptr ==  9: return {rob4.PC, 2'b00}+4;
+            req_readPC1_ptr == 10: return {rob5.PC, 2'b00};
+            req_readPC1_ptr == 11: return {rob5.PC, 2'b00}+4;
+            req_readPC1_ptr == 12: return {rob6.PC, 2'b00};
+            req_readPC1_ptr == 13: return {rob6.PC, 2'b00}+4;
+            req_readPC1_ptr == 14: return {rob7.PC, 2'b00};
+            req_readPC1_ptr == 15: return {rob7.PC, 2'b00}+4;
         }
     }
 }
