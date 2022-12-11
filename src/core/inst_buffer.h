@@ -12,8 +12,8 @@ declare inst_buffer {
     func_in req_push(req_push_data);
     output rsp_pop_data[SIZEOF_FETCH_PACKET_T];
     func_in req_pop() : rsp_pop_data;
-    output full;
-    output empty;
+    output full_o;
+    output empty_o;
     func_in req_flush();
 }
 

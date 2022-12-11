@@ -6,17 +6,17 @@ module inst_buffer {
     reg wptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES+1] = 0;
     wire next_rptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES+1];
     wire next_wptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES+1];
-    func_self internal_full();
-    func_self internal_empty();
+    func_self full();
+    func_self empty();
 
     func req_push {
-        if(~internal_full && ~req_flush) {
+        if(~full && ~req_flush) {
             ibuf[wptr] := req_push_data;
             wptr := next_wptr;
         }
     }
     func req_pop {
-        if(~internal_empty && ~req_flush) {
+        if(~empty && ~req_flush) {
             rptr := next_rptr;
             return ibuf[rptr];
         }
@@ -30,11 +30,11 @@ module inst_buffer {
 
     if((wptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES-1:0] == rptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES-1:0])
         && (wptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES] != rptr[LOG2_INST_BUFFER_NUM_OF_ENTRIES])) {
-        internal_full();
+        full();
     }
     if(rptr == wptr) {
-        internal_empty();
+        empty();
     }
-	full = internal_full;
-	empty = internal_empty;
+	full_o = full;
+	empty_o = empty;
 }
