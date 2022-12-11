@@ -16,6 +16,6 @@ declare free_list {
     func_in req_pop0(): rsp_pop0_data;
     output rsp_pop1_data[SIZEOF_FREE_LIST_ENTRY];
     func_in req_pop1(): rsp_pop1_data;
-    output count[SIZEOF_FREE_LIST_ENTRY];
+    output count_o[SIZEOF_FREE_LIST_ENTRY];
 }
 #endif

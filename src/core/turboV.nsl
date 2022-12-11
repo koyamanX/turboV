@@ -334,7 +334,7 @@ module turboV {
         issue_inst0_uop = decoder_packet0.uop;
         issue_inst1_uop = decoder_packet1.uop;
         // TODO: !flush
-        if(!flush && (freelist.count >= 2) && !rob.full && !iq_alu0.full && !iq_alu1.full && !iq_lsu0.full) {
+        if(!flush && (freelist.count_o >= 2) && !rob.full && !iq_alu0.full && !iq_alu1.full && !iq_lsu0.full) {
             issue_PC = issue_packet.pc[31:2];
             issue_inst0_pc = {issue_PC, 2'b00};
             // TODO:

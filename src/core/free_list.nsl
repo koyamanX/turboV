@@ -90,5 +90,5 @@ module free_list {
     if((push || pop)) {
         freelist_count := next_freelist_count;
     }
-    count = freelist_count;
+    count_o = freelist_count;
 }
