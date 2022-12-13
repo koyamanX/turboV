@@ -35,6 +35,7 @@ module uop_decoder {
         func_self mret;
         func_self ecall;
         func_self ebreak;
+		func_self fencei;
         func_self illegal_instruction();
         func_self rd_valid;
         func_self rs1_valid;
@@ -64,6 +65,7 @@ module uop_decoder {
         decode_uop.mret = mret;
         decode_uop.ecall = ecall;
         decode_uop.ebreak = ebreak;
+        decode_uop.fencei = fencei;
 		decode_uop.uimm = lrs1;
         decode_packet.uop = decode_uop;
         decode_packet.lrd = lrd;
@@ -403,7 +405,24 @@ module uop_decoder {
                 }
             }
             opcode == MISC_MEM: {
-
+				any {
+					inst_itype.funct3 == MISC_MEM_FENCEI: {
+						decode_uop.uop = uOP_LSU_FENCEI;
+                        lrd = 0;
+                        rs1_sel = RS1_SEL_REG;
+                        lrs1 = 0;
+                        rs2_sel = RS2_SEL_REG;
+                        lrs2 = 0;
+                        imm = 0;
+						fencei();
+					}
+					inst_itype.funct3 == MISC_MEM_FENCE: {
+						// TODO: fence
+					}
+					else: {
+						illegal_instruction();
+				    }
+				}
             }
             else: {
                 illegal_instruction();
