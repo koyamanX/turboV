@@ -10,6 +10,8 @@ declare icache {
     output rsp_cache_data[64];
     func_out rsp_cache_hit(rsp_cache_data);
     func_out rsp_cache_miss();
+	func_in req_invalidate_all();
+	func_out rsp_invalidate_all_done();
 
     WISHBONE_GEN_MASTER_IF(32, 64, 8)
     WISHBONE_MASTER_ACCESS_OUT_PORTS(32, 64, 8)

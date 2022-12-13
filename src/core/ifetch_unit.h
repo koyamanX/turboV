@@ -27,6 +27,8 @@ declare ifetch_unit {
     func_out ibuf_full();
     func_out ibuf_empty();
     func_in ibuf_flush();
+	func_in req_invalidate_all();
+	func_out rsp_invalidate_all_done();
 
     WISHBONE_GEN_MASTER_IF(32, 64, 8)
 }
