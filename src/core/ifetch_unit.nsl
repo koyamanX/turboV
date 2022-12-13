@@ -38,6 +38,7 @@ module ifetch_unit {
     func_self stall();
     reg stall_ifetch_vpc[XLEN];
     proc_name stall_ifetch(stall_ifetch_vpc);
+	proc_name invalidate_all();
 
     func reset {
         ic.reset();
@@ -55,6 +56,17 @@ module ifetch_unit {
     func flush_st2 {
         st2.finish();
     }
+	func req_invalidate_all {
+		flush();
+		invalidate_all();
+	}
+	proc invalidate_all {
+		ic.req_invalidate_all();
+		if(ic.rsp_invalidate_all_done) {
+			rsp_invalidate_all_done();
+			finish();
+		}
+	}
     func flush {
         stall();
         flush_st0();
@@ -92,7 +104,7 @@ module ifetch_unit {
             st0: stall_ifetch(st0_vpc);
         }
     }
-    if(stall_ifetch && !ibuf.full_o && !redirect) {
+    if(stall_ifetch && !ibuf.full_o && !redirect && !invalidate_all) {
         stall_ifetch.finish();
         st0(stall_ifetch_vpc);
     }

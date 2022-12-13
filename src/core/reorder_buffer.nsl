@@ -208,6 +208,14 @@ module reorder_buffer {
 					commit0();
 					will_rollback();
 				}
+				commit_entry_uop0.fencei: {
+					req_stall_pipeline();
+					req_flush_pipeline();
+					commit_kill_inst1();
+					commit0();
+					req_lsu_fencei(commit_PC0+4);
+					will_rollback();
+				}
 				commit_entry_uop0.store: {
 					commit0();
 					req_lsu_commit(head<<1);

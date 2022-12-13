@@ -12,6 +12,7 @@ add_subdirectory(software_interrupt_test)
 add_subdirectory(timer_interrupt_test)
 add_subdirectory(csr_inst_test)
 add_subdirectory(instruction_address_misaligned_test)
+add_subdirectory(fencei_test)
 
 set(ISA_DIR ${CMAKE_BINARY_DIR}/Debug/share/riscv-tests/isa)
 set(SIMULATOR ${CMAKE_BINARY_DIR}/Debug/turboVSim/turboVSim)
@@ -28,7 +29,7 @@ list(APPEND rv32ui_p
     rv32ui-p-blt
     rv32ui-p-bltu
     rv32ui-p-bne
-#   rv32ui-p-fence_i
+    rv32ui-p-fence_i
     rv32ui-p-jal
     rv32ui-p-jalr
     rv32ui-p-lb

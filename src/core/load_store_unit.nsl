@@ -27,6 +27,11 @@ module load_store_unit {
             memory_addr := issue_addr;
             memory_wdata := issue_wdata;
             writeback(issue_ptr, issue_uop, issue_prd, issue_wdata);
+		} else if(uop_.fencei) {
+            stqV := 1;
+            memory_ptr := issue_ptr;
+            memory_uop := issue_uop;
+            writeback(issue_ptr, issue_uop, 0, 0);
         } else {
             memory(issue_ptr, issue_prd, issue_uop, issue_addr, 0);
         }
@@ -83,7 +88,9 @@ module load_store_unit {
     }
     func commit {
         stqV := 0;
-        memory(memory_ptr, memory_prd, memory_uop, memory_addr, memory_wdata);
+		if(memory_uop != uOP_LSU_FENCEI) {
+			memory(memory_ptr, memory_prd, memory_uop, memory_addr, memory_wdata);
+		}
     }
     WISHBONE_MASTER_IF(wb_master_if);
 }

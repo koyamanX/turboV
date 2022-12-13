@@ -19,6 +19,7 @@ module icache {
     reg allocate_addr[32];
     reg allocate_req_cache_addr[32];
     proc_name allocate(allocate_addr, allocate_req_cache_addr);
+	proc_name invalidate_all();
 
     func reset {
         idle(0, 0, 0, 0);
@@ -44,8 +45,26 @@ module icache {
                             icache_tag_array[idle_index], icache_data_array[idle_index]);
                 }
             }
+			req_invalidate_all: {
+				invalidate_all();
+			}
         }
     }
+	proc invalidate_all seq {
+		reg invalidate_all_pos[8] = 0;
+
+		for(invalidate_all_pos := 0; invalidate_all_pos < 128; invalidate_all_pos++) {
+			{
+				icache_valid_array[invalidate_all_pos] := 0;
+				icache_tag_array[invalidate_all_pos] := 0;
+				icache_data_array[invalidate_all_pos] := 0;
+			}
+		}
+		{
+			rsp_invalidate_all_done();
+			idle(0, 0, 0, 0);
+		}
+	}
     proc compare_tag {
         wire compare_tag_tag[20];
         wire compare_tag_index[7];

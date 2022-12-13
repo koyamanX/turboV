@@ -58,6 +58,10 @@
 #define uOP_LSU_STORE_WORD              7'b010_1010
 #define uOP_LSU_STORE_HALFWORD          7'b010_1001
 #define uOP_LSU_STORE_BYTE              7'b010_1000
+#define uOP_LSU_FENCEI					7'b010_1100
+
+#define MISC_MEM_FENCE 	3'b000
+#define MISC_MEM_FENCEI	3'b001
 
 #define uOP_SYSTEM                      3'b011
 #define uOP_SYSTEM_CSRRW                7'b110_0110
@@ -116,8 +120,9 @@ struct uop_t {
     mret;
     ecall;
     ebreak;
+	fencei;
 	uimm[5];
-#define SIZEOF_UOP_T uOP_SIZE+13+SIZEOF_REG_SEL+SIZEOF_REG_SEL+1+5
+#define SIZEOF_UOP_T uOP_SIZE+13+SIZEOF_REG_SEL+SIZEOF_REG_SEL+1+5+1
 };
 
 #endif

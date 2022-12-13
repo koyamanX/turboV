@@ -136,6 +136,8 @@ declare reorder_buffer {
 	// to LSU
 	output req_lsu_commit_ptr[REORDER_BUFFER_PTR_SIZE];
 	func_out req_lsu_commit(req_lsu_commit_ptr);
+	output req_lsu_fencei_nextpc[32];
+	func_out req_lsu_fencei(req_lsu_fencei_nextpc);
 	// TO CSR
 	output req_csr_commit_ptr[REORDER_BUFFER_PTR_SIZE];
 	func_out req_csr_commit(req_csr_commit_ptr);
