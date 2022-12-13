@@ -104,6 +104,8 @@ module turboV {
     wire update_register_status_table_inst1_lrd[5];
     func_self update_register_status_table_inst0(update_register_status_table_inst0_lrd);
     func_self update_register_status_table_inst1(update_register_status_table_inst1_lrd);
+	reg fencei_nextpc[32];
+	proc_name fencei(fencei_nextpc);
 
     func reset {
         if(!warm_reset) {
@@ -189,6 +191,17 @@ module turboV {
 		decode.invoke();
 		ifu.redirect(csr.req_mret());
 	}
+	func rob.req_lsu_fencei {
+		fencei.invoke(rob.req_lsu_fencei_nextpc);
+	}
+	proc fencei {
+		ifu.req_invalidate_all();
+		if(ifu.rsp_invalidate_all_done) {
+			ifu.redirect(fencei_nextpc);
+			decode.invoke();
+			finish();
+		}
+	}
     proc decode {
         state_name decode0, decode1;
         fetch_packet_t wire decode0_fetch_packet;
@@ -230,7 +243,7 @@ module turboV {
                     => if both insts are SYSTEM or LSU, split decode into
                     two stages to avoid structural hazard.
                     */
-#define IS_MEMORY(uop) (uop.load || uop.store)
+#define IS_MEMORY(uop) (uop.load || uop.store || uop.fencei)
 #define IS_SYSTEM(uop) (uop.csr || uop.mret || uop.ecall || uop.ebreak)
                     if(!IS_MEMORY(decode0_uop1) && !IS_SYSTEM(decode0_uop1)) {
                         // No structual hazard, issue 2 insts
@@ -456,7 +469,7 @@ module turboV {
                         issue_inst0_uop.rs2_valid, issue_inst0_rs2_ready, issue_inst0_lrs2, issue_inst0_prs2,
                         issue_inst0_cause, issue_inst0_imm);
                 any {
-                    issue_inst0_uop.store || issue_inst0_uop.load: {
+                    issue_inst0_uop.store || issue_inst0_uop.load || issue_inst0_uop.fencei: {
                         iq_lsu0.req_issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
                                 issue_inst0_rs1_ready, issue_inst0_prs1,
                                 issue_inst0_rs2_ready, issue_inst0_prs2,
@@ -478,7 +491,7 @@ module turboV {
                         issue_inst1_uop.rs2_valid, issue_inst1_rs2_ready, issue_inst1_lrs2, issue_inst1_prs2,
                         issue_inst1_cause, issue_inst1_imm);
                 any {
-                    issue_inst1_uop.store || issue_inst1_uop.load: {
+                    issue_inst1_uop.store || issue_inst1_uop.load || issue_inst1_uop.fencei: {
                         iq_lsu0.req_issue(issue_inst1_ptr, issue_inst1_uop, issue_inst1_prd,
                             issue_inst1_rs1_ready, issue_inst1_prs1,
                             issue_inst1_rs2_ready, issue_inst1_prs2,
@@ -628,6 +641,10 @@ module turboV {
         }
         any {
             iq_lsu0_uop.store: {
+                execute_lsu0.invoke(iq_lsu0.req_dispatch_ptr, iq_lsu0_uop, iq_lsu0.req_dispatch_prd,
+                        iq_lsu0_A, iq_lsu0.req_dispatch_imm, iq_lsu0_B);
+            }
+            iq_lsu0_uop.fencei: {
                 execute_lsu0.invoke(iq_lsu0.req_dispatch_ptr, iq_lsu0_uop, iq_lsu0.req_dispatch_prd,
                         iq_lsu0_A, iq_lsu0.req_dispatch_imm, iq_lsu0_B);
             }

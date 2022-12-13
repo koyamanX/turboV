@@ -51,12 +51,14 @@ module icache {
         }
     }
 	proc invalidate_all seq {
-		reg invalidate_all_pos[7] = 0;
+		reg invalidate_all_pos[8] = 0;
 
 		for(invalidate_all_pos := 0; invalidate_all_pos < 128; invalidate_all_pos++) {
-			icache_valid_array[invalidate_all_pos] := 0;
-			icache_tag_array[invalidate_all_pos] := 0;
-			icache_data_array[invalidate_all_pos] := 0;
+			{
+				icache_valid_array[invalidate_all_pos] := 0;
+				icache_tag_array[invalidate_all_pos] := 0;
+				icache_data_array[invalidate_all_pos] := 0;
+			}
 		}
 		{
 			rsp_invalidate_all_done();
