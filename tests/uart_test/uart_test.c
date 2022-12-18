@@ -30,7 +30,13 @@ int uart_puts(const char *str) {
 	return 0;
 }
 
+#define SIM_EXIT ((volatile unsigned int *) 0x80001000)
+#define OK 1
+#define NG 2
+
 void main(void) {
 	uart_init();
 	uart_puts("Hello,World!");
+
+	*SIM_EXIT = OK;
 }
