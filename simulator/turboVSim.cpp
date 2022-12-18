@@ -390,7 +390,7 @@ public:
                 j["stages"]["rewind1"]["ppreg"] = to_hex(sim->debug_rewind1_ppreg, 2);
             }
 
-            std::cout << std::setw(4) << j << std::endl;
+//            std::cout << std::setw(4) << j << std::endl;
 #endif
             sim->rsp_error = false;
             sim->rsp_retry = false;
