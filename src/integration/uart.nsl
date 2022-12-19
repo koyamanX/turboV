@@ -9,14 +9,14 @@ declare uart_fifo_8x8 {
 	func_in req_pop(): rsp_pop_data;
 	output full_o;
 	output empty_o;
-	output count_o[3];
+	output count_o[4];
 }
 
 module uart_fifo_8x8 {
     mem ram[8][8];
 	reg rptr[4] = 0;
 	reg wptr[4] = 0;
-	reg count[3] = 0;
+	reg count[4] = 0;
 	wire next_rptr[4];
 	wire next_wptr[4];
 	func_self full();
@@ -60,13 +60,15 @@ module uart {
 	reg tx_data_bit_buf[8];
 	func_self txwm_interrupt();
 	func_self rxwm_interrupt();
+	reg txd = 1;
+	reg rxd = 1;
 
 	func reset {
 		wb_slave_if.reset();
 	}
     func wb_slave_if.req_read {
 		any {
-			wb_slave_if.req_addr == UART_BASE+TXDATA: wb_slave_if.rsp_valid(tx_fifo.full_o<<31);
+			wb_slave_if.req_addr == UART_BASE+TXDATA: wb_slave_if.rsp_valid({32'(1'b0), tx_fifo.full_o, 31'(1'b0)});
 			wb_slave_if.req_addr == UART_BASE+RXDATA && !rx_fifo.empty_o: wb_slave_if.rsp_valid(rx_fifo.empty_o<<31 | rx_fifo.req_pop());
 			wb_slave_if.req_addr == UART_BASE+RXDATA && rx_fifo.empty_o: wb_slave_if.rsp_valid(rx_fifo.empty_o<<31);
 			wb_slave_if.req_addr == UART_BASE+TXCTRL: wb_slave_if.rsp_valid(txctrl);
