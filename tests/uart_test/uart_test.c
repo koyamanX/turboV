@@ -10,11 +10,8 @@ void trap_handler(void) {
 	asm volatile("mret");
 }
 
-void uart_init(void) {
-	*UART_TXCTRL = 0x1;
-}
 int uart_putchar(int c) {
-	while(*UART_TXCTRL & 0x80000000)
+	while(*UART_TXDATA & 0x80000000)
 		asm volatile("nop");
 	*UART_TXDATA = (char)c;
 
@@ -30,13 +27,33 @@ int uart_puts(const char *str) {
 	return 0;
 }
 
+void uart_enable(void) {
+	*UART_TXCTRL = 0x1;
+}
+void uart_disable(void) {
+	*UART_TXCTRL = 0x0;
+}
+
 #define SIM_EXIT ((volatile unsigned int *) 0x80001000)
 #define OK 1
 #define NG 2
 
 void main(void) {
-	uart_init();
-	uart_puts("Hello,World!");
+	uart_disable();
+	for(int i = 0; i < 8; i++) {
+		uart_putchar('0'+i);
+	}
+	if(!(*UART_TXDATA & 0x80000000)) {
+		*SIM_EXIT = NG;
+	}
+	uart_enable();
+
+	for(int i = 0; i < 1000; i++) {
+		asm volatile("nop");
+	}
+
+	uart_puts("");
+	uart_puts("Hello,world!!");
 
 	*SIM_EXIT = OK;
 }
