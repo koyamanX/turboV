@@ -4,6 +4,8 @@
 #include "wishbone_master.h"
 #include "wishbone_common.h"
 #include "riscv.h"
+#include "opcode_map.h"
+#include "branch_predictor.h"
 
 #define ALIGN8(s32) {s32[31:3], 3'b000}
 
@@ -21,12 +23,10 @@ module ifetch_unit {
     reg st2_ppc[XLEN];
     reg st2_fetch_packet[64];
     proc_name st2(st2_vpc, st2_ppc, st2_fetch_packet);
-    func_self predict();
-    func_self predict_taken();
-    func_self predict_not_taken();
     icache ic;
     wishbone_master wb_master_if;
     inst_buffer ibuf;
+	branch_predictor bp;
 
     func_self flush_st0();
     func_self flush_st1();
@@ -72,6 +72,7 @@ module ifetch_unit {
         flush_st0();
         flush_st1();
         flush_st2();
+		bp.req_flush();
         stall_ifetch.finish();
         ibuf.req_flush();
     }
@@ -108,7 +109,6 @@ module ifetch_unit {
         stall_ifetch.finish();
         st0(stall_ifetch_vpc);
     }
-
     proc st0 {
         wire st0_new_pc[XLEN];
 
@@ -135,21 +135,62 @@ module ifetch_unit {
         }
     }
     proc st2 {
-        predict();
-        if(predict_not_taken && !flush_st2 && !stall_st2) {
+		wire st2_inst0[32];
+		wire st2_inst1[32];
+
+        if(!flush_st2 && !stall_st2) {
+			st2_inst0 = st2_fetch_packet[31:0];
+			st2_inst1 = st2_fetch_packet[63:32];
+
+			any {
+				st2_vpc[2]: {
+					if(st2_inst1[6:0] == BRANCH) {
+						bp.req_predict1(st2_vpc+4);
+					}
+					if(bp.rsp_predict1_pred) {
+						stall_st0();
+						stall_st1();
+						flush_st0();
+						flush_st1();
+						stall_ifetch.finish();
+						st0(bp.rsp_predict1_target);
+					}
+					ibuf.req_push({(st2_vpc)[XLEN-1:0], {st2_inst1, 32'(1'b0)}, {bp.rsp_predict1_pred, 1'b0}, 2'b10});
+				}
+				~st2_vpc[2]: {
+					if(st2_inst0[6:0] == BRANCH) {
+						bp.req_predict0(st2_vpc);
+					}
+					if(st2_inst1[6:0] == BRANCH) {
+						bp.req_predict1(st2_vpc+4);
+					}
+					alt {
+						bp.rsp_predict0_pred: {
+							stall_st0();
+							stall_st1();
+							flush_st0();
+							flush_st1();
+							stall_ifetch.finish();
+							st0(bp.rsp_predict0_target);
+							ibuf.req_push({(st2_vpc)[XLEN-1:0], {st2_inst0, 32'(1'b0)}, 2'b10, 2'b10});
+						}
+						bp.rsp_predict1_pred: {
+							stall_st0();
+							stall_st1();
+							flush_st0();
+							flush_st1();
+							stall_ifetch.finish();
+							st0(bp.rsp_predict1_target);
+							ibuf.req_push({(st2_vpc)[XLEN-1:0], {st2_inst0, st2_inst1}, 2'b01, 2'b11});
+						}
+						else: {
+							ibuf.req_push({(st2_vpc)[XLEN-1:0], {st2_inst0, st2_inst1}, 2'b00, 2'b11});
+					    }
+					}
+				}
+			}
             finish();
-            any {
-                st2_vpc[2]: {
-                    ibuf.req_push({(st2_vpc)[XLEN-1:0], {st2_fetch_packet[63:32], st2_fetch_packet[31:0]}, 2'b00, 2'b10});
-                }
-                ~st2_vpc[2]: {
-                    ibuf.req_push({(st2_vpc)[XLEN-1:0], {st2_fetch_packet[31:0], st2_fetch_packet[63:32]}, 2'b00, 2'b11});
-                }
-            }
         }
-    }
-    func predict {
-        predict_not_taken();
     }
     func ic.req_read {
         wb_master_if.req_read(ic.req_addr, ic.req_sel);
@@ -175,6 +216,12 @@ module ifetch_unit {
     func wb_master_if.rsp_stall {
         ic.rsp_stall();
     }
+	func req_update_predict0 {
+		bp.req_update_predict0(req_update_predict0_pc, req_update_predict0_target);
+	}
+	func req_update_predict1 {
+		bp.req_update_predict1(req_update_predict1_pc, req_update_predict1_target);
+	}
 
     WISHBONE_MASTER_IF(wb_master_if);
 }

@@ -11,6 +11,7 @@ add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/free_list.nsl ${CMAKE_CURRENT_BINARY_
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/reorder_buffer.nsl ${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/issue_queue.nsl ${CMAKE_CURRENT_BINARY_DIR}/issue_queue.v)
 add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/issue_queue_in_order.nsl ${CMAKE_CURRENT_BINARY_DIR}/issue_queue_in_order.v)
+add_nsl_target(${CMAKE_CURRENT_SOURCE_DIR}/branch_predictor.nsl ${CMAKE_CURRENT_BINARY_DIR}/branch_predictor.v)
 
 add_custom_target(core
     DEPENDS
@@ -27,4 +28,5 @@ add_custom_target(core
         ${CMAKE_CURRENT_BINARY_DIR}/reorder_buffer.v
         ${CMAKE_CURRENT_BINARY_DIR}/issue_queue.v
         ${CMAKE_CURRENT_BINARY_DIR}/issue_queue_in_order.v
+        ${CMAKE_CURRENT_BINARY_DIR}/branch_predictor.v
 )
