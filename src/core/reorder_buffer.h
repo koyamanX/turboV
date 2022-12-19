@@ -152,6 +152,8 @@ declare reorder_buffer {
     output req_csr_trap_val[32];
     func_out req_csr_trap(req_csr_trap_cause, req_csr_trap_pc, req_csr_trap_val);
 	func_out req_csr_mret();
+	output req_update_instret_cnt[2];
+	func_out req_update_instret(req_update_instret_cnt);
 	// to Freelist
 	output req_freelist_push0_data[6];
 	func_out req_freelist_push0(req_freelist_push0_data);

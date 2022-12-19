@@ -830,6 +830,9 @@ module turboV {
             }
         }
     }
+	func rob.req_update_instret {
+		csr.req_update_instret(rob.req_update_instret);
+	}
 #ifdef ENABLE_DEBUG
     func rob.debug_commit0 {
         debug_commit0(rob.debug_commit_ptr0, rob.debug_commit_kill0,

@@ -131,6 +131,7 @@ module reorder_buffer {
 		commit_entry_cause1 = commit_entry.cause1;
 		commit_PC0 = {commit_entry.PC, 2'b00};
 		commit_PC1 = {commit_entry.PC, 2'b00}+4;
+		req_update_instret(commit0+commit1);
 
 		if(commit_entry.valid0) {
 			if(commit_entry_uop0.rd_valid && commit0) {
