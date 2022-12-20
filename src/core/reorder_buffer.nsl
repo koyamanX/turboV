@@ -231,14 +231,14 @@ module reorder_buffer {
 							redirect(commit_entry.target0);
 							will_rollback();
 							commit_kill_inst1();
-							req_update_predict0(commit_PC0, commit_entry.target0);
+							req_update_predict0(commit_entry.taken0, commit_PC0, commit_entry.target0);
 						}
 						(!commit_entry.taken0 && commit_entry_uop0.pred): {
 							_display("Incorrect prediction, needs to update");
 							redirect(commit_PC0+4);
 							will_rollback();
 							commit_kill_inst1();
-							req_update_predict0(commit_PC0, commit_PC0+4);
+							req_update_predict0(commit_entry.taken0, commit_PC0, commit_PC0+4);
 						}
 						(!commit_entry.taken0 && !commit_entry_uop0.pred): {
 							_display("Correct prediction");
@@ -284,13 +284,13 @@ module reorder_buffer {
 							_display("Incorrect prediction, needs to update");
 							redirect(commit_entry.target1);
 							will_rollback();
-							req_update_predict1(commit_PC1, commit_entry.target1);
+							req_update_predict1(commit_entry.taken1, commit_PC1, commit_entry.target1);
 						}
 						(!commit_entry.taken1 && commit_entry_uop1.pred): {
 							_display("Incorrect prediction, needs to update");
 							redirect(commit_PC1+4);
 							will_rollback();
-							req_update_predict1(commit_PC1, commit_PC1+4);
+							req_update_predict1(commit_entry.taken1, commit_PC1, commit_PC1+4);
 						}
 						(!commit_entry.taken1 && !commit_entry_uop1.pred): {
 							_display("Correct prediction");
