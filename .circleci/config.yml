@@ -19,7 +19,7 @@ jobs:
           command: echo ". $(pwd)/image/scripts/env.sh" >> $BASH_ENV
       - run:
           name: "Create Build Directory"
-          command: "echo $RISCV && mkdir build"
+          command: "mkdir build"
       - run:
           name: "cmake"
           working_directory: build
