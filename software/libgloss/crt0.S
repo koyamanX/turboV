@@ -1,4 +1,4 @@
-.section .text
+.section .text.init
 
 .weak _reset_vector
 .weak _trap_vector
