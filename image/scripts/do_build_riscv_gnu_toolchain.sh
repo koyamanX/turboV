@@ -1,12 +1,12 @@
 #!/bin/bash
 set -ex
 
-git -c submodule."qemu".update=none clone -b 2022.05.15 --depth=1 -j$(nproc) https://github.com/riscv/riscv-gnu-toolchain
+git -c submodule."qemu".update=none clone -b 2022.05.15 --depth=1 -j$(nproc) --recursive https://github.com/riscv/riscv-gnu-toolchain
 pushd riscv-gnu-toolchain &> /dev/null
-	git submodule update --init --recursive
+	#git submodule update --init --recursive
 	mkdir build
 	pushd build &> /dev/null
-		../configure --prefix=/opt/riscv --with-arch=rv32ima --with-abi=ilp32
+		../configure --prefix=/opt/riscv --with-arch=rv32ia --with-abi=ilp32
 		make linux -j $(nproc)
 		make newlib -j $(nproc)
 	popd &> /dev/null
