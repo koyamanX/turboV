@@ -132,6 +132,13 @@ module turboVSim {
 		UART_BASE <= core.ADR_O && core.ADR_O <= UART_BASE+UART_LENGTH: {
            if(core.STB_O) wb_uart.STB_I();
 		}
+		else: {
+           if(core.STB_O) {
+			   //TODO: WORKAROUND, it should be ERR response.
+			   //core.ERR_I();
+			   core.ACK_I();
+		   }
+	    }
     }
 
     func wb_slave_if.req_read {
