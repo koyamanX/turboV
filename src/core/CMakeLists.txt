@@ -28,3 +28,4 @@ add_custom_target(core
         ${CMAKE_CURRENT_BINARY_DIR}/issue_queue.v
         ${CMAKE_CURRENT_BINARY_DIR}/issue_queue_in_order.v
 )
+export_nsl_headers(core)

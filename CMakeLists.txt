@@ -42,6 +42,11 @@ function(add_nsl_target input output)
 		COMMAND nsl2vl ${NSL_FLAGS} ${NSL_INCLUDE} ${input} -o ${output}
 		#DEPENDS ${nsl_depends_list}
 	)
+	install(FILES ${output}
+		PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+		CONFIGURATIONS Debug Release
+		RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/verilog
+	)
 endfunction()
 
 function(add_nsl_test target input output)
@@ -95,6 +100,15 @@ function(add_verilator module_name)
 		DEPENDS
 			${CMAKE_CURRENT_BINARY_DIR}/${module_name}.v
 			${ARGN}
+	)
+endfunction()
+
+function(export_nsl_headers dirname)
+	file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+	install(FILES ${HEADERS}
+		PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+		CONFIGURATIONS Debug Release
+		RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${dirname}
 	)
 endfunction()
 

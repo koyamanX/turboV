@@ -8,3 +8,4 @@ add_custom_target(integration
         ${CMAKE_CURRENT_BINARY_DIR}/rom64x2K.v
         ${CMAKE_CURRENT_BINARY_DIR}/clint.v
 )
+export_nsl_headers(integration)
