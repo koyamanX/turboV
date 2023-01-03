@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build -t koyamanx/turbov_dev:v1.4 .
+docker build -t koyamanx/turbov_dev:v1.5 .
