@@ -48,8 +48,8 @@ module uart_fifo_8x8 {
 
 module uart {
     wishbone_slave wb_slave_if;
-	state_name tx_idle, tx_start_bit, tx_data_bit, tx_stop_bit;
-	state_name rx_idle, rx_start_bit, rx_data_bit, rx_stop_bit;
+	proc_name tx_idle, tx_start_bit, tx_data_bit, tx_stop_bit;
+	proc_name rx_idle, rx_start_bit, rx_data_bit, rx_stop_bit;
 	uart_fifo_8x8 tx_fifo;
 	uart_fifo_8x8 rx_fifo;
 	txctrl_t reg txctrl = 0;
@@ -65,6 +65,8 @@ module uart {
 
 	func reset {
 		wb_slave_if.reset();
+		tx_idle.invoke();
+		rx_idle.invoke();
 	}
     func wb_slave_if.req_read {
 		any {
@@ -89,29 +91,29 @@ module uart {
 		}
         wb_slave_if.rsp_valid(64'b0);
 	}
-	state tx_idle {
+	proc tx_idle {
 		if(!tx_fifo.empty_o && txctrl.txen) {
-			goto tx_start_bit;
+			tx_start_bit();
 		}
 	}
-	state tx_start_bit {
+	proc tx_start_bit {
 		tx_data_bit_buf := tx_fifo.req_pop();
-		goto tx_data_bit;	
+		tx_data_bit();
 	}
-	state tx_data_bit {
+	proc tx_data_bit {
 		_write("%c", tx_data_bit_buf);	
-		goto tx_stop_bit;
+		tx_stop_bit();
 	}
-	state tx_stop_bit {
-		goto tx_idle;
+	proc tx_stop_bit {
+		tx_idle();
 	}
-	state rx_idle {
+	proc rx_idle {
 	}
-	state rx_start_bit {
+	proc rx_start_bit {
 	}
-	state rx_data_bit {
+	proc rx_data_bit {
 	}
-	state rx_stop_bit {
+	proc rx_stop_bit {
 	}
 	if(tx_fifo.count_o >= txctrl.txcnt && ie.txwm) {
 		txwm_interrupt();
