@@ -9,4 +9,4 @@ docker run -it --rm \
     -v /opt/intelFPGA_lite/21.1:/opt/intelFPGA_lite/latest \
 	-v $(pwd):/work \
 	-w /work \
-	koyamanx/turbov_dev:v1.4 $1
+	koyamanx/turbov_dev:v1.5 $1
