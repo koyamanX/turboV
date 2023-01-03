@@ -21,7 +21,7 @@ _trap_vector:
 	j _trap_handler
 	j _trap_handler
 _trap_handler:
-	j trap_handler
+	j _trap_handler
 
 .globl _start
 _start:

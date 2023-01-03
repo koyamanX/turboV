@@ -10,3 +10,4 @@ add_custom_target(integration
         ${CMAKE_CURRENT_BINARY_DIR}/clint.v
         ${CMAKE_CURRENT_BINARY_DIR}/uart.v
 )
+export_nsl_headers(integration)

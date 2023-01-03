@@ -1,93 +1,244 @@
 #include "free_list.h"
 
 module free_list {
-    mem freelist[NUMBER_OF_FREE_LIST][SIZEOF_FREE_LIST_ENTRY];
-    reg tail[LOG2_FREE_LIST_NUM_OF_ENTRIES+1] = 0;
-    reg head[LOG2_FREE_LIST_NUM_OF_ENTRIES+1] = 0;
-    reg freelist_count[LOG2_FREE_LIST_NUM_OF_ENTRIES] = NUMBER_OF_FREE_LIST - 1;
-    wire push_count[LOG2_FREE_LIST_NUM_OF_ENTRIES];
-    wire pop_count[LOG2_FREE_LIST_NUM_OF_ENTRIES];
-    wire next_tail[LOG2_FREE_LIST_NUM_OF_ENTRIES+1];
-    wire next_head[LOG2_FREE_LIST_NUM_OF_ENTRIES+1];
+    mem freelist[NUMBER_OF_FREE_LIST];
+    reg freelist_count[LOG2_FREE_LIST_NUM_OF_ENTRIES+1] = 32;
     wire next_freelist_count[LOG2_FREE_LIST_NUM_OF_ENTRIES+1];
     integer i_;
-    wire push, pop;
-
-    pop = req_pop0 || req_pop1;
-    push = req_push0 || req_push1;
+	wire allocate0_data[SIZEOF_FREE_LIST_ENTRY];
+	func_self allocate0(): allocate0_data;
+	wire allocate1_data[SIZEOF_FREE_LIST_ENTRY];
+	func_self allocate1(): allocate1_data;
+	func_self allocate_fl0();
+	func_self allocate_fl1();
+	func_self allocate_fl2();
+	func_self allocate_fl3();
+	func_self allocate_fl4();
+	func_self allocate_fl5();
+	func_self allocate_fl6();
+	func_self allocate_fl7();
+	func_self allocate_fl8();
+	func_self allocate_fl9();
+	func_self allocate_fl10();
+	func_self allocate_fl11();
+	func_self allocate_fl12();
+	func_self allocate_fl13();
+	func_self allocate_fl14();
+	func_self allocate_fl15();
+	func_self allocate_fl16();
+	func_self allocate_fl17();
+	func_self allocate_fl18();
+	func_self allocate_fl19();
+	func_self allocate_fl20();
+	func_self allocate_fl21();
+	func_self allocate_fl22();
+	func_self allocate_fl23();
+	func_self allocate_fl24();
+	func_self allocate_fl25();
+	func_self allocate_fl26();
+	func_self allocate_fl27();
+	func_self allocate_fl28();
+	func_self allocate_fl29();
+	func_self allocate_fl30();
+	func_self allocate_fl31();
+	func_self allocate_fl32();
+	func_self allocate_fl33();
+	func_self allocate_fl34();
+	func_self allocate_fl35();
+	func_self allocate_fl36();
+	func_self allocate_fl37();
+	func_self allocate_fl38();
+	func_self allocate_fl39();
+	func_self allocate_fl40();
+	func_self allocate_fl41();
+	func_self allocate_fl42();
+	func_self allocate_fl43();
+	func_self allocate_fl44();
+	func_self allocate_fl45();
+	func_self allocate_fl46();
+	func_self allocate_fl47();
+	func_self allocate_fl48();
+	func_self allocate_fl49();
+	func_self allocate_fl50();
+	func_self allocate_fl51();
+	func_self allocate_fl52();
+	func_self allocate_fl53();
+	func_self allocate_fl54();
+	func_self allocate_fl55();
+	func_self allocate_fl56();
+	func_self allocate_fl57();
+	func_self allocate_fl58();
+	func_self allocate_fl59();
+	func_self allocate_fl60();
+	func_self allocate_fl61();
+	func_self allocate_fl62();
+	func_self allocate_fl63();
 
     func req_reset {
-        generate(i_ = NUMBER_OF_FREE_LIST; i_ < NUMBER_OF_FREE_LIST*2; i_++) {
-            freelist[i_] := i_;
+        generate(i_ = 0; i_ < (NUMBER_OF_FREE_LIST/2); i_++) {
+            freelist[i_] := 0;
         }
-        freelist_count := NUMBER_OF_FREE_LIST - 1;
-        head := 0;
-        tail := 0;
-    }
-    any {
-        !req_pop0 && req_pop1: {
-            // TODO: REMOVE
-            freelist[head] := 0;
-            next_head = head + 1;
-            rsp_pop1_data = freelist[head];
+        generate(i_ = (NUMBER_OF_FREE_LIST/2); i_ < NUMBER_OF_FREE_LIST; i_++) {
+            freelist[i_] := 1;
         }
-        req_pop0 && !req_pop1: {
-            // TODO: REMOVE
-            freelist[head] := 0;
-            next_head = head + 1;
-            rsp_pop0_data = freelist[head];
-        }
-        req_pop0 && req_pop1: {
-            // TODO: REMOVE
-            freelist[head] := 0;
-            freelist[head+1] := 0;
-            next_head = head + 2;
-            rsp_pop0_data = freelist[head];
-            rsp_pop1_data = freelist[head+1];
-        }
+        freelist_count := (NUMBER_OF_FREE_LIST/2); 
     }
     func req_push0 {
-        if(!req_push1) {
-            next_tail = tail + 1;
-        }
-        freelist[tail] := req_push0_data;    
+		freelist[req_push0_data] := 1;
     }
     func req_push1 {
-        if(!req_push0) {
-            next_tail = tail + 1;
-            freelist[tail] := req_push1_data;
-        } else {
-            if(req_push0_data != req_push1_data) {
-                next_tail = tail + 2;
-                freelist[tail+1] := req_push1_data;
-            } else {
-                next_tail = tail + 1;
-            }
-        }
-
+		freelist[req_push1_data] := 1;
     }
-    if(pop) {
-        if(next_head >= NUMBER_OF_FREE_LIST) {
-            head := next_head - NUMBER_OF_FREE_LIST;
-        } else {
-            head := next_head;
-        }
-        pop_count = (next_head - head);
-    } else {
-        pop_count = 0;
-    }
-    if(push) {
-        if(next_tail >= NUMBER_OF_FREE_LIST) {
-            tail := next_tail - NUMBER_OF_FREE_LIST;
-        } else {
-            tail := next_tail;
-        }
-        push_count = next_tail - tail;
-    } else {
-        push_count = 0; 
-    }
-    next_freelist_count = freelist_count + push_count - pop_count;
-    if((push || pop)) {
+	func allocate0 {
+		alt {
+			freelist[0]: {freelist[0] := 0; allocate_fl0(); return 0;}
+			freelist[1]: {freelist[1] := 0; allocate_fl1(); return 1;}
+			freelist[2]: {freelist[2] := 0; allocate_fl2(); return 2;}
+			freelist[3]: {freelist[3] := 0; allocate_fl3(); return 3;}
+			freelist[4]: {freelist[4] := 0; allocate_fl4(); return 4;}
+			freelist[5]: {freelist[5] := 0; allocate_fl5(); return 5;}
+			freelist[6]: {freelist[6] := 0; allocate_fl6(); return 6;}
+			freelist[7]: {freelist[7] := 0; allocate_fl7(); return 7;}
+			freelist[8]: {freelist[8] := 0; allocate_fl8(); return 8;}
+			freelist[9]: {freelist[9] := 0; allocate_fl9(); return 9;}
+			freelist[10]: {freelist[10] := 0; allocate_fl10(); return 10;}
+			freelist[11]: {freelist[11] := 0; allocate_fl11(); return 11;}
+			freelist[12]: {freelist[12] := 0; allocate_fl12(); return 12;}
+			freelist[13]: {freelist[13] := 0; allocate_fl13(); return 13;}
+			freelist[14]: {freelist[14] := 0; allocate_fl14(); return 14;}
+			freelist[15]: {freelist[15] := 0; allocate_fl15(); return 15;}
+			freelist[16]: {freelist[16] := 0; allocate_fl16(); return 16;}
+			freelist[17]: {freelist[17] := 0; allocate_fl17(); return 17;}
+			freelist[18]: {freelist[18] := 0; allocate_fl18(); return 18;}
+			freelist[19]: {freelist[19] := 0; allocate_fl19(); return 19;}
+			freelist[20]: {freelist[20] := 0; allocate_fl20(); return 20;}
+			freelist[21]: {freelist[21] := 0; allocate_fl21(); return 21;}
+			freelist[22]: {freelist[22] := 0; allocate_fl22(); return 22;}
+			freelist[23]: {freelist[23] := 0; allocate_fl23(); return 23;}
+			freelist[24]: {freelist[24] := 0; allocate_fl24(); return 24;}
+			freelist[25]: {freelist[25] := 0; allocate_fl25(); return 25;}
+			freelist[26]: {freelist[26] := 0; allocate_fl26(); return 26;}
+			freelist[27]: {freelist[27] := 0; allocate_fl27(); return 27;}
+			freelist[28]: {freelist[28] := 0; allocate_fl28(); return 28;}
+			freelist[29]: {freelist[29] := 0; allocate_fl29(); return 29;}
+			freelist[30]: {freelist[30] := 0; allocate_fl30(); return 30;}
+			freelist[31]: {freelist[31] := 0; allocate_fl31(); return 31;}
+			freelist[32]: {freelist[32] := 0; allocate_fl32(); return 32;}
+			freelist[33]: {freelist[33] := 0; allocate_fl33(); return 33;}
+			freelist[34]: {freelist[34] := 0; allocate_fl34(); return 34;}
+			freelist[35]: {freelist[35] := 0; allocate_fl35(); return 35;}
+			freelist[36]: {freelist[36] := 0; allocate_fl36(); return 36;}
+			freelist[37]: {freelist[37] := 0; allocate_fl37(); return 37;}
+			freelist[38]: {freelist[38] := 0; allocate_fl38(); return 38;}
+			freelist[39]: {freelist[39] := 0; allocate_fl39(); return 39;}
+			freelist[40]: {freelist[40] := 0; allocate_fl40(); return 40;}
+			freelist[41]: {freelist[41] := 0; allocate_fl41(); return 41;}
+			freelist[42]: {freelist[42] := 0; allocate_fl42(); return 42;}
+			freelist[43]: {freelist[43] := 0; allocate_fl43(); return 43;}
+			freelist[44]: {freelist[44] := 0; allocate_fl44(); return 44;}
+			freelist[45]: {freelist[45] := 0; allocate_fl45(); return 45;}
+			freelist[46]: {freelist[46] := 0; allocate_fl46(); return 46;}
+			freelist[47]: {freelist[47] := 0; allocate_fl47(); return 47;}
+			freelist[48]: {freelist[48] := 0; allocate_fl48(); return 48;}
+			freelist[49]: {freelist[49] := 0; allocate_fl49(); return 49;}
+			freelist[50]: {freelist[50] := 0; allocate_fl50(); return 50;}
+			freelist[51]: {freelist[51] := 0; allocate_fl51(); return 51;}
+			freelist[52]: {freelist[52] := 0; allocate_fl52(); return 52;}
+			freelist[53]: {freelist[53] := 0; allocate_fl53(); return 53;}
+			freelist[54]: {freelist[54] := 0; allocate_fl54(); return 54;}
+			freelist[55]: {freelist[55] := 0; allocate_fl55(); return 55;}
+			freelist[56]: {freelist[56] := 0; allocate_fl56(); return 56;}
+			freelist[57]: {freelist[57] := 0; allocate_fl57(); return 57;}
+			freelist[58]: {freelist[58] := 0; allocate_fl58(); return 58;}
+			freelist[59]: {freelist[59] := 0; allocate_fl59(); return 59;}
+			freelist[60]: {freelist[60] := 0; allocate_fl60(); return 60;}
+			freelist[61]: {freelist[61] := 0; allocate_fl61(); return 61;}
+			freelist[62]: {freelist[62] := 0; allocate_fl62(); return 62;}
+			freelist[63]: {freelist[63] := 0; allocate_fl63(); return 63;}
+		}
+	}
+	func allocate1 {
+		alt {
+			freelist[0] && !allocate_fl0: {freelist[0] := 0; return 0;}
+			freelist[1] && !allocate_fl1: {freelist[1] := 0; return 1;}
+			freelist[2] && !allocate_fl2: {freelist[2] := 0; return 2;}
+			freelist[3] && !allocate_fl3: {freelist[3] := 0; return 3;}
+			freelist[4] && !allocate_fl4: {freelist[4] := 0; return 4;}
+			freelist[5] && !allocate_fl5: {freelist[5] := 0; return 5;}
+			freelist[6] && !allocate_fl6: {freelist[6] := 0; return 6;}
+			freelist[7] && !allocate_fl7: {freelist[7] := 0; return 7;}
+			freelist[8] && !allocate_fl8: {freelist[8] := 0; return 8;}
+			freelist[9] && !allocate_fl9: {freelist[9] := 0; return 9;}
+			freelist[10] && !allocate_fl10: {freelist[10] := 0; return 10;}
+			freelist[11] && !allocate_fl11: {freelist[11] := 0; return 11;}
+			freelist[12] && !allocate_fl12: {freelist[12] := 0; return 12;}
+			freelist[13] && !allocate_fl13: {freelist[13] := 0; return 13;}
+			freelist[14] && !allocate_fl14: {freelist[14] := 0; return 14;}
+			freelist[15] && !allocate_fl15: {freelist[15] := 0; return 15;}
+			freelist[16] && !allocate_fl16: {freelist[16] := 0; return 16;}
+			freelist[17] && !allocate_fl17: {freelist[17] := 0; return 17;}
+			freelist[18] && !allocate_fl18: {freelist[18] := 0; return 18;}
+			freelist[19] && !allocate_fl19: {freelist[19] := 0; return 19;}
+			freelist[20] && !allocate_fl20: {freelist[20] := 0; return 20;}
+			freelist[21] && !allocate_fl21: {freelist[21] := 0; return 21;}
+			freelist[22] && !allocate_fl22: {freelist[22] := 0; return 22;}
+			freelist[23] && !allocate_fl23: {freelist[23] := 0; return 23;}
+			freelist[24] && !allocate_fl24: {freelist[24] := 0; return 24;}
+			freelist[25] && !allocate_fl25: {freelist[25] := 0; return 25;}
+			freelist[26] && !allocate_fl26: {freelist[26] := 0; return 26;}
+			freelist[27] && !allocate_fl27: {freelist[27] := 0; return 27;}
+			freelist[28] && !allocate_fl28: {freelist[28] := 0; return 28;}
+			freelist[29] && !allocate_fl29: {freelist[29] := 0; return 29;}
+			freelist[30] && !allocate_fl30: {freelist[30] := 0; return 30;}
+			freelist[31] && !allocate_fl31: {freelist[31] := 0; return 31;}
+			freelist[32] && !allocate_fl32: {freelist[32] := 0; return 32;}
+			freelist[33] && !allocate_fl33: {freelist[33] := 0; return 33;}
+			freelist[34] && !allocate_fl34: {freelist[34] := 0; return 34;}
+			freelist[35] && !allocate_fl35: {freelist[35] := 0; return 35;}
+			freelist[36] && !allocate_fl36: {freelist[36] := 0; return 36;}
+			freelist[37] && !allocate_fl37: {freelist[37] := 0; return 37;}
+			freelist[38] && !allocate_fl38: {freelist[38] := 0; return 38;}
+			freelist[39] && !allocate_fl39: {freelist[39] := 0; return 39;}
+			freelist[40] && !allocate_fl40: {freelist[40] := 0; return 40;}
+			freelist[41] && !allocate_fl41: {freelist[41] := 0; return 41;}
+			freelist[42] && !allocate_fl42: {freelist[42] := 0; return 42;}
+			freelist[43] && !allocate_fl43: {freelist[43] := 0; return 43;}
+			freelist[44] && !allocate_fl44: {freelist[44] := 0; return 44;}
+			freelist[45] && !allocate_fl45: {freelist[45] := 0; return 45;}
+			freelist[46] && !allocate_fl46: {freelist[46] := 0; return 46;}
+			freelist[47] && !allocate_fl47: {freelist[47] := 0; return 47;}
+			freelist[48] && !allocate_fl48: {freelist[48] := 0; return 48;}
+			freelist[49] && !allocate_fl49: {freelist[49] := 0; return 49;}
+			freelist[50] && !allocate_fl50: {freelist[50] := 0; return 50;}
+			freelist[51] && !allocate_fl51: {freelist[51] := 0; return 51;}
+			freelist[52] && !allocate_fl52: {freelist[52] := 0; return 52;}
+			freelist[53] && !allocate_fl53: {freelist[53] := 0; return 53;}
+			freelist[54] && !allocate_fl54: {freelist[54] := 0; return 54;}
+			freelist[55] && !allocate_fl55: {freelist[55] := 0; return 55;}
+			freelist[56] && !allocate_fl56: {freelist[56] := 0; return 56;}
+			freelist[57] && !allocate_fl57: {freelist[57] := 0; return 57;}
+			freelist[58] && !allocate_fl58: {freelist[58] := 0; return 58;}
+			freelist[59] && !allocate_fl59: {freelist[59] := 0; return 59;}
+			freelist[60] && !allocate_fl60: {freelist[60] := 0; return 60;}
+			freelist[61] && !allocate_fl61: {freelist[61] := 0; return 61;}
+			freelist[62] && !allocate_fl62: {freelist[62] := 0; return 62;}
+			freelist[63] && !allocate_fl63: {freelist[63] := 0; return 63;}
+		}
+	}
+	any {
+		req_pop0 && req_pop1: {
+			rsp_pop0_data = allocate0();
+			rsp_pop1_data = allocate1();
+		}
+		!req_pop0 && req_pop1: {
+			rsp_pop1_data = allocate0();
+		}
+		req_pop0 && !req_pop1: {
+			rsp_pop0_data = allocate0();
+		}
+	}
+    next_freelist_count = freelist_count + (req_push0 + req_push1) - (req_pop0 + req_pop1);
+	if(req_push0 || req_push1 || req_pop0 || req_pop1) {
         freelist_count := next_freelist_count;
     }
     count_o = freelist_count;

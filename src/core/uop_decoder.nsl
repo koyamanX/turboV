@@ -67,6 +67,7 @@ module uop_decoder {
         decode_uop.ebreak = ebreak;
         decode_uop.fencei = fencei;
 		decode_uop.uimm = lrs1;
+		decode_uop.pred = req_decode_pred;
         decode_packet.uop = decode_uop;
         decode_packet.lrd = lrd;
         decode_packet.lrs1 = lrs1;

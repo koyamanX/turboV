@@ -12,3 +12,4 @@ add_custom_target(wishbone
         ${CMAKE_CURRENT_BINARY_DIR}/wishbone_slave.v
         ${CMAKE_CURRENT_BINARY_DIR}/wishbone_syscon.v
 )
+export_nsl_headers(wishbone)

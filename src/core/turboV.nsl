@@ -17,8 +17,6 @@
 
 struct issue_packet_t {
     pc[XLEN];
-    pred0;
-    pred1;
     valid0;
     valid1;
 };
@@ -214,8 +212,8 @@ module turboV {
         state decode0 {
             if(!rob.req_stall_pipeline && !ifu.ibuf_empty && !stall_issue && !flush) {
                 decode0_fetch_packet = ifu.ibuf_pop();
-                udec0.req_decode(decode0_fetch_packet.inst0);
-                udec1.req_decode(decode0_fetch_packet.inst1);
+                udec0.req_decode(decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
+                udec1.req_decode(decode0_fetch_packet.inst1, decode0_fetch_packet.pred1);
                 decode0_decoder_packet0 = udec0.rsp_decode_packet;
                 decode0_decoder_packet1 = udec1.rsp_decode_packet;
                 decode0_uop0 = decode0_decoder_packet0.uop;
@@ -248,7 +246,6 @@ module turboV {
                     if(!IS_MEMORY(decode0_uop1) && !IS_SYSTEM(decode0_uop1)) {
                         // No structual hazard, issue 2 insts
                         issue.invoke({decode0_fetch_packet.pc,
-								decode0_fetch_packet.pred0, decode0_fetch_packet.pred1,
 								decode0_fetch_packet.valid0, decode0_fetch_packet.valid1},
 								udec0.rsp_decode_packet, udec1.rsp_decode_packet);
                         DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
@@ -258,7 +255,6 @@ module turboV {
                         // Send another inst to issue stage in next cycle.
                         // decode1 takes care of issue next inst in the cycle.
                         issue.invoke({decode0_fetch_packet.pc,
-								decode0_fetch_packet.pred0, 1'b0,
 								decode0_fetch_packet.valid0, 1'b0},
 								udec0.rsp_decode_packet, 0);
                         decode1_fetch_packet := decode0_fetch_packet;
@@ -271,7 +267,6 @@ module turboV {
                     // Also, currently, ifetch_unit never pushes inst1 valid && inst0 invalid.
                     // TODO: 
                     issue.invoke({decode0_fetch_packet.pc,
-							decode0_fetch_packet.pred0, 1'b0,
 							decode0_fetch_packet.valid0, 1'b0},
 							udec0.rsp_decode_packet, 0);
                     DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
@@ -286,9 +281,8 @@ module turboV {
             if(flush) {
                 goto decode0;
             } else if(!stall_issue && !flush) {
-                udec0.req_decode(decode1_fetch_packet.inst1);
+                udec0.req_decode(decode1_fetch_packet.inst1, decode1_fetch_packet.pred1);
                 issue.invoke({decode1_fetch_packet.pc+4,
-						decode1_fetch_packet.pred1, 1'b0,
 						decode1_fetch_packet.valid1, 1'b0},
 						udec0.rsp_decode_packet, 0);
                 goto decode0;
@@ -748,6 +742,12 @@ module turboV {
     }
     proc writeback_lsu0 {
     }
+	func rob.req_update_predict0 {
+		ifu.req_update_predict0(rob.req_update_predict0_pc, rob.req_update_predict0_target);
+	}
+	func rob.req_update_predict1 {
+		ifu.req_update_predict1(rob.req_update_predict1_pc, rob.req_update_predict1_target);
+	}
     /*
         Interrupts
     */
@@ -830,6 +830,9 @@ module turboV {
             }
         }
     }
+	func rob.req_update_instret {
+		csr.req_update_instret(rob.req_update_instret);
+	}
 #ifdef ENABLE_DEBUG
     func rob.debug_commit0 {
         debug_commit0(rob.debug_commit_ptr0, rob.debug_commit_kill0,
