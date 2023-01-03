@@ -5,7 +5,6 @@
 #include "rom64x2K.h"
 #include "clint.h"
 #include "debug_log.h"
-#include "uart.h"
 
 declare turboVSim simulation {
     func_in reset();
@@ -29,14 +28,12 @@ module turboVSim {
     wishbone_slave wb_slave_if;
     rom64x2K wb_rom;
     clint wb_clint;
-	uart wb_uart;
 
     func reset {
         core.reset();
         wb_slave_if.reset();
         wb_rom.reset();
         wb_clint.reset();
-		wb_uart.reset();
     }
     wb_syscon.CLK_I = m_clock;
     wb_syscon.RST_I = p_reset;
@@ -95,23 +92,6 @@ module turboVSim {
     func wb_clint.ERR_O core.ERR_I();
     func wb_clint.RTY_O core.RTY_I();
 
-    wb_uart.CLK_I = wb_syscon.CLK_O;
-    wb_uart.RST_I = wb_syscon.RST_O;
-    wb_uart.ADR_I = core.ADR_O;
-    wb_uart.SEL_I = core.SEL_O;
-    wb_uart.DAT_I = core.DAT_O;
-    func core.CYC_O wb_uart.CYC_I();
-    //func core.STB_O wb_uart.STB_I();
-    func core.WE_O wb_uart.WE_I();
-    func core.LOCK_O wb_uart.LOCK_I();
-    func wb_uart.ACK_O {
-        core.DAT_I = wb_uart.DAT_O;
-        core.ACK_I();
-    }
-    func wb_uart.STALL_O core.STALL_I();
-    func wb_uart.ERR_O core.ERR_I();
-    func wb_uart.RTY_O core.RTY_I();
-
     func wb_clint.software_interrupt_hart0 {
         core.software_interrupt_req_hart0();
     }
@@ -129,16 +109,6 @@ module turboVSim {
         CLINT_BASE <= core.ADR_O && core.ADR_O <= CLINT_BASE+CLINT_LENGTH: {
            if(core.STB_O) wb_clint.STB_I();
         }
-		UART_BASE <= core.ADR_O && core.ADR_O <= UART_BASE+UART_LENGTH: {
-           if(core.STB_O) wb_uart.STB_I();
-		}
-		else: {
-           if(core.STB_O) {
-			   //TODO: WORKAROUND, it should be ERR response.
-			   //core.ERR_I();
-			   core.ACK_I();
-		   }
-	    }
     }
 
     func wb_slave_if.req_read {
