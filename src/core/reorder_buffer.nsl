@@ -131,6 +131,7 @@ module reorder_buffer {
 		commit_entry_cause1 = commit_entry.cause1;
 		commit_PC0 = {commit_entry.PC, 2'b00};
 		commit_PC1 = {commit_entry.PC, 2'b00}+4;
+		req_update_instret(commit0+commit1);
 
 		if(commit_entry.valid0) {
 			if(commit_entry_uop0.rd_valid && commit0) {
@@ -220,8 +221,32 @@ module reorder_buffer {
 					commit0();
 					req_lsu_commit(head<<1);
 				}
-				(commit_entry_uop0.branch && commit_entry.taken0)
-					|| commit_entry_uop0.jalr || commit_entry_uop0.jal: {
+				commit_entry_uop0.branch: {
+					any {
+						(commit_entry.taken0 && commit_entry_uop0.pred): {
+							_display("Correct prediction");
+						}
+						(commit_entry.taken0 && !commit_entry_uop0.pred): {
+							_display("Incorrect prediction, needs to update");
+							redirect(commit_entry.target0);
+							will_rollback();
+							commit_kill_inst1();
+							req_update_predict0(commit_entry.taken0, commit_PC0, commit_entry.target0);
+						}
+						(!commit_entry.taken0 && commit_entry_uop0.pred): {
+							_display("Incorrect prediction, needs to update");
+							redirect(commit_PC0+4);
+							will_rollback();
+							commit_kill_inst1();
+							req_update_predict0(commit_entry.taken0, commit_PC0, commit_PC0+4);
+						}
+						(!commit_entry.taken0 && !commit_entry_uop0.pred): {
+							_display("Correct prediction");
+						}
+					}
+					commit0();
+				}
+				(commit_entry_uop0.jalr || commit_entry_uop0.jal): {
 					redirect(commit_entry.target0);
 					will_rollback();
 					commit_kill_inst1();
@@ -250,8 +275,30 @@ module reorder_buffer {
 					req_flush_pipeline();
 					will_rollback();
 				}
-				(commit_entry_uop1.branch && commit_entry.taken1)
-					|| commit_entry_uop1.jalr || commit_entry_uop1.jal: {
+				commit_entry_uop1.branch: {
+					any {
+						(commit_entry.taken1 && commit_entry_uop1.pred): {
+							_display("Correct prediction");
+						}
+						(commit_entry.taken1 && !commit_entry_uop1.pred): {
+							_display("Incorrect prediction, needs to update");
+							redirect(commit_entry.target1);
+							will_rollback();
+							req_update_predict1(commit_entry.taken1, commit_PC1, commit_entry.target1);
+						}
+						(!commit_entry.taken1 && commit_entry_uop1.pred): {
+							_display("Incorrect prediction, needs to update");
+							redirect(commit_PC1+4);
+							will_rollback();
+							req_update_predict1(commit_entry.taken1, commit_PC1, commit_PC1+4);
+						}
+						(!commit_entry.taken1 && !commit_entry_uop1.pred): {
+							_display("Correct prediction");
+						}
+					}
+					commit1();
+				}
+				(commit_entry_uop1.jalr || commit_entry_uop1.jal): {
 					commit1();
 					redirect(commit_entry.target1);
 					will_rollback();

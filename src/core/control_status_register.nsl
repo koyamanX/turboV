@@ -396,7 +396,7 @@ module control_status_register {
     }
     func req_update_instret {
         if(!stop_minstret) {
-            minstret := minstret + 2;
+            minstret := minstret + req_update_instret_cnt;
         }
     }
     if(!stop_mcycle) {

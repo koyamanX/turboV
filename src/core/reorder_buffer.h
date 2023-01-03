@@ -130,6 +130,14 @@ declare reorder_buffer {
 	// to frontend
 	output req_redirect_frontend_pc[32];
 	func_out req_redirect_frontend(req_redirect_frontend_pc);
+	output req_update_predict0_pred;
+	output req_update_predict0_pc[32];
+	output req_update_predict0_target[32];
+	func_out req_update_predict0(req_update_predict0_pred, req_update_predict0_pc, req_update_predict0_target);
+	output req_update_predict1_pred;
+	output req_update_predict1_pc[32];
+	output req_update_predict1_target[32];
+	func_out req_update_predict1(req_update_predict1_pred, req_update_predict1_pc, req_update_predict1_target);
 	// to pipeline
 	func_out req_stall_pipeline();
 	func_out req_flush_pipeline();
@@ -146,6 +154,8 @@ declare reorder_buffer {
     output req_csr_trap_val[32];
     func_out req_csr_trap(req_csr_trap_cause, req_csr_trap_pc, req_csr_trap_val);
 	func_out req_csr_mret();
+	output req_update_instret_cnt[2];
+	func_out req_update_instret(req_update_instret_cnt);
 	// to Freelist
 	output req_freelist_push0_data[6];
 	func_out req_freelist_push0(req_freelist_push0_data);

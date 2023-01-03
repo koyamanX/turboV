@@ -30,6 +30,13 @@ declare ifetch_unit {
 	func_in req_invalidate_all();
 	func_out rsp_invalidate_all_done();
 
+	input req_update_predict0_pc[32];
+	input req_update_predict0_target[32];
+	func_in req_update_predict0(req_update_predict0_pc, req_update_predict0_target);
+	input req_update_predict1_pc[32];
+	input req_update_predict1_target[32];
+	func_in req_update_predict1(req_update_predict1_pc, req_update_predict1_target);
+
     WISHBONE_GEN_MASTER_IF(32, 64, 8)
 }
 

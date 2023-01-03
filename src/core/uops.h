@@ -122,7 +122,8 @@ struct uop_t {
     ebreak;
 	fencei;
 	uimm[5];
-#define SIZEOF_UOP_T uOP_SIZE+13+SIZEOF_REG_SEL+SIZEOF_REG_SEL+1+5+1
+	pred;
+#define SIZEOF_UOP_T uOP_SIZE+13+SIZEOF_REG_SEL+SIZEOF_REG_SEL+1+5+2
 };
 
 #endif

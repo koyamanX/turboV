@@ -56,7 +56,8 @@ declare control_status_register {
     func_in req_trap(req_trap_cause, req_trap_pc, req_trap_val): rsp_trap_vector;
     output rsp_mret_pc[32];
     func_in req_mret(): rsp_mret_pc;
-    func_in req_update_instret();
+	input req_update_instret_cnt[2];
+    func_in req_update_instret(req_update_instret_cnt);
 }
 
 #endif

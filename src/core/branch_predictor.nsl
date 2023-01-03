@@ -1,0 +1,35 @@
+#include "branch_predictor.h"
+
+module branch_predictor {
+	reg btb_pc[32] = 0;
+	reg btb_target[32] = 0;
+	reg btb_valid = 0;
+
+	func req_predict0 {
+		rsp_predict0_pred = btb_pc == req_predict0_pc && btb_valid;
+		rsp_predict0_target = btb_target;
+	}
+	func req_predict1 {
+		rsp_predict1_pred = btb_pc == req_predict1_pc && btb_valid;
+		rsp_predict1_target = btb_target;
+	}
+	func req_update_predict0 {
+		if(!req_update_predict1 && !req_flush) {
+			btb_valid := 1;
+			btb_pc := req_update_predict0_pc;
+			btb_target := req_update_predict0_target;
+		}
+	}
+	func req_update_predict1 {
+		if(!req_flush) {
+			btb_valid := 1;
+			btb_pc := req_update_predict1_pc;
+			btb_target := req_update_predict1_target;
+		}
+	}
+	func req_flush {
+		btb_valid := 0;
+		btb_pc := 0;
+		btb_target := 0;
+	}
+}

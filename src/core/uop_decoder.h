@@ -28,8 +28,9 @@ struct decoder_packet_t {
 
 declare uop_decoder {
     input req_decode_inst[32];
+    input req_decode_pred;
     output rsp_decode_packet[SIZEOF_DECODER_PACKET_T];
-    func_in req_decode(req_decode_inst): rsp_decode_packet;
+    func_in req_decode(req_decode_inst, req_decode_pred): rsp_decode_packet;
 	output req_decode_csr_addr[12];
 	output req_decode_csr_rw[2];
 	input rsp_decode_csr_illegal;
