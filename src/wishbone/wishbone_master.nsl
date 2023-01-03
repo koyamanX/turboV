@@ -47,7 +47,6 @@ module wishbone_master {
                 wait4ack(req_addr_internal, req_sel_internal, req_data_internal, req_internal);
             } else if(ACK_I) {
                 rsp_valid(DAT_I);
-				finish();
             }
         }
         req_stall();
