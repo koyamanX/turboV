@@ -1,0 +1,852 @@
+#include "turboV.h"
+#include "ifetch_unit.h"
+#include "alu32.h"
+#include "wishbone_common.h"
+#include "uop_decoder.h"
+#include "register_file.h"
+#include "opcode_map.h"
+#include "load_store_unit.h"
+#include "control_status_register.h"
+#include "priv.h"
+#include "uops.h"
+#include "reorder_buffer.h"
+#include "free_list.h"
+#include "issue_queue.h"
+#include "issue_queue_in_order.h"
+#include "debug_log.h"
+
+struct issue_packet_t {
+    pc[XLEN];
+    valid0;
+    valid1;
+};
+
+module turboV {
+    proc_name warm_reset();
+    /* Decode stage */
+    proc_name decode();
+    issue_packet_t reg issue_packet;
+    decoder_packet_t reg decoder_packet0;
+    decoder_packet_t reg decoder_packet1;
+    proc_name issue(issue_packet, decoder_packet0, decoder_packet1);
+    func_self stall_issue();
+    proc_name register_read();
+    reg execute_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
+    uop_t reg execute_alu0_uop;
+    reg execute_alu0_prd[6];
+    reg execute_alu0_A[32];
+    reg execute_alu0_B[32];
+    reg execute_alu0_X[32];
+    reg execute_alu0_Y[32];
+    proc_name execute_alu0(execute_alu0_ptr, execute_alu0_uop, execute_alu0_prd,
+            execute_alu0_A, execute_alu0_B, execute_alu0_X, execute_alu0_Y);
+    reg execute_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
+    uop_t reg execute_alu1_uop;
+    reg execute_alu1_prd[6];
+    reg execute_alu1_A[32];
+    reg execute_alu1_B[32];
+    reg execute_alu1_X[32];
+    reg execute_alu1_Y[32];
+    proc_name execute_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd,
+            execute_alu1_A, execute_alu1_B, execute_alu1_X, execute_alu1_Y);
+    reg execute_lsu0_ptr[REORDER_BUFFER_PTR_SIZE];
+    uop_t reg execute_lsu0_uop;
+    reg execute_lsu0_prd[6];
+    reg execute_lsu0_A[32];
+    reg execute_lsu0_B[32];
+    reg execute_lsu0_data[32];
+    proc_name execute_lsu0(execute_lsu0_ptr, execute_lsu0_uop, execute_lsu0_prd,
+            execute_lsu0_A, execute_lsu0_B, execute_lsu0_data);
+    reg writeback_alu0_ptr[REORDER_BUFFER_PTR_SIZE];
+    uop_t reg writeback_alu0_uop;
+    reg writeback_alu0_prd[6];
+    reg writeback_alu0_q[32];
+    reg writeback_alu0_target[32];
+    proc_name writeback_alu0(writeback_alu0_ptr, writeback_alu0_uop, writeback_alu0_prd,
+            writeback_alu0_q, writeback_alu0_target);
+    reg writeback_alu1_ptr[REORDER_BUFFER_PTR_SIZE];
+    uop_t reg writeback_alu1_uop;
+    reg writeback_alu1_prd[6];
+    reg writeback_alu1_q[32];
+    reg writeback_alu1_target[32];
+    proc_name writeback_alu1(writeback_alu1_ptr, writeback_alu1_uop, writeback_alu1_prd,
+            writeback_alu1_q, writeback_alu1_target);
+    reg writeback_lsu0_prd[6];
+    reg writeback_lsu0_q[32];
+    proc_name writeback_lsu0(writeback_lsu0_prd, writeback_lsu0_q);
+    /* Pipeline flush */
+	func_self flush();
+    /* Instruction Fetch Unit */
+    ifetch_unit ifu;
+    /* Instruction decoder */
+    uop_decoder udec0;
+    uop_decoder udec1;
+    /* General Purpose Register */
+    register_file gpr;
+    /* Load Store Unit */
+    load_store_unit lsu0;
+    /* CSR */
+    control_status_register csr;
+    /* variable for generate statement */
+    integer i_;
+    reorder_buffer rob;
+    free_list freelist;
+    mem register_map_table[32][6];
+    mem register_status_table[64][1] = {0};
+    issue_queue iq_alu0;
+    issue_queue iq_alu1;
+    issue_queue_in_order iq_lsu0;
+    alu32 alu0;
+    alu32 alu1;
+    wire update_register_status_table_inst0_lrd[5];
+    wire update_register_status_table_inst1_lrd[5];
+    func_self update_register_status_table_inst0(update_register_status_table_inst0_lrd);
+    func_self update_register_status_table_inst1(update_register_status_table_inst1_lrd);
+	reg fencei_nextpc[32];
+	proc_name fencei(fencei_nextpc);
+
+    func reset {
+        if(!warm_reset) {
+            warm_reset.invoke();
+        }
+    }
+    proc warm_reset seq {
+        {
+            /* Cycle 1: Reset */
+            ifu.reset();
+            csr.req_reset();
+            freelist.req_reset();
+            generate(i_ = 0; i_ < NUMBER_OF_FREE_LIST; i_++) {
+                register_map_table[i_] := i_;
+            }
+            generate(i_ = 0; i_ < 64; i_++) {
+                register_status_table[i_] := READY;
+            }
+        }
+        {
+            /* Cycle 2: Start inst fetch */
+            ifu.redirect(csr.req_trap(0, 0, 0));
+            decode();
+            finish();
+        }
+    }
+    func flush {
+        /* Flush all stage */
+        decode.finish();
+        issue.finish();
+        execute_alu0.finish();
+        execute_alu1.finish();
+        execute_lsu0.finish();
+        writeback_alu0.finish();
+        writeback_alu1.finish();
+        writeback_lsu0.finish();
+        /* Flush ROB, RSs and LSQs */
+        lsu0.flush();
+        /* Start decode */
+        generate(i_ = 0; i_ < 64; i_++) {
+            register_status_table[i_] := READY;
+        }
+		csr.req_flush();
+        iq_alu0.req_flush();
+        iq_alu1.req_flush();
+        iq_lsu0.req_flush();
+        iq_alu0.req_stall();
+        iq_alu1.req_stall();
+        iq_lsu0.req_stall();
+    }
+	func rob.req_redirect_frontend {
+		decode.invoke();
+		ifu.redirect(rob.req_redirect_frontend_pc);
+		// TODO: rename DEBUG_FLUSH
+        DEBUG_FLUSH(rob.req_redirect_frontend_pc);
+    }
+	func rob.req_flush_pipeline {
+		flush();
+	}
+	func rob.req_lsu_commit {
+		lsu0.commit(rob.req_lsu_commit_ptr);
+	}
+	func rob.req_csr_commit {
+		csr.req_commit(rob.req_csr_commit_ptr);
+	}
+	func rob.req_freelist_push0 {
+		freelist.req_push0(rob.req_freelist_push0_data);
+	}
+	func rob.req_freelist_push1 {
+		freelist.req_push1(rob.req_freelist_push1_data);
+	}
+	func rob.req_rmt_update0 {
+		register_map_table[rob.req_rmt_update0_dreg] := rob.req_rmt_update0_preg;
+	}
+	func rob.req_rmt_update1 {
+		register_map_table[rob.req_rmt_update1_dreg] := rob.req_rmt_update1_preg;
+	}
+	func rob.req_csr_trap {
+		decode.invoke();
+		ifu.redirect(csr.req_trap(rob.req_csr_trap_cause, rob.req_csr_trap_pc, rob.req_csr_trap_val));
+	}
+	func rob.req_csr_mret {
+		decode.invoke();
+		ifu.redirect(csr.req_mret());
+	}
+	func rob.req_lsu_fencei {
+		fencei.invoke(rob.req_lsu_fencei_nextpc);
+	}
+	proc fencei {
+		ifu.req_invalidate_all();
+		if(ifu.rsp_invalidate_all_done) {
+			ifu.redirect(fencei_nextpc);
+			decode.invoke();
+			finish();
+		}
+	}
+    proc decode {
+        state_name decode0, decode1;
+        fetch_packet_t wire decode0_fetch_packet;
+        decoder_packet_t wire decode0_decoder_packet0;
+        decoder_packet_t wire decode0_decoder_packet1;
+        uop_t wire decode0_uop0;
+        uop_t wire decode0_uop1;
+        fetch_packet_t reg decode1_fetch_packet;
+
+        state decode0 {
+            if(!rob.req_stall_pipeline && !ifu.ibuf_empty && !stall_issue && !flush) {
+                decode0_fetch_packet = ifu.ibuf_pop();
+                udec0.req_decode(decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
+                udec1.req_decode(decode0_fetch_packet.inst1, decode0_fetch_packet.pred1);
+                decode0_decoder_packet0 = udec0.rsp_decode_packet;
+                decode0_decoder_packet1 = udec1.rsp_decode_packet;
+                decode0_uop0 = decode0_decoder_packet0.uop;
+                decode0_uop1 = decode0_decoder_packet1.uop;
+
+                if(decode0_fetch_packet.valid0 && decode0_fetch_packet.valid1) {
+                    /* Check if structural hazard occurs, if so, issue first insts
+                       and second one goes to decode1 stage.
+                    any {
+                        else: {
+                            // both insts can be issued.
+                        }
+                    }
+                    INST0 | INST1 | issue?
+                    ALU   | ALU   | OK
+                    ALU   | LSU   | OK
+                    ALU   | SYSTEM| OK
+                    LSU   | ALU   | OK
+                    LSU   | LSU   | NG
+                    LSU   | SYSTEM| OK
+                    SYSTEM| ALU   | OK
+                    SYSTEM| LSU   | OK
+                    SYSTEM| SYSTEM| NG
+
+                    => if both insts are SYSTEM or LSU, split decode into
+                    two stages to avoid structural hazard.
+                    */
+#define IS_MEMORY(uop) (uop.load || uop.store || uop.fencei)
+#define IS_SYSTEM(uop) (uop.csr || uop.mret || uop.ecall || uop.ebreak)
+                    if(!IS_MEMORY(decode0_uop1) && !IS_SYSTEM(decode0_uop1)) {
+                        // No structual hazard, issue 2 insts
+                        issue.invoke({decode0_fetch_packet.pc,
+								decode0_fetch_packet.valid0, decode0_fetch_packet.valid1},
+								udec0.rsp_decode_packet, udec1.rsp_decode_packet);
+                        DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
+                        DEBUG_DECODE1(decode0_fetch_packet.pc+4, decode0_fetch_packet.inst1, decode0_fetch_packet.pred1);
+                    } else {
+                        // There is structual hazard, issue first one in this cycle
+                        // Send another inst to issue stage in next cycle.
+                        // decode1 takes care of issue next inst in the cycle.
+                        issue.invoke({decode0_fetch_packet.pc,
+								decode0_fetch_packet.valid0, 1'b0},
+								udec0.rsp_decode_packet, 0);
+                        decode1_fetch_packet := decode0_fetch_packet;
+                        goto decode1;
+                        DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
+                    }
+				} else {
+                    // Either way0 or way1 is valid.
+                    // Both invalid is not enter here, ifetch_unit never pushes such case.
+                    // Also, currently, ifetch_unit never pushes inst1 valid && inst0 invalid.
+                    // TODO: 
+                    issue.invoke({decode0_fetch_packet.pc,
+							decode0_fetch_packet.valid0, 1'b0},
+							udec0.rsp_decode_packet, 0);
+                    DEBUG_DECODE0(decode0_fetch_packet.pc, decode0_fetch_packet.inst0, decode0_fetch_packet.pred0);
+                }
+            }
+        }
+        state decode1 {
+            // Inst1 is either SYSTEM or LSU.
+            // TODO: decode_fetch_packet
+            // CAUTION: valid1, pred1, inst1
+            // TODO: pc+4
+            if(flush) {
+                goto decode0;
+            } else if(!stall_issue && !flush) {
+                udec0.req_decode(decode1_fetch_packet.inst1, decode1_fetch_packet.pred1);
+                issue.invoke({decode1_fetch_packet.pc+4,
+						decode1_fetch_packet.valid1, 1'b0},
+						udec0.rsp_decode_packet, 0);
+                goto decode0;
+                DEBUG_DECODE0(decode1_fetch_packet.pc+4, decode1_fetch_packet.inst1, decode1_fetch_packet.pred1);
+            }
+        }
+    }
+	func udec0.req_decode_csr {
+		return csr.req_decode(udec0.req_decode_csr_addr, udec0.req_decode_csr_rw);	
+	}
+	func udec1.req_decode_csr {
+		return 0;	
+	}
+    proc issue {
+        reorder_buffer_t wire issue_reorder_buffer_entry;
+        wire issue_PC[30];
+        // issue slot 0
+        wire issue_inst0_valid;
+        wire issue_inst0_pc[32];
+        wire issue_inst0_ptr[REORDER_BUFFER_PTR_SIZE];
+        wire issue_inst0_lrd[5];
+        wire issue_inst0_prd[6];
+        wire issue_inst0_pprd[6];
+        wire issue_inst0_rs1_ready;
+        wire issue_inst0_rs1_sel[SIZEOF_REG_SEL];
+        wire issue_inst0_lrs1[5];
+        wire issue_inst0_prs1[6];
+        wire issue_inst0_rs2_ready;
+        wire issue_inst0_rs2_sel[SIZEOF_REG_SEL];
+        wire issue_inst0_lrs2[5];
+        wire issue_inst0_prs2[6];
+        wire issue_inst0_cause[SIZEOF_CAUSE_T];
+        uop_t wire issue_inst0_uop;
+        wire issue_inst0_imm[32];
+        // issue slot 1
+        wire issue_inst1_valid;
+        wire issue_inst1_pc[32];
+        wire issue_inst1_ptr[REORDER_BUFFER_PTR_SIZE];
+        wire issue_inst1_lrd[5];
+        wire issue_inst1_prd[6];
+        wire issue_inst1_pprd[6];
+        wire issue_inst1_rs1_ready;
+        wire issue_inst1_rs1_sel[SIZEOF_REG_SEL];
+        func_self issue_inst1_rs1_ready_bypass;
+        wire issue_inst1_lrs1[5];
+        wire issue_inst1_prs1[6];
+        wire issue_inst1_rs2_ready;
+        wire issue_inst1_rs2_sel[SIZEOF_REG_SEL];
+        func_self issue_inst1_rs2_ready_bypass;
+        wire issue_inst1_lrs2[5];
+        wire issue_inst1_prs2[6];
+        wire issue_inst1_cause[SIZEOF_CAUSE_T];
+        uop_t wire issue_inst1_uop;
+        wire issue_inst1_imm[32];
+
+        issue_inst0_uop = decoder_packet0.uop;
+        issue_inst1_uop = decoder_packet1.uop;
+        // TODO: !flush
+        if(!flush && (freelist.count_o >= 2) && !rob.full_o && !iq_alu0.full_o && !iq_alu1.full_o && !iq_lsu0.full_o) {
+            issue_PC = issue_packet.pc[31:2];
+            issue_inst0_pc = {issue_PC, 2'b00};
+            // TODO:
+            issue_inst1_pc = {issue_PC, 2'b00}+4;
+            // inst0
+            issue_inst0_valid = issue_packet.valid0;
+            issue_inst0_cause = decoder_packet0.cause;
+            issue_inst0_lrd = decoder_packet0.lrd;
+            issue_inst0_rs1_sel = issue_inst0_uop.rs1_sel;
+            issue_inst0_lrs1 = decoder_packet0.lrs1;
+            issue_inst0_rs2_sel = issue_inst0_uop.rs2_sel;
+            issue_inst0_lrs2 = decoder_packet0.lrs2;
+            issue_inst0_imm = decoder_packet0.imm;
+            // inst1
+            issue_inst1_valid = issue_packet.valid1;
+            issue_inst1_cause = decoder_packet1.cause;
+            issue_inst1_lrd = decoder_packet1.lrd;
+            issue_inst1_rs1_sel = issue_inst1_uop.rs1_sel;
+            issue_inst1_lrs1 = decoder_packet1.lrs1;
+            issue_inst1_rs2_sel = issue_inst1_uop.rs2_sel;
+            issue_inst1_lrs2 = decoder_packet1.lrs2;
+            issue_inst1_imm = decoder_packet1.imm;
+
+            // Rename destination registers
+            if(issue_packet.valid0 && issue_inst0_uop.rd_valid) {
+                issue_inst0_pprd = register_map_table[issue_inst0_lrd];
+            } else {
+                issue_inst0_pprd = 0;
+            }
+            if(issue_packet.valid0 && issue_packet.valid1 && issue_inst0_uop.rd_valid && issue_inst1_uop.rd_valid && issue_inst0_lrd == issue_inst1_lrd) {
+				// If inst0.rd == inst1.rd, forward inst0.prd to inst1.pprd
+                issue_inst1_pprd = issue_inst0_prd;
+            } else {
+                issue_inst1_pprd = register_map_table[issue_inst1_lrd];
+            }
+            if(issue_packet.valid0 && issue_inst0_uop.rd_valid && (issue_inst0_lrd != 0)) {
+                issue_inst0_prd = freelist.req_pop0();
+                if(!(issue_packet.valid1 && issue_inst0_uop.rd_valid && issue_inst1_uop.rd_valid
+					&& (issue_inst1_lrd != 0) && (issue_inst0_lrd == issue_inst1_lrd))) {
+                    if(!flush) {
+                        register_map_table[issue_inst0_lrd] := issue_inst0_prd;
+                        register_status_table[issue_inst0_prd] := BUSY;
+                        update_register_status_table_inst0(issue_inst0_lrd);
+                    }
+                }
+            }
+            if(issue_packet.valid1 && issue_inst1_uop.rd_valid && (issue_inst1_lrd != 0)) {
+                issue_inst1_prd = freelist.req_pop1();
+                if(!flush) {
+                    register_map_table[issue_inst1_lrd] := issue_inst1_prd;
+                    register_status_table[issue_inst1_prd] := BUSY;
+                    update_register_status_table_inst1(issue_inst1_lrd);
+                }
+            }
+            // Rename source registers
+            if(issue_packet.valid0) {
+                issue_inst0_prs1 = register_map_table[issue_inst0_lrs1];
+                issue_inst0_prs2 = register_map_table[issue_inst0_lrs2];
+            }
+            if(issue_packet.valid0 && issue_packet.valid1
+                    && issue_inst0_lrd == issue_inst1_lrs1 && issue_inst0_uop.rd_valid && issue_inst1_uop.rs1_valid) {
+                issue_inst1_prs1 = issue_inst0_prd;
+                issue_inst1_rs1_ready_bypass();
+            } else {
+                issue_inst1_prs1 = register_map_table[issue_inst1_lrs1];
+            }
+            if(issue_packet.valid0 && issue_packet.valid1
+                    && issue_inst0_lrd == issue_inst1_lrs2 && issue_inst0_uop.rd_valid && issue_inst1_uop.rs2_valid) {
+                issue_inst1_prs2 = issue_inst0_prd;
+                issue_inst1_rs2_ready_bypass();
+            } else {
+                issue_inst1_prs2 = register_map_table[issue_inst1_lrs2];
+            }
+            // Source register ready
+            if(!issue_inst0_uop.rs1_valid) {
+                issue_inst0_rs1_ready = READY;
+            } else {
+                issue_inst0_rs1_ready = issue_packet.valid0 && register_status_table[issue_inst0_prs1];
+            }
+            if(!issue_inst0_uop.rs2_valid) {
+                issue_inst0_rs2_ready = READY;
+            } else {
+                issue_inst0_rs2_ready = issue_packet.valid0 && register_status_table[issue_inst0_prs2];
+            }
+            if(!issue_inst1_uop.rs1_valid) {
+                issue_inst1_rs1_ready = READY;
+            } else if(issue_inst1_rs1_ready_bypass) {
+                issue_inst1_rs1_ready = BUSY;
+            } else {
+                issue_inst1_rs1_ready = issue_packet.valid1 && register_status_table[issue_inst1_prs1];
+            }
+            if(!issue_inst1_uop.rs2_valid) {
+                issue_inst1_rs2_ready = READY;
+            } else if(issue_inst1_rs2_ready_bypass) {
+                issue_inst1_rs2_ready = BUSY;
+            } else {
+                issue_inst1_rs2_ready = issue_packet.valid1 && register_status_table[issue_inst1_prs2];
+            }
+
+#ifdef ENABLE_DEBUG
+            rob.req_issue(issue_PC,
+                    issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_prd, issue_inst0_pprd, issue_inst0_cause,
+                    issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_prd, issue_inst1_pprd, issue_inst1_cause,
+                    decoder_packet0.inst, decoder_packet1.inst);
+#else
+            rob.req_issue(issue_PC,
+                    issue_inst0_valid, issue_inst0_uop, issue_inst0_lrd, issue_inst0_prd, issue_inst0_pprd, issue_inst0_cause,
+                    issue_inst1_valid, issue_inst1_uop, issue_inst1_lrd, issue_inst1_prd, issue_inst1_pprd, issue_inst1_cause);
+#endif
+            // TODO: NSL does not support mod.sig_o[_int(N)]
+            issue_inst0_ptr = rob.rsp_issue_ptr;
+            issue_inst1_ptr = rob.rsp_issue_ptr+1;
+
+            // TODO:
+            if(issue_inst0_valid) {
+                DEBUG_RENAME0(issue_inst0_ptr, issue_inst0_pc, decoder_packet0.inst,
+                        issue_inst0_uop.rd_valid, issue_inst0_lrd, issue_inst0_prd, issue_inst0_pprd,
+                        issue_inst0_uop.rs1_valid, issue_inst0_rs1_ready, issue_inst0_lrs1, issue_inst0_prs1,
+                        issue_inst0_uop.rs2_valid, issue_inst0_rs2_ready, issue_inst0_lrs2, issue_inst0_prs2,
+                        issue_inst0_cause, issue_inst0_imm);
+                any {
+                    issue_inst0_uop.store || issue_inst0_uop.load || issue_inst0_uop.fencei: {
+                        iq_lsu0.req_issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
+                                issue_inst0_rs1_ready, issue_inst0_prs1,
+                                issue_inst0_rs2_ready, issue_inst0_prs2,
+                                issue_inst0_imm);
+                    }
+                    else: {
+                        iq_alu0.req_issue(issue_inst0_ptr, issue_inst0_uop, issue_inst0_prd,
+                                issue_inst0_rs1_ready, issue_inst0_prs1,
+                                issue_inst0_rs2_ready, issue_inst0_prs2,
+                                issue_inst0_imm);
+                     }
+                }
+            }
+            // TODO:
+            if(issue_inst1_valid) {
+                DEBUG_RENAME1(issue_inst1_ptr, issue_inst1_pc, decoder_packet1.inst,
+                        issue_inst1_uop.rd_valid, issue_inst1_lrd, issue_inst1_prd, issue_inst1_pprd,
+                        issue_inst1_uop.rs1_valid, issue_inst1_rs1_ready, issue_inst1_lrs1, issue_inst1_prs1,
+                        issue_inst1_uop.rs2_valid, issue_inst1_rs2_ready, issue_inst1_lrs2, issue_inst1_prs2,
+                        issue_inst1_cause, issue_inst1_imm);
+                any {
+                    issue_inst1_uop.store || issue_inst1_uop.load || issue_inst1_uop.fencei: {
+                        iq_lsu0.req_issue(issue_inst1_ptr, issue_inst1_uop, issue_inst1_prd,
+                            issue_inst1_rs1_ready, issue_inst1_prs1,
+                            issue_inst1_rs2_ready, issue_inst1_prs2,
+                            issue_inst1_imm);
+                    }
+                    else: {
+                        iq_alu1.req_issue(issue_inst1_ptr, issue_inst1_uop, issue_inst1_prd,
+                            issue_inst1_rs1_ready, issue_inst1_prs1,
+                            issue_inst1_rs2_ready, issue_inst1_prs2,
+                            issue_inst1_imm);
+                    }
+                }
+            }
+            // TODO:
+            finish();
+        } else {
+            stall_issue();
+        }
+    }
+    func iq_alu0.req_dispatch {
+        wire iq_alu0_A[32];
+        wire iq_alu0_B[32];
+        wire iq_alu0_PC[32];
+        uop_t wire iq_alu0_uop;
+
+        iq_alu0_uop = iq_alu0.req_dispatch_uop;
+        iq_alu0_PC = rob.req_readPC0(iq_alu0.req_dispatch_ptr);
+        // SYSTEM instruction is req_dispatched in this pipe.
+        any {
+            iq_alu0_uop.rs1_sel == RS1_SEL_REG && iq_alu0_uop.rs1_valid: iq_alu0_A = gpr.req_readA(iq_alu0.req_dispatch_prs1);
+            iq_alu0_uop.rs1_sel == RS1_SEL_REG && !iq_alu0_uop.rs1_valid: iq_alu0_A = 0;
+            iq_alu0_uop.rs1_sel == RS1_SEL_UIMM: iq_alu0_A = iq_alu0_uop.uimm[4:0];
+            iq_alu0_uop.rs1_sel == RS1_SEL_PC: iq_alu0_A = iq_alu0_PC;
+        }
+        any {
+            iq_alu0_uop.rs2_sel == RS2_SEL_REG && iq_alu0_uop.rs2_valid: iq_alu0_B = gpr.req_readB(iq_alu0.req_dispatch_prs2);
+            iq_alu0_uop.rs2_sel == RS2_SEL_REG && !iq_alu0_uop.rs2_valid: iq_alu0_B = 0;
+            iq_alu0_uop.rs2_sel == RS2_SEL_IMM: iq_alu0_B = iq_alu0.req_dispatch_imm;
+            iq_alu0_uop.rs2_sel == RS2_SEL_CSR: iq_alu0_B = csr.req_read(iq_alu0.req_dispatch_imm);
+            iq_alu0_uop.rs2_sel == RS2_SEL_CSR_UIMM: iq_alu0_B = csr.req_read(iq_alu0.req_dispatch_imm) & 0xffffffe0;
+        }
+        /*
+            For branch instruction, branch target is already calculated in decode stage,
+            only branch condition need to be calculated. 
+                rs1_sel == REG, rs2_sel == REG, PC+imm
+                alu_A = REG, alu_B = REG, PC, imm
+                no writeback
+            For JAL instruction, target is already calculated in decode stage (PC+imm),
+                rs1_sel == REG(x0), rs2_sel == IMM(PC+imm), PC+4
+                writeback PC+4
+                alu_A = PC, alu_B = 4, PC, 4
+            For JALR instruction, target address need to be calculated in execute stage(rs1+imm)
+                rs1_sel == REG, rs2_sel == IMM, PC+4
+                writeback PC+4
+                alu_A = PC, alu_B = 4, REG, IMM
+            For JAL and JALR instruction, write PC+4 to rd register.
+       */
+        if(iq_alu0_uop.branch) {
+            execute_alu0.invoke(iq_alu0.req_dispatch_ptr, iq_alu0_uop, iq_alu0.req_dispatch_prd,
+                    iq_alu0_A, iq_alu0_B, iq_alu0_PC, iq_alu0.req_dispatch_imm);
+        } else if(iq_alu0_uop.jal) {
+            execute_alu0.invoke(iq_alu0.req_dispatch_ptr, iq_alu0_uop, iq_alu0.req_dispatch_prd,
+                    iq_alu0_PC, 4, iq_alu0_PC, iq_alu0.req_dispatch_imm);
+        } else if(iq_alu0_uop.jalr) {
+            execute_alu0.invoke(iq_alu0.req_dispatch_ptr, iq_alu0_uop, iq_alu0.req_dispatch_prd,
+                    iq_alu0_PC, 4, iq_alu0_A, iq_alu0.req_dispatch_imm);
+        } else if(iq_alu0_uop.csr) {
+            execute_alu0.invoke(iq_alu0.req_dispatch_ptr, iq_alu0_uop, iq_alu0.req_dispatch_prd,
+					iq_alu0_A, iq_alu0_B, iq_alu0.req_dispatch_imm, 0);
+		} else {
+            execute_alu0.invoke(iq_alu0.req_dispatch_ptr, iq_alu0_uop, iq_alu0.req_dispatch_prd,
+                    iq_alu0_A, iq_alu0_B, 0, 0);
+        }
+        DEBUG_DISPATCH0(iq_alu0.req_dispatch_ptr, iq_alu0_PC, iq_alu0_uop.rd_valid, iq_alu0.req_dispatch_prd,
+                iq_alu0_uop.rs1_sel, iq_alu0_uop.rs1_valid, iq_alu0.req_dispatch_prs1, iq_alu0_A,
+                iq_alu0_uop.rs2_sel, iq_alu0_uop.rs2_valid, iq_alu0.req_dispatch_prs2, iq_alu0_B);
+    }
+    proc execute_alu0 {
+        if(!flush) {
+            alu0.req_exe(execute_alu0_A, execute_alu0_B, execute_alu0_uop.uop[FN_SIZE-1:0]);
+            writeback_alu0(execute_alu0_ptr, execute_alu0_uop, execute_alu0_prd, alu0.rsp_exe_q, execute_alu0_X+execute_alu0_Y);
+            DEBUG_EXECUTE0(execute_alu0_ptr, execute_alu0_uop.rd_valid, execute_alu0_prd,
+							execute_alu0_A, execute_alu0_B, alu0.rsp_exe_q, execute_alu0_X+execute_alu0_Y);
+        }
+    }
+    func iq_alu1.req_dispatch {
+        wire iq_alu1_A[32];
+        wire iq_alu1_B[32];
+        wire iq_alu1_PC[32];
+        uop_t wire iq_alu1_uop;
+        // SYSTEM instruction never req_dispatched here.
+
+        iq_alu1_uop = iq_alu1.req_dispatch_uop;
+        iq_alu1_PC = rob.req_readPC1(iq_alu1.req_dispatch_ptr);
+        any {
+            iq_alu1_uop.rs1_sel == RS1_SEL_REG && iq_alu1_uop.rs1_valid: iq_alu1_A = gpr.req_readC(iq_alu1.req_dispatch_prs1);
+            iq_alu1_uop.rs1_sel == RS1_SEL_REG && !iq_alu1_uop.rs1_valid: iq_alu1_A = 0;
+            iq_alu1_uop.rs1_sel == RS1_SEL_PC: iq_alu1_A = iq_alu1_PC;
+        }
+        any {
+            iq_alu1_uop.rs2_sel == RS2_SEL_REG && iq_alu1_uop.rs2_valid: iq_alu1_B = gpr.req_readD(iq_alu1.req_dispatch_prs2);
+            iq_alu1_uop.rs2_sel == RS2_SEL_REG && !iq_alu1_uop.rs2_valid: iq_alu1_B = 0;
+            iq_alu1_uop.rs2_sel == RS2_SEL_IMM: iq_alu1_B = iq_alu1.req_dispatch_imm;
+        }
+        if(iq_alu1_uop.branch) {
+            execute_alu1.invoke(iq_alu1.req_dispatch_ptr, iq_alu1_uop, iq_alu1.req_dispatch_prd,
+                    iq_alu1_A, iq_alu1_B, iq_alu1_PC, iq_alu1.req_dispatch_imm);
+        } else if(iq_alu1_uop.jal) {
+            execute_alu1.invoke(iq_alu1.req_dispatch_ptr, iq_alu1_uop, iq_alu1.req_dispatch_prd,
+                    iq_alu1_PC, 4, iq_alu1_PC, iq_alu1.req_dispatch_imm);
+        } else if(iq_alu1_uop.jalr) {
+            execute_alu1.invoke(iq_alu1.req_dispatch_ptr, iq_alu1_uop, iq_alu1.req_dispatch_prd,
+                    iq_alu1_PC, 4, iq_alu1_A, iq_alu1.req_dispatch_imm);
+        } else {
+            execute_alu1.invoke(iq_alu1.req_dispatch_ptr, iq_alu1_uop, iq_alu1.req_dispatch_prd,
+                    iq_alu1_A, iq_alu1_B, 0, 0);
+        }
+        DEBUG_DISPATCH1(iq_alu1.req_dispatch_ptr, iq_alu1_PC, iq_alu1_uop.rd_valid, iq_alu1.req_dispatch_prd,
+                iq_alu1_uop.rs1_sel, iq_alu1_uop.rs1_valid, iq_alu1.req_dispatch_prs1, iq_alu1_A,
+                iq_alu1_uop.rs2_sel, iq_alu1_uop.rs2_valid, iq_alu1.req_dispatch_prs2, iq_alu1_B);
+    }
+    proc execute_alu1 {
+        if(!flush) {
+            alu1.req_exe(execute_alu1_A, execute_alu1_B, execute_alu1_uop.uop[FN_SIZE-1:0]);
+            writeback_alu1(execute_alu1_ptr, execute_alu1_uop, execute_alu1_prd, alu1.rsp_exe_q, execute_alu1_X+execute_alu1_Y);
+            DEBUG_EXECUTE1(execute_alu1_ptr, execute_alu1_uop.rd_valid,
+							execute_alu1_prd, execute_alu1_A, execute_alu1_B, alu1.rsp_exe_q, execute_alu1_X+execute_alu1_Y);
+        }
+    }
+    func iq_lsu0.req_dispatch {
+        wire iq_lsu0_A[32];
+        wire iq_lsu0_B[32];
+        wire iq_lsu0_PC[32];
+        uop_t wire iq_lsu0_uop;
+        // SYSTEM instruction never dispatched here.
+
+        iq_lsu0_uop = iq_lsu0.req_dispatch_uop;
+        //iq_lsu0_PC = rob.req_readPC1(iq_lsu0.req_dispatch_ptr);
+        any {
+            iq_lsu0_uop.rs1_sel == RS1_SEL_REG && iq_lsu0_uop.rs1_valid: iq_lsu0_A = gpr.req_readE(iq_lsu0.req_dispatch_prs1);
+            iq_lsu0_uop.rs1_sel == RS1_SEL_REG && !iq_lsu0_uop.rs1_valid: iq_lsu0_A = 0;
+        }
+        any {
+            iq_lsu0_uop.rs2_sel == RS2_SEL_REG && iq_lsu0_uop.rs2_valid: iq_lsu0_B = gpr.req_readF(iq_lsu0.req_dispatch_prs2);
+            iq_lsu0_uop.rs2_sel == RS2_SEL_REG && !iq_lsu0_uop.rs2_valid: iq_lsu0_B = 0;
+            iq_lsu0_uop.rs2_sel == RS2_SEL_IMM: iq_lsu0_B = iq_lsu0.req_dispatch_imm;
+        }
+        any {
+            iq_lsu0_uop.store: {
+                execute_lsu0.invoke(iq_lsu0.req_dispatch_ptr, iq_lsu0_uop, iq_lsu0.req_dispatch_prd,
+                        iq_lsu0_A, iq_lsu0.req_dispatch_imm, iq_lsu0_B);
+            }
+            iq_lsu0_uop.fencei: {
+                execute_lsu0.invoke(iq_lsu0.req_dispatch_ptr, iq_lsu0_uop, iq_lsu0.req_dispatch_prd,
+                        iq_lsu0_A, iq_lsu0.req_dispatch_imm, iq_lsu0_B);
+            }
+            iq_lsu0_uop.load: {
+                execute_lsu0.invoke(iq_lsu0.req_dispatch_ptr, iq_lsu0_uop, iq_lsu0.req_dispatch_prd,
+                        iq_lsu0_A, iq_lsu0_B, 0);
+            }
+        }
+        DEBUG_DISPATCH2(iq_lsu0.req_dispatch_ptr, iq_lsu0_PC, iq_lsu0_uop.rd_valid, iq_lsu0.req_dispatch_prd,
+                iq_lsu0_uop.rs1_sel, iq_lsu0_uop.rs1_valid, iq_lsu0.req_dispatch_prs1, iq_lsu0_A,
+                iq_lsu0_uop.rs2_sel, iq_lsu0_uop.rs2_valid, iq_lsu0.req_dispatch_prs2, iq_lsu0_B);
+    }
+	if(lsu0.full || execute_lsu0) {
+        iq_lsu0.req_stall();
+    }
+    proc execute_lsu0 {
+        if(!flush) {
+            lsu0.issue(execute_lsu0_ptr, execute_lsu0_prd, execute_lsu0_uop, execute_lsu0_A+execute_lsu0_B, execute_lsu0_data);
+            DEBUG_EXECUTE2(execute_lsu0_ptr, execute_lsu0_uop.rd_valid,
+							execute_lsu0_prd, execute_lsu0_A, execute_lsu0_B, execute_lsu0_data);
+            finish();
+        }
+    }
+    func lsu0.writeback {
+        uop_t wire writeback_lsu0_uop;
+
+        if(!flush) {
+            writeback_lsu0_uop = lsu0.writeback_uop;
+            rob.req_complete_lsu0(lsu0.writeback_ptr);
+            if(writeback_lsu0_uop.rd_valid) {
+                gpr.req_writeC(lsu0.writeback_prd, lsu0.writeback_data);
+                iq_alu0.req_wakeup2(lsu0.writeback_prd);
+                iq_alu1.req_wakeup2(lsu0.writeback_prd);
+                iq_lsu0.req_wakeup2(lsu0.writeback_prd);
+                register_status_table[lsu0.writeback_prd] := READY;
+            }
+            DEBUG_WRITEBACK2(lsu0.writeback_ptr, writeback_lsu0_uop.rd_valid,
+								lsu0.writeback_prd, lsu0.writeback_data);
+        }
+    }
+    proc writeback_alu0 {
+        if(!flush) {
+            if(writeback_alu0_uop.rd_valid) {
+				if((writeback_alu0_uop.jal || writeback_alu0_uop.jalr || (writeback_alu0_uop.branch && writeback_alu0_q)) && ((writeback_alu0_target[1:0] & csr.ialign_o) != 2'b00)) {
+					gpr.req_writeA(writeback_alu0_prd, 0);
+				} else if(writeback_alu0_uop.csr_write) {
+					gpr.req_writeA(writeback_alu0_prd, csr.rsp_write_old_data);
+				} else {
+					gpr.req_writeA(writeback_alu0_prd, writeback_alu0_q);
+				}
+                iq_alu0.req_wakeup0(writeback_alu0_prd);
+                iq_alu1.req_wakeup0(writeback_alu0_prd);
+                iq_lsu0.req_wakeup0(writeback_alu0_prd);
+                register_status_table[writeback_alu0_prd] := READY;
+            }
+            if(writeback_alu0_uop.branch) {
+                rob.req_complete_alu0(writeback_alu0_ptr, writeback_alu0_q, writeback_alu0_target, (writeback_alu0_q && ((writeback_alu0_target[1:0] & csr.ialign_o) != 2'b00)));
+            } else if(writeback_alu0_uop.jal) {
+                rob.req_complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target, ((writeback_alu0_target[1:0] & csr.ialign_o) != 2'b00));
+			} else if(writeback_alu0_uop.jalr) {
+                rob.req_complete_alu0(writeback_alu0_ptr, 1, writeback_alu0_target & 0xfffffffe, (((writeback_alu0_target[1:0]&0x2) & csr.ialign_o) != 2'b00));
+            } else if(writeback_alu0_uop.csr) {
+                if(writeback_alu0_uop.csr_write) {
+                    csr.req_write(rob.head_ptr_o, writeback_alu0_ptr, writeback_alu0_target, writeback_alu0_q);
+                }
+                rob.req_complete_alu0(writeback_alu0_ptr, 0, 0, 0);
+            } else {
+                rob.req_complete_alu0(writeback_alu0_ptr, 0, 0, 0);
+            }
+            DEBUG_WRITEBACK0(writeback_alu0_ptr, writeback_alu0_uop.rd_valid,
+								writeback_alu0_prd, writeback_alu0_q, writeback_alu0_target);
+            finish();
+        }
+    }
+    proc writeback_alu1 {
+        if(!flush) {
+            if(writeback_alu1_uop.rd_valid) {
+				if((writeback_alu1_uop.jal || writeback_alu1_uop.jalr || (writeback_alu1_uop.branch && writeback_alu1_q)) && ((writeback_alu1_target[1:0] & csr.ialign_o) != 2'b00)) {
+					gpr.req_writeB(writeback_alu1_prd, 0);
+				} else {
+					gpr.req_writeB(writeback_alu1_prd, writeback_alu1_q);
+				}
+                iq_alu0.req_wakeup1(writeback_alu1_prd);
+                iq_alu1.req_wakeup1(writeback_alu1_prd);
+                iq_lsu0.req_wakeup1(writeback_alu1_prd);
+                register_status_table[writeback_alu1_prd] := READY;
+            }
+            if(writeback_alu1_uop.branch) {
+                rob.req_complete_alu1(writeback_alu1_ptr, writeback_alu1_q, writeback_alu1_target, (writeback_alu1_q && ((writeback_alu1_target[1:0] & csr.ialign_o) != 2'b00)));
+            } else if(writeback_alu1_uop.jal) {
+                rob.req_complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target, ((writeback_alu1_target[1:0] & csr.ialign_o) != 2'b00));
+			} else if(writeback_alu1_uop.jalr) {
+                rob.req_complete_alu1(writeback_alu1_ptr, 1, writeback_alu1_target & 0xfffffffe, (((writeback_alu1_target[1:0]&0x2) & csr.ialign_o) != 2'b00));
+            } else {
+                rob.req_complete_alu1(writeback_alu1_ptr, 0, 0, 0);
+            }
+            finish();
+            DEBUG_WRITEBACK1(writeback_alu1_ptr, writeback_alu1_uop.rd_valid,
+								writeback_alu1_prd, writeback_alu1_q, writeback_alu1_target);
+        }
+    }
+    proc writeback_lsu0 {
+    }
+	func rob.req_update_predict0 {
+		ifu.req_update_predict0(rob.req_update_predict0_pc, rob.req_update_predict0_target);
+	}
+	func rob.req_update_predict1 {
+		ifu.req_update_predict1(rob.req_update_predict1_pc, rob.req_update_predict1_target);
+	}
+    /*
+        Interrupts
+    */
+    func timer_interrupt_req_hart0 {
+        csr.req_timer_interrupt_req_hart0();
+    }
+    func software_interrupt_req_hart0 {
+        csr.req_software_interrupt_req_hart0();
+    }
+	rob.meip_i = csr.meip_o;
+	rob.msip_i = csr.msip_o;
+	rob.mtip_i = csr.mtip_o;
+	rob.meie_i = csr.meie_o;
+	rob.msie_i = csr.msie_o;
+	rob.mtie_i = csr.mtie_o;
+	rob.mstatus_mie_i = csr.mstatus_mie_o;
+	rob.priv_mode_i = csr.priv_mode_o;
+	udec0.priv_mode_i = csr.priv_mode_o;
+	udec1.priv_mode_i = csr.priv_mode_o;
+
+    /*
+        Bus arbiter for instruction fetch unit and load store unit.
+        LSU has higher priority.
+    */
+    {
+        reg ifu_grant = 0;
+        reg lsu_grant = 0;
+        ifu.CLK_I = CLK_I;
+        ifu.RST_I = RST_I;
+        lsu0.CLK_I = CLK_I;
+        lsu0.RST_I = RST_I;
+        alt {
+            lsu0.CYC_O && !lsu_grant && !ifu_grant: {
+                lsu_grant := 1;
+                lsu0.STALL_I();
+                ifu.STALL_I();
+            }
+            ifu.CYC_O && !ifu_grant && !lsu_grant: {
+                ifu_grant := 1;
+                lsu0.STALL_I();
+                ifu.STALL_I();
+            }
+        }
+        alt {
+            lsu_grant && lsu0.CYC_O && ACK_I: {
+                lsu_grant := 0;
+            }
+            ifu_grant && ifu.CYC_O && ACK_I: {
+                ifu_grant := 0;
+            }
+        }
+        alt {
+            lsu_grant: {
+                ADR_O = lsu0.ADR_O;
+                SEL_O = lsu0.SEL_O;
+                DAT_O = lsu0.DAT_O;
+                if(lsu0.CYC_O) CYC_O();
+                if(lsu0.STB_O) STB_O();
+                if(lsu0.WE_O) WE_O();
+                if(lsu0.LOCK_O) LOCK_O();
+                lsu0.DAT_I = DAT_I;
+                if(ERR_I) lsu0.ERR_I();
+                if(RTY_I) lsu0.RTY_I();
+                if(STALL_I) lsu0.STALL_I();
+                if(ACK_I) lsu0.ACK_I();
+                ifu.STALL_I();
+            }
+            ifu_grant: {
+                ADR_O = ifu.ADR_O;
+                SEL_O = ifu.SEL_O;
+                DAT_O = ifu.DAT_O;
+                if(ifu.CYC_O) CYC_O();
+                if(ifu.STB_O) STB_O();
+                if(ifu.WE_O) WE_O();
+                if(ifu.LOCK_O) LOCK_O();
+                ifu.DAT_I = DAT_I;
+                if(ERR_I) ifu.ERR_I();
+                if(RTY_I) ifu.RTY_I();
+                if(STALL_I) ifu.STALL_I();
+                if(ACK_I) ifu.ACK_I();
+                lsu0.STALL_I();
+            }
+        }
+    }
+	func rob.req_update_instret {
+		csr.req_update_instret(rob.req_update_instret);
+	}
+#ifdef ENABLE_DEBUG
+    func rob.debug_commit0 {
+        debug_commit0(rob.debug_commit_ptr0, rob.debug_commit_kill0,
+						rob.debug_commit_pc0, rob.debug_commit_inst0, rob.debug_commit_cause0,
+						rob.debug_commit_rd_valid0, rob.debug_commit_dreg0,
+						rob.debug_commit_preg0, rob.debug_commit_ppreg0);
+    }
+    func rob.debug_commit1 {
+        debug_commit1(rob.debug_commit_ptr1, rob.debug_commit_kill1,
+						rob.debug_commit_pc1, rob.debug_commit_inst1, rob.debug_commit_cause1,
+						rob.debug_commit_rd_valid1, rob.debug_commit_dreg1,
+						rob.debug_commit_preg1, rob.debug_commit_ppreg1);
+    }
+#endif
+}

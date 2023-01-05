@@ -1,0 +1,75 @@
+#include "wishbone_slave.h"
+#include "wishbone_common.h"
+#include "clint.h"
+
+module clint {
+    wishbone_slave wb_slave_if;
+    mtime_t reg mtime = {0x0, 0x0};
+    mtimecmp_t reg mtimecmp = {0x0, 0x0};
+    msip_t reg msip = 0;
+    func_self stop_increment;
+
+    func reset {
+        wb_slave_if.reset();
+    }
+    func wb_slave_if.req_read {
+        wire req_read_addr[32];
+        /* Ignore SEL for read */
+        /* TODO: Implement SEL_I */
+
+        req_read_addr = {wb_slave_if.req_addr[31:3], 3'b000};
+        any {
+            req_read_addr == MSIP_HART0: {
+                wb_slave_if.rsp_valid(msip);
+            }
+            req_read_addr == MTIMECMP_HART0+4: {
+                wb_slave_if.rsp_valid(mtimecmp.hi);
+            }
+            req_read_addr == MTIMECMP_HART0: {
+                wb_slave_if.rsp_valid(mtimecmp.lo);
+            }
+            req_read_addr == MTIME+4: {
+                wb_slave_if.rsp_valid(mtime.hi);
+            }
+            req_read_addr == MTIME: {
+                wb_slave_if.rsp_valid(mtime.lo);
+            }
+        }
+    }
+    func wb_slave_if.req_write {
+        wire req_write_addr[32];
+        /* TODO: Implement SEL_I */
+
+        req_write_addr = {wb_slave_if.req_addr[31:3], 3'b000};
+        any {
+            req_write_addr == MSIP_HART0: {
+                msip := wb_slave_if.req_data[0];
+            }
+            req_write_addr == MTIMECMP_HART0+4: {
+                mtimecmp.hi := wb_slave_if.req_data[31:0];
+            }
+            req_write_addr == MTIMECMP_HART0: {
+                mtimecmp.lo := wb_slave_if.req_data[31:0];
+            }
+            req_write_addr == MTIME+4: {
+                mtime.hi := wb_slave_if.req_data[31:0];
+                stop_increment();
+            }
+            req_write_addr == MTIME: {
+                mtime.lo := wb_slave_if.req_data[31:0];
+                stop_increment();
+            }
+        }
+        wb_slave_if.rsp_valid(0);
+    }
+    if(!stop_increment) {
+        mtime++;
+    }
+    if({mtime.hi, mtime.lo} >= {mtimecmp.hi, mtimecmp.lo}) {
+        timer_interrupt_hart0();
+    }
+    if(msip) {
+        software_interrupt_hart0();
+    }
+    WISHBONE_SLAVE_IF(wb_slave_if);
+}

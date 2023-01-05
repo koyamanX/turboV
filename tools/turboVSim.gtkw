@@ -1,0 +1,48 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Sat Apr 30 13:46:18 2022
+[*]
+[dumpfile] "/root/build/Debug/logs/rv32ui-p-beq.vcd"
+[dumpfile_mtime] "Sat Apr 30 13:29:52 2022"
+[dumpfile_size] 2584112
+[savefile] "/root/tools/turboVSim.gtkw"
+[timestart] 0
+[size] 1600 831
+[pos] -51 -51
+*-6.000000 108 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.turboVSim.
+[sst_width] 235
+[signals_width] 327
+[sst_expanded] 1
+[sst_vpaned_height] 232
+@28
+TOP.turboVSim.core._rob_commit
+@22
+TOP.turboVSim.core._rob_commit_Id[3:0]
+@28
+TOP.turboVSim.core._rob_commit_Valid0
+TOP.turboVSim.core._rob_commit_Valid1
+@22
+TOP.turboVSim.core._rob_commit_PC0[31:0]
+TOP.turboVSim.core._rob_commit_PC1[31:0]
+TOP.turboVSim.core._rob_commit_Inst0[31:0]
+TOP.turboVSim.core._rob_commit_Inst1[31:0]
+TOP.turboVSim.core._rob_commit_Dest0[4:0]
+TOP.turboVSim.core._rob_commit_Dest1[4:0]
+TOP.turboVSim.core._rob_commit_Value0[31:0]
+TOP.turboVSim.core._rob_commit_Value1[31:0]
+TOP.turboVSim.core._rob_commit_Target0[31:0]
+TOP.turboVSim.core._rob_commit_Target1[31:0]
+TOP.turboVSim.core._rob_commit_Cause0[15:0]
+TOP.turboVSim.core._rob_commit_Cause1[15:0]
+TOP.turboVSim.core._rob_commit_CSR_num[11:0]
+TOP.turboVSim.core._rob_commit_CSR_Value[31:0]
+TOP.turboVSim.core._rob_commit_Opcode0[6:0]
+TOP.turboVSim.core._rob_commit_Opcode1[6:0]
+TOP.turboVSim.core._rob_commit_uOp0[6:0]
+TOP.turboVSim.core._rob_commit_uOp1[6:0]
+@28
+TOP.turboVSim.core._rob_commit_stall
+[pattern_trace] 1
+[pattern_trace] 0

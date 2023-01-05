@@ -2,123 +2,143 @@
 #include "wishbone_master.h"
 
 module icache {
-	mem icache_data_array_way0[128][256];
-	mem icache_data_array_way1[128][256];
-	mem icache_tag_array_way0[128][20];
-	mem icache_tag_array_way1[128][20];
-	mem icache_valid_array_way0[128] = {0};
-	mem icache_valid_array_way1[128] = {0};
-	mem icache_lru_array[128] = {0};
-	proc_name idle();
-	reg icache_data_way0[256];
-	reg icache_data_way1[256];
-	reg icache_tag_way0[20];
-	reg icache_tag_way1[20];
-	reg icache_valid_way0;
-	reg icache_valid_way1;
-	reg icache_lru;
-	proc_name compare_tag(icache_data_way0, icache_tag_way0, icache_valid_way0,
-						  icache_data_way1, icache_tag_way1, icache_valid_way1,
-						  icache_lru);
-	reg allocate_paddr[32];
-	reg allocate_way_sel;
-	proc_name allocate(allocate_paddr, allocate_way_sel);
+    mem icache_valid_array[128] = {0};
+    mem icache_tag_array[128][20] = {0};
+    mem icache_data_array[128][256];
+    reg idle_icache_hit_valid = 0;
+    reg idle_icache_hit_tag[20];
+    reg idle_icache_hit_index[7];
+    reg idle_icache_hit_data[256];
+    proc_name idle(idle_icache_hit_valid, idle_icache_hit_tag, idle_icache_hit_index, idle_icache_hit_data);
+    reg compare_tag_addr[32];
+    reg compare_tag_icache_valid;
+    reg compare_tag_icache_tag[20];
+    reg compare_tag_icache_data[256];
+    proc_name compare_tag(compare_tag_addr, compare_tag_icache_valid,
+                            compare_tag_icache_tag, compare_tag_icache_data);
+    reg allocate_addr[32];
+    reg allocate_req_cache_addr[32];
+    proc_name allocate(allocate_addr, allocate_req_cache_addr);
+	proc_name invalidate_all();
 
-	func reset {
-		idle();
-	}
+    func reset {
+        idle(0, 0, 0, 0);
+    }
+    proc idle {
+        wire idle_tag[20];
+        wire idle_index[7];
+        wire idle_block_offset[2];
+        wire idle_byte_offset[3];
 
-	proc idle {
-		wire vidx[12];
+        .{idle_tag, idle_index, idle_block_offset, idle_byte_offset} = req_cache_addr;
+        any {
+            req_cache_read: {
+                if(idle_icache_hit_valid && (idle_icache_hit_tag == idle_tag) && (idle_icache_hit_index == idle_index)) {
+                    any {
+                        idle_block_offset == 0: rsp_cache_hit(idle_icache_hit_data[63:0]);
+                        idle_block_offset == 1: rsp_cache_hit(idle_icache_hit_data[127:64]);
+                        idle_block_offset == 2: rsp_cache_hit(idle_icache_hit_data[191:128]);
+                        idle_block_offset == 3: rsp_cache_hit(idle_icache_hit_data[255:192]);
+                    }
+                } else {
+                    compare_tag(req_cache_addr, icache_valid_array[idle_index],
+                            icache_tag_array[idle_index], icache_data_array[idle_index]);
+                }
+            }
+			req_invalidate_all: {
+				invalidate_all();
+			}
+        }
+    }
+	proc invalidate_all seq {
+		reg invalidate_all_pos[8] = 0;
 
-		vidx = req_cache_va[11:5];
-		any {
-			req_cache_read: compare_tag(
-							icache_data_array_way0[vidx], icache_tag_array_way0[vidx], icache_valid_array_way0[vidx],
-							icache_data_array_way1[vidx], icache_tag_array_way1[vidx], icache_valid_array_way1[vidx],
-							icache_lru_array[vidx]);
-		}
-	}
-	proc compare_tag {
-		wire ptag[20], pidx[7], pwoff[2], pboff[3];
-
-		.{ptag, pidx, pwoff, pboff} = req_cache_pa;
-
-		any {
-			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 0 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way0[63:0]); idle();}
-			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 1 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way0[127:64]); idle();}
-			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 2 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way0[191:128]); idle();}
-			icache_tag_way0 == ptag && icache_valid_way0 && pwoff == 3 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way0[255:192]); idle();}
-			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 0 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way1[63:0]); idle();}
-			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 1 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way1[127:64]); idle();}
-			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 2 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way1[191:128]); idle();}
-			icache_tag_way1 == ptag && icache_valid_way1 && pwoff == 3 && req_cache_pa_valid: {rsp_cache_hit(icache_data_way1[255:192]); idle();}
-			~req_cache_pa_valid: idle();
-			else: {rsp_cache_miss(); allocate(req_cache_pa, icache_lru); icache_lru_array[pidx] := ~icache_lru;}
-		}
-	}
-	proc allocate {
-		state_name bus_req, bus_wait;
-		reg allocate_bwoff[2] = 0;
-		mem allocate_buf[4][64];
-		reg allocate_paddr2refill[32];
-		wire refill_paddr[32];
-		wire refill_data[64];
-		wire refill_way_sel;
-		func_self refill(refill_paddr, refill_data, refill_way_sel);
-
-		if(allocate_bwoff == 0) {
-			allocate_paddr2refill := allocate_paddr;
-		}
-		state bus_req {
-			req_read(allocate_paddr, 0xff);
-			if(rsp_valid) {
-				allocate_buf[allocate_bwoff] := rsp_data;
-				allocate_paddr := allocate_paddr + 8;
-				if(allocate_bwoff == 3) {
-					refill(allocate_paddr2refill, {allocate_buf[3], allocate_buf[2], allocate_buf[1], allocate_buf[0]}, allocate_way_sel);
-					allocate_bwoff := 0;
-					idle();
-				} else {
-					allocate_bwoff++;
-				}
-			} else {
-				allocate_paddr := allocate_paddr + 8;
-				goto bus_wait;
+		for(invalidate_all_pos := 0; invalidate_all_pos < 128; invalidate_all_pos++) {
+			{
+				icache_valid_array[invalidate_all_pos] := 0;
+				icache_tag_array[invalidate_all_pos] := 0;
+				icache_data_array[invalidate_all_pos] := 0;
 			}
 		}
-		state bus_wait {
-			if(rsp_valid) {
-				allocate_buf[allocate_bwoff] := rsp_data;
-				allocate_paddr := allocate_paddr + 8;
-				if(allocate_bwoff == 3) {
-					refill(allocate_paddr2refill, {allocate_buf[3], allocate_buf[2], allocate_buf[1], allocate_buf[0]}, allocate_way_sel);
-					allocate_bwoff := 0;
-					goto bus_req;
-					idle();
-				} else {
-					goto bus_req;
-					allocate_bwoff++;
-				}
-			}
+		{
+			rsp_invalidate_all_done();
+			idle(0, 0, 0, 0);
 		}
 	}
-	func refill {
-		wire refill_ptag[20];
-		wire refill_pidx[7];
-		wire refill_poff[5];
-		.{refill_ptag, refill_pidx, refill_poff} = refill_paddr;
-		any {
-			refill_way_sel == 0: {
-				icache_tag_array_way0[refill_pidx] := refill_ptag;
-				icache_data_array_way0[refill_pidx] := refill_data;
-				icache_valid_array_way0[refill_pidx] := 1;
-			}
-			refill_way_sel == 1: {
-				icache_tag_array_way1[refill_pidx] := refill_ptag;
-				icache_data_array_way1[refill_pidx] := refill_data;
-				icache_valid_array_way1[refill_pidx] := 1;
-			}
-		}
-	}
+    proc compare_tag {
+        wire compare_tag_tag[20];
+        wire compare_tag_index[7];
+        wire compare_tag_block_offset[2];
+        wire compare_tag_byte_offset[3];
+
+        .{compare_tag_tag, compare_tag_index, compare_tag_block_offset, compare_tag_byte_offset} = compare_tag_addr;
+
+        if((compare_tag_tag == compare_tag_icache_tag) && compare_tag_icache_valid && (req_cache_read && (req_cache_addr == compare_tag_addr))) {
+            any {
+                compare_tag_block_offset == 0: rsp_cache_hit(compare_tag_icache_data[63:0]);
+                compare_tag_block_offset == 1: rsp_cache_hit(compare_tag_icache_data[127:64]);
+                compare_tag_block_offset == 2: rsp_cache_hit(compare_tag_icache_data[191:128]);
+                compare_tag_block_offset == 3: rsp_cache_hit(compare_tag_icache_data[255:192]);
+            }
+            idle(compare_tag_icache_valid, compare_tag_tag, compare_tag_index, compare_tag_icache_data);
+        } else if(req_cache_read) {
+            allocate({req_cache_addr[31:5], 5'b00000}, {req_cache_addr[31:5], 5'b00000});
+        } else {
+            idle(idle_icache_hit_valid, idle_icache_hit_tag, idle_icache_hit_index, idle_icache_hit_data);
+        }
+    }
+    proc allocate {
+        reg allocate_count[2] = 0;
+        wire allocate_tag[20];
+        wire allocate_index[7];
+        wire allocate_block_offset[2];
+        wire allocate_byte_offset[3];
+        wire allocate_hit_tag[20];
+        wire allocate_hit_index[7];
+        wire allocate_hit_block_offset[2];
+        wire allocate_hit_byte_offset[3];
+        mem allocate_data[4][64];
+        state_name allocate_bus_req, allocate_bus_wait, allocate_done;
+
+        .{allocate_tag, allocate_index, allocate_block_offset, allocate_byte_offset} = allocate_addr;
+        .{allocate_hit_tag, allocate_hit_index, allocate_hit_block_offset, allocate_hit_byte_offset} = allocate_req_cache_addr;
+        state allocate_bus_req {
+            req_read(allocate_addr, 0xff);
+
+            if(rsp_valid) {
+                allocate_data[allocate_block_offset] := rsp_data;
+                icache_tag_array[allocate_index] := allocate_tag;
+                icache_valid_array[allocate_index] := 1;
+                allocate_addr := allocate_addr + 8;
+                if(allocate_count == 3) {
+                    allocate_count := 0;
+                    goto allocate_done;
+                } else {
+                    allocate_count++;
+                }
+            } else {
+                goto allocate_bus_wait;
+            }
+        }
+        state allocate_bus_wait {
+            if(rsp_valid) {
+                allocate_data[allocate_block_offset] := rsp_data;
+                icache_tag_array[allocate_index] := allocate_tag;
+                icache_valid_array[allocate_index] := 1;
+                allocate_addr := allocate_addr + 8;
+                if(allocate_count == 3) {
+                    allocate_count := 0;
+                    goto allocate_done;
+                } else {
+                    allocate_count++;
+                }
+                goto allocate_bus_req;
+            }
+        }
+        state allocate_done {
+            icache_data_array[allocate_hit_index] := {allocate_data[3], allocate_data[2], allocate_data[1], allocate_data[0]};
+            goto allocate_bus_req;
+            idle(1, allocate_hit_tag, allocate_hit_index, {allocate_data[3], allocate_data[2], allocate_data[1], allocate_data[0]});
+        }
+    }
 }

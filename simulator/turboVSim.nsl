@@ -1,0 +1,247 @@
+#include "turboV.h"
+#include "wishbone_syscon.h"
+#include "wishbone_common.h"
+#include "wishbone_slave.h"
+#include "rom64x2K.h"
+#include "clint.h"
+#include "debug_log.h"
+#include "uart.h"
+
+declare turboVSim simulation {
+    func_in reset();
+
+    output req_addr[32];
+    output req_data[64];
+    output req_sel[8];
+    func_out req_read(req_addr, req_sel);
+    func_out req_write(req_addr, req_sel, req_data);
+    func_out req_read_modify_write(req_addr, req_sel, req_data);
+    input rsp_data[64];
+    func_in rsp_valid(rsp_data);
+    func_in rsp_error();
+    func_in rsp_retry();
+    func_in rsp_stall();
+	DEBUG_IO
+}
+module turboVSim {
+    turboV core;
+    wishbone_syscon wb_syscon;
+    wishbone_slave wb_slave_if;
+    rom64x2K wb_rom;
+    clint wb_clint;
+	uart wb_uart;
+
+    func reset {
+        core.reset();
+        wb_slave_if.reset();
+        wb_rom.reset();
+        wb_clint.reset();
+		wb_uart.reset();
+    }
+    wb_syscon.CLK_I = m_clock;
+    wb_syscon.RST_I = p_reset;
+
+    core.CLK_I = wb_syscon.CLK_O;
+    core.RST_I = wb_syscon.RST_O;
+
+    wb_slave_if.CLK_I = wb_syscon.CLK_O;
+    wb_slave_if.RST_I = wb_syscon.RST_O;
+    wb_slave_if.ADR_I = core.ADR_O;
+    wb_slave_if.SEL_I = core.SEL_O;
+    wb_slave_if.DAT_I = core.DAT_O;
+    func core.CYC_O wb_slave_if.CYC_I();
+    //func core.STB_O wb_slave_if.STB_I();
+    func core.WE_O wb_slave_if.WE_I();
+    func core.LOCK_O wb_slave_if.LOCK_I();
+    func wb_slave_if.ACK_O {
+        core.DAT_I = wb_slave_if.DAT_O;
+        core.ACK_I();
+    }
+    func wb_slave_if.STALL_O core.STALL_I();
+    func wb_slave_if.ERR_O core.ERR_I();
+    func wb_slave_if.RTY_O core.RTY_I();
+
+    wb_rom.CLK_I = wb_syscon.CLK_O;
+    wb_rom.RST_I = wb_syscon.RST_O;
+    wb_rom.ADR_I = core.ADR_O;
+    wb_rom.SEL_I = core.SEL_O;
+    wb_rom.DAT_I = core.DAT_O;
+    func core.CYC_O wb_rom.CYC_I();
+    //func core.STB_O wb_rom.STB_I();
+    func core.WE_O wb_rom.WE_I();
+    func core.LOCK_O wb_rom.LOCK_I();
+    func wb_rom.ACK_O {
+        core.DAT_I = wb_rom.DAT_O;
+        core.ACK_I();
+    }
+    func wb_rom.STALL_O core.STALL_I();
+    func wb_rom.ERR_O core.ERR_I();
+    func wb_rom.RTY_O core.RTY_I();
+
+    wb_clint.CLK_I = wb_syscon.CLK_O;
+    wb_clint.RST_I = wb_syscon.RST_O;
+    wb_clint.ADR_I = core.ADR_O;
+    wb_clint.SEL_I = core.SEL_O;
+    wb_clint.DAT_I = core.DAT_O;
+    func core.CYC_O wb_clint.CYC_I();
+    //func core.STB_O wb_clint.STB_I();
+    func core.WE_O wb_clint.WE_I();
+    func core.LOCK_O wb_clint.LOCK_I();
+    func wb_clint.ACK_O {
+        core.DAT_I = wb_clint.DAT_O;
+        core.ACK_I();
+    }
+    func wb_clint.STALL_O core.STALL_I();
+    func wb_clint.ERR_O core.ERR_I();
+    func wb_clint.RTY_O core.RTY_I();
+
+    wb_uart.CLK_I = wb_syscon.CLK_O;
+    wb_uart.RST_I = wb_syscon.RST_O;
+    wb_uart.ADR_I = core.ADR_O;
+    wb_uart.SEL_I = core.SEL_O;
+    wb_uart.DAT_I = core.DAT_O;
+    func core.CYC_O wb_uart.CYC_I();
+    //func core.STB_O wb_uart.STB_I();
+    func core.WE_O wb_uart.WE_I();
+    func core.LOCK_O wb_uart.LOCK_I();
+    func wb_uart.ACK_O {
+        core.DAT_I = wb_uart.DAT_O;
+        core.ACK_I();
+    }
+    func wb_uart.STALL_O core.STALL_I();
+    func wb_uart.ERR_O core.ERR_I();
+    func wb_uart.RTY_O core.RTY_I();
+
+    func wb_clint.software_interrupt_hart0 {
+        core.software_interrupt_req_hart0();
+    }
+    func wb_clint.timer_interrupt_hart0 {
+        core.timer_interrupt_req_hart0();
+    }
+
+    any {
+        core.ADR_O <= 0x0000_ffff: {
+           if(core.STB_O) wb_rom.STB_I();
+        }
+        0x80000000 <= core.ADR_O && core.ADR_O <= 0x84000000: {
+           if(core.STB_O) wb_slave_if.STB_I();
+        }
+        CLINT_BASE <= core.ADR_O && core.ADR_O <= CLINT_BASE+CLINT_LENGTH: {
+           if(core.STB_O) wb_clint.STB_I();
+        }
+		UART_BASE <= core.ADR_O && core.ADR_O <= UART_BASE+UART_LENGTH: {
+           if(core.STB_O) wb_uart.STB_I();
+		}
+		else: {
+           if(core.STB_O) {
+			   //TODO: WORKAROUND, it should be ERR response.
+			   //core.ERR_I();
+			   core.ACK_I();
+		   }
+	    }
+    }
+
+    func wb_slave_if.req_read {
+        req_read(wb_slave_if.req_addr, wb_slave_if.req_sel);
+    }
+    func wb_slave_if.req_write {
+        req_write(wb_slave_if.req_addr, wb_slave_if.req_sel, wb_slave_if.req_data);
+    }
+    func wb_slave_if.req_read_modify_write {
+
+    }
+    func rsp_valid {
+        wb_slave_if.rsp_valid(rsp_data);
+    }
+    func rsp_error {
+        wb_slave_if.rsp_error();
+    }
+    func rsp_retry {
+        wb_slave_if.rsp_retry();
+    }
+    func rsp_stall {
+        wb_slave_if.rsp_stall();
+    }
+#ifdef ENABLE_DEBUG
+    func core.debug_commit0 {
+        debug_commit0(core.debug_commit_ptr0, core.debug_commit_kill0,
+						core.debug_commit_pc0, core.debug_commit_inst0, core.debug_commit_cause0,
+						core.debug_commit_rd_valid0, core.debug_commit_dreg0,
+						core.debug_commit_preg0, core.debug_commit_ppreg0);
+    }
+    func core.debug_commit1 {
+        debug_commit1(core.debug_commit_ptr1, core.debug_commit_kill1,
+						core.debug_commit_pc1, core.debug_commit_inst1, core.debug_commit_cause1,
+						core.debug_commit_rd_valid1, core.debug_commit_dreg1,
+						core.debug_commit_preg1, core.debug_commit_ppreg1);
+    }
+    func core.debug_rewind0 {
+        debug_rewind0(core.debug_rewind0_dreg, core.debug_rewind0_preg, core.debug_rewind0_ppreg);
+    }
+    func core.debug_rewind1 {
+        debug_rewind1(core.debug_rewind1_dreg, core.debug_rewind1_preg, core.debug_rewind1_ppreg);
+    }
+    func core.debug_flush {
+        debug_flush(core.debug_flush_newpc);
+    }
+    func core.debug_rename0 {
+        debug_rename0(core.debug_rename0_ptr, core.debug_rename0_pc, core.debug_rename0_inst,
+                core.debug_rename0_rd_valid, core.debug_rename0_lrd, core.debug_rename0_prd, core.debug_rename0_pprd,
+                core.debug_rename0_rs1_valid, core.debug_rename0_rs1_ready, core.debug_rename0_lrs1, core.debug_rename0_prs1,
+                core.debug_rename0_rs2_valid, core.debug_rename0_rs2_ready, core.debug_rename0_lrs2, core.debug_rename0_prs2,
+                core.debug_rename0_cause, core.debug_rename0_imm);
+    }
+    func core.debug_rename1 {
+        debug_rename1(core.debug_rename1_ptr, core.debug_rename1_pc, core.debug_rename1_inst,
+                core.debug_rename1_rd_valid, core.debug_rename1_lrd, core.debug_rename1_prd, core.debug_rename1_pprd,
+                core.debug_rename1_rs1_valid, core.debug_rename1_rs1_ready, core.debug_rename1_lrs1, core.debug_rename1_prs1,
+                core.debug_rename1_rs2_valid, core.debug_rename1_rs2_ready, core.debug_rename1_lrs2, core.debug_rename1_prs2,
+                core.debug_rename1_cause, core.debug_rename1_imm);
+    }
+    func core.debug_dispatch0 {
+        debug_dispatch0(core.debug_dispatch0_ptr, core.debug_dispatch0_pc, core.debug_dispatch0_rd_valid, core.debug_dispatch0_prd,
+                core.debug_dispatch0_rs1_sel, core.debug_dispatch0_rs1_valid, core.debug_dispatch0_prs1, core.debug_dispatch0_rs1_data,
+                core.debug_dispatch0_rs2_sel, core.debug_dispatch0_rs2_valid, core.debug_dispatch0_prs2, core.debug_dispatch0_rs2_data);
+    }
+    func core.debug_dispatch1 {
+        debug_dispatch1(core.debug_dispatch1_ptr, core.debug_dispatch1_pc, core.debug_dispatch1_rd_valid, core.debug_dispatch1_prd,
+                core.debug_dispatch1_rs1_sel, core.debug_dispatch1_rs1_valid, core.debug_dispatch1_prs1, core.debug_dispatch1_rs1_data,
+                core.debug_dispatch1_rs2_sel, core.debug_dispatch1_rs2_valid, core.debug_dispatch1_prs2, core.debug_dispatch1_rs2_data);
+    }
+    func core.debug_dispatch2 {
+        debug_dispatch2(core.debug_dispatch2_ptr, core.debug_dispatch2_pc, core.debug_dispatch2_rd_valid, core.debug_dispatch2_prd,
+                core.debug_dispatch2_rs1_sel, core.debug_dispatch2_rs1_valid, core.debug_dispatch2_prs1, core.debug_dispatch2_rs1_data,
+                core.debug_dispatch2_rs2_sel, core.debug_dispatch2_rs2_valid, core.debug_dispatch2_prs2, core.debug_dispatch2_rs2_data);
+    }
+    func core.debug_execute0 {
+        debug_execute0(core.debug_execute0_ptr, core.debug_execute0_rd_valid, core.debug_execute0_prd,
+						core.debug_execute0_a, core.debug_execute0_b, core.debug_execute0_q, core.debug_execute0_addr);
+    }
+    func core.debug_execute1 {
+        debug_execute1(core.debug_execute1_ptr, core.debug_execute1_rd_valid, core.debug_execute1_prd,
+						core.debug_execute1_a, core.debug_execute1_b, core.debug_execute1_q, core.debug_execute1_addr);
+    }
+    func core.debug_execute2 {
+        debug_execute2(core.debug_execute2_ptr, core.debug_execute2_rd_valid, core.debug_execute2_prd,
+						core.debug_execute2_a, core.debug_execute2_b, core.debug_execute2_data);
+    }
+    func core.debug_writeback0 {
+        debug_writeback0(core.debug_writeback0_ptr, core.debug_writeback0_rd_valid, core.debug_writeback0_prd,
+							core.debug_writeback0_q, core.debug_writeback0_target);
+    }
+    func core.debug_writeback1 {
+        debug_writeback1(core.debug_writeback1_ptr, core.debug_writeback1_rd_valid, core.debug_writeback1_prd,
+							core.debug_writeback1_q, core.debug_writeback1_target);
+    }
+    func core.debug_writeback2 {
+        debug_writeback2(core.debug_writeback2_ptr, core.debug_writeback2_rd_valid, core.debug_writeback2_prd,
+							core.debug_writeback2_data);
+    }
+    func core.debug_decode0 {
+        debug_decode0(core.debug_decode0_pc, core.debug_decode0_inst, core.debug_decode0_pred);
+    }
+    func core.debug_decode1 {
+        debug_decode1(core.debug_decode1_pc, core.debug_decode1_inst, core.debug_decode1_pred);
+    }
+#endif
+}

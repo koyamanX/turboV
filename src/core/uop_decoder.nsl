@@ -1,0 +1,434 @@
+#include "uop_decoder.h"
+#include "inst.h"
+#include "opcode_map.h"
+#include "uops.h"
+#include "alu32.h"
+#include "csr.h"
+#include "priv.h"
+
+module uop_decoder {
+
+    func req_decode {
+        wire opcode[7];
+        wire fn[4];
+        wire lrd[5];
+        wire rs1_sel[SIZEOF_REG_SEL];
+        wire lrs1[5];
+        wire rs2_sel[SIZEOF_REG_SEL];
+        wire lrs2[5];
+        wire imm[32];
+        r_type_t wire inst_rtype;
+        i_type_t wire inst_itype;
+        u_type_t wire inst_utype;
+        j_type_t wire inst_jtype;
+        b_type_t wire inst_btype;
+        s_type_t wire inst_stype;
+        uop_t wire decode_uop;
+        decoder_packet_t wire decode_packet;
+        func_self jal;
+        func_self jalr;
+        func_self branch;
+        func_self load;
+        func_self store;
+        func_self csr;
+        func_self csr_read;
+        func_self csr_write;
+        func_self mret;
+        func_self ecall;
+        func_self ebreak;
+		func_self fencei;
+        func_self illegal_instruction();
+        func_self rd_valid;
+        func_self rs1_valid;
+        func_self rs2_valid;
+
+        opcode = req_decode_inst[6:0];
+        inst_rtype = req_decode_inst;
+        inst_itype = req_decode_inst;
+        inst_utype = req_decode_inst;
+        inst_jtype = req_decode_inst;
+        inst_btype = req_decode_inst;
+        inst_stype = req_decode_inst;
+
+        decode_uop.rd_valid = if(lrd != 0) rd_valid else 0;
+        decode_uop.rs1_valid = if(lrs1 != 0) rs1_valid else 0;
+        decode_uop.rs2_valid = if(lrs2 != 0) rs2_valid else 0;
+        decode_uop.rs1_sel = rs1_sel;
+        decode_uop.rs2_sel = rs2_sel;
+        decode_uop.jal = jal;
+        decode_uop.jalr = jalr;
+        decode_uop.branch = branch;
+        decode_uop.load = load;
+        decode_uop.store = store;
+        decode_uop.csr = csr;
+        decode_uop.csr_read = csr_read;
+        decode_uop.csr_write = csr_write;
+        decode_uop.mret = mret;
+        decode_uop.ecall = ecall;
+        decode_uop.ebreak = ebreak;
+        decode_uop.fencei = fencei;
+		decode_uop.uimm = lrs1;
+		decode_uop.pred = req_decode_pred;
+        decode_packet.uop = decode_uop;
+        decode_packet.lrd = lrd;
+        decode_packet.lrs1 = lrs1;
+        decode_packet.lrs2 = lrs2;
+        decode_packet.imm = imm;
+        decode_packet.cause = SET_EXCEPTION(ENVIRONMENT_CALL_FROM_M_MODE, (ecall && (priv_mode_i == MACHINE)))
+			| SET_EXCEPTION(ENVIRONMENT_CALL_FROM_U_MODE, (ecall && (priv_mode_i == USER)))
+            | SET_EXCEPTION(BREAKPOINT, ebreak)
+            | SET_EXCEPTION(ILLEGAL_INSTRUCTION, illegal_instruction)
+			| SET_EXCEPTION(ILLEGAL_INSTRUCTION, rsp_decode_csr_illegal);
+#ifdef ENABLE_DEBUG
+        decode_packet.inst = req_decode_inst;
+#endif
+
+        any {
+            opcode == OP: {
+                fn = {inst_rtype.funct7[5], inst_rtype.funct3};
+
+                decode_uop.uop = {uOP_ALU, fn};
+                rd_valid();
+                lrd = inst_rtype.rd;
+                rs1_sel = RS1_SEL_REG;
+                rs1_valid();
+                lrs1 = inst_rtype.rs1;
+                rs2_sel = RS2_SEL_REG;
+                rs2_valid();
+                lrs2 = inst_rtype.rs2;
+                imm = 0;
+            }
+            opcode == OP_IMM: {
+                fn = if((inst_itype.funct3 == ALU_SLL)
+                        || (inst_itype.funct3 == ALU_SRA)
+                        || (inst_itype.funct3 == ALU_SRL)) {inst_rtype.funct7[5], inst_itype.funct3}
+                    else {1'b0, inst_itype.funct3};
+                if(((inst_itype.funct3 == ALU_SLL) || (inst_itype.funct3 == ALU_SRA)
+                    || (inst_itype.funct3 == ALU_SRL)) && ((32#IMM_GEN_ITYPE(req_decode_inst))[5] == 1)) {
+                    illegal_instruction();
+				}
+
+                decode_uop.uop = {uOP_ALU, fn};
+                rd_valid();
+                lrd = inst_itype.rd;
+                rs1_sel = RS1_SEL_REG;
+                rs1_valid();
+                lrs1 = inst_itype.rs1;
+                rs2_sel = RS2_SEL_IMM;
+                lrs2 = 0;
+                imm = (32#IMM_GEN_ITYPE(req_decode_inst));
+            }
+            opcode == LUI: {
+                decode_uop.uop = uOP_ALU_OR;
+                rd_valid();
+                lrd = inst_utype.rd;
+                rs1_sel = RS1_SEL_REG;
+                lrs1 = 0;
+                rs2_sel = RS2_SEL_IMM;
+                lrs2 = 0;
+                imm = (32'IMM_GEN_UTYPE(req_decode_inst));
+            }
+            opcode == AUIPC: {
+                decode_uop.uop = uOP_ALU_ADD;
+                rd_valid();
+                lrd = inst_utype.rd;
+                rs1_sel = RS1_SEL_PC;
+                lrs1 = 0;
+                rs2_sel = RS2_SEL_IMM;
+                lrs2 = 0;
+                imm = (32'IMM_GEN_UTYPE(req_decode_inst));
+            }
+            opcode == JAL: {
+                decode_uop.uop = uOP_ALU_ADD;
+                rd_valid();
+                lrd = inst_jtype.rd;
+                rs1_sel = RS1_SEL_PC;
+                lrs1 = 0;
+                rs2_sel = RS2_SEL_IMM;
+                lrs2 = 0;
+                imm = (32#IMM_GEN_JTYPE(req_decode_inst));
+                jal();
+            }
+            opcode == JALR: {
+                decode_uop.uop = uOP_ALU_ADD;
+                rd_valid();
+                lrd = inst_itype.rd;
+                rs1_sel = RS1_SEL_REG;
+                rs1_valid();
+                lrs1 = inst_itype.rs1;
+                rs2_sel = RS2_SEL_IMM;
+                lrs2 = 0;
+                imm = (32#IMM_GEN_ITYPE(req_decode_inst));
+                jalr();
+            }
+            opcode == BRANCH: {
+                fn = {1'b0, inst_btype.funct3};
+
+                decode_uop.uop = {uOP_BRU, fn};
+                lrd = 0;
+                rs1_sel = RS1_SEL_REG;
+                rs1_valid();
+                lrs1 = inst_btype.rs1;
+                rs2_sel = RS2_SEL_REG;
+                rs2_valid();
+                lrs2 = inst_btype.rs2;
+                imm = (32#IMM_GEN_BTYPE(req_decode_inst));
+                branch();
+            }
+            opcode == LOAD: {
+                fn = {1'b0, inst_itype.funct3};
+
+                decode_uop.uop = {uOP_LSU, fn};
+                rd_valid();
+                lrd = inst_itype.rd;
+                rs1_sel = RS1_SEL_REG;
+                rs1_valid();
+                lrs1 = inst_itype.rs1;
+                rs2_sel = RS2_SEL_IMM;
+                lrs2 = 0;
+                imm = (32#IMM_GEN_ITYPE(req_decode_inst));
+                load();
+            }
+            opcode == STORE: {
+                fn = {1'b1, inst_stype.funct3};
+
+                decode_uop.uop = {uOP_LSU, fn};
+                lrd = 0;
+                rs1_sel = RS1_SEL_REG;
+                rs1_valid();
+                lrs1 = inst_stype.rs1;
+                rs2_sel = RS2_SEL_REG;
+                rs2_valid();
+                lrs2 = inst_stype.rs2;
+                imm = (32#IMM_GEN_STYPE(req_decode_inst));
+                store();
+            }
+            opcode == SYSTEM: {
+                any {
+                    (inst_itype.funct3 == SYSTEM_CSRRW) && (inst_itype.rd != 0): {
+                        decode_uop.uop = uOP_SYSTEM_CSRRW;
+                        rd_valid();
+                        lrd = inst_itype.rd;
+                        rs1_sel = RS1_SEL_REG;
+                        rs1_valid();
+                        lrs1 = inst_itype.rs1;
+                        rs2_sel = RS2_SEL_REG;
+                        lrs2 = 0;
+                        imm = inst_itype.imm0;
+                        csr();
+                        csr_write();
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRW) && (inst_itype.rd == 0): {
+                        decode_uop.uop = uOP_SYSTEM_CSRRW;
+                        lrd = inst_itype.rd;
+                        rs1_sel = RS1_SEL_REG;
+                        rs1_valid();
+                        lrs1 = inst_itype.rs1;
+                        rs2_sel = RS2_SEL_REG;
+                        lrs2 = 0;
+                        imm = inst_itype.imm0;
+                        csr();
+                        csr_write();
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRS) && (inst_itype.rs1 != 0): {
+                        decode_uop.uop = uOP_SYSTEM_CSRRS;
+                        rd_valid();
+                        lrd = inst_itype.rd;
+                        rs1_sel = RS1_SEL_REG;
+                        rs1_valid();
+                        lrs1 = inst_itype.rs1;
+                        rs2_sel = RS2_SEL_CSR;
+                        lrs2 = 0;
+                        imm = inst_itype.imm0;
+                        csr();
+                        csr_read();
+                        csr_write();
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRS) && (inst_itype.rs1 == 0): {
+                        decode_uop.uop = uOP_SYSTEM_CSRRS;
+                        rd_valid();
+                        lrd = inst_itype.rd;
+                        rs1_sel = RS1_SEL_REG;
+                        rs1_valid();
+                        lrs1 = inst_itype.rs1;
+                        rs2_sel = RS2_SEL_CSR;
+                        lrs2 = 0;
+                        imm = inst_itype.imm0;
+                        csr();
+                        csr_read();
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRC) && (inst_itype.rs1 != 0): {
+                        decode_uop.uop = uOP_SYSTEM_CSRRC;
+                        rd_valid();
+                        lrd = inst_itype.rd;
+                        rs1_sel = RS1_SEL_REG;
+                        rs1_valid();
+                        lrs1 = inst_itype.rs1;
+                        rs2_sel = RS2_SEL_CSR;
+                        lrs2 = 0;
+                        imm = inst_itype.imm0;
+                        csr();
+                        csr_read();
+                        csr_write();
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRC) && (inst_itype.rs1 == 0): {
+                        decode_uop.uop = uOP_SYSTEM_CSRRC;
+                        rd_valid();
+                        lrd = inst_itype.rd;
+                        rs1_sel = RS1_SEL_REG;
+                        rs1_valid();
+                        lrs1 = inst_itype.rs1;
+                        rs2_sel = RS2_SEL_CSR;
+                        lrs2 = 0;
+                        imm = inst_itype.imm0;
+                        csr();
+                        csr_read();
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd != 0): {
+                        decode_uop.uop = uOP_SYSTEM_CSRRW;
+                        rd_valid();
+                        lrd = inst_itype.rd;
+                        rs1_sel = RS1_SEL_UIMM;
+                        lrs1 = inst_itype.rs1;
+                        rs2_sel = RS2_SEL_CSR_UIMM;
+                        lrs2 = 0;
+                        imm = inst_itype.imm0;
+                        csr();
+                        csr_read();
+                        csr_write();
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd == 0): {
+                        decode_uop.uop = uOP_SYSTEM_CSRRW;
+                        lrd = inst_itype.rd;
+                        rs1_sel = RS1_SEL_UIMM;
+                        lrs1 = inst_itype.rs1;
+                        rs2_sel = RS2_SEL_REG;
+                        lrs2 = 0;
+                        imm = inst_itype.imm0;
+                        csr();
+                        csr_write();
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRSI) && (inst_itype.rs1 != 0): {
+                        decode_uop.uop = uOP_SYSTEM_CSRRS;
+                        rd_valid();
+                        lrd = inst_itype.rd;
+                        rs1_sel = RS1_SEL_UIMM;
+                        lrs1 = inst_itype.rs1;
+                        rs2_sel = RS2_SEL_CSR;
+                        lrs2 = 0;
+                        imm = inst_itype.imm0;
+                        csr();
+                        csr_read();
+                        csr_write();
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRSI) && (inst_itype.rs1 == 0): {
+                        decode_uop.uop = uOP_SYSTEM_CSRRS;
+                        rd_valid();
+                        lrd = inst_itype.rd;
+                        rs1_sel = RS1_SEL_UIMM;
+                        lrs1 = inst_itype.rs1;
+                        rs2_sel = RS2_SEL_CSR;
+                        lrs2 = 0;
+                        imm = inst_itype.imm0;
+                        csr();
+                        csr_read();
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 != 0): {
+                        decode_uop.uop = uOP_SYSTEM_CSRRC;
+                        rd_valid();
+                        lrd = inst_itype.rd;
+                        rs1_sel = RS1_SEL_UIMM;
+                        lrs1 = inst_itype.rs1;
+                        rs2_sel = RS2_SEL_CSR;
+                        lrs2 = 0;
+                        imm = inst_itype.imm0;
+                        csr();
+                        csr_read();
+                        csr_write();
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
+                    }
+                    (inst_itype.funct3 == SYSTEM_CSRRCI) && (inst_itype.rs1 == 0): {
+                        decode_uop.uop = uOP_SYSTEM_CSRRC;
+                        rd_valid();
+                        lrd = inst_itype.rd;
+                        rs1_sel = RS1_SEL_UIMM;
+                        lrs1 = inst_itype.rs1;
+                        rs2_sel = RS2_SEL_CSR_UIMM;
+                        lrs2 = 0;
+                        imm = inst_itype.imm0;
+                        csr();
+                        csr_read();
+						req_decode_csr(imm[11:0], {csr_read, csr_write});
+                    }
+                    inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_MRET && inst_itype.rd == 0 && inst_itype.rs1 == 0 && (priv_mode_i == MACHINE): {
+                        decode_uop.uop = uOP_SYSTEM_MRET;
+                        lrd = 0;
+                        rs1_sel = RS1_SEL_REG;
+                        lrs1 = 0;
+                        rs2_sel = RS2_SEL_REG;
+                        lrs2 = 0;
+                        imm = 0;
+                        mret();
+                    }
+                    inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_ECALL && inst_itype.rd == 0 && inst_itype.rs1 == 0 && (priv_mode_i == MACHINE || priv_mode_i == USER): {
+                        decode_uop.uop = uOP_SYSTEM_ECALL;
+                        lrd = 0;
+                        rs1_sel = RS1_SEL_REG;
+                        lrs1 = 0;
+                        rs2_sel = RS2_SEL_REG;
+                        lrs2 = 0;
+                        imm = 0;
+                        ecall();
+                    }
+                    inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_EBREAK && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
+                        decode_uop.uop = uOP_SYSTEM_EBREAK;
+                        lrd = 0;
+                        rs1_sel = RS1_SEL_REG;
+                        lrs1 = 0;
+                        rs2_sel = RS2_SEL_REG;
+                        lrs2 = 0;
+                        imm = 0;
+                        ebreak();
+                    }
+                    else: {
+                        illegal_instruction();
+                    }
+                }
+            }
+            opcode == MISC_MEM: {
+				any {
+					inst_itype.funct3 == MISC_MEM_FENCEI: {
+						decode_uop.uop = uOP_LSU_FENCEI;
+                        lrd = 0;
+                        rs1_sel = RS1_SEL_REG;
+                        lrs1 = 0;
+                        rs2_sel = RS2_SEL_REG;
+                        lrs2 = 0;
+                        imm = 0;
+						fencei();
+					}
+					inst_itype.funct3 == MISC_MEM_FENCE: {
+						// TODO: fence
+					}
+					else: {
+						illegal_instruction();
+				    }
+				}
+            }
+            else: {
+                illegal_instruction();
+            }
+        }
+		return decode_packet;
+    }
+}

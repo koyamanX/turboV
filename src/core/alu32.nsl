@@ -1,0 +1,73 @@
+#include "alu32.h"
+
+module alu32 {
+    wire eq;
+    wire lt;
+    wire ltu;
+
+    func req_exe {
+        eq = req_exe_a == req_exe_b;
+        lt = (33#(req_exe_a) - 33#(req_exe_b))[32];
+        ltu = (33'(req_exe_a) - 33'(req_exe_b))[32];
+
+        any {
+            req_exe_fn == ALU_ADD: {
+                return req_exe_a + req_exe_b;
+            }
+            req_exe_fn == ALU_SUB: {
+                return req_exe_a - req_exe_b;
+            }
+            req_exe_fn == ALU_SLL: {
+                return (req_exe_a << req_exe_b[4:0]);
+            }
+            req_exe_fn == ALU_SLT: {
+                return 32'(lt);
+            }
+            req_exe_fn == ALU_SLTU: {
+                return 32'(ltu);
+            }
+            req_exe_fn == ALU_XOR: {
+                return req_exe_a ^ req_exe_b;
+            }
+            req_exe_fn == ALU_SRL: {
+                return (req_exe_a >> req_exe_b[4:0]);
+            }
+            req_exe_fn == ALU_SRA: {
+                return (64#(req_exe_a) >> req_exe_b[4:0]);
+            }
+            req_exe_fn == ALU_OR: {
+                return req_exe_a | req_exe_b;
+            }
+            req_exe_fn == ALU_AND: {
+                return req_exe_a & req_exe_b;
+            }
+            req_exe_fn == ALU_NAAND: {
+                return ~req_exe_a & req_exe_b;
+            }
+            req_exe_fn == BRU_EQ: {
+                return 32'(eq);
+            }
+            req_exe_fn == BRU_NE: {
+                return 32'(!eq);
+            }
+            req_exe_fn == BRU_LT: {
+                return 32'(lt);
+            }
+            req_exe_fn == BRU_LTU: {
+                return 32'(ltu);
+            }
+            req_exe_fn == BRU_GE: {
+                return 32'(!lt);
+            }
+            req_exe_fn == BRU_GEU: {
+                return 32'(!ltu);
+            }
+            req_exe_fn == BRU_JALR: {
+                return 32'(1'b1);
+            }
+            req_exe_fn == BRU_JAL: {
+                return 32'(1'b1);
+            }
+        }
+    }
+}

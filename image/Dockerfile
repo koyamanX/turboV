@@ -1,4 +1,4 @@
-FROM ubuntu:21.04
+FROM ubuntu:20.04
 
 MAINTAINER ckoyama<ckoyama.1996@gmail.com>
 
@@ -19,7 +19,7 @@ RUN apt update && \
 COPY scripts /root/scripts
 WORKDIR /root/scripts
 
-RUN for i in do_*.sh; do ./$i; done;
+RUN for i in do_*.sh; do echo "execute $i"; ./$i; done;
 
 WORKDIR /root
 RUN cp scripts/env.sh /root/.env.sh && echo ". /root/.env.sh" >> .bashrc

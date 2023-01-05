@@ -1,56 +1,56 @@
 #include "wishbone_slave.h"
 
 module wishbone_slave {
-	reg adr_i_internal[32];
-	reg sel_i_internal[8];
-	reg dat_i_internal[64];
-	reg we_i_internal;
-	proc_name idle;
-	proc_name request(adr_i_internal, sel_i_internal,
-						dat_i_internal, we_i_internal);
-	reg dat_o_oe_internal;
-	proc_name wait4rsp(dat_o_oe_internal);
-	func_self stall();
+    reg adr_i_internal[32];
+    reg sel_i_internal[8];
+    reg dat_i_internal[64];
+    reg we_i_internal;
+    proc_name idle;
+    proc_name request(adr_i_internal, sel_i_internal,
+                        dat_i_internal, we_i_internal);
+    reg dat_o_oe_internal;
+    proc_name wait4rsp(dat_o_oe_internal);
+    func_self stall();
 
-	func reset {
-		idle();
-	}
-	proc idle {
-		if(CYC_I && STB_I && !stall) {
-			request(ADR_I, SEL_I, DAT_I, WE_I);	
-		}
-	}
-	proc request {
-		if(we_i_internal) {
-			req_write(adr_i_internal, sel_i_internal, dat_i_internal);
-		} else {
-			req_read(adr_i_internal, sel_i_internal);
-		}
+    func reset {
+        idle();
+    }
+    proc idle {
+        if(CYC_I && STB_I && !stall) {
+            request(ADR_I, SEL_I, DAT_I, WE_I);
+        }
+    }
+    proc request {
+        if(we_i_internal) {
+            req_write(adr_i_internal, sel_i_internal, dat_i_internal);
+        } else {
+            req_read(adr_i_internal, sel_i_internal);
+        }
 
-		if(rsp_valid) {
-			ACK_O();
-			if(~we_i_internal) {
-				DAT_O = rsp_data;
-			}
+        if(rsp_valid) {
+            ACK_O();
+            if(~we_i_internal) {
+                DAT_O = rsp_data;
+            }
 
-			idle();
-		} else {
-			stall();
-			wait4rsp(~we_i_internal);
-		}
-	}
-	proc wait4rsp {
-		if(rsp_valid) {
-			if(dat_o_oe_internal) {
-				DAT_O = rsp_data;
-			}
-			ACK_O();
-			idle();
-		} else {
-			stall();
-		}
-	}
-	func stall {
-		STALL_O();
-	}
+            idle();
+        } else {
+            stall();
+            wait4rsp(~we_i_internal);
+        }
+    }
+    proc wait4rsp {
+        if(rsp_valid) {
+            if(dat_o_oe_internal) {
+                DAT_O = rsp_data;
+            }
+            ACK_O();
+            idle();
+        } else {
+            stall();
+        }
+    }
+    func stall {
+        STALL_O();
+    }
 }

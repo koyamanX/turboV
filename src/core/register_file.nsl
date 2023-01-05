@@ -1,0 +1,34 @@
+#include "register_file.h"
+#include "riscv.h"
+
+module register_file {
+    mem regs[64][XLEN] = {0};
+
+    func req_readA {
+       return regs[req_readA_addr];
+    }
+    func req_readB {
+       return regs[req_readB_addr];
+    }
+    func req_readC {
+       return regs[req_readC_addr];
+    }
+    func req_readD {
+       return regs[req_readD_addr];
+    }
+    func req_readE {
+       return regs[req_readE_addr];
+    }
+    func req_readF {
+       return regs[req_readF_addr];
+    }
+    func req_writeA {
+		regs[req_writeA_addr] := req_writeA_data;
+    }
+    func req_writeB {
+		regs[req_writeB_addr] := req_writeB_data;
+    }
+    func req_writeC {
+		regs[req_writeC_addr] := req_writeC_data;
+    }
+}
