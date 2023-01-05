@@ -7,7 +7,7 @@
 
 #define IALIGN (if(misa.extensions & MISA_EXTENSIONS_C) 2'b01 else 2'b11)
 
-#define DECODE_CSR_RO	2'b00
+#define DECODE_CSR_RO	2'b10
 #define DECODE_CSR_WO	2'b01
 #define DECODE_CSR_RW	2'b11
 

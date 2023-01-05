@@ -48,7 +48,7 @@ module control_status_register {
         /* TODO: */
         mode                := MACHINE;
         misa.mxl            := MISA_MXL_XLEN32;
-        misa.extensions     := (MISA_EXTENSIONS_I);
+        misa.extensions     := (MISA_EXTENSIONS_I | MISA_EXTENSIONS_U);
         mtvec.mode          := MTVEC_MODE_DIRECT;
         mtvec.base          := 30'b10000_00000_00000_00000_00000_00000;
         mstatus.mie         := 0;
@@ -66,7 +66,7 @@ module control_status_register {
 
         wbuf := 0;
         any {
-            (mode == MACHINE): {
+            ((mode == MACHINE) || (mode == USER)): {
                 if(req_commit && wbuf.valid && wbuf.ptr == req_commit_ptr && wbuf.addr == MSTATUS) {
                     req_trap_xstatus = wbuf.data;
                 } else {
@@ -79,7 +79,7 @@ module control_status_register {
                 }
                 mstatus.mpie    := req_trap_xstatus.mie;
                 mstatus.mie     := 0;
-                mstatus.mpp     := MACHINE;
+                mstatus.mpp     := mode;
                 mode            := MACHINE;
                 mcause          := req_trap_cause;
                 mepc            := req_trap_pc;
@@ -327,7 +327,7 @@ module control_status_register {
                     */
                     mstatus.mie     := req_commit_xstatus.mie;
                     mstatus.mpie    := req_commit_xstatus.mpie;
-                    mstatus.mpp     := MACHINE;
+                    mstatus.mpp     := if((req_commit_xstatus.mpp == MACHINE) || (req_commit_xstatus.mpp == USER)) req_commit_xstatus.mpp else mstatus.mpp;
                 }
                 (mode >= MACHINE) && (wbuf.addr == MTVEC): {
                     req_commit_xtvec = wbuf.data;

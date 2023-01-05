@@ -765,6 +765,8 @@ module turboV {
 	rob.mtie_i = csr.mtie_o;
 	rob.mstatus_mie_i = csr.mstatus_mie_o;
 	rob.priv_mode_i = csr.priv_mode_o;
+	udec0.priv_mode_i = csr.priv_mode_o;
+	udec1.priv_mode_i = csr.priv_mode_o;
 
     /*
         Bus arbiter for instruction fetch unit and load store unit.
