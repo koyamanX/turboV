@@ -1,4 +1,4 @@
 .bash_history
 build
-./docs
+docs/_build
 tests/riscv-tests
