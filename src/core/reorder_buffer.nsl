@@ -185,10 +185,18 @@ module reorder_buffer {
 					commit_kill_inst1();
 					commit0();
 				}
-				commit_entry_uop0.ecall: {
+				commit_entry_cause0.environment_call_from_m_mode: {
 					req_stall_pipeline();
 					req_flush_pipeline();
 					req_csr_trap(ENVIRONMENT_CALL_FROM_M_MODE, commit_PC0+4, 0);
+					commit_kill_inst1();
+					commit0();
+					will_rollback();
+				}
+				commit_entry_cause0.environment_call_from_u_mode: {
+					req_stall_pipeline();
+					req_flush_pipeline();
+					req_csr_trap(ENVIRONMENT_CALL_FROM_U_MODE, commit_PC0+4, 0);
 					commit_kill_inst1();
 					commit0();
 					will_rollback();

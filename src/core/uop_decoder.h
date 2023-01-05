@@ -35,6 +35,7 @@ declare uop_decoder {
 	output req_decode_csr_rw[2];
 	input rsp_decode_csr_illegal;
 	func_out req_decode_csr(req_decode_csr_addr, req_decode_csr_rw): rsp_decode_csr_illegal;
+	input priv_mode_i[2];
 }
 
 #endif

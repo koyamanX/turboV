@@ -4,6 +4,7 @@
 #include "uops.h"
 #include "alu32.h"
 #include "csr.h"
+#include "priv.h"
 
 module uop_decoder {
 
@@ -73,7 +74,8 @@ module uop_decoder {
         decode_packet.lrs1 = lrs1;
         decode_packet.lrs2 = lrs2;
         decode_packet.imm = imm;
-        decode_packet.cause = SET_EXCEPTION(ENVIRONMENT_CALL_FROM_M_MODE, ecall)
+        decode_packet.cause = SET_EXCEPTION(ENVIRONMENT_CALL_FROM_M_MODE, (ecall && (priv_mode_i == MACHINE)))
+			| SET_EXCEPTION(ENVIRONMENT_CALL_FROM_U_MODE, (ecall && (priv_mode_i == USER)))
             | SET_EXCEPTION(BREAKPOINT, ebreak)
             | SET_EXCEPTION(ILLEGAL_INSTRUCTION, illegal_instruction)
 			| SET_EXCEPTION(ILLEGAL_INSTRUCTION, rsp_decode_csr_illegal);
@@ -219,7 +221,6 @@ module uop_decoder {
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRW) && (inst_itype.rd == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRW;
-                        rd_valid();
                         lrd = inst_itype.rd;
                         rs1_sel = RS1_SEL_REG;
                         rs1_valid();
@@ -305,7 +306,6 @@ module uop_decoder {
                     }
                     (inst_itype.funct3 == SYSTEM_CSRRWI) && (inst_itype.rd == 0): {
                         decode_uop.uop = uOP_SYSTEM_CSRRW;
-                        rd_valid();
                         lrd = inst_itype.rd;
                         rs1_sel = RS1_SEL_UIMM;
                         lrs1 = inst_itype.rs1;
@@ -370,7 +370,7 @@ module uop_decoder {
                         csr_read();
 						req_decode_csr(imm[11:0], {csr_read, csr_write});
                     }
-                    inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_MRET && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
+                    inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_MRET && inst_itype.rd == 0 && inst_itype.rs1 == 0 && (priv_mode_i == MACHINE): {
                         decode_uop.uop = uOP_SYSTEM_MRET;
                         lrd = 0;
                         rs1_sel = RS1_SEL_REG;
@@ -380,7 +380,7 @@ module uop_decoder {
                         imm = 0;
                         mret();
                     }
-                    inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_ECALL && inst_itype.rd == 0 && inst_itype.rs1 == 0: {
+                    inst_itype.funct3 == SYSTEM_PRIV && inst_itype.imm0 == SYSTEM_ECALL && inst_itype.rd == 0 && inst_itype.rs1 == 0 && (priv_mode_i == MACHINE || priv_mode_i == USER): {
                         decode_uop.uop = uOP_SYSTEM_ECALL;
                         lrd = 0;
                         rs1_sel = RS1_SEL_REG;
